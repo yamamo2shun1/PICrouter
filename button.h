@@ -1,8 +1,22 @@
-/* 
- * File:   button.h
- * Author: shun
+/*
+ * Copylight (C) 2012, Shunichi Yamamoto, tkrworks.net
  *
- * Created on 2012/06/29, 23:31
+ * This file is part of PICrouter.
+ *
+ * PICrouter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option ) any later version.
+ *
+ * PICrouter is distributed in the hope that it will be useful,
+ * but WITHIOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
+ *
+ * button.h,v.0.1 2012/07/08
  */
 
 #ifndef BUTTON_H
