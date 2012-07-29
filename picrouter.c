@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.1 2012/07/08
+ * picrouter.c,v.0.2 2012/07/29
  */
 
 #include "picrouter.h"
@@ -84,6 +84,17 @@ int main(int argc, char** argv) {
     InitAppConfig();
     TickInit();
     StackInit();
+    ZeroconfLLInitialize();
+    mDNSInitialize(MY_DEFAULT_HOST_NAME);
+    mDNSServiceRegister((const char *)"PICrouter-OaUD", // base name of the service
+                        "_oscit._udp.local",       // type of the service
+                        8000,                      // TCP or UDP port, at which this service is available
+                        ((const BYTE *)""),        // TXT info
+                        0,                         // auto rename the service when if needed
+                        NULL,                      // no callback function
+                        NULL                       // no application context
+                        );
+    mDNSMulticastFilterRegister();
 
     // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
@@ -136,6 +147,8 @@ int main(int argc, char** argv) {
 
         StackTask();
         NBNSTask();
+        ZeroconfLLProcess();
+        mDNSProcess();
 
         if(initialCount > 32768)
             USBControlTask();
@@ -317,7 +330,7 @@ void UDPSendTask()
 
         for(i = 0; i < 2; i++)
         {
-            if(oscSendFlag[i])
+            if(initReceiveFlag && oscSendFlag[i])
             {
                 UDPDiscard();
                 UDPPutString((BYTE *)prefix);

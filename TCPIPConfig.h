@@ -92,8 +92,8 @@
 //#define STACK_USE_TCP_PERFORMANCE_TEST	// Module for testing TCP TX performance characteristics
 //#define STACK_USE_DYNAMICDNS_CLIENT		// Dynamic DNS client updater module
 //#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
-//#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
-//#define STACK_USE_ZEROCONF_MDNS_SD		// Zeroconf mDNS and mDNS service discovery
+#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
+#define STACK_USE_ZEROCONF_MDNS_SD		// Zeroconf mDNS and mDNS service discovery
 
 
 // =======================================================================
@@ -146,7 +146,7 @@
 // =======================================================================
 
 /* Default Network Configuration */
-#define MY_DEFAULT_HOST_NAME			"PICROUTER"
+#define MY_DEFAULT_HOST_NAME			"PICROUTER-OAUD"
 
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of 00-04-A3-00-00-00
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// if using an ENCX24J600, MRF24WB0M, or
@@ -155,69 +155,31 @@
 #define MY_DEFAULT_MAC_BYTE5            (0x00)	// internal factory programmed MAC
 #define MY_DEFAULT_MAC_BYTE6            (0x00)	// address instead.
 
-#if 0
-    #define MY_DEFAULT_IP_ADDR_BYTE1        (172ul)//test (169ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE2        (16ul)//test (254ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)//test (1ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE4        (11ul)//test (1ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE3		(1ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)
 
     #define MY_DEFAULT_MASK_BYTE1           (255ul)
     #define MY_DEFAULT_MASK_BYTE2           (255ul)
-    #define MY_DEFAULT_MASK_BYTE3           (255ul)//test (0ul)
+    #define MY_DEFAULT_MASK_BYTE3           (255ul)
     #define MY_DEFAULT_MASK_BYTE4           (0ul)
 
-    #define MY_DEFAULT_GATE_BYTE1           (172ul)//test (169ul)
-    #define MY_DEFAULT_GATE_BYTE2           (16ul)//test (254ul)
-    #define MY_DEFAULT_GATE_BYTE3           (1ul)//test (1ul)
-    #define MY_DEFAULT_GATE_BYTE4           (1ul)//test (1ul)
+    #define MY_DEFAULT_GATE_BYTE1           (192ul)
+    #define MY_DEFAULT_GATE_BYTE2           (168ul)
+ 	#define MY_DEFAULT_GATE_BYTE3           (1ul)
+    #define MY_DEFAULT_GATE_BYTE4           (1ul)
 
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(172ul)//test (169ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(16ul)//test (254ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)//test (1ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)//test (1ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(0ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(0ul)
+ 	#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(0ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(0ul)
 
     #define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
     #define MY_DEFAULT_SECONDARY_DNS_BYTE2	(0ul)
     #define MY_DEFAULT_SECONDARY_DNS_BYTE3	(0ul)
     #define MY_DEFAULT_SECONDARY_DNS_BYTE4	(0ul)
-#else
-    #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)//test (169ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)//test (254ul)
-#if 0//asagaya
-    #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)//test (1ul)
-#else//adhoc-emobile
-    #define MY_DEFAULT_IP_ADDR_BYTE3		(2ul)
-#endif
-    #define MY_DEFAULT_IP_ADDR_BYTE4        (1ul)
 
-    #define MY_DEFAULT_MASK_BYTE1           (255ul)
-    #define MY_DEFAULT_MASK_BYTE2           (255ul)
-    #define MY_DEFAULT_MASK_BYTE3           (255ul)//test (0ul)
-    #define MY_DEFAULT_MASK_BYTE4           (0ul)
-
-    #define MY_DEFAULT_GATE_BYTE1           (192ul)//test (169ul)
-    #define MY_DEFAULT_GATE_BYTE2           (168ul)//test (254ul)
-#if 0
-    #define MY_DEFAULT_GATE_BYTE3           (1ul)//test (1ul)
-#else
- 	#define MY_DEFAULT_GATE_BYTE3           (2ul)//test (1ul)
-#endif
-    #define MY_DEFAULT_GATE_BYTE4           (1ul)//test (1ul)
-
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(192ul)//test (169ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(168ul)//test (254ul)
-#if 0
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)//test (1ul)
-#else
- 	#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(2ul)//test (1ul)
-#endif
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)//test (1ul)
-
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE2	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE3	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE4	(0ul)
-#endif
 // =======================================================================
 //   PIC32MX7XX/6XX MAC Layer Options
 //   If not using a PIC32MX7XX/6XX device, ignore this section.

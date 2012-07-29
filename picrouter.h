@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.0.1 2012/07/08
+ * picrouter.h,v.0.2 2012/07/29
  */
 
 #include <plib.h>
