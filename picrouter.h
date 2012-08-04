@@ -35,6 +35,7 @@
 
 #include "button.h"
 #include "analog.h"
+#include "osc.h"
 
 /** CONFIGURATION **************************************************/
 #pragma config UPLLEN   = ON        // USB PLL Enabled
@@ -86,12 +87,12 @@ USB_VOLATILE BYTE msCounter;
 
 
 //osc messages
-BYTE prefix[] = "/pic";
-BYTE msgLed[] = "/led";
-BYTE msgSw[]  = "/sw";
-BYTE msgAdc[] = "/adc";
-BYTE msgPwm[] = "/pwm";
-BYTE zero[40];
+char prefix[] = "/pic";
+char msgLed[] = "/led";
+char msgSw[]  = "/sw";
+char msgAdc[] = "/adc";
+char msgPwm[] = "/pwm";
+char zero[40];
 
 APP_CONFIG AppConfig;
 
@@ -104,6 +105,8 @@ BOOL stateFlag2 = FALSE;//midi
 
 UDP_SOCKET RxSocket;
 UDP_SOCKET TxSocket;
+//test UDP_SOCKET rcvOscSocket;
+//test UDP_SOCKET sndOscSocket;
 BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
 BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};

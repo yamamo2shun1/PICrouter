@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     mDNSInitialize(MY_DEFAULT_HOST_NAME);
     mDNSServiceRegister((const char *)"PICrouter-OaUD", // base name of the service
                         "_oscit._udp.local",       // type of the service
-                        8000,                      // TCP or UDP port, at which this service is available
+                        8080,                      // TCP or UDP port, at which this service is available
                         ((const BYTE *)""),        // TXT info
                         0,                         // auto rename the service when if needed
                         NULL,                      // no callback function
@@ -250,20 +250,51 @@ void setupPitch(void)
 void UDPControlTask(void)
 {
 	unsigned int RcvLen;
-	static BYTE	buffer[40];
+	static BYTE buffer[64];
 
 	if(!initReceiveFlag)
 	{
 		RxSocket = UDPOpen(localPort, NULL, 0);
 		if(RxSocket != INVALID_UDP_SOCKET)
-			initReceiveFlag = TRUE;
+                //test if(openOSCReceivePort(sndOscSocket, localPort))
+                    initReceiveFlag = TRUE;
 	}
-
+#if 1
 	if(initReceiveFlag && UDPIsGetReady(RxSocket))
 	{
 		RcvLen = UDPGetArray(buffer, sizeof(buffer));
 		UDPDiscard();
-		if(buffer[0] == '/' && buffer[1] == 'p' && buffer[2] == 'i' && buffer[3] == 'c' &&
+                if(isEqualToAddress(buffer, "/pic/led"))
+                {
+                    if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 0)
+                    {
+                        if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
+                        {
+                            LED_1_On();
+                        }
+                        else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
+                        {
+                            LED_1_Off();
+                        }
+                    }
+                    else if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 1)
+                    {
+                        if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
+                        {
+                            LED_2_On();
+                        }
+                        else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
+                        {
+                            LED_2_Off();
+                        }
+                    }
+                }
+        }
+#else
+        if(initReceiveFlag)
+        {
+            RcvLen = receiveOSCMessage(rcvOscSocket, buffer);
+            if(buffer[0] == '/' && buffer[1] == 'p' && buffer[2] == 'i' && buffer[3] == 'c' &&
 		   buffer[4] == '/' && buffer[5] == 'l' && buffer[6] == 'e' && buffer[7] == 'd' &&
 		   buffer[8] == 0   && buffer[9] == 0   && buffer[10] == 0  && buffer[11] == 0)
 		{
@@ -293,7 +324,8 @@ void UDPControlTask(void)
 				}
 			}
 		}
-	}
+        }
+#endif
 }
 
 void UDPSendTask()
@@ -302,32 +334,25 @@ void UDPSendTask()
 
 	if(!initSendFlag)
 	{
+#if 1
         TxSocket = UDPOpenEx((remoteIP[0] | (remoteIP[1] << 8) | (remoteIP[2] << 16) | (remoteIP[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, remotePort);
 		if(TxSocket == INVALID_UDP_SOCKET)
 			return;
+#else
+            if(openOSCSendPort(sndOscSocket, remoteIP, remotePort))
+#endif
 		initSendFlag = TRUE;
 	}
 
-	if(initSendFlag && UDPIsPutReady(TxSocket))
+	if(initSendFlag)
 	{
-		if(stateFlag)
+		if(initSendFlag && stateFlag)
 		{
 			stateFlag = FALSE;
-            UDPDiscard();
-            UDPPutString((BYTE *)prefix);
-            UDPPutString((BYTE *)msgSw);
-            UDPPutArray(zero, 1);
-            UDPPut(',');
-            UDPPut('i');
-            UDPPutArray(zero, 2);
-            UDPPut(0);
-            UDPPut(0);
-            UDPPut(0);
-            UDPPut(currentState ? 0 : 1);
-            //test UDPPutArray(zero, 4);
-            UDPFlush();
+            sendOSCMessage(TxSocket, prefix, msgSw, "i", (currentState ? 0 : 1));
 		}
 
+#if 0//pitch
         for(i = 0; i < 2; i++)
         {
             if(initReceiveFlag && oscSendFlag[i])
@@ -354,7 +379,8 @@ void UDPSendTask()
                 oscSendFlag[i] = FALSE;
             }
         }
-	}
+#endif//pitch
+        }
 }
 
 void USBControlTask()
@@ -450,6 +476,7 @@ void HIDControlTask(void)
                     remoteIP[3] = ReceivedHidDataBuffer[5];
                     initSendFlag = FALSE;
                     UDPClose(TxSocket);
+                    //test closeOSCSendPort(sndOscSocket);
                 }
                 break;
             case 0xF3:// Local Port
@@ -470,6 +497,7 @@ void HIDControlTask(void)
                     localPort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
                     initReceiveFlag = FALSE;
                     UDPClose(RxSocket);
+                    //test closeOSCReceivePort(rcvOscSocket);
                 }
                 break;
             case 0xF4:// Remote Port
@@ -490,6 +518,7 @@ void HIDControlTask(void)
                     remotePort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
                     initSendFlag = FALSE;
                     UDPClose(TxSocket);
+                    //test closeOSCSendPort(sndOscSocket);
                 }
                 break;
             case 0xF5:// Mac Address
