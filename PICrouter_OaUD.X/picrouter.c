@@ -51,6 +51,10 @@ int main(int argc, char** argv) {
     WORD pCount = 0;
     WORD rCount = 0;
 
+    BOOL b = TRUE;
+    Nop();
+    Nop();
+
 	mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
     setupPitch();
@@ -264,32 +268,41 @@ void UDPControlTask(void)
 	{
 		RcvLen = UDPGetArray(buffer, sizeof(buffer));
 		UDPDiscard();
-                if(isEqualToAddress(buffer, "/pic/led"))
+        if(isEqualToAddress(buffer, "/pic/led"))
+        {
+            if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 0)
+            {
+                if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
                 {
-                    if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 0)
-                    {
-                        if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
-                        {
-                            LED_1_On();
-                        }
-                        else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
-                        {
-                            LED_1_Off();
-                        }
-                    }
-                    else if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 1)
-                    {
-                        if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
-                        {
-                            LED_2_On();
-                        }
-                        else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
-                        {
-                            LED_2_Off();
-                        }
-                    }
+                    LED_1_On();
                 }
+                else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
+                {
+                    LED_1_Off();
+                }
+            }
+            else if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 1)
+            {
+                if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 1)
+                {
+                    LED_2_On();
+                }
+                else if(getIntArgumentAtIndex(buffer, "/pic/led", 1) == 0)
+                {
+                    LED_2_Off();
+                }
+            }
         }
+        else if(isEqualToAddress(buffer, "/sys/remote/ip"))
+        {
+            remoteIP[0] = getIntArgumentAtIndex(buffer, "/sys/remote/ip", 0);
+            remoteIP[1] = getIntArgumentAtIndex(buffer, "/sys/remote/ip", 1);
+            remoteIP[2] = getIntArgumentAtIndex(buffer, "/sys/remote/ip", 2);
+            remoteIP[3] = getIntArgumentAtIndex(buffer, "/sys/remote/ip", 3);
+            initSendFlag = FALSE;
+            UDPClose(TxSocket);
+        }
+    }
 #else
         if(initReceiveFlag)
         {
@@ -339,7 +352,7 @@ void UDPSendTask()
 		if(TxSocket == INVALID_UDP_SOCKET)
 			return;
 #else
-            if(openOSCSendPort(sndOscSocket, remoteIP, remotePort))
+        if(openOSCSendPort(sndOscSocket, remoteIP, remotePort))
 #endif
 		initSendFlag = TRUE;
 	}

@@ -1,0 +1,7 @@
+f0 set/get  dhcp on/off        1byte
+f1 set/get  local ip address   4byte
+f2 set/get  remote ip address  4byte
+f3 set/get  local port         2byte
+f4 set/get  remote port        2byte
+f5 set/get  default gateway    4byte
+f6 set/get  mac address        6byte
