@@ -1893,10 +1893,6 @@ static void SSLRxClientKeyExchange(TCP_SOCKET hTCP)
 {
 	WORD wKeyLength;
 	
-	// TODO: Add a sanity check here to see if sslStub.wRxHsBytesRem is equal 
-	// to the chosen RSA modulus length (ex: 128 for 1024 bit).  If it is 
-	// wrong, we need to generate a failure alert.
-	
 	// Make sure entire message is ready
 	if(TCPIsGetReady(hTCP) < sslStub.wRxHsBytesRem)
 		return;
@@ -3305,9 +3301,7 @@ static WORD HSGetArray(TCP_SOCKET skt, BYTE *data, WORD len)
 	
 	len = TCPGetArray(skt, data, len);
 	w = len;
-	
-	// TODO: BUG!!!: This must be fixed somehow so that buffer overflow is not 
-	// possible
+
 	memcpy(ptrHS, (void*)data, len);
 	ptrHS += len;
 

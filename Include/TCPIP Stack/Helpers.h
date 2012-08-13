@@ -92,6 +92,7 @@ BYTE	btohexa_high(BYTE b);
 BYTE	btohexa_low(BYTE b);
 signed char stricmppgm2ram(BYTE* a, ROM BYTE* b);
 char * 	strnchr(const char *searchString, size_t count, char c);
+size_t  strncpy_m(char* destStr, size_t destSize, int nStrings, ...);
 
 #if defined(__18CXX)
 	BOOL	ROMStringToIPAddress(ROM BYTE* str, IP_ADDR* IPAddress);
@@ -105,7 +106,7 @@ WORD    swaps(WORD v);
 DWORD   swapl(DWORD v);
 
 WORD    CalcIPChecksum(BYTE* buffer, WORD len);
-WORD    CalcIPBufferChecksum(WORD len);
+
 
 #if defined(__18CXX)
 	DWORD leftRotateDWORD(DWORD val, BYTE bits);

@@ -7,6 +7,102 @@ Note: Please file bug-reports/bug-fixes at http://support.microchip.com/ or post
       Look for stack updates at http://www.microchip.com/mal/
 
 ********
+v5.42       Jul 2012
+********      
+Changes:
+1.  All MPLAB 8 and MPLAB X projects have been modified to use the XC16 and XC32 compilers.
+2.  The colon character ":" has been added as a valid terminator for an IP address in
+    the StringToIPAddress function.
+3.  (MRF24WB/G) PIC18 is only supported with "TCPIP Demo App". 
+    MRF24WB0MA/MB works on PICDEM PIC18 Explorer.
+    MRF24WG0MA/MB works on PICDemNet2 PIC 18 but has issues with PICDEM PIC18 Explorer.  
+4.  (MRF24WB/G) Enhanced debug messages providing more details such as authentication or association 
+     failues, etc.
+5.  (MRF24WB/G) Added option to disable module FW connection manager by adding "#define DISABLE_MODULE
+    _FW_CONNECT_MANAGER_IN_INFRASTRUCTURE".
+6.  (MRF24WB/G) Added option to derive real key from pass-phrase in host side by adding "#define DERIVE
+    _KEY_FROM_PASSPHRASE_IN_HOST".
+7.  (MRF24WB/G) Enabled WEP security for EasyConfig Ad-hoc connection
+8.  (MRF24WB/G) Added support for MRF24WG0MA/MB, a superset of MRF24WB0MA/MB (MRF24WB).
+    Required to add to project definition files (#define MRF24WG).
+    Ranges are different from MRF24WB0MA/MB.
+    i.   Valid RSSI Range : 43 ~ 128 (max)     (WF_ScanGetResult())
+    ii.  Max transmit power range : 0 ~ 18 dbm (WF_TxPowerSetMax())
+
+    MRF24WG0MA/MB enhancements are above and beyond on those features listed above. 
+    a.   Added WPS(1.0) security method (#define WF_SECURITY_WPS_PUSH_BUTTON & WF_SECURITY_WPS_PIN )
+         (TCPIP demo + console demo).
+    b.   Added Wi-Fi Direct (P2P) function in the GC (group client) role
+         (#define MY_DEFAULT_NETWORK_TYPE    CFG_WF_P2P)  
+         (TCPIP demo + console demo)
+    c.   Added simplified basic SoftAP functionality (WF_SOFT_AP). 
+         Current features are 1 client STA, open security and no routing.
+         (Easy config demo)
+    d.   Selection of support for 16 (max) software multicast filters (ENABLE_SOFTWARE_MULTICAST_FILTER ) 
+         or 2 hardware multicast filters. RTS or ES release requires software patch. 
+
+
+Fixes:
+1.  The BigInt_helper.S file will now correctly include the processor include files for the 
+    PIC24E and dsPIC33E architectures.
+2.  Fixed bug in TCP state machine that corrupted the sequence number when client socket is closed.
+3.  Fixed bug in BerkeleiAPI.c::sendto() that checked for the wrong UDP socket to be opened.
+4.  (All parts including RTS or ES release) MRF24WG0MA/MB requires PLL work-around initialization code. 
+    Please refer to July/2012 release.
+5.  (All parts including RTS or ES release) MRF24WG0MA/MB needs to update stack from July/2012 release 
+    to cater for SSL.
+6.  (MRF24WB/G) Fixed stack issues encountered in Stack version v2012-04-03 and older. 
+    Code fix is needed in WF_CPSetElements() API. Modification is as below.
+
+    void WF_CPSetElements(UINT8 CpId, tWFCPElements *p_elements) {
+         UINT8 elements[sizeof(tWFCPElements) + 2];
+         WF_ASSERT(p_elements->ssidLength <= WF_MAX_SSID_LENGTH);
+         memset(elements, 0, sizeof(elements));
+         memcpy(elements, p_elements, sizeof(*p_elements));
+         LowLevel_CPSetElement(CpId,                 /* CP ID */
+                               WF_CP_ELEMENT_ALL,    /* Element ID */
+                               (UINT8 *)elements,    /* pointer to element data */
+                               sizeof(elements));    /* number of element data bytes */
+     }
+
+    Code fix is also needed in WaitForMgmtResponse() API (WFMgmtMsg.c). Refer to description
+    of this fix is in the Supplementary TCPIP Help folder. 
+
+
+
+Known Problems:
+1.  Telnet server module does not implement a lot of Telnet functions.  As a 
+    result, it will likely not display correctly or work at all with some Telnet 
+    clients.  The server was tested with the Microsoft telnet.exe utility which 
+    is provided with Microsoft Windows.
+2.  If the DHCP client and DHCP server are used at the same time and you connect 
+    two similar boards to each other (ex: two PICDEM.net 2 boards connected via 
+    a crossover cable), a race condition can occur where both nodes will disable 
+    their DHCP server and neither board will get a successful DHCP lease.  If 
+    this unlikely scenario occurs, as a work around, simply reset one of the 
+    boards to reenable it's DHCP server.
+3.  LCDBlocking.c timing for the LCD_E_IO enable signal is too fast to meet 
+    published data sheet limits for various LCD controllers when compiling for 
+    a PIC32 running at > 43MHz.  Despite this potential timing violation, the 
+    LCD does normally work correctly on the precompiled PIC32 demos for the 
+    Explorer 16 at 80MHz.
+4.  For PIC32 implementations, depending on the configuration, it is possible that the
+    MACGetFreeRxSize() returns a value greater than 64 KB.
+    For backward compatibility reasons the stack uses a 16 bit value to check the returned value
+    and it won't work corretly.
+5.  Limiting the number of UDP sockets to 8 in the stack demos may prevent SNMP trap
+    functionality.  If this occurs, you can increase the MAX_UDP_SOCKETS definition in 
+    TCPIPConfig.h to 10 (if your system will support the increased data memory usage) 
+    to fix this issue.
+6.  The SNMP mib file's date and version parameter does not match the date/version of
+    the current stack release.    
+7.  (MRF24WG0MA/MB) RTS or ES release requires software patch for multicast filters. 
+8.  (MRF24WG0MA/MB) Under softap option with easy config demo, unable to connect to infrastructure mode AP.
+9.  Certain APs have power save issue with reconnect. Please refer to AP compatibility list.
+
+
+      
+********
 v5.41.02    Apr 2012
 ********      
 Fixes:

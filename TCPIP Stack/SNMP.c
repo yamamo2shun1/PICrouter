@@ -463,7 +463,7 @@ static BOOL IsValidOID(BYTE* oid, BYTE* len)
 		return FALSE;
 
 	// Make sure that OID length is within our capability.
-	if ( tempLen.w[0] > (BYTE)OID_MAX_LEN )
+	if ( tempLen.w[0] > (WORD)SNMP_MAX_OID_LEN_MEM_USE)
 		return FALSE;
 
 	*len = tempLen.v[0];
@@ -847,7 +847,6 @@ void SNMPNotifyPrepare(IP_ADDR* remoteHost,
 }
 
 
-
 /****************************************************************************
   Function:
 	BOOL SNMPIsNotifyReady(IP_ADDR* remoteHost)
@@ -934,8 +933,8 @@ BOOL SNMPIsNotifyReady(IP_ADDR* remoteHost)
 	BYTE *- TRAP OID
     
   Remarks:
-	This would fail if generic_trap_code is not coming under
-	GENERIC_TRAP_NOTIFICATION_TYPE
+	This would fail if generic_trap_code is not coming under 
+	GENERIC_TRAP_NOTIFICATION_TYPE 
  ***************************************************************************/
 
 BYTE *getSnmpV2GenTrapOid(BYTE generic_trap_code,BYTE *len)
@@ -980,6 +979,7 @@ BYTE *getSnmpV2GenTrapOid(BYTE generic_trap_code,BYTE *len)
     return gen_trap_oid;
 
 } /* end getSnmpV2TrapOid() */
+
 
 
 /****************************************************************************
@@ -2876,6 +2876,7 @@ BYTE ProcessGetBulkVar(OID_INFO* rec, BYTE* oidValuePtr, BYTE* oidLenPtr,BYTE* s
 	WORD_VAL temp;
 	static SNMP_VAL v;
 	BYTE idLen=1;
+	BYTE *prevOIDVlaue;
 	#ifdef STACK_USE_SNMPV3_SERVER	
 	SNMPV3MSGDATA	*dynPduBuf=NULL;
 	dynPduBuf = &gSNMPv3ScopedPduResponseBuf;
@@ -2896,7 +2897,7 @@ BYTE ProcessGetBulkVar(OID_INFO* rec, BYTE* oidValuePtr, BYTE* oidLenPtr,BYTE* s
     temp.v[0] = 0;
 	sequenceRepeatCnt=*successor;
 
-	
+	prevOIDVlaue = oidValuePtr;
 	
 	//Reach to the node for the expected iteration
 	for(cntr=1;cntr<=*successor;cntr++)
@@ -3061,16 +3062,19 @@ BYTE ProcessGetBulkVar(OID_INFO* rec, BYTE* oidValuePtr, BYTE* oidLenPtr,BYTE* s
         if ( !SNMPGetVar(rec->id, rec->index, &ref, &v) )
         {
              // Reset the response packet pointer to begining of OID.
-           #ifdef STACK_USE_SNMPV3_SERVER	
+        #ifdef STACK_USE_SNMPV3_SERVER	
 		     if(pduDbPtr->snmpVersion == SNMP_V3)
 			 	dynPduBuf->length = varBindOffset;
 			 else
-			 #endif
+		#endif
 	            _SNMPSetTxOffset(varBindOffset);
 
             // Jump to this label within this function - Not a good SW engineering
             // practice, but this will reuse code at much lower expense.
-             goto _GetNextLeaf;
+            
+			// Get the Exact OIDValuePtr location.
+			oidValuePtr = prevOIDVlaue;
+            goto _GetNextLeaf;
         }
     }
 

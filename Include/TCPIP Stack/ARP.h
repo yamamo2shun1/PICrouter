@@ -99,9 +99,8 @@ void SwapARPPacket(ARP_PACKET* p);
 	};
 	CHAR ARPRegisterCallbacks(struct arp_app_callbacks *app);
 	BOOL ARPDeRegisterCallbacks(CHAR id);
-	BOOL ARPSendPkt(DWORD SrcIPAddr, DWORD DestIPAddr, BYTE op_req );
 #endif
-
+	BOOL ARPSendPkt(DWORD SrcIPAddr, DWORD DestIPAddr, BYTE op_req );
 #endif
 
 

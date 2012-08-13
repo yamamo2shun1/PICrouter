@@ -20,6 +20,9 @@
           <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
           <itemPath>Include/TCPIP Stack/UDP.h</itemPath>
           <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
+          <itemPath>Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
+          <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
+          <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
           <itemPath>Include/USB/usb.h</itemPath>
@@ -46,6 +49,7 @@
       <itemPath>picrouter.h</itemPath>
       <itemPath>button.h</itemPath>
       <itemPath>analog.h</itemPath>
+      <itemPath>osc.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -68,6 +72,9 @@
         <itemPath>TCPIP Stack/DHCP.c</itemPath>
         <itemPath>TCPIP Stack/UDP.c</itemPath>
         <itemPath>TCPIP Stack/NBNS.c</itemPath>
+        <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
+        <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
+        <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
@@ -78,6 +85,7 @@
       <itemPath>picrouter.c</itemPath>
       <itemPath>button.c</itemPath>
       <itemPath>analog.c</itemPath>
+      <itemPath>osc.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -92,7 +100,7 @@
         <developmentServer>localhost</developmentServer>
         <targetDevice>PIC32MX675F512H</targetDevice>
         <targetHeader></targetHeader>
-        <platformTool>ICD3PlatformTool</platformTool>
+        <platformTool>PK3OBPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>1.00</languageToolchainVersion>
         <platform>4</platform>
@@ -182,10 +190,30 @@
       <C32Global>
         <property key="legacy-libc" value="false"/>
       </C32Global>
-      <ICD3PlatformTool>
-      </ICD3PlatformTool>
-      <XC32>
-      </XC32>
+      <PK3OBPlatformTool>
+        <property key="AutoSelectMemRanges" value="manual"/>
+        <property key="SecureSegment.SegmentProgramming" value="FullChipProgramming"/>
+        <property key="ToolFirmwareFilePath"
+                  value="Press to browse for a specific firmware version"/>
+        <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="memories.eeprom" value="false"/>
+        <property key="memories.id" value="false"/>
+        <property key="memories.programmemory" value="true"/>
+        <property key="memories.programmemory.end" value="0x1d07ffff"/>
+        <property key="memories.programmemory.start" value="0x1d000000"/>
+        <property key="poweroptions.powerenable" value="false"/>
+        <property key="programoptions.eraseb4program" value="true"/>
+        <property key="programoptions.preserveeeprom" value="false"/>
+        <property key="programoptions.preserveprogramrange" value="false"/>
+        <property key="programoptions.preserveprogramrange.end" value="0x1d0001ff"/>
+        <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
+        <property key="programoptions.usehighvoltageonmclr" value="false"/>
+        <property key="programoptions.uselvpprogramming" value="false"/>
+        <property key="voltagevalue" value="3.25"/>
+      </PK3OBPlatformTool>
+      <SKDEPIC32PlatformTool>
+        <property key="whatToProgram" value="all"/>
+      </SKDEPIC32PlatformTool>
     </conf>
   </confs>
 </configurationDescriptor>

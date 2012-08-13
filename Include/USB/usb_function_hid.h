@@ -376,8 +376,6 @@ typedef struct _USB_HID_DSC
 } USB_HID_DSC;
 
 /** Section: EXTERNS ********************************************************/
-extern volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
-extern volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
 extern volatile CTRL_TRF_SETUP SetupPkt;
 extern ROM BYTE configDescriptor1[];
 extern volatile BYTE CtrlTrfData[USB_EP0_BUFF_SIZE];

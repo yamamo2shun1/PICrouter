@@ -92,7 +92,7 @@ Description:
 
 #if defined(__18CXX)
     #include "USB/usb_hal_pic18.h"
-#elif defined(__C30__)
+#elif defined(__C30__) || defined __XC16__
 	#if defined(__dsPIC33E__) 
 	    #include "USB/usb_hal_dspic33E.h"
 	#elif defined(__PIC24E__)
@@ -102,6 +102,8 @@ Description:
 	#endif
 #elif defined(__PIC32MX__)
     #include "USB/usb_hal_pic32.h"
+#elif defined(_PIC14E)
+    #include "USB/usb_hal_pic16f1.h"
 #else
     #error "Silicon Platform not defined"
 #endif
@@ -203,7 +205,7 @@ void USBHALSetBusAddress( BYTE addr );
 
 
 /*
- To Do: Define a method to check for SE0 & a way to send a reset (SE0).
+ MCHP: Define a method to check for SE0 & a way to send a reset (SE0).
  */
 
 

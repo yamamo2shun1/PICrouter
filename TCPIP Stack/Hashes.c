@@ -331,10 +331,7 @@ void MD5AddROMData(HASH_SUM* theSum, ROM BYTE* data, WORD len)
 
   Returns:
   	None
-  
-  Internal:
-  	TODO convert data to a DWORD* or read from the pointer using byte
-  	accesses only to avoid any accidental alignment errors
+
   ***************************************************************************/
 static void MD5HashBlock(BYTE* data, DWORD* h0, DWORD* h1, DWORD* h2, DWORD* h3)
 {
@@ -630,10 +627,7 @@ void SHA1AddROMData(HASH_SUM* theSum, ROM BYTE* data, WORD len)
 
   Returns:
   	None
-  
-  Internal:
-  	TODO convert data to a DWORD* or read from the pointer using byte
-  	accesses only to avoid any accidental alignment errors
+
   ***************************************************************************/
 static void SHA1HashBlock(BYTE* data, DWORD* h0, DWORD* h1, DWORD* h2, 
 							DWORD* h3, DWORD* h4)

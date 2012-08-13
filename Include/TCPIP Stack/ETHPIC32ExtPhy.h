@@ -12,14 +12,14 @@
  * Company:         Microchip Technology, Inc.
  *
  * Software License Agreement
- * Microchip Audio Library ï¿½ PIC32 Software.
- * Copyright ï¿½ 2008 Microchip Technology Inc.  All rights reserved.
+ * Microchip Audio Library – PIC32 Software.
+ * Copyright © 2008 Microchip Technology Inc.  All rights reserved.
  * 
  * Microchip licenses the Software for your use with Microchip microcontrollers
  * and Microchip digital signal controllers pursuant to the terms of the
  * Non-Exclusive Software License Agreement accompanying this Software.
  *
- * SOFTWARE AND DOCUMENTATION ARE PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTY
+ * SOFTWARE AND DOCUMENTATION ARE PROVIDED “AS IS” WITHOUT WARRANTY
  * OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION,
  * ANY WARRANTY OF MERCHANTABILITY, TITLE, NON-INFRINGEMENT AND FITNESS
  * FOR A PARTICULAR PURPOSE.

@@ -55,7 +55,7 @@
  *                                  decompress in-place.
  * King Shaw            10 Oct 2009 Rewrite responder code to pass conformance 
  *                                  tests with small footprint.
- * Brad Rex             05 Apr 2010 Updated for MRF24WB0M
+ * Brad Rex             05 Apr 2010 Updated for MRF24W
  ********************************************************************/
 #define __Zeroconf_Multicast_DNS_C
 
@@ -315,44 +315,9 @@ UDP_SOCKET mDNS_socket = INVALID_UDP_SOCKET;  // Multicast-Socket Opened up for
 /* Forward declarations */
 MDNS_STATIC void mDNSResponder(void);
 MDNS_STATIC WORD mDNSDeCompress(WORD wPos, BYTE *pcString, BOOL bFollowPtr, BYTE cElement, BYTE cDepth);
+MDNS_STATIC size_t mDNSSDFormatServiceInstance(BYTE *string, size_t strSize );
 static WORD g_mDNS_offset;
 
-//#define MDNS_USE_LOCAL_STRLEN     y
-#define MDNS_USE_LOCAL_STRCPY       y
-//#define MDNS_USE_LOCAL_STRCMP		y
-//#define MDNS_USE_LOCAL_ITOA		y	//local version returns extra info. To be fixed.
-
-#ifdef MDNS_USE_LOCAL_STRLEN
-	#define STRLEN_LOCAL(x)			strlen_local(x)
-#else
-	// use string functions provided by the SDK library.
-	#define STRLEN_LOCAL(x)			strlen((char *)x)
-#endif
-
-#ifdef MDNS_USE_LOCAL_STRCPY
-	#define STRCPY_LOCAL(x,y)		strcpy_local(x,y)
-#else
-	// use string functions provided by the SDK library.
-	#define STRCPY_LOCAL(x,y)		strcpy((char *)x,(char *)y)
-#endif
-
-#ifdef MDNS_USE_LOCAL_STRCMP
-	#define STRCMP_LOCAL(x,y)		strcmp_local(x,y)
-#else
-	// use string functions provided by the SDK library.
-	#define STRCMP_LOCAL(x,y)		strcmp((char *)x,(char *)y)
-#endif
-
-#ifdef MDNS_USE_LOCAL_ITOA
-	#define ITOA_LOCAL(x,y)			itoa_local(x,y)
-#else
-	// use itoa functions provided by the SDK library.
-	#define ITOA_LOCAL(x,y)			uitoa((WORD)x,y)
-#endif
-
-#ifdef MDNS_USE_LOCAL_STRLEN
-MDNS_STATIC BYTE strlen_local(BYTE *str);
-#endif
 
 // Redirect all UDPPUT_LOCAL() calls to here.
 // This seems to make all those 'call + nop' (2 instructions) into 'rcall' (1 instruction)
@@ -396,7 +361,7 @@ MDNS_STATIC void DisplayHostName(BYTE *HostName)
 		putrsUART((ROM char*)"\r\n");
 	#endif
 
-	len = STRLEN_LOCAL(HostName);
+	len = strlen((char *)HostName);
 
     for(i = 0; (i < len) && (i < 16u); i++)
 	{
@@ -420,67 +385,7 @@ MDNS_STATIC void DisplayHostName(BYTE *HostName)
 
 /************* Local String Functions ******************/
 
-#ifdef MDNS_USE_LOCAL_STRLEN
-/***************************************************************
-  Function:
-	static BYTE strlen_local(BYTE *string)
 
-  Summary:
-	Finds the length of a string.    
-	
-  Description:
-	This function finds length a string. This is an base 
-    implementation for small memory foot-print.
-
-  Parameters:
-	String - the string for which length to be calculated. 
-
-  Returns:
-  	Length of type BYTE.
-  **************************************************************/
-MDNS_STATIC BYTE strlen_local(BYTE *str)
-{
-    BYTE len=0;
-
-	while(*str++) 
-        len++;
-		
-	return len;
-}
-#endif // MDNS_USE_LOCAL_STRLEN
-
-#ifdef MDNS_USE_LOCAL_STRCMP
-/***************************************************************
-  Function:
-	static BYTE strcmp_local(BYTE *string_1, BYTE *string_2)
-
-  Summary:
-	Compares two strings
-
-  Parameters:
-	string_1 & string_2 - Two strings
-
-  Returns:
-    Zero: If two strings are equal.
-    Non-Zero: If both strings are not equal or on error case  	
-  **************************************************************/
-MDNS_STATIC BYTE strcmp_local(BYTE *str_1, BYTE *str_2)
-{
-    if(str_1 == NULL || str_2 == NULL)
-    {
-        return -1;
-    }
-    while(*str_1 && *str_2){
-        if(*str_1++ != *str_2++)
-            return 1;
-    }
-         
-    if(*str_1 == '\0' && *str_2 == '\0')
-        return 0;
-    else
-        return 1;
-}
-#endif // MDNS_USE_LOCAL_STRCMP
 
 /***************************************************************
   Function:
@@ -523,98 +428,6 @@ MDNS_STATIC BYTE strcmp_local_ignore_case(BYTE *str_1, BYTE *str_2)
     
 }
 
-#ifdef MDNS_USE_LOCAL_STRCPY
-/********************************************************************
-  Function:
-	static void strcpy_local(BYTE *dst_string, BYTE *src_string)
-
-  Summary:
-	Copies one string into other string. This is base
-    & optimized implementation without error-handling.
-    Goal is small memory foot print.
-
-  Parameters:
-	dst_string: Destination String 
-    src_string: Source string
-
-  Returns:
-    None  	
-  **************************************************************/
-MDNS_STATIC void strcpy_local(BYTE *dst, BYTE *src)
-{
-    while((*dst++ = *src++));
-}
-#endif // MDNS_USE_LOCAL_STRCPY
-
-#ifdef MDNS_USE_LOCAL_ITOA
-/***************************************************************
-  Function:
-	static void strrev_local(BYTE *string)
-
-  Summary:
-	Reverses a string 
-    
-  Description:
-	This function reverses a string without copying string or 
-    requiring additional memory. This is an Optimized 
-    implementation for both processing & memory efficiency.    
-
-  Parameters:
-	String - the string to be reversed. 
-
-  Returns:
-  	None
-  ***************************************************************/
-MDNS_STATIC void strrev_local(BYTE *str)
-{
-	BYTE *first, *last;
-	BYTE ch;
-
-	first = last = str;
-	while(*last)
-		last++;
-	last--;
-	while(first<=last)
-	{
-		ch = *first;
-		*first = *last;
-		*last = ch;
-		first++;
-		last--;
-	}
-}
-
-/***************************************************************
-  Function:
-	static BYTE itoa_local(BYTE num, BYTE *string)
-
-  Summary:
-	Converts decimal (num) to String (string).    
-
-  Parameters:
-	num: Decimal number, which needs to be converted to string  
-    string: Memory where string needs to be stored. 
-            (Output param)
-
-  Returns:
-    Count of number of characters present in String rep  	
-  **************************************************************/
-MDNS_STATIC BYTE itoa_local(BYTE num, BYTE *str)
-{
-	BYTE *tmp = str;
-	BYTE cnt = 0;
-
-	while(num>0)
-	{
-		cnt++;
-		*tmp++ = (num%10) + '0';
-		num = num/10;		
-	}
-	*tmp = '\0';
-	strrev_local(str);	
-	return cnt;
-}
-#endif // MDNS_USE_LOCAL_ITOA
 
 MDNS_STATIC void 
 mDNSResetCounters(mDNSProcessCtx_common *pHeader, BOOL bResetProbeConflictCount)
@@ -659,8 +472,6 @@ mDNSResetCounters(mDNSProcessCtx_common *pHeader, BOOL bResetProbeConflictCount)
 // strLabel:  the user registered name. 
 //            E.g., "Web Server", for service name (srv_name), or 
 //                 "My Host", for host name (taken from MY_DEFAULT_HOST_NAME)
-//            TODO: both names should be run-time configurable, 
-//                 through registration functions.
 // nLabelId:  instance number, to avoid conflict in the name space.
 // strBase:   the base name for the appropriate name space.
 //            E.g., "_http._tcp.local" for service name, or
@@ -677,6 +488,7 @@ mDNSResetCounters(mDNSProcessCtx_common *pHeader, BOOL bResetProbeConflictCount)
 
 MDNS_STATIC void mDNSRename(BYTE *strLabel, BYTE nLabelId, BYTE *strBase, BYTE *strTarget, BYTE nMaxLen)
 {
+    size_t  targetLen;
 	BYTE n = nLabelId;
 #define mDNSRename_ID_LEN 6
 	BYTE str_n[mDNSRename_ID_LEN]; //enough for "-255." + '\0'.
@@ -694,18 +506,15 @@ MDNS_STATIC void mDNSRename(BYTE *strLabel, BYTE nLabelId, BYTE *strBase, BYTE *
 	}
 	str_n[i] = '-';
 
-	STRCPY_LOCAL(strTarget, strLabel);
-	STRCPY_LOCAL(strTarget+STRLEN_LOCAL(strTarget), &(str_n[i]));
-	
-	// nMaxLen not checked, but here is how it should be:
+    targetLen = strncpy_m((char *)strTarget, nMaxLen, 3, strLabel, &(str_n[i]), strBase);
+
 #ifdef MDNS_WARN
-	if ( STRLEN_LOCAL(strTarget) > nMaxLen )
+	if ( targetLen == nMaxLen )
 	{
-		MDNS_WARN("mDNSRename: label too long\r\n");
+		MDNS_WARN("mDNSRename: label too long - truncated\r\n");
 	}
 #endif
 
-	STRCPY_LOCAL(strTarget+STRLEN_LOCAL(strTarget), strBase);
 }
 
 /***************************************************************
@@ -1081,7 +890,7 @@ mDNSSendRR(mDNSResourceRecord *pRecord,
 
         /* 2 bytes extra. One for Prefix Length for first-label.
          * Other one for NULL terminator */
-        pRecord->rdlength.Val = STRLEN_LOCAL(pRecord->rdata) + 2 ;
+        pRecord->rdlength.Val = strlen((char *)pRecord->rdata) + 2 ;
 
         UDPPUT_LOCAL(pRecord->rdlength.v[1]);
         UDPPUT_LOCAL(pRecord->rdlength.v[0]); // Res-Data Length
@@ -1095,7 +904,7 @@ mDNSSendRR(mDNSResourceRecord *pRecord,
         /* 2 bytes extra. One for Prefix Length for first-label.
          * Other one for NULL terminator */
 
-        pRecord->rdlength.Val = STRLEN_LOCAL(pRecord->rdata) + 2;
+        pRecord->rdlength.Val = strlen((char *)pRecord->rdata) + 2;
         pRecord->rdlength.Val += 6;					// for priority, weight, and port
 
         UDPPUT_LOCAL(pRecord->rdlength.v[1]);
@@ -1114,7 +923,7 @@ mDNSSendRR(mDNSResourceRecord *pRecord,
 
 	case QTYPE_TXT:
 
-        rec_length = STRLEN_LOCAL(pRecord->rdata);
+        rec_length = strlen((char *)pRecord->rdata);
         pRecord->rdlength.Val = rec_length + 1;
 
         UDPPUT_LOCAL(pRecord->rdlength.v[1]);
@@ -1141,7 +950,7 @@ mDNSSendRR(mDNSResourceRecord *pRecord,
 
 /***************************************************************
   Function:
-	void mDNSSDFormatServiceInstance(BYTE *string)
+	size_t mDNSSDFormatServiceInstance(BYTE *string, size_t strSize )
 
   Summary:
 	Formats the Service-Instance name according to DNS-SD standard 
@@ -1167,11 +976,12 @@ mDNSSendRR(mDNSResourceRecord *pRecord,
 
   Parameters:
 	String - Service-Instance name to be formatted
+    strSize - available size for the formatted string, not to be exceeded
     
   Returns:
-  	None
+  	size of the formatted string
   **************************************************************/
-void mDNSSDFormatServiceInstance(BYTE *string)
+MDNS_STATIC size_t mDNSSDFormatServiceInstance(BYTE *string, size_t strSize )
 {
 	BYTE *temp;
 	BYTE output[MAX_LABEL_SIZE];
@@ -1209,7 +1019,7 @@ void mDNSSDFormatServiceInstance(BYTE *string)
 	
 	}
 	*temp++ = '\0';
-	STRCPY_LOCAL(string,output);
+	return strncpy_m((char *)string, strSize, 1, output);
 }		
 
 /***************************************************************
@@ -1255,12 +1065,11 @@ void mDNSSDFormatServiceInstance(BYTE *string)
   **************************************************************/
 void mDNSSDFillResRecords(mDNSProcessCtx_sd *sd)
 {
-    BYTE *qualified_name;
-    BYTE srv_name_len,srv_type_len;
+    size_t srv_name_len,srv_type_len, qual_len;
     mDNSResourceRecord *rr_list = &(gResponderCtx.rr_list[QTYPE_PTR_INDEX]);
 
-    srv_name_len = STRLEN_LOCAL(sd->srv_name);
-    srv_type_len = STRLEN_LOCAL(sd->srv_type); 
+    srv_name_len = strlen((char *)sd->srv_name);
+    srv_type_len = strlen((char *)sd->srv_type);
 
 	memset(&(gResponderCtx.rr_list[QTYPE_PTR_INDEX]),0,(sizeof(mDNSResourceRecord)));
 	memset(&(gResponderCtx.rr_list[QTYPE_SRV_INDEX]),0,(sizeof(mDNSResourceRecord)));
@@ -1269,13 +1078,12 @@ void mDNSSDFillResRecords(mDNSProcessCtx_sd *sd)
     /* Formatting Service-Instance name.
      * And preparing a fully qualified 
      * Service-instance name. */
-    STRCPY_LOCAL(sd->sd_qualified_name,sd->srv_name);
+    strncpy((char *)sd->sd_qualified_name, (char *)sd->srv_name, sizeof(sd->sd_qualified_name));
+    qual_len= mDNSSDFormatServiceInstance(sd->sd_qualified_name, sizeof(sd->sd_qualified_name));
 
-    mDNSSDFormatServiceInstance(sd->sd_qualified_name);
+    strncpy_m((char *)sd->sd_qualified_name + qual_len, sizeof(sd->sd_qualified_name), 2, ".", sd->srv_type);
+    
 
-    qualified_name = sd->sd_qualified_name + STRLEN_LOCAL(sd->sd_qualified_name);
-    *qualified_name++ = '.';
-    STRCPY_LOCAL(qualified_name,sd->srv_type);
     DEBUG_MDNS_MESG(zeroconf_dbg_msg,"Fully Qualified Name: %s \r\n",sd->sd_qualified_name);
     DEBUG_MDNS_PRINT(zeroconf_dbg_msg);
 
@@ -1287,16 +1095,14 @@ void mDNSSDFillResRecords(mDNSProcessCtx_sd *sd)
      * Service_Instance_name._srv-type._proto.domain */
 	rr_list->rdata = (BYTE *) (sd->sd_qualified_name);
 
-    qualified_name = rr_list->rdata + srv_name_len;
-    *qualified_name++ = '.';
-    STRCPY_LOCAL(qualified_name, sd->srv_type);
-    qualified_name = rr_list->rdata; /* Save it for later access */
+    strncpy_m((char *)rr_list->rdata + srv_name_len, sizeof(sd->sd_qualified_name) - srv_name_len, 2, ".", sd->srv_type);
+    
     /* 3 bytes extra. One for dot added between
      * Serv-Name and Serv-Type. One for length byte.
      * added for first-label in fully qualified name
      * Other one for NULL terminator */
     rr_list->rdlength.Val = srv_name_len+ srv_type_len + 3; 
-    rr_list->ttl.Val = RESOURCE_RECORD_TTL_VAL; /* Seconds. Not sure ! Need to check */
+    rr_list->ttl.Val = RESOURCE_RECORD_TTL_VAL;
     rr_list->pOwnerCtx = (mDNSProcessCtx_common *) sd; /* Save back ptr */
     rr_list->valid = 1; /* Mark as valid */
     
@@ -1305,7 +1111,6 @@ void mDNSSDFillResRecords(mDNSProcessCtx_sd *sd)
     /* Fill-up SRV Record */
 	rr_list->name = (BYTE *) (sd->sd_qualified_name);
     rr_list->type.Val = QTYPE_SRV;
-	//CLASS???
 	rr_list->ttl.Val = RESOURCE_RECORD_TTL_VAL;
 
 	//rdlength is calculated/assigned last
@@ -1321,7 +1126,7 @@ void mDNSSDFillResRecords(mDNSProcessCtx_sd *sd)
      * Other one for NULL terminator */
 	// then, add 6-byte extra: for priority, weight, and port
 
-    rr_list->rdlength.Val = STRLEN_LOCAL(rr_list->rdata)+2+6;
+    rr_list->rdlength.Val = strlen((char *)rr_list->rdata)+2+6;
 
     rr_list->pOwnerCtx = (mDNSProcessCtx_common *) sd; /* Save back ptr */
     rr_list->valid = 1; /* Mark as valid */
@@ -1400,8 +1205,7 @@ mDNSServiceUpdate(WORD			port,
 
         if(txt_record != NULL)
         {
-			STRCPY_LOCAL(sd->sd_txt_rec, (BYTE *) txt_record);
-			sd->sd_txt_rec_len = STRLEN_LOCAL(sd->sd_txt_rec);
+			sd->sd_txt_rec_len = strncpy_m((char *)sd->sd_txt_rec, sizeof(sd->sd_txt_rec), 1, (BYTE *) txt_record );
 
             /* Update Resource-records for this 
             * Service-instance, in MDNS-SD state-
@@ -1574,14 +1378,13 @@ mDNSServiceRegister(const char *srv_name,
     gSDCtx.sd_auto_rename = auto_rename;
     gSDCtx.sd_port = port;
 	gSDCtx.sd_service_advertised = 0;
-    STRCPY_LOCAL(gSDCtx.srv_name, (BYTE *)srv_name);
+    strncpy((char *)gSDCtx.srv_name, (char *)srv_name, sizeof(gSDCtx.srv_name));
     
-    STRCPY_LOCAL(gSDCtx.srv_type, (BYTE *)srv_type);
+    strncpy((char *)gSDCtx.srv_type, (char *)srv_type, sizeof(gSDCtx.srv_type));
     gSDCtx.sd_call_back = call_back;
     gSDCtx.sd_context = context;
 
-	STRCPY_LOCAL(gSDCtx.sd_txt_rec, (BYTE *) txt_record);
-	gSDCtx.sd_txt_rec_len = STRLEN_LOCAL(gSDCtx.sd_txt_rec);
+	gSDCtx.sd_txt_rec_len = strncpy_m((char *)gSDCtx.sd_txt_rec, sizeof(gSDCtx.sd_txt_rec), 1, (BYTE *) txt_record);
 
     /* Fill up Resource-records for this 
      * Service-instance, in MDNS-SD state-
@@ -2327,7 +2130,6 @@ MDNS_STATIC void mDNSResponder(void)
             mDNSRemote.MACAddr.v[4]=0x00;
             mDNSRemote.MACAddr.v[5]=0xFB;
 
-			//mDNS_socket = UDPOpen(MDNS_PORT, &mDNSRemote, MDNS_PORT);
 			
 			mDNS_socket = UDPOpenEx((DWORD)&mDNSRemote,UDP_OPEN_NODE_INFO,MDNS_PORT,MDNS_PORT);
 
@@ -2614,7 +2416,6 @@ void mDNSFillHostRecord(void)
 	// Fill the type A resource record
 	gResponderCtx.rr_list[QTYPE_A_INDEX].name     = gHostCtx.szHostName;
 	gResponderCtx.rr_list[QTYPE_A_INDEX].type.Val = QTYPE_A;
-	// CLASS???
 	gResponderCtx.rr_list[QTYPE_A_INDEX].ttl.Val  = RESOURCE_RECORD_TTL_VAL;
 
 	gResponderCtx.rr_list[QTYPE_A_INDEX].rdlength.Val = 4u; // 4-byte for IP address
@@ -2628,22 +2429,17 @@ void mDNSFillHostRecord(void)
 
 MDNSD_ERR_CODE mDNSHostRegister(const char *host_name)
 {
-	if (host_name != NULL)
-	{
-		STRCPY_LOCAL(gHostCtx.szUserChosenHostName, (BYTE *) host_name);
-	}
-	else 
-	{
+	if (host_name == 0)
+    {
 #ifdef MY_DEFAULT_HOST_NAME
-		STRCPY_LOCAL(gHostCtx.szUserChosenHostName, (BYTE *) MY_DEFAULT_HOST_NAME);
+		host_name = MY_DEFAULT_HOST_NAME;
 #else
-		STRCPY_LOCAL(gHostCtx.szUserChosenHostName, (BYTE *) "MyHost");
+		host_name = "MyHost";
 #endif
-	}
+    }  
 
-	STRCPY_LOCAL(gHostCtx.szHostName, gHostCtx.szUserChosenHostName);
-	STRCPY_LOCAL(gHostCtx.szHostName+STRLEN_LOCAL(gHostCtx.szHostName), (BYTE *) ".");
-	STRCPY_LOCAL(gHostCtx.szHostName+STRLEN_LOCAL(gHostCtx.szHostName), (BYTE *) CONST_STR_local);
+    strncpy((char *)gHostCtx.szUserChosenHostName, host_name, sizeof(gHostCtx.szUserChosenHostName));
+    strncpy_m((char *)gHostCtx.szHostName, sizeof(gHostCtx.szHostName), 3, gHostCtx.szUserChosenHostName, ".", CONST_STR_local);
 
 	mDNSResetCounters((mDNSProcessCtx_common *) &gHostCtx, TRUE);
 	gHostCtx.common.type   = MDNS_CTX_TYPE_HOST;
@@ -2675,7 +2471,7 @@ void mDNSInitialize(const char *szHostName)
 	else
 	{
 #ifdef MY_DEFAULT_HOST_NAME
-		mDNSHostRegister((const char *) MY_DEFAULT_HOST_NAME); // TODO: pick it up from names stored in EEPROM
+		mDNSHostRegister((const char *) MY_DEFAULT_HOST_NAME);
 #else
 		mDNSHostRegister((const char *) "ZCHOST"); // Hardcoded default.
 #endif
@@ -2927,7 +2723,7 @@ SET_PROBE_ANNOUNCE_TIMER:
 						{
 							// The rest of the MCHP system knows its name through
 							// AppConfig.NetBIOSName, so update it here.
-							STRCPY_LOCAL(AppConfig.NetBIOSName, gHostCtx.szHostName);
+							strncpy((char *)AppConfig.NetBIOSName, (char *)gHostCtx.szHostName, sizeof(AppConfig.NetBIOSName));
 
 							INFO_MDNS_MESG(zeroconf_dbg_msg,"\r\n********* Taken Host-Name: %s ********* \r\n",
 								gHostCtx.szHostName);
@@ -2936,7 +2732,7 @@ SET_PROBE_ANNOUNCE_TIMER:
 							INFO_MDNS_PRINT("MDNS_STATE_ANNOUNCE --> MDNS_STATE_DEFEND \r\n");
 
 							DisplayHostName(gHostCtx.szHostName);
-                            DisplayIPValue(AppConfig.MyIPAddr);
+                            //syama DisplayIPValue(AppConfig.MyIPAddr);
 						}
 						else
 						{
@@ -3135,8 +2931,21 @@ mDNSMulticastFilterRegister(void)
 		/* PIC18F97J60 family internal Ethernet controller with C18 compiler */ (defined(__18F97J60) || defined(__18F96J65) || defined(__18F96J60) || defined(__18F87J60) || defined(__18F86J65) || defined(__18F86J60) || defined(__18F67J60) || defined(__18F66J65) || defined(__18F66J60) || \
 		/* PIC18F97J60 family internal Ethernet controller HI-TECH PICC-18 compiler */ defined(_18F97J60) ||  defined(_18F96J65) ||  defined(_18F96J60) ||  defined(_18F87J60) ||  defined(_18F86J65) ||  defined(_18F86J60) ||  defined(_18F67J60) ||  defined(_18F66J65) ||  defined(_18F66J60))
 		SetRXHashTableEntry(*((MAC_ADDR*)mcast_addr));
-	#elif /* MRF24WB0M */ defined(WF_CS_TRIS)
-	    WF_SetMultiCastFilter(WF_MULTICAST_FILTER_1, mcast_addr);
+    #elif defined(WF_CS_TRIS)
+		#ifdef ENABLE_SOFTWARE_MULTICAST_FILTER
+			WF_EnableSWMultiCastFilter();
+			do {
+        		tWFMultiCastConfig p_config;
+
+        		p_config.filterId = WF_MULTICAST_FILTER_1;
+        		p_config.action = WF_MULTICAST_USE_FILTERS;
+        		memcpy((void *)p_config.macBytes, (void *)mcast_addr, WF_MAC_ADDRESS_LENGTH);
+        		p_config.macBitMask = 0x3F;
+        		WF_MulticastSetConfig(&p_config);
+    		} while (0);
+		#else	/* !ENABLE_SOFTWARE_MULTICAST_FILTER */
+	   		WF_SetMultiCastFilter(WF_MULTICAST_FILTER_1, mcast_addr);
+		#endif	/* ENABLE_SOFTWARE_MULTICAST_FILTER */
 	#else
 		#error Must call appropraite API to enable multicast packet reception in the network controller.
 	#endif
@@ -3148,14 +2957,15 @@ mDNSMulticastFilterRegister(void)
 void mDNSDumpInfo(void)
 {
 	BYTE tmp[8];
-
-	putsUART("   Host registered: "); putsUART(gHostCtx.szUserChosenHostName); putsUART("\r\n");
-	putsUART("         qualified: "); putsUART(gHostCtx.szHostName); putsUART("\r\n");
-	putsUART("Service registered: "); putsUART(gSDCtx.srv_name); putsUART("\r\n");
-	putsUART("         qualified: "); putsUART(gSDCtx.sd_qualified_name); putsUART("\r\n");
+#if 0//syama
+	putsUART("   Host registered: "); putsUART((char *)gHostCtx.szUserChosenHostName); putsUART("\r\n");
+	putsUART("         qualified: "); putsUART((char *)gHostCtx.szHostName); putsUART("\r\n");
+	putsUART("Service registered: "); putsUART((char *)gSDCtx.srv_name); putsUART("\r\n");
+	putsUART("         qualified: "); putsUART((char *)gSDCtx.sd_qualified_name); putsUART("\r\n");
 	sprintf((char *) tmp, "%d", gSDCtx.sd_port);
-	putsUART("              port: "); putsUART(tmp); putsUART("\r\n");
-	putsUART("    TXT registered: "); putsUART(gSDCtx.sd_txt_rec); putsUART("\r\n");
+	putsUART("              port: "); putsUART((char *)tmp); putsUART("\r\n");
+	putsUART("    TXT registered: "); putsUART((char *)gSDCtx.sd_txt_rec); putsUART("\r\n");
+#endif//syama
 }
 
 //#endif

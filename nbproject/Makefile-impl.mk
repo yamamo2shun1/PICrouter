@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=PICrouter093_Device.X
+PROJECTNAME=PICrouter_OaUD.X
 
 # Active Configuration
 DEFAULTCONF=default

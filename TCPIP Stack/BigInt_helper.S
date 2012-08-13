@@ -61,6 +61,12 @@
 .ifdecl __PIC24F
 	.include "p24fxxxx.inc"
 .endif
+.ifdecl __dsPIC33E
+	.include "p33Exxxx.inc"
+.endif
+.ifdecl __PIC24E
+	.include "p24Exxxx.inc"
+.endif
 .if VALID_ID <> 1
 	//.error "Processor ID not specified in generic include files.  New ASM30 assembler needs to be downloaded?"
 	.equ C,0

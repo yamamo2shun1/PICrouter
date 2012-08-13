@@ -152,6 +152,8 @@
    		 in usb_device.h).
 
    2.9d  Added build option for disabling DTS checking
+   
+   2.9f  Adding pragma for PIC18F97J94 Family BDT location.
 ********************************************************************/
 
 /*----------------------------------------------------------------------------------
@@ -298,50 +300,34 @@ volatile BOOL USBDeferINDataStagePackets;
 volatile BOOL USBDeferOUTDataStagePackets;
 
 
-/** USB FIXED LOCATION VARIABLES ***********************************/
-#if defined(__18CXX)
-    #if defined(__18F14K50) || defined(__18F13K50) || defined(__18LF14K50) || defined(__18LF13K50)
-        #pragma udata USB_BDT=0x200     //See Linker Script, BDT in bank 2 on these devices - usb2:0x200-0x2FF(256-byte)
-    #elif defined(__18F47J53) || defined(__18F46J53) || defined(__18F27J53) || defined(__18F26J53) || defined(__18LF47J53) || defined(__18LF46J53) || defined(__18LF27J53) || defined(__18LF26J53)
-		#pragma udata USB_BDT=0xD00		//BDT in Bank 13 on these devices
-    #else
-        #pragma udata USB_BDT=0x400     //All other PIC18 devices place the BDT in usb4:0x400-0x4FF(256-byte)
-	#endif
-#endif
-
-/********************************************************************
- * Section A: Buffer Descriptor Table
- * - 256 bytes max.  Actual size depends on number of endpoints enabled and 
- *   the ping pong buffering mode.
- * - USB_MAX_EP_NUMBER is defined in usb_config.h
- *******************************************************************/
 #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
-    volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 2] __attribute__ ((aligned (512)));
+    #define BDT_NUM_ENTRIES      ((USB_MAX_EP_NUMBER + 1) * 2)
 #elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
-    volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER + 1) * 2)+1] __attribute__ ((aligned (512)));
+    #define BDT_NUM_ENTRIES      (((USB_MAX_EP_NUMBER + 1) * 2)+1)
 #elif (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
-    volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 4] __attribute__ ((aligned (512)));
+    #define BDT_NUM_ENTRIES      ((USB_MAX_EP_NUMBER + 1) * 4)
 #elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)
-    volatile BDT_ENTRY BDT[((USB_MAX_EP_NUMBER + 1) * 4)-2] __attribute__ ((aligned (512)));
+    #define BDT_NUM_ENTRIES      (((USB_MAX_EP_NUMBER + 1) * 4)-2)
 #else
     #error "No ping pong mode defined."
 #endif
 
+/** USB FIXED LOCATION VARIABLES ***********************************/
+#if defined(__18CXX)
+    #pragma udata USB_BDT=USB_BDT_ADDRESS
+#endif
+
+volatile BDT_ENTRY BDT[BDT_NUM_ENTRIES] BDT_BASE_ADDR_TAG;
+
 /********************************************************************
  * Section B: EP0 Buffer Space
  *******************************************************************/
-volatile CTRL_TRF_SETUP SetupPkt;           // 8-byte only
-volatile BYTE CtrlTrfData[USB_EP0_BUFF_SIZE];
+volatile CTRL_TRF_SETUP SetupPkt CTRL_TRF_SETUP_ADDR_TAG;
+volatile BYTE CtrlTrfData[USB_EP0_BUFF_SIZE] CTRL_TRF_DATA_ADDR_TAG;
 
 /********************************************************************
  * Section C: non-EP0 Buffer Space
  *******************************************************************/
-// Can provide compile time option to do software pingpong
-#if defined(USB_USE_HID)
-    volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
-    volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
-#endif
-
 #if defined(USB_USE_MSD)
 	//volatile far USB_MSD_CBW_CSW msd_cbw_csw;
 	volatile USB_MSD_CBW msd_cbw;
@@ -354,9 +340,7 @@ volatile BYTE CtrlTrfData[USB_EP0_BUFF_SIZE];
 	volatile char msd_buffer[512];
 #endif
 
-#if defined(__18CXX)
-#pragma udata
-#endif
+
 
 ////Depricated in v2.2 - will be removed in a future revision
 #if !defined(USB_USER_DEVICE_DESCRIPTOR)
@@ -385,7 +369,7 @@ extern ROM BYTE *ROM USB_SD_Ptr[];
 /** Function Prototypes ********************************************/
 //External
 //This is the prototype for the required user event handler
-BOOL USER_USB_CALLBACK_EVENT_HANDLER(USB_EVENT event, void *pdata, WORD size);
+BOOL USER_USB_CALLBACK_EVENT_HANDLER(int event, void *pdata, WORD size);
 
 //Internal Functions
 static void USBCtrlEPService(void);
@@ -487,6 +471,7 @@ void USBDeviceInit(void)
 
     //Clear all of the endpoint control registers
     U1EP0 = 0;
+    
     DisableNonZeroEndpoints(USB_MAX_EP_NUMBER);
 
     SetConfigurationOptions();
@@ -665,12 +650,12 @@ void USBDeviceInit(void)
   **************************************************************************/
 
 #if defined(USB_INTERRUPT) 
-  #if defined(__18CXX)
+#if defined(__18CXX) || defined (_PIC14E)
     void USBDeviceTasks(void)
-  #elif defined(__C30__)
+  #elif defined(__C30__) || defined __XC16__
     void __attribute__((interrupt,auto_psv)) _USB1Interrupt()
   #elif defined(__PIC32MX__)
-    void __attribute__((interrupt(),vector(45))) _USB1Interrupt( void ) 
+    void __attribute__((interrupt(),vector(_USB_1_VECTOR))) _USB1Interrupt( void ) 
   #endif
 #else
 void USBDeviceTasks(void)
@@ -734,7 +719,7 @@ void USBDeviceTasks(void)
              }
          #endif
 
-         #ifdef __C30__
+         #if defined __C30__ || defined __XC16__
              //USBClearInterruptFlag(U1OTGIR, 3); 
          #endif
             //return so that we don't go through the rest of 
@@ -949,7 +934,7 @@ void USBDeviceTasks(void)
         //On PIC18, clearing the source of the error will automatically clear
         //  the interrupt flag.  On other devices the interrupt flag must be 
         //  manually cleared. 
-        #if defined(__C32__) || defined(__C30__)
+        #if defined(__C32__) || defined(__C30__) || defined __XC16__
             USBClearInterruptFlag( USBErrorIFReg, USBErrorIFBitNum );
         #endif
     }
@@ -1394,7 +1379,7 @@ void USBCancelIO(BYTE endpoint)
         USBDeviceDetach() and USBDeviceAttach() functions are not available.  
         In this mode, the USB stack relies on the "#define USE_USB_BUS_SENSE_IO" 
         and "#define USB_BUS_SENSE" options in the 
-        HardwareProfile – [platform name].h file. 
+        HardwareProfile ï¿½ [platform name].h file. 
 
         When using the USB_POLLING mode option, and the 
         "#define USE_USB_BUS_SENSE_IO" definition has been commented out, then 
@@ -1411,10 +1396,10 @@ void USBCancelIO(BYTE endpoint)
 
         In a self powered application, the USB stack is designed with the 
         intention that the user will enable the "#define USE_USB_BUS_SENSE_IO" 
-        option in the HardwareProfile – [platform name].h file.  When this 
+        option in the HardwareProfile ï¿½ [platform name].h file.  When this 
         option is defined, then the USBDeviceTasks() function will automatically 
         check the I/O pin port value of the designated pin (based on the 
-        #define USB_BUS_SENSE option in the HardwareProfile – [platform name].h 
+        #define USB_BUS_SENSE option in the HardwareProfile ï¿½ [platform name].h 
         file), every time the application calls USBDeviceTasks().  If the 
         USBDeviceTasks() function is executed and finds that the pin defined by 
         the #define USB_BUS_SENSE is in a logic low state, then it will 
@@ -1465,7 +1450,7 @@ void USBDeviceDetach(void)
              }
          #endif
 
-         #ifdef __C30__
+         #if defined __C30__ || defined __XC16__
              //USBClearInterruptFlag(U1OTGIR, 3); 
          #endif
             //return so that we don't go through the rest of 
@@ -2128,7 +2113,7 @@ static void USBCtrlTrfRxService(void)
  *
  * Note:            None
  *******************************************************************/
-void USBStdSetCfgHandler(void)
+static void USBStdSetCfgHandler(void)
 {
     BYTE i;
 
@@ -2139,10 +2124,7 @@ void USBStdSetCfgHandler(void)
     DisableNonZeroEndpoints(USB_MAX_EP_NUMBER);
 
     //Clear all of the BDT entries
-    for(i=0;i<(sizeof(BDT)/sizeof(BDT_ENTRY));i++)
-    {
-        BDT[i].Val = 0x00;
-    }
+    memset((void*)&BDT[0], 0x00, sizeof(BDT));
 
     // Assert reset request to all of the Ping Pong buffer pointers
     USBPingPongBufferReset = 1;                                   
@@ -2273,7 +2255,7 @@ static void USBStdGetDscHandler(void)
  *
  * Note:            None
  *******************************************************************/
-void USBStdGetStatusHandler(void)
+static void USBStdGetStatusHandler(void)
 {
     CtrlTrfData[0] = 0;                 // Initialize content
     CtrlTrfData[1] = 0;
@@ -2526,9 +2508,9 @@ static void USBCtrlEPService(void)
     if((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
     {
 		//Point to the EP0 OUT buffer of the buffer that arrived
-        #if defined(__18CXX)
+        #if defined (_PIC14E) || defined(__18CXX)
             pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy.Val & USTAT_EP_MASK)>>1];
-        #elif defined(__C30__) || defined(__C32__)
+        #elif defined(__C30__) || defined(__C32__) || defined __XC16__
             pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy.Val & USTAT_EP_MASK)>>2];
         #else
             #error "unimplemented"

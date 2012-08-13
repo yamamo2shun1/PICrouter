@@ -240,8 +240,6 @@ int bind( SOCKET s, const struct sockaddr* name, int namelen )
 
 	if(socket->SocketType == SOCK_DGRAM)
 	{
-		//socket->SocketID = UDPOpen(lPort, NULL, 0);
-		
 		socket->SocketID = UDPOpenEx(0,UDP_OPEN_SERVER,lPort, 0);
 		if(socket->SocketID == INVALID_UDP_SOCKET)
 			return SOCKET_ERROR;
@@ -532,8 +530,6 @@ int connect( SOCKET s, struct sockaddr* name, int namelen )
 	        if(gAutoPortNumber > 5000u) // reset the port numbers
 				gAutoPortNumber = 1024;
 
-			//socket->SocketID = UDPOpen(localPort, NULL, remotePort);
-			
 			socket->SocketID = UDPOpenEx(0,UDP_OPEN_SERVER,localPort, remotePort);
 			if(socket->SocketID == INVALID_UDP_SOCKET)
 				return SOCKET_ERROR;
@@ -626,7 +622,7 @@ int sendto( SOCKET s, const char* buf, int len, int flags, const struct sockaddr
 	struct BSDSocket *socket;
 	int size = SOCKET_ERROR;
 	NODE_INFO remoteInfo;
-//	static DWORD startTick;		// NOTE: startTick really should be a per socket BSDSocket structure member since other BSD calls can interfere with the ARP cycles
+	static DWORD startTick;		// NOTE: startTick really should be a per socket BSDSocket structure member since other BSD calls can interfere with the ARP cycles
 	WORD wRemotePort;
 	struct sockaddr_in local;
 
@@ -658,19 +654,15 @@ int sendto( SOCKET s, const char* buf, int len, int flags, const struct sockaddr
 					return SOCKET_ERROR;
 			}
 		}
-		if(UDPIsOpened((UDP_SOCKET)s) != TRUE)
-			return SOCKET_ERROR;
-		
 		if(remoteInfo.IPAddr.Val == IP_ADDR_ANY)
 			remoteInfo.IPAddr.Val = 0xFFFFFFFFu;
 
-#if 0
 		// Set the remote IP and MAC address if it is different from what we already have stored in the UDP socket
-		if(UDPSocketInfo[socket->SocketID].remoteNode.IPAddr.Val != remoteInfo.IPAddr.Val)
+		if(UDPSocketInfo[socket->SocketID].remote.remoteNode.IPAddr.Val != remoteInfo.IPAddr.Val)
 		{
 			if(ARPIsResolved(&remoteInfo.IPAddr, &remoteInfo.MACAddr))
 			{
-				memcpy((void*)&UDPSocketInfo[socket->SocketID].remoteNode, (void*)&remoteInfo, sizeof(remoteInfo));
+				memcpy((void*)&UDPSocketInfo[socket->SocketID].remote.remoteNode, (void*)&remoteInfo, sizeof(remoteInfo));
 			}
 			else
 			{
@@ -682,7 +674,7 @@ int sendto( SOCKET s, const char* buf, int len, int flags, const struct sockaddr
 				return SOCKET_ERROR;
 			}
 		}
-#endif		
+		
 		// Select the UDP socket and see if we can write to it
 		if(UDPIsPutReady(socket->SocketID))
 		{

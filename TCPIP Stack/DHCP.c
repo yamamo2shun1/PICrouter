@@ -143,7 +143,6 @@ static void _DHCPSend(BYTE messageType, BOOL bRenewing);
 extern void SignalDHCPSuccessful(void);
 #endif
 
-
 /*****************************************************************************
   Function:
 	static void LoadState(BYTE vInterface)
@@ -506,13 +505,13 @@ void DHCPTask(void)
 				// unlinked.  No one will see it.  
 				if(!MACIsLinked())
 					break;
-					
-            	#if defined(WF_CS_IO)
-            	    #if defined(STACK_USE_UART )
-            	        putrsUART("DHCP Send Discovery...\r\n");
-            	    #endif
-            	#endif
 	
+            	#if defined(WF_CS_IO) && defined(STACK_USE_UART)
+					// Note: Use this debug message out to UART with caution. It can prevent slow down stack
+					// performance and possibly prevent STA from properly receiving DHCP IP.
+            	    // putrsUART("DHCP Send Discovery...\r\n");
+                #endif
+            	
 				// Ensure transmitter is ready to accept data
 				if(UDPIsPutReady(DHCPClient.hDHCPSocket) < 300u)
 					break;
@@ -599,12 +598,14 @@ void DHCPTask(void)
 						if(DHCPClient.validValues.bits.IPAddress)
 						{
 							AppConfig.MyIPAddr = DHCPClient.tempIPAddress;
+							
 							#if defined(WF_CS_IO) 
 							    #if defined(STACK_USE_UART )
 							        putrsUART("DHCP client successful\r\n");
 							    #endif
     							SignalDHCPSuccessful();
 							#endif
+							
 						}	
 						if(DHCPClient.validValues.bits.Mask)
 							AppConfig.MyMask = DHCPClient.tempMask;
