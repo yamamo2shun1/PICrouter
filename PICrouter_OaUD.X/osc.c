@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.2 2012/08/04
+ * osc.c,v.0.3 2012/08/14
  */
 
 #include "osc.h"
@@ -78,6 +78,8 @@ void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* typ
 	} while(testSize > 0);
 	if(zeroSize == 0)
 		zeroSize = 4;
+	else if(zeroSize > 4 && zeroSize < 8)
+		zeroSize -= 4;
 
 	testSize1 = typeSize + 1;
 	zeroSize1 = 0;

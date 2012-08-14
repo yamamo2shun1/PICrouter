@@ -85,15 +85,6 @@ USB_AUDIO_MIDI_EVENT_PACKET midiData;
 
 USB_VOLATILE BYTE msCounter;
 
-#define TEST0 1
-#define TEST1 1
-#define TEST2 1
-#define TEST3 1
-#define TEST4 1
-#define TEST5 1
-#define TEST6 1
-#define TEST7 1
-
 //osc messages
 char prefix[] = "/pic";
 char msgLed[] = "/led";

@@ -249,7 +249,7 @@ void setupPitch(void)
 }
 
 /**********************************************
-*  UDP汎用I/O処理部
+*  UDP Generic I/O Processing Part
 **********************************************/
 void UDPControlTask(void)
 {
