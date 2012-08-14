@@ -1,2 +1,6 @@
-PICrouter-for-OSC-and-USB-Device
+PICrouter
 ================================
+
+* PICrouter_HIDBL
+* PICrouter_OaUD
+* PICrouter_OaUH
