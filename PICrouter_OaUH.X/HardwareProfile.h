@@ -56,20 +56,20 @@
 	#define LED_2_Toggle() LED_2 = !LED_2;
 
 	//AD Pins Settings
-        #define AD_PORT0_IO(state)   TRISBbits.TRISB0   = state;
-        #define AD_PORT1_IO(state)   TRISBbits.TRISB1   = state;
-        #define AD_PORT2_IO(state)   TRISBbits.TRISB2   = state;
-        #define AD_PORT3_IO(state)   TRISBbits.TRISB3   = state;
-        #define AD_PORT4_IO(state)   TRISBbits.TRISB4   = state;
-        #define AD_PORT5_IO(state)   TRISBbits.TRISB5   = state;
-        #define AD_PORT6_IO(state)   TRISBbits.TRISB6   = state;
-        #define AD_PORT7_IO(state)   TRISBbits.TRISB7   = state;
-        #define AD_PORT8_IO(state)   TRISBbits.TRISB8   = state;
-        #define AD_PORT9_IO(state)   TRISBbits.TRISB9   = state;
-        #define AD_PORT10_IO(state)  TRISBbits.TRISB10  = state;
-        #define AD_PORT11_IO(state)  TRISBbits.TRISB11  = state;
-        #define AD_PORT12_IO(state)  TRISBbits.TRISB12  = state;
-        #define AD_PORT13_IO(state)  TRISBbits.TRISB13  = state;
+    #define AD_PORT0_IO(state)   TRISBbits.TRISB0   = state;
+    #define AD_PORT1_IO(state)   TRISBbits.TRISB1   = state;
+    #define AD_PORT2_IO(state)   TRISBbits.TRISB2   = state;
+    #define AD_PORT3_IO(state)   TRISBbits.TRISB3   = state;
+    #define AD_PORT4_IO(state)   TRISBbits.TRISB4   = state;
+    #define AD_PORT5_IO(state)   TRISBbits.TRISB5   = state;
+    #define AD_PORT6_IO(state)   TRISBbits.TRISB6   = state;
+    #define AD_PORT7_IO(state)   TRISBbits.TRISB7   = state;
+    #define AD_PORT8_IO(state)   TRISBbits.TRISB8   = state;
+    #define AD_PORT9_IO(state)   TRISBbits.TRISB9   = state;
+    #define AD_PORT10_IO(state)  TRISBbits.TRISB10  = state;
+    #define AD_PORT11_IO(state)  TRISBbits.TRISB11  = state;
+    #define AD_PORT12_IO(state)  TRISBbits.TRISB12  = state;
+    #define AD_PORT13_IO(state)  TRISBbits.TRISB13  = state;
 
 	#define AD_PORT0_OUT(state)  LATBbits.LATB0  = state;
 	#define AD_PORT1_OUT(state)  LATBbits.LATB1  = state;
@@ -101,13 +101,13 @@
 	#define AD_PORT12_IN PORTBbits.RB12
 	#define AD_PORT13_IN PORTBbits.RB13
 
-        #define BTN_PAD_00 PORTFbits.RF5
-        #define BTN_PAD_01 PORTGbits.RG7
-        #define BTN_PAD_10 PORTFbits.RF0
-        #define BTN_PAD_11 PORTBbits.RB14
-        #define BTN_LED_00(state) LATGbits.LATG6 = state;
-        #define BTN_LED_01(state) LATFbits.LATF1 = state;
-        #define BTN_LED_10(state) LATGbits.LATG8 = state;
-        #define BTN_LED_11(state) LATFbits.LATF4 = state;
+    #define BTN_PAD_00 PORTFbits.RF5
+    #define BTN_PAD_01 PORTGbits.RG7
+    #define BTN_PAD_10 PORTFbits.RF0
+    #define BTN_PAD_11 PORTBbits.RB14
+    #define BTN_LED_00(state) LATGbits.LATG6 = state;
+    #define BTN_LED_01(state) LATFbits.LATF1 = state;
+    #define BTN_LED_10(state) LATGbits.LATG8 = state;
+    #define BTN_LED_11(state) LATFbits.LATF4 = state;
 
 #endif  //HARDWARE_PROFILE_H

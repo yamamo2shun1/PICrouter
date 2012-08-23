@@ -102,7 +102,7 @@
         <targetHeader></targetHeader>
         <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.00</languageToolchainVersion>
+        <languageToolchainVersion>1.10</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>

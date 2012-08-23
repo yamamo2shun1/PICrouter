@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.1 2012/08/14
+ * picrouter-oauh.h,v.0.3 2012/08/23
  */
 
 #include <plib.h>
@@ -33,6 +33,9 @@
 
 #include "TCPIP Stack/TCPIP.h"
 
+#define PITCH
+//#define OPT_DRUM
+ 
 #include "button.h"
 #include "analog.h"
 #include "osc.h"
@@ -40,6 +43,7 @@
 /** CONFIGURATION **************************************************/
 #pragma config UPLLEN   = ON        // USB PLL Enabled
 #pragma config FPLLMUL  = MUL_20    // PLL Multiplier
+//test #pragma config FPLLMUL  = MUL_15    // PLL Multiplier
 #pragma config UPLLIDIV = DIV_5     // USB PLL Input Divider
 #pragma config FPLLIDIV = DIV_5     // PLL Input Divider
 #pragma config FPLLODIV = DIV_1     // PLL Output Divider
@@ -123,6 +127,8 @@ USB_AUDIO_MIDI_PACKET UARTRealTimeToUSB;
 USB_AUDIO_MIDI_PACKET UARTRealTimeToUSBBuffer;
 BOOL UARTRealTimePacketTranslated;
 
+BYTE usbState = 0;
+
 BOOL somethingToSend;
 
 WORD NumGets;
@@ -133,28 +139,40 @@ BYTE midiNum;
 BYTE midiVal;
 
 //osc messages
-char prefix[]  = "/pic";
-char msgLed[]  = "/led";
-char msgSw[]   = "/sw";
-char msgAdc[]  = "/adc";
-char msgPwm[]  = "/pwm";
+char sysPrefix[] = "/sys";
+char msgPrefix[] = "/prefix";
+char msgRemoteIp[] = "/remote/ip";
+char msgHostName[] = "/host/name";
+char msgHostIp[] = "/host/ip";
+char msgHostMac[] = "/host/mac";
 
-char msgMidi[] = "/midi";
-char msgNote[] = "/note";
-char msgPp[]   = "/pp";
-char msgCc[]   = "/cc";
-char msgPc[]   = "/pc";
-char msgKp[]   = "/kp";
-char msgPb[]   = "/pb";
+char* prefix;
+char msgLed[]    = "/led";
+char msgPress[]  = "/press";
+char msgSw[]     = "/sw";
+char msgAdc[]    = "/adc";
+char msgPwm[]    = "/pwm";
+
+char msgMidi[]   = "/midi";
+char msgNote[]   = "/note";
+char msgPp[]     = "/pp";
+char msgCc[]     = "/cc";
+char msgPc[]     = "/pc";
+char msgKp[]     = "/kp";
+char msgCp[]     = "/cp";
+char msgPb[]     = "/pb";
 char zero[40];
 
 APP_CONFIG AppConfig;
 //BYTE myDHCPBindCount = 0xFF;
 
+#define DEFAULT_HOST_NAME "PICrouter-OaUH"
+
 UDP_SOCKET RxSocket;
 UDP_SOCKET TxSocket;
 BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
+char* hostName;
 BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
 
 WORD remotePort = 8000;
@@ -167,6 +185,11 @@ BYTE stateFlag2 = 0;
 
 BYTE midiValue = 0;
 
+//BYTE currentValue[USE_ADC_NUM];
+//BYTE prevValue[2][USE_ADC_NUM];
+WORD currentValue[USE_ADC_NUM];
+//WORD prevValue[2][USE_ADC_NUM];
+
 // MAC address Initialization
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, 
         MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
@@ -175,6 +198,9 @@ void setupPitch(void);
 
 void UDPControlTask(void);
 void UDPSendTask(void);
+
+void sendPad();
+void sendAdc();
 
 // USB Host
 void convertMidiToOsc(void);
