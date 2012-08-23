@@ -51,113 +51,6 @@ void closeOSCReceivePort(UDP_SOCKET rcvSocket)
     UDPClose(rcvSocket);
 }
 
-#if 0
-void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* type, ...)
-{
-	UINT16 i;
-	va_list list;
-	char* str;
-	char* p;
-	INT32 strSize, testSize, zeroSize, testSize1, zeroSize1, totalSize;
-	INT32 prefixSize = strchr(prefix, 0) - prefix;
-	INT32 commandSize = strchr(command, 0) - command;
-	INT32 typeSize = strchr(type, 0) - type;
-
-	//sprintf(str, "%s%s", prefix, command);
-	strSize = prefixSize + commandSize;
-	testSize = strSize;
-	zeroSize = 0;
-	do
-	{
-		if(testSize <= 8)
-		{
-			zeroSize = (8 - testSize);
-			testSize -= 8;
-		}
-		else
-			testSize -= 8;
-	} while(testSize > 0);
-	if(zeroSize == 0)
-		zeroSize = 4;
-	else if(zeroSize > 4 && zeroSize < 8)
-		zeroSize -= 4;
-
-	testSize1 = typeSize + 1;
-	zeroSize1 = 0;
-	do
-	{
-		if(testSize1 <= 4)
-		{
-			zeroSize1 = (4 - testSize1);
-			testSize1 -= 4;
-		}
-		else
-			testSize1 -= 4;
-	} while(testSize1 > 0);
-	if(zeroSize1 == 0)
-		zeroSize1 = 4;
-
-	totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
-	p = type;
-	while(*p != '\0')
-	{
-		if(*p == 'i' || *p == 'f')
-			totalSize += 4;
-		p++;
-	}
-
-	//str = (char *)malloc(sizeof(char) * totalSize);
-	str = (char *)calloc(totalSize, sizeof(char));
-	sprintf(str, "%s%s", prefix, command);
-
-	//printf("combined string = %s : %ld %ld\n", str, strSize, zeroSize);
-	//printf("type string = %s : %ld %ld\n", type, typeSize + 1, zeroSize1);
-
-	va_start(list, type);
-
-	sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
-
-	int index = 0;
-	int ivalue;
-	float fvalue;
-	char* fchar;
-	while(*type != '\0')
-	{
-		switch(*type)
-		{
-			case 'i':
-				ivalue = va_arg(list, int);
-				//printf("int=%d:0x%X 0x%X 0x%X 0x%X\n", ivalue, (ivalue  >> 24) & 0xFF, (ivalue >> 16) & 0xFF, (ivalue >> 8) & 0xFF, ivalue & 0xFF);
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
-				break;
-			case 'f':
-				fvalue = (float)va_arg(list, double);
-				fchar = (char *)&fvalue;
-				//printf("float=%f:0x%X 0x%X 0x%X 0x%X\n", fvalue, fchar[3] & 0xFF, fchar[2] & 0xFF, fchar[1] & 0xFF, fchar[0] & 0xFF);
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
-				break;
-		}
-		index += 4;
-		type++;
-	}
-
-        if(UDPIsPutReady(sndSocket))
-        {
-            UDPDiscard();
-            UDPPutArray((BYTE *)str, totalSize);
-            UDPFlush();
-        }
-
-	va_end(list);
-	free(str);
-}
-#else
 void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* type, ...)
 {
 	UINT16 i, j;
@@ -330,7 +223,6 @@ void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* typ
 	va_end(list);
 	free(str);
 }
-#endif
 
 BOOL isEqualToAddress(char* str, char* address)
 {
