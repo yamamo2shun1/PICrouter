@@ -16,24 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * analog.c,v.0.1 2012/07/08
+ * analog.c,v.0.5 2012/08/19
  */
 
 #include "analog.h"
-
-#if 0
-DWORD getAdc(BYTE port)
-{
-  AD1CON1bits.ADON = 0;
-  AD1CHS = (DWORD)port << 16;
-  AD1CON1bits.ADON = 1;
-  AD1CON1bits.SAMP = 1;
-  delayUs(10);
-  AD1CON1bits.SAMP = 0;
-  while(!AD1CON1bits.DONE);
-  return ADC1BUF0;
-}
-#endif
 
 void resetAnalogFlag(BYTE port)
 {
@@ -61,10 +47,21 @@ BYTE getAnalogByte(BYTE port, BYTE type)
        	vol = (BYTE)fader;
     	break;
     case TYPE_MIDI_VOLUME:
-    	vol = (BYTE)(127 - (currentAnalog[port] >> 3));
-       	if(vol > 60 && vol < 66)
-          vol = 63;
+#if 0
+      vol = (BYTE)(127 - (currentAnalog[port] >> 2));
+      if(vol > 60 && vol < 66)
+        vol = 63;
+#else
+      vol = (BYTE)(255 - (currentAnalog[port] >> 2));
+      if(vol > 124 && vol < 130)
+        vol = 127;
+#endif
     	break;
+    case TYPE_MIDI_ORIGINAL:
+      vol = (BYTE)(currentAnalog[port] >> 2);
+      break;
+    default:
+      vol = 0;
   }
 	return vol;
 }
@@ -89,11 +86,17 @@ WORD getAnalogWord(BYTE port, BYTE type)
       if(vol > 506 && vol < 518)
         vol = 512;
       break;
+    case TYPE_LONG_ORIGINAL:
+      vol = (WORD)currentAnalog[port];
+      break;
+    default:
+      vol = 0;
+      break;
   }
   return vol;
 }
 
-void analogInHandle(BYTE port, DWORD value)
+void analogInHandle(BYTE port, LONG value)
 {
 	BYTE i;
 
@@ -105,8 +108,8 @@ void analogInHandle(BYTE port, DWORD value)
     currentAnalog[port] = 0;
     for(i = 0; i < FLTR_ADC_CNT; i++)
       currentAnalog[port] += analog[port][i];
-    currentAnalog[port] /= (DWORD)FLTR_ADC_CNT;
-    if(abs(currentAnalog[port] - prevAnalog[port]) > 4)
+    currentAnalog[port] /= (LONG)FLTR_ADC_CNT;
+    if(labs(currentAnalog[port] - prevAnalog[port]) > 4)
     {
       prevAnalog[port] = currentAnalog[port];
       analogSendFlag[port] = TRUE;
