@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.3 2012/08/23
+ * picrouter-oauh.c,v.0.5 2012/08/24
  */
 
 #include "picrouter-oauh.h"
@@ -98,9 +98,11 @@ int main(int argc, char** argv) {
 
     //test INTEnableInterrupts();
 
-    prefix = "/pic";
+    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
+    memcpy(prefix, "/pic", strlen("/pic"));
     hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
     memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+
     TickInit();
     InitAppConfig();
     StackInit();
@@ -261,7 +263,7 @@ void UDPControlTask(void)
     {
         RcvLen = UDPGetArray(buffer, sizeof(buffer));
         UDPDiscard();
-        if(isEqualToAddress(buffer, "/pic/pad/led"))
+        if(isEqualToAddress(buffer, prefix, "/pad/led"))
         {
 #if 0
             if(getIntArgumentAtIndex(buffer, "/pic/led", 0) == 0)
@@ -287,9 +289,9 @@ void UDPControlTask(void)
                 }
             }
 #else
-            BYTE x = getIntArgumentAtIndex(buffer, "/pic/pad/led", 0);
-            BYTE y = getIntArgumentAtIndex(buffer, "/pic/pad/led", 1);
-            BYTE state = getIntArgumentAtIndex(buffer, "/pic/pad/led", 2);
+            BYTE x = getIntArgumentAtIndex(buffer, prefix, "/pad/led", 0);
+            BYTE y = getIntArgumentAtIndex(buffer, prefix, "/pad/led", 1);
+            BYTE state = getIntArgumentAtIndex(buffer, prefix, "/pad/led", 2);
             if(x == 0 && y == 0)
             {
                 BTN_LED_00((state > 0)?1:0);
@@ -309,10 +311,10 @@ void UDPControlTask(void)
 #endif
         }
 #ifdef PITCH
-        else if(isEqualToAddress(buffer, "/pic/vol/led"))
+        else if(isEqualToAddress(buffer, prefix, "/vol/led"))
         {
-            BYTE type = getIntArgumentAtIndex(buffer, "/pic/vol/led", 0);
-            BYTE val = getIntArgumentAtIndex(buffer, "/pic/vol/led", 1);
+            BYTE type = getIntArgumentAtIndex(buffer, prefix, "/vol/led", 0);
+            BYTE val = getIntArgumentAtIndex(buffer, prefix, "/vol/led", 1);
             if(type == 1)
             {
                 //if(val < 1)
@@ -519,10 +521,10 @@ void UDPControlTask(void)
             LATBbits.LATB10 = getIntArgumentAtIndex(buffer, "/pic/opt", 0);
         }
 #endif
-        else if(isEqualToAddress(buffer, "/sys/remote/ip/set"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));
-            rip = getStringArgumentAtIndex(buffer, "/sys/remote/ip/set", 0);
+            rip = getStringArgumentAtIndex(buffer, sysPrefix, msgSetRemoteIp, 0);
             remoteIP[0] = atoi(strtok(rip, "."));
             remoteIP[1] = atoi(strtok(NULL, "."));
             remoteIP[2] = atoi(strtok(NULL, "."));
@@ -531,20 +533,21 @@ void UDPControlTask(void)
             UDPClose(TxSocket);
             free(rip);
         }
-        else if(isEqualToAddress(buffer, "/sys/remote/ip/get"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));;
             sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
             sendOSCMessage(TxSocket, sysPrefix, msgRemoteIp, "s", rip);
             free(rip);
         }
-        else if(isEqualToAddress(buffer, "/sys/host/name/set"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgSetHostName))
         {
             mDNSServiceDeRegister();
             free(hostName);
-            char* hn = getStringArgumentAtIndex(buffer, "/sys/host/name/set", 0);
-            hostName = (char *)calloc(strlen(hn), sizeof(char));
+            char* hn = getStringArgumentAtIndex(buffer, sysPrefix, msgSetHostName, 0);
+            hostName = (char *)calloc(strlen(hn) + 1, sizeof(char));
             memcpy(hostName, hn, strlen(hn));
+            hostName[strlen(hn)] = '\0';
 
             mDNSInitialize(hostName);
             mDNSServiceRegister((const char *)hostName, // base name of the service
@@ -558,33 +561,35 @@ void UDPControlTask(void)
             mDNSMulticastFilterRegister();
             sendOSCMessage(TxSocket, sysPrefix, msgHostName, "s", hostName);
         }
-        else if(isEqualToAddress(buffer, "/sys/host/name/get"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostName))
         {
             sendOSCMessage(TxSocket, sysPrefix, msgHostName, "s", hostName);
         }
-        else if(isEqualToAddress(buffer, "/sys/host/ip/get"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostIp))
         {
-            char* hip = (char *)calloc(15, sizeof(char));
+            char hip[15];
             BYTE hip0 = AppConfig.MyIPAddr.Val & 0xFF;
             BYTE hip1 = (AppConfig.MyIPAddr.Val >> 8) & 0xFF;
             BYTE hip2 = (AppConfig.MyIPAddr.Val >> 16) & 0xFF;
             BYTE hip3 = (AppConfig.MyIPAddr.Val >> 24) & 0xFF;
             sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
             sendOSCMessage(TxSocket, sysPrefix, msgHostIp, "s", hip);
-            free(hip);
         }
-        else if(isEqualToAddress(buffer, "/sys/host/mac/get"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostMac))
         {
-            char* macaddr = (char *)calloc(17, sizeof(char));
+            char macaddr[17] = {0};
             sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
             sendOSCMessage(TxSocket, sysPrefix, msgHostMac, "s", macaddr);
-            free(macaddr);
         }
-        else if(isEqualToAddress(buffer, "/sys/prefix/set"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgSetPrefix))
         {
-            prefix = getStringArgumentAtIndex(buffer, "/sys/prefx/set", 0);
+            free(prefix);
+            char* prfx = getStringArgumentAtIndex(buffer, sysPrefix, msgSetPrefix, 0);
+            prefix = (char *)calloc(strlen(prfx) + 1, sizeof(char));
+            memcpy(prefix, prfx, strlen(prfx));
+            prefix[strlen(prfx)] = '\0';
         }
-        else if(isEqualToAddress(buffer, "/sys/prefix/get"))
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetPrefix))
         {
             sendOSCMessage(TxSocket, sysPrefix, msgPrefix, "s", prefix);
         }

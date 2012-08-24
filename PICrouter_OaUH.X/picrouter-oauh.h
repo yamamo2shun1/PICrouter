@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.3 2012/08/23
+ * picrouter-oauh.h,v.0.5 2012/08/24
  */
 
 #include <plib.h>
@@ -138,29 +138,22 @@ BYTE midiType;
 BYTE midiNum;
 BYTE midiVal;
 
-//osc messages
-char sysPrefix[] = "/sys";
-char msgPrefix[] = "/prefix";
-char msgRemoteIp[] = "/remote/ip";
-char msgHostName[] = "/host/name";
-char msgHostIp[] = "/host/ip";
-char msgHostMac[] = "/host/mac";
-
+//Custom OSC Messages
 char* prefix;
-char msgLed[]    = "/led";
-char msgPress[]  = "/press";
-char msgSw[]     = "/sw";
-char msgAdc[]    = "/adc";
-char msgPwm[]    = "/pwm";
+char msgLed[]   = "/led";
+char msgPress[] = "/press";
+char msgSw[]    = "/sw";
+char msgAdc[]   = "/adc";
+char msgPwm[]   = "/pwm";
 
-char msgMidi[]   = "/midi";
-char msgNote[]   = "/note";
-char msgPp[]     = "/pp";
-char msgCc[]     = "/cc";
-char msgPc[]     = "/pc";
-char msgKp[]     = "/kp";
-char msgCp[]     = "/cp";
-char msgPb[]     = "/pb";
+char msgMidi[]  = "/midi";
+char msgNote[]  = "/note";
+char msgPp[]    = "/pp";
+char msgCc[]    = "/cc";
+char msgPc[]    = "/pc";
+char msgKp[]    = "/kp";
+char msgCp[]    = "/cp";
+char msgPb[]    = "/pb";
 char zero[40];
 
 APP_CONFIG AppConfig;
