@@ -20,6 +20,12 @@ And this is **Free Hardware** and **Free Software**.
 7. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
 8. 100mm x 33.5mm, 4-layers board
 
+PICrouter Schematic and board (current ver. is 0.95)
+--------------------------------
+PICrouter.sch and .brd are drawn by Eagel v6.  
+And then We extend a special thank you to Tomoya.  
+He gave many advices for designing of this board.
+
 PICrouter_HIDBL
 --------------------------------
 PICrouter_HIDBL.X is the USB HID Bootloader project files.  
