@@ -16,26 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.6 2012/08/24
+ * osc.c,v.0.7 2012/08/24
  */
 
 #include "osc.h"
 
 //System OSC Messages for Network Settings
-char sysPrefix[]      = "/sys";
-char msgPrefix[]      = "/prefix";
-char msgSetPrefix[]   = "/prefix/set";
-char msgGetPrefix[]   = "/prefix/get";
-char msgRemoteIp[]    = "/remote/ip";
-char msgSetRemoteIp[] = "/remote/ip/set";
-char msgGetRemoteIp[] = "/remote/ip/get";
-char msgHostName[]    = "/host/name";
-char msgSetHostName[] = "/host/name/set";
-char msgGetHostName[] = "/host/name/get";
-char msgHostIp[]      = "/host/ip";
-char msgGetHostIp[]   = "/host/ip/get";
-char msgHostMac[]     = "/host/mac";
-char msgGetHostMac[]  = "/host/mac/get";
+char sysPrefix[]        = "/sys";
+char msgPrefix[]        = "/prefix";
+char msgSetPrefix[]     = "/prefix/set";
+char msgGetPrefix[]     = "/prefix/get";
+char msgRemoteIp[]      = "/remote/ip";
+char msgSetRemoteIp[]   = "/remote/ip/set";
+char msgGetRemoteIp[]   = "/remote/ip/get";
+char msgRemotePort[]    = "/remote/port";
+char msgSetRemotePort[] = "/remote/port/set";
+char msgGetRemotePort[] = "/remote/port/get";
+char msgHostName[]      = "/host/name";
+char msgSetHostName[]   = "/host/name/set";
+char msgGetHostName[]   = "/host/name/get";
+char msgHostIp[]        = "/host/ip";
+char msgGetHostIp[]     = "/host/ip/get";
+char msgHostMac[]       = "/host/mac";
+char msgGetHostMac[]    = "/host/mac/get";
+char msgHostPort[]      = "/host/port";
+char msgSetHostPort[]   = "/host/port/set";
+char msgGetHostPort[]   = "/host/port/get";
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIP, WORD remotePort)
 {

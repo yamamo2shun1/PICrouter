@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.5 2012/08/24
+ * picrouter-oauh.c,v.0.6 2012/08/24
  */
 
 #include "picrouter-oauh.h"
@@ -540,6 +540,16 @@ void UDPControlTask(void)
             sendOSCMessage(TxSocket, sysPrefix, msgRemoteIp, "s", rip);
             free(rip);
         }
+        else if(isEqualToAddress(buffer, sysPrefix, msgSetRemotePort))
+        {
+            remotePort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetRemotePort, 0);
+            UDPClose(TxSocket);
+            initSendFlag = FALSE;
+        }
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetRemotePort))
+        {
+            sendOSCMessage(TxSocket, sysPrefix, msgRemotePort, "i", remotePort);
+        }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetHostName))
         {
             mDNSServiceDeRegister();
@@ -580,6 +590,16 @@ void UDPControlTask(void)
             char macaddr[17] = {0};
             sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
             sendOSCMessage(TxSocket, sysPrefix, msgHostMac, "s", macaddr);
+        }
+        else if(isEqualToAddress(buffer, sysPrefix, msgSetHostPort))
+        {
+            localPort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetHostPort, 0);
+            UDPClose(RxSocket);
+            initReceiveFlag = FALSE;
+        }
+        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostPort))
+        {
+            sendOSCMessage(TxSocket, sysPrefix, msgHostPort, "i", localPort);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetPrefix))
         {

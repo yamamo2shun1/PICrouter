@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.6 2012/08/24
+ * osc.h,v.0.7 2012/08/24
  */
 
 #ifndef OSC_H
@@ -36,6 +36,9 @@ extern char msgGetPrefix[];
 extern char msgRemoteIp[];
 extern char msgSetRemoteIp[];
 extern char msgGetRemoteIp[];
+extern char msgRemotePort[];
+extern char msgSetRemotePort[];
+extern char msgGetRemotePort[];
 extern char msgHostName[];
 extern char msgSetHostName[];
 extern char msgGetHostName[];
@@ -43,6 +46,9 @@ extern char msgHostIp[];
 extern char msgGetHostIp[];
 extern char msgHostMac[];
 extern char msgGetHostMac[];
+extern char msgHostPort[];
+extern char msgSetHostPort[];
+extern char msgGetHostPort[];
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIp, WORD remotePort);
 BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort);
