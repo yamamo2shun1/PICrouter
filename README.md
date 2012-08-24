@@ -22,6 +22,10 @@ And this is **Free Hardware** and **Free Software**.
 7. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
 8. 100mm x 33.5mm, 4-layers board
 
+### Development
+* Microchip MPLABX v1.30
+* Microchip XC32 Compiler v1.10
+
 PICrouter Schematic and board (current ver. is 0.95)
 --------------------------------
 PICrouter.sch and .brd are drawn by Eagel v6.  
