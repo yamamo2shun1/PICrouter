@@ -18173,6 +18173,7 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <part name="C24" library="rcl" deviceset="C-EU" device="C2012"/>
 <part name="R26" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
 <part name="R27" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
+<part name="J3" library="SparkFun" deviceset="POWER_JACK" device="PTH_LOCK" value="POWER_JACK"/>
 </parts>
 <sheets>
 <sheet>
@@ -18196,7 +18197,7 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <attribute name="VALUE" x="191.77" y="53.34" size="1.778" layer="96" font="vector"/>
 </instance>
 <instance part="C13" gate="G$1" x="199.39" y="49.53" rot="R270"/>
-<instance part="GND10" gate="1" x="160.02" y="15.24"/>
+<instance part="GND10" gate="1" x="160.02" y="7.62"/>
 <instance part="D1" gate="G$1" x="180.34" y="31.75"/>
 <instance part="D2" gate="G$1" x="180.34" y="58.42"/>
 <instance part="P+8" gate="VCC" x="185.42" y="66.04"/>
@@ -18268,6 +18269,7 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <instance part="P+2" gate="VCC" x="248.92" y="78.74"/>
 <instance part="C9" gate="G$1" x="207.01" y="133.35"/>
 <instance part="GND19" gate="1" x="212.09" y="138.43" rot="R90"/>
+<instance part="J3" gate="G$1" x="148.59" y="10.16"/>
 </instances>
 <busses>
 </busses>
@@ -18315,7 +18317,8 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 </segment>
 <segment>
 <wire x1="160.02" y1="26.67" x2="160.02" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="160.02" y1="20.32" x2="160.02" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="160.02" y1="20.32" x2="160.02" y2="12.7" width="0.1524" layer="91"/>
+<wire x1="160.02" y1="12.7" x2="160.02" y2="10.16" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="20.32" x2="160.02" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="177.8" y1="12.7" x2="172.72" y2="12.7" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="12.7" x2="172.72" y2="20.32" width="0.1524" layer="91"/>
@@ -18325,6 +18328,9 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <pinref part="J1" gate="G$1" pin="GND"/>
 <pinref part="C10" gate="G$1" pin="2"/>
 <pinref part="PW" gate="G$1" pin="2"/>
+<pinref part="J3" gate="G$1" pin="GND"/>
+<wire x1="151.13" y1="12.7" x2="160.02" y2="12.7" width="0.1524" layer="91"/>
+<junction x="160.02" y="12.7"/>
 </segment>
 <segment>
 <wire x1="156.21" y1="50.8" x2="156.21" y2="48.26" width="0.1524" layer="91"/>
@@ -18994,7 +19000,8 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <net name="N$46" class="0">
 <segment>
 <wire x1="177.8" y1="10.16" x2="167.64" y2="10.16" width="0.1524" layer="91"/>
-<wire x1="167.64" y1="10.16" x2="167.64" y2="31.75" width="0.1524" layer="91"/>
+<wire x1="167.64" y1="10.16" x2="167.64" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="167.64" y1="17.78" x2="167.64" y2="31.75" width="0.1524" layer="91"/>
 <wire x1="166.37" y1="50.8" x2="167.64" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="167.64" y1="50.8" x2="167.64" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="31.75" x2="177.8" y2="31.75" width="0.1524" layer="91"/>
@@ -19015,6 +19022,9 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <pinref part="C10" gate="G$1" pin="1"/>
 <pinref part="J1" gate="G$1" pin="PWR"/>
 <pinref part="R5" gate="G$1" pin="2"/>
+<pinref part="J3" gate="G$1" pin="PWR"/>
+<wire x1="151.13" y1="17.78" x2="167.64" y2="17.78" width="0.1524" layer="91"/>
+<junction x="167.64" y="17.78"/>
 </segment>
 </net>
 <net name="N$8" class="0">
