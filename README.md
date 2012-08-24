@@ -7,8 +7,10 @@ And this is **Free Hardware** and **Free Software**.
 ![PICrouter](http://farm6.staticflickr.com/5076/7425609390_5f318ec3ee.jpg "PICrouter")
 
 ### Licenses
-* Hardware : Creative Commons Attribute-ShareAlike 3.0 Unported  
+* Hardware : [Creative Commons Attribute-ShareAlike 3.0 Unported][cc-by-sa]  
 * Software : GNU General Public License version 3  
+
+[cc-by-sa]:http://creativecommons.org/licenses/by-sa/3.0/ "Creative Commons Attribute-ShareAlike 3.0 Unported"
 
 ### Specifications
 1. Supported Open Sound Control
@@ -23,8 +25,13 @@ And this is **Free Hardware** and **Free Software**.
 PICrouter Schematic and board (current ver. is 0.95)
 --------------------------------
 PICrouter.sch and .brd are drawn by Eagel v6.  
+Additionaly, we use [Sparkfun eagle library][sparkfun].  
+This library is also licensed by CC by-SA 3.0.  
+
 And then We extend a special thank you to Tomoya.  
 He gave many advices for designing of this board.
+
+[sparkfun]: http://www.opencircuits.com/SFE_Footprint_Library_Eagle
 
 PICrouter_HIDBL
 --------------------------------
