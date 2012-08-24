@@ -32,7 +32,7 @@ PICrouter_OaUD (current ver. is 0.2)
 PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
 PICrouter_OaUD.X is this project folder.
 
-PICrouter_OaUH (current ver. is 0.5)
+PICrouter_OaUH (current ver. is 0.6)
 --------------------------------
 PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
 PICrouter_OaUH.X is this project folder.
@@ -54,9 +54,13 @@ PICrouter_OaUH.X is this project folder.
 ### System OSC Messages of Network Setting
 1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
 2. ***/sys/remote/ip/get [no arguments]***
-3. ***/sys/host/name/set [host_name(string)]***
-4. ***/sys/host/name/get [no arguments]***
-5. ***/sys/host/ip/get [no arguments]***
-6. ***/sys/host/mac/get [no arguments]***
-7. ***/sys/prefix/set [prefix(string)]***
-8. ***/sys/prefix/get [no arguments]***
+3. ***/sys/remote/port/set [port_number(int)]***
+4. ***/sys/remote/port/get [no arguments]***
+5. ***/sys/host/name/set [host_name(string)]***
+6. ***/sys/host/name/get [no arguments]***
+7. ***/sys/host/ip/get [no arguments]***
+8. ***/sys/host/mac/get [no arguments]***
+9. ***/sys/host/port/set [port_number(int)]***
+10. ***/sys/host/port/get [no arguments]***
+11. ***/sys/prefix/set [prefix(string)]***
+12. ***/sys/prefix/get [no arguments]***
