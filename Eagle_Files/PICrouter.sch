@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -18290,7 +18290,7 @@ package type TQ</description>
 <part name="C2" library="rcl" deviceset="C-EU" device="C2012" value="22pF"/>
 <part name="GND2" library="supply1" deviceset="GND" device=""/>
 <part name="GND6" library="supply1" deviceset="GND" device=""/>
-<part name="C13" library="rcl" deviceset="CPOL-US" device="C" value="10uF"/>
+<part name="C13" library="rcl" deviceset="C-EU" device="C2012" value="10uF"/>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="D1" library="diode" deviceset="DIODE-" device="SOD123"/>
 <part name="D2" library="diode" deviceset="DIODE-" device="SOD123"/>
@@ -18412,6 +18412,7 @@ package type TQ</description>
 <part name="GND28" library="supply1" deviceset="GND" device=""/>
 <part name="GND29" library="supply1" deviceset="GND" device=""/>
 <part name="C26" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
+<part name="C27" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 </parts>
 <sheets>
 <sheet>
@@ -18433,7 +18434,7 @@ package type TQ</description>
 <instance part="GND2" gate="1" x="40.64" y="16.51"/>
 <instance part="GND6" gate="1" x="189.23" y="44.45"/>
 <instance part="C13" gate="G$1" x="199.39" y="49.53" rot="R270"/>
-<instance part="GND10" gate="1" x="160.02" y="13.97"/>
+<instance part="GND10" gate="1" x="154.94" y="13.97"/>
 <instance part="D1" gate="G$1" x="180.34" y="31.75"/>
 <instance part="D2" gate="G$1" x="180.34" y="58.42"/>
 <instance part="P+8" gate="VCC" x="185.42" y="66.04"/>
@@ -18504,7 +18505,7 @@ package type TQ</description>
 <instance part="P+2" gate="VCC" x="250.19" y="57.15"/>
 <instance part="C9" gate="G$1" x="207.01" y="133.35"/>
 <instance part="GND19" gate="1" x="212.09" y="138.43" rot="R90"/>
-<instance part="J3" gate="G$1" x="157.48" y="24.13"/>
+<instance part="J3" gate="G$1" x="152.4" y="24.13"/>
 <instance part="U1" gate="G$1" x="195.58" y="60.96" rot="R270"/>
 <instance part="X1" gate="G$1" x="214.63" y="76.2" smashed="yes" rot="MR270"/>
 <instance part="F1" gate="G$1" x="220.98" y="83.82"/>
@@ -18515,6 +18516,10 @@ package type TQ</description>
 <instance part="C26" gate="G$1" x="127" y="17.78" smashed="yes">
 <attribute name="NAME" x="129.286" y="19.685" size="1.778" layer="95"/>
 <attribute name="VALUE" x="128.016" y="9.779" size="1.778" layer="96"/>
+</instance>
+<instance part="C27" gate="G$1" x="158.75" y="25.4" smashed="yes">
+<attribute name="NAME" x="159.766" y="27.305" size="1.778" layer="95"/>
+<attribute name="VALUE" x="159.766" y="21.209" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -18559,7 +18564,7 @@ package type TQ</description>
 <wire x1="194.31" y1="49.53" x2="189.23" y2="49.53" width="0.1524" layer="91"/>
 <junction x="189.23" y="49.53"/>
 <pinref part="GND6" gate="1" pin="GND"/>
-<pinref part="C13" gate="G$1" pin="-"/>
+<pinref part="C13" gate="G$1" pin="2"/>
 <pinref part="U1" gate="G$1" pin="GND"/>
 <wire x1="195.58" y1="63.5" x2="195.58" y2="67.31" width="0.1524" layer="91"/>
 <wire x1="195.58" y1="67.31" x2="189.23" y2="67.31" width="0.1524" layer="91"/>
@@ -18576,8 +18581,9 @@ package type TQ</description>
 <junction x="189.23" y="67.31"/>
 </segment>
 <segment>
-<wire x1="160.02" y1="20.32" x2="160.02" y2="16.51" width="0.1524" layer="91"/>
-<wire x1="172.72" y1="20.32" x2="160.02" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="154.94" y1="20.32" x2="154.94" y2="16.51" width="0.1524" layer="91"/>
+<wire x1="172.72" y1="20.32" x2="158.75" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="158.75" y1="20.32" x2="154.94" y2="20.32" width="0.1524" layer="91"/>
 <wire x1="175.26" y1="12.7" x2="172.72" y2="12.7" width="0.1524" layer="91"/>
 <wire x1="172.72" y1="12.7" x2="172.72" y2="20.32" width="0.1524" layer="91"/>
 <junction x="172.72" y="20.32"/>
@@ -18585,8 +18591,10 @@ package type TQ</description>
 <pinref part="C10" gate="G$1" pin="2"/>
 <pinref part="PW" gate="G$1" pin="2"/>
 <pinref part="J3" gate="G$1" pin="GND"/>
-<wire x1="160.02" y1="26.67" x2="160.02" y2="20.32" width="0.1524" layer="91"/>
-<junction x="160.02" y="20.32"/>
+<wire x1="154.94" y1="26.67" x2="154.94" y2="20.32" width="0.1524" layer="91"/>
+<junction x="154.94" y="20.32"/>
+<pinref part="C27" gate="G$1" pin="2"/>
+<junction x="158.75" y="20.32"/>
 </segment>
 <segment>
 <wire x1="156.21" y1="50.8" x2="156.21" y2="48.26" width="0.1524" layer="91"/>
@@ -19266,8 +19274,12 @@ package type TQ</description>
 <pinref part="C10" gate="G$1" pin="1"/>
 <pinref part="R5" gate="G$1" pin="2"/>
 <pinref part="J3" gate="G$1" pin="PWR"/>
-<wire x1="160.02" y1="31.75" x2="167.64" y2="31.75" width="0.1524" layer="91"/>
+<wire x1="154.94" y1="31.75" x2="158.75" y2="31.75" width="0.1524" layer="91"/>
 <junction x="167.64" y="31.75"/>
+<pinref part="C27" gate="G$1" pin="1"/>
+<wire x1="158.75" y1="31.75" x2="167.64" y2="31.75" width="0.1524" layer="91"/>
+<wire x1="158.75" y1="27.94" x2="158.75" y2="31.75" width="0.1524" layer="91"/>
+<junction x="158.75" y="31.75"/>
 </segment>
 </net>
 <net name="N$8" class="0">
@@ -19382,7 +19394,7 @@ package type TQ</description>
 <junction x="191.77" y="69.85"/>
 <pinref part="Q2" gate="G$1" pin="S"/>
 <pinref part="R6" gate="G$1" pin="2"/>
-<pinref part="C13" gate="G$1" pin="+"/>
+<pinref part="C13" gate="G$1" pin="1"/>
 <pinref part="R4" gate="G$1" pin="1"/>
 <pinref part="C9" gate="G$1" pin="2"/>
 <wire x1="207.01" y1="128.27" x2="207.01" y2="127" width="0.1524" layer="91"/>
