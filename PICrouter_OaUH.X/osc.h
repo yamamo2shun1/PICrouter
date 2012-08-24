@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.4 2012/08/22
+ * osc.h,v.0.5 2012/08/24
  */
 
 #ifndef OSC_H
@@ -34,10 +34,10 @@ void closeOSCSendPort(UDP_SOCKET sndSocket);
 void closeOSCReceivePort(UDP_SOCKET rcvSocket);
 void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* type, ...);
 
-BOOL isEqualToAddress(char* str, char* address);
-INT32 getIntArgumentAtIndex(char* str, char* address, UINT16 index);
-float getFloatArgumentAtIndex(char* str, char* address, UINT16 index);
-char* getStringArgumentAtIndex(char* str, char* address, UINT16 index);
+BOOL isEqualToAddress(char* str, char* prefix, char* address);
+INT32 getIntArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index);
+float getFloatArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index);
+char* getStringArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index);
 
 #endif	/* OSC_H */
 

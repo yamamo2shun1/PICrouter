@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.4 2012/08/22
+ * osc.c,v.0.5 2012/08/24
  */
 
 #include "osc.h"
@@ -224,11 +224,11 @@ void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* typ
 	free(str);
 }
 
-BOOL isEqualToAddress(char* str, char* address)
+BOOL isEqualToAddress(char* str, char* prefix, char* address)
 {
 	UINT16 i = 0, j;
 	char* msg;
-        BOOL flag;
+    BOOL flag;
 
 	while(str[i] != 0x00)
 	{
@@ -240,27 +240,47 @@ BOOL isEqualToAddress(char* str, char* address)
 		}
 	}
 
-        for(j = 0; j < i; j++)
+    for(j = 0; j < i; j++)
+    {
+        if(j < strlen(prefix))
         {
-            if(msg[j] == address[j])
-            {
-                flag = TRUE;
-            }
-            else
-            {
-                flag = FALSE;
-                break;
-            }
+        	if(msg[j] == prefix[j])
+        	{
+            	flag = TRUE;
+        	}
+        	else
+        	{
+            	flag = FALSE;
+            	break;
+        	}
         }
-        free(msg);
+        else if(j >= strlen(prefix))
+        {
+        	if(msg[j] == address[j - strlen(prefix)])
+        	{
+            	flag = TRUE;
+        	}
+        	else
+        	{
+            	flag = FALSE;
+            	break;
+        	}
+        }
+        else if(j >= strlen(prefix) + strlen(address))
+        {
+        	flag = FALSE;
+        	break;
+        }
+    }
+    free(msg);
 
-        return flag;
+    return flag;
 }
 
-INT32 getIntArgumentAtIndex(char* str, char* address, UINT16 index)
+INT32 getIntArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
 {
 	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
-        INT16 m = 0;
+    INT16 m = 0;
 	INT32 sign, exponent, mantissa;
 	INT64 lvalue;
 	float fvalue;
@@ -374,7 +394,7 @@ INT32 getIntArgumentAtIndex(char* str, char* address, UINT16 index)
 	return lvalue;
 }
 
-float getFloatArgumentAtIndex(char* str, char* address, UINT16 index)
+float getFloatArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
 {
 	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
         INT16 m = 0;
@@ -491,7 +511,7 @@ float getFloatArgumentAtIndex(char* str, char* address, UINT16 index)
 	return fvalue;
 }
 
-char* getStringArgumentAtIndex(char* str, char* address, UINT16 index)
+char* getStringArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
 {
 	int i = 0, j = 0, k = 0, n = 0, m = 0, u = 0, v = 0, length = 0;
 	char* cstr;
