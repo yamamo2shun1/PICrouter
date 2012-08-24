@@ -88,11 +88,11 @@
 // Blinks LED 1 on USB Starter kit
 #define BlinkLED() (mLED = ((ReadCoreTimer() & 0x0800000) != 0))
 #define InitLED() do{	\
-						AD1PCFG = 0; \
+                        AD1PCFG = 0; \
 						TRISDbits.TRISD8 = 0;\
 						TRISDbits.TRISD9 = 0;\
-                                                TRISGbits.TRISG8 = 0;\
-                                                TRISGbits.TRISG6 = 0;\
+                        TRISGbits.TRISG8 = 0;\
+                        TRISGbits.TRISG6 = 0;\
 						LATDbits.LATD8 = 0; LATDbits.LATD9 = 0;\
 					}while(0)
 

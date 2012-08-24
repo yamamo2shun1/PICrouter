@@ -10,9 +10,9 @@ CND_CONF=default
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${IMAGE_TYPE}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_HIDBL.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-OUTPUT_BASENAME=PICrouter_HIDBL.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-PACKAGE_TOP_DIR=picrouterhidbl/
+OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_HIDBL.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+OUTPUT_BASENAME=PICrouter_HIDBL.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+PACKAGE_TOP_DIR=picrouterhidbl.x/
 
 # Functions
 function checkReturnCode
@@ -57,15 +57,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/picrouterhidbl/bin
+makeDirectory ${TMPDIR}/picrouterhidbl.x/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/package/picrouterhidbl.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/package/picrouterhidbl.x.tar
 cd ${TMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/picrouterhidbl.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/picrouterhidbl.x.tar *
 checkReturnCode
 
 # Cleanup

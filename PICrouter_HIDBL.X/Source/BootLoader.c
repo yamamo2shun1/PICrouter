@@ -82,7 +82,7 @@
 #endif
 
 #define SWITCH_PRESSED 0
-
+#define PAD_PRESSED 1
 
 
 BOOL CheckTrigger(void);
@@ -115,7 +115,15 @@ INT main(void)
 	
 	InitLED();
 
-        TRISBbits.TRISB15 = 1;//test
+    TRISBbits.TRISB15 = 1;//test
+
+    TRISFbits.TRISF5 = 0;
+    TRISGbits.TRISG7 = 0;
+    LATFbits.LATF5 = 0;
+    LATGbits.LATG7 = 0;
+
+    TRISFbits.TRISF5 = 1;
+    TRISGbits.TRISG7 = 1;
 	
 	// Enter firmware upgrade mode if there is a trigger or if the application is not valid
 	if(CheckTrigger() || !ValidAppPresent())
@@ -165,13 +173,13 @@ INT main(void)
 BOOL  CheckTrigger(void)
 {
 	UINT SwitchStatus;
-        UINT ExtSw0Status;
-        UINT ExtSw1Status;
+    UINT ExtSw0Status;
+    UINT ExtSw1Status;
 	SwitchStatus = ReadSwitchStatus();
-        ExtSw0Status = ReadExtSw0Status();
-        ExtSw1Status = ReadExtSw1Status();
+    ExtSw0Status = ReadExtSw0Status();
+    ExtSw1Status = ReadExtSw1Status();
 
-	if(SwitchStatus == SWITCH_PRESSED || (ExtSw0Status == SWITCH_PRESSED && ExtSw1Status == SWITCH_PRESSED))
+	if(SwitchStatus == SWITCH_PRESSED || (ExtSw0Status == PAD_PRESSED && ExtSw1Status == PAD_PRESSED))
 	{
 		// Switch is pressed
 		return TRUE;		
