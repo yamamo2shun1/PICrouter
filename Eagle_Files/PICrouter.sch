@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -18290,7 +18290,7 @@ package type TQ</description>
 <part name="C2" library="rcl" deviceset="C-EU" device="C2012" value="22pF"/>
 <part name="GND2" library="supply1" deviceset="GND" device=""/>
 <part name="GND6" library="supply1" deviceset="GND" device=""/>
-<part name="C13" library="rcl" deviceset="CPOL-US" device="C" value="100uF"/>
+<part name="C13" library="rcl" deviceset="CPOL-US" device="C" value="10uF"/>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="D1" library="diode" deviceset="DIODE-" device="SOD123"/>
 <part name="D2" library="diode" deviceset="DIODE-" device="SOD123"/>
@@ -18312,7 +18312,7 @@ package type TQ</description>
 <part name="IC1" library="PIC.rpt" deviceset="PIC32MX675F512H" device=""/>
 <part name="VDD1" library="supply1" deviceset="VDD" device=""/>
 <part name="R1" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="10k"/>
-<part name="JP1" library="SparkFun" deviceset="M05" device="PTH"/>
+<part name="ICSP" library="SparkFun" deviceset="M05" device="PTH"/>
 <part name="GND4" library="supply1" deviceset="GND" device=""/>
 <part name="C5" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="VDD3" library="supply1" deviceset="VDD" device=""/>
@@ -18340,11 +18340,11 @@ package type TQ</description>
 <part name="S2" library="SparkFun" deviceset="TAC_SWITCH" device="SMD"/>
 <part name="GND17" library="supply1" deviceset="GND" device=""/>
 <part name="GND18" library="supply1" deviceset="GND" device=""/>
-<part name="JP2" library="SparkFun" deviceset="M03" device="PTH" value="SPI2"/>
-<part name="JP3" library="SparkFun" deviceset="M03" device="PTH" value="SPI4"/>
-<part name="JP4" library="SparkFun" deviceset="M14" device="" value="AN"/>
-<part name="JP5" library="SparkFun" deviceset="M04" device="PTH" value="OC"/>
-<part name="JP6" library="SparkFun" deviceset="M04" device="PTH" value="I/O"/>
+<part name="SPI2" library="SparkFun" deviceset="M03" device="PTH"/>
+<part name="SPI4" library="SparkFun" deviceset="M03" device="PTH"/>
+<part name="AN" library="SparkFun" deviceset="M14" device="" value=""/>
+<part name="OC" library="SparkFun" deviceset="M04" device="PTH"/>
+<part name="I/O" library="SparkFun" deviceset="M04" device="PTH"/>
 <part name="R10" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="10k"/>
 <part name="VDD9" library="supply1" deviceset="VDD" device=""/>
 <part name="PW" library="SparkFun" deviceset="M02" device="PTH"/>
@@ -18404,11 +18404,11 @@ package type TQ</description>
 <part name="R26" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
 <part name="R27" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
 <part name="J3" library="SparkFun" deviceset="POWER_JACK" device="PTH_LOCK" value="POWER_JACK"/>
-<part name="U1" library="SparkFun" deviceset="USB+SHIELD" device=""/>
+<part name="U1" library="SparkFun" deviceset="USB+SHIELD" device="" value="DEVICE"/>
 <part name="X1" library="SparkFun" deviceset="USB" device="-A-H"/>
 <part name="F1" library="SparkFun" deviceset="PTC" device="SMD"/>
 <part name="P+1" library="supply1" deviceset="VCC" device=""/>
-<part name="C25" library="rcl" deviceset="CPOL-US" device="C" value="100uF"/>
+<part name="C25" library="rcl" deviceset="CPOL-US" device="C" value="150uF"/>
 <part name="GND28" library="supply1" deviceset="GND" device=""/>
 <part name="GND29" library="supply1" deviceset="GND" device=""/>
 <part name="C26" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
@@ -18460,7 +18460,7 @@ package type TQ</description>
 <instance part="IC1" gate="G$1" x="134.62" y="114.3"/>
 <instance part="VDD1" gate="G$1" x="147.32" y="172.72"/>
 <instance part="R1" gate="G$1" x="175.26" y="160.02" rot="R90"/>
-<instance part="JP1" gate="G$1" x="31.75" y="154.94" rot="MR180"/>
+<instance part="ICSP" gate="G$1" x="31.75" y="154.94" rot="MR180"/>
 <instance part="GND4" gate="1" x="43.18" y="146.05"/>
 <instance part="C5" gate="G$1" x="60.96" y="27.94"/>
 <instance part="VDD3" gate="G$1" x="50.8" y="36.83"/>
@@ -18488,11 +18488,11 @@ package type TQ</description>
 <instance part="S2" gate="S" x="21.59" y="76.2" rot="MR0"/>
 <instance part="GND17" gate="1" x="198.12" y="149.86"/>
 <instance part="GND18" gate="1" x="10.16" y="71.12"/>
-<instance part="JP2" gate="G$1" x="223.52" y="96.52" rot="R180"/>
-<instance part="JP3" gate="G$1" x="228.6" y="111.76" rot="R180"/>
-<instance part="JP4" gate="G$1" x="36.83" y="121.92" rot="MR180"/>
-<instance part="JP5" gate="G$1" x="50.8" y="97.79" rot="MR180"/>
-<instance part="JP6" gate="G$1" x="184.15" y="137.16" rot="R180"/>
+<instance part="SPI2" gate="G$1" x="223.52" y="96.52" rot="R180"/>
+<instance part="SPI4" gate="G$1" x="228.6" y="111.76" rot="R180"/>
+<instance part="AN" gate="G$1" x="36.83" y="121.92" rot="MR180"/>
+<instance part="OC" gate="G$1" x="50.8" y="97.79" rot="MR180"/>
+<instance part="I/O" gate="G$1" x="184.15" y="137.16" rot="R180"/>
 <instance part="R10" gate="G$1" x="29.21" y="86.36" rot="R90"/>
 <instance part="VDD9" gate="G$1" x="29.21" y="97.79"/>
 <instance part="PW" gate="G$1" x="182.88" y="10.16" rot="MR0"/>
@@ -18632,7 +18632,7 @@ package type TQ</description>
 <segment>
 <wire x1="39.37" y1="154.94" x2="43.18" y2="154.94" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="154.94" x2="43.18" y2="148.59" width="0.1524" layer="91"/>
-<pinref part="JP1" gate="G$1" pin="3"/>
+<pinref part="ICSP" gate="G$1" pin="3"/>
 <pinref part="GND4" gate="1" pin="GND"/>
 </segment>
 <segment>
@@ -18825,7 +18825,7 @@ package type TQ</description>
 <pinref part="IC1" gate="G$1" pin="VDD@1"/>
 <pinref part="IC1" gate="G$1" pin="VDD@2"/>
 <pinref part="R1" gate="G$1" pin="2"/>
-<pinref part="JP1" gate="G$1" pin="2"/>
+<pinref part="ICSP" gate="G$1" pin="2"/>
 <pinref part="R3" gate="G$1" pin="1"/>
 </segment>
 <segment>
@@ -18905,7 +18905,7 @@ package type TQ</description>
 <junction x="180.34" y="153.67"/>
 <pinref part="IC1" gate="G$1" pin="MCLR"/>
 <pinref part="R1" gate="G$1" pin="1"/>
-<pinref part="JP1" gate="G$1" pin="1"/>
+<pinref part="ICSP" gate="G$1" pin="1"/>
 <pinref part="S1" gate="S" pin="2"/>
 </segment>
 </net>
@@ -18916,9 +18916,9 @@ package type TQ</description>
 <wire x1="46.99" y1="137.16" x2="48.26" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="48.26" y1="137.16" x2="48.26" y2="149.86" width="0.1524" layer="91"/>
 <junction x="48.26" y="149.86"/>
-<pinref part="JP1" gate="G$1" pin="5"/>
+<pinref part="ICSP" gate="G$1" pin="5"/>
 <pinref part="IC1" gate="G$1" pin="PGEC1/AN1/VREF-/CVREF-/CN3/RB1"/>
-<pinref part="JP4" gate="G$1" pin="2"/>
+<pinref part="AN" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -18927,9 +18927,9 @@ package type TQ</description>
 <wire x1="46.99" y1="152.4" x2="78.74" y2="152.4" width="0.1524" layer="91"/>
 <wire x1="46.99" y1="152.4" x2="46.99" y2="139.7" width="0.1524" layer="91"/>
 <junction x="46.99" y="152.4"/>
-<pinref part="JP1" gate="G$1" pin="4"/>
+<pinref part="ICSP" gate="G$1" pin="4"/>
 <pinref part="IC1" gate="G$1" pin="PGED1/AN0/VREF+/CVREF+PMA6/CN2/RB0"/>
-<pinref part="JP4" gate="G$1" pin="1"/>
+<pinref part="AN" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -18999,7 +18999,7 @@ package type TQ</description>
 <wire x1="46.99" y1="134.62" x2="49.53" y2="134.62" width="0.1524" layer="91"/>
 <wire x1="49.53" y1="134.62" x2="49.53" y2="147.32" width="0.1524" layer="91"/>
 <wire x1="49.53" y1="147.32" x2="78.74" y2="147.32" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="3"/>
+<pinref part="AN" gate="G$1" pin="3"/>
 <pinref part="IC1" gate="G$1" pin="AN2/C2IN-/CN4/RB2"/>
 </segment>
 </net>
@@ -19008,7 +19008,7 @@ package type TQ</description>
 <wire x1="46.99" y1="132.08" x2="50.8" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="132.08" x2="50.8" y2="144.78" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="144.78" x2="78.74" y2="144.78" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="4"/>
+<pinref part="AN" gate="G$1" pin="4"/>
 <pinref part="IC1" gate="G$1" pin="AN3/C2IN+/CN5/RB3"/>
 </segment>
 </net>
@@ -19017,7 +19017,7 @@ package type TQ</description>
 <wire x1="46.99" y1="129.54" x2="52.07" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="52.07" y1="129.54" x2="52.07" y2="142.24" width="0.1524" layer="91"/>
 <wire x1="52.07" y1="142.24" x2="78.74" y2="142.24" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="5"/>
+<pinref part="AN" gate="G$1" pin="5"/>
 <pinref part="IC1" gate="G$1" pin="AN4/C1IN-/CN6/RB4"/>
 </segment>
 </net>
@@ -19026,7 +19026,7 @@ package type TQ</description>
 <wire x1="46.99" y1="127" x2="53.34" y2="127" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="127" x2="53.34" y2="139.7" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="139.7" x2="78.74" y2="139.7" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="6"/>
+<pinref part="AN" gate="G$1" pin="6"/>
 <pinref part="IC1" gate="G$1" pin="AN5/C1IN+/VBUSON/CN7/RB5"/>
 </segment>
 </net>
@@ -19035,7 +19035,7 @@ package type TQ</description>
 <wire x1="46.99" y1="124.46" x2="54.61" y2="124.46" width="0.1524" layer="91"/>
 <wire x1="54.61" y1="124.46" x2="54.61" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="54.61" y1="137.16" x2="78.74" y2="137.16" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="7"/>
+<pinref part="AN" gate="G$1" pin="7"/>
 <pinref part="IC1" gate="G$1" pin="PGEC2/AN6/OCFA/RB6"/>
 </segment>
 </net>
@@ -19044,7 +19044,7 @@ package type TQ</description>
 <wire x1="46.99" y1="121.92" x2="55.88" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="55.88" y1="121.92" x2="55.88" y2="134.62" width="0.1524" layer="91"/>
 <wire x1="55.88" y1="134.62" x2="78.74" y2="134.62" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="8"/>
+<pinref part="AN" gate="G$1" pin="8"/>
 <pinref part="IC1" gate="G$1" pin="PGED2/AN7/RB7"/>
 </segment>
 </net>
@@ -19053,7 +19053,7 @@ package type TQ</description>
 <wire x1="46.99" y1="119.38" x2="57.15" y2="119.38" width="0.1524" layer="91"/>
 <wire x1="57.15" y1="119.38" x2="57.15" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="57.15" y1="132.08" x2="78.74" y2="132.08" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="9"/>
+<pinref part="AN" gate="G$1" pin="9"/>
 <pinref part="IC1" gate="G$1" pin="AN8/SS4/U5RX/U2CTS/C1OUT/RB8"/>
 </segment>
 </net>
@@ -19062,7 +19062,7 @@ package type TQ</description>
 <wire x1="46.99" y1="116.84" x2="58.42" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="116.84" x2="58.42" y2="129.54" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="129.54" x2="78.74" y2="129.54" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="10"/>
+<pinref part="AN" gate="G$1" pin="10"/>
 <pinref part="IC1" gate="G$1" pin="AN9/C2OUT/PMA7/RB9"/>
 </segment>
 </net>
@@ -19071,7 +19071,7 @@ package type TQ</description>
 <wire x1="46.99" y1="114.3" x2="59.69" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="59.69" y1="114.3" x2="59.69" y2="127" width="0.1524" layer="91"/>
 <wire x1="59.69" y1="127" x2="78.74" y2="127" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="11"/>
+<pinref part="AN" gate="G$1" pin="11"/>
 <pinref part="IC1" gate="G$1" pin="TMS/AN10/CVREFOUT/PMA13/RB10"/>
 </segment>
 </net>
@@ -19080,7 +19080,7 @@ package type TQ</description>
 <wire x1="46.99" y1="111.76" x2="60.96" y2="111.76" width="0.1524" layer="91"/>
 <wire x1="60.96" y1="111.76" x2="60.96" y2="124.46" width="0.1524" layer="91"/>
 <wire x1="60.96" y1="124.46" x2="78.74" y2="124.46" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="12"/>
+<pinref part="AN" gate="G$1" pin="12"/>
 <pinref part="IC1" gate="G$1" pin="TDO/AN11/PMA12/RB11"/>
 </segment>
 </net>
@@ -19089,7 +19089,7 @@ package type TQ</description>
 <wire x1="46.99" y1="109.22" x2="62.23" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="62.23" y1="109.22" x2="62.23" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="62.23" y1="121.92" x2="78.74" y2="121.92" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="13"/>
+<pinref part="AN" gate="G$1" pin="13"/>
 <pinref part="IC1" gate="G$1" pin="TCK/AN12/PMA11/RB12"/>
 </segment>
 </net>
@@ -19098,7 +19098,7 @@ package type TQ</description>
 <wire x1="46.99" y1="106.68" x2="63.5" y2="106.68" width="0.1524" layer="91"/>
 <wire x1="63.5" y1="106.68" x2="63.5" y2="119.38" width="0.1524" layer="91"/>
 <wire x1="63.5" y1="119.38" x2="78.74" y2="119.38" width="0.1524" layer="91"/>
-<pinref part="JP4" gate="G$1" pin="14"/>
+<pinref part="AN" gate="G$1" pin="14"/>
 <pinref part="IC1" gate="G$1" pin="TDI/AN13/PMA10/RB13"/>
 </segment>
 </net>
@@ -19108,7 +19108,7 @@ package type TQ</description>
 <wire x1="204.47" y1="106.68" x2="204.47" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="204.47" y1="99.06" x2="215.9" y2="99.06" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SCK2/U6TX/U3RTS/PMA5/CN8/RG6"/>
-<pinref part="JP2" gate="G$1" pin="1"/>
+<pinref part="SPI2" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$31" class="0">
@@ -19117,7 +19117,7 @@ package type TQ</description>
 <wire x1="203.2" y1="104.14" x2="203.2" y2="96.52" width="0.1524" layer="91"/>
 <wire x1="203.2" y1="96.52" x2="215.9" y2="96.52" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SDA4/SDI2/U3RX/PMA4/CN9/RG7"/>
-<pinref part="JP2" gate="G$1" pin="2"/>
+<pinref part="SPI2" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$32" class="0">
@@ -19126,7 +19126,7 @@ package type TQ</description>
 <wire x1="201.93" y1="101.6" x2="201.93" y2="93.98" width="0.1524" layer="91"/>
 <wire x1="201.93" y1="93.98" x2="215.9" y2="93.98" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SCL4/SIO2/U3TX/PMA3/CN10/RG8"/>
-<pinref part="JP2" gate="G$1" pin="3"/>
+<pinref part="SPI2" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$33" class="0">
@@ -19135,7 +19135,7 @@ package type TQ</description>
 <wire x1="217.17" y1="121.92" x2="217.17" y2="111.76" width="0.1524" layer="91"/>
 <wire x1="217.17" y1="111.76" x2="220.98" y2="111.76" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SDA5/SDI4/U2RX/PMA9/CN17/RF4"/>
-<pinref part="JP3" gate="G$1" pin="2"/>
+<pinref part="SPI4" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$34" class="0">
@@ -19144,7 +19144,7 @@ package type TQ</description>
 <wire x1="215.9" y1="119.38" x2="215.9" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="109.22" x2="220.98" y2="109.22" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SCL5/SDO4/U2TX/PMA8/CN18/RF5"/>
-<pinref part="JP3" gate="G$1" pin="3"/>
+<pinref part="SPI4" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$35" class="0">
@@ -19153,7 +19153,7 @@ package type TQ</description>
 <wire x1="163.83" y1="116.84" x2="163.83" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="163.83" y1="114.3" x2="220.98" y2="114.3" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="AN14/SCK4/U5TX/U2RTS/PMALH/PMA1/RB14"/>
-<pinref part="JP3" gate="G$1" pin="1"/>
+<pinref part="SPI4" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$13" class="0">
@@ -19171,7 +19171,7 @@ package type TQ</description>
 <wire x1="66.04" y1="109.22" x2="66.04" y2="100.33" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="100.33" x2="55.88" y2="100.33" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="OC1/INT0/RD0"/>
-<pinref part="JP5" gate="G$1" pin="1"/>
+<pinref part="OC" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$38" class="0">
@@ -19180,7 +19180,7 @@ package type TQ</description>
 <wire x1="67.31" y1="104.14" x2="67.31" y2="97.79" width="0.1524" layer="91"/>
 <wire x1="67.31" y1="97.79" x2="55.88" y2="97.79" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SDA3/SDI3/U1RX/OC3/RD2"/>
-<pinref part="JP5" gate="G$1" pin="2"/>
+<pinref part="OC" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$39" class="0">
@@ -19189,7 +19189,7 @@ package type TQ</description>
 <wire x1="68.58" y1="101.6" x2="68.58" y2="95.25" width="0.1524" layer="91"/>
 <wire x1="68.58" y1="95.25" x2="55.88" y2="95.25" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SCL3/SDO3/U1TX/OC4/RD3"/>
-<pinref part="JP5" gate="G$1" pin="3"/>
+<pinref part="OC" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$40" class="0">
@@ -19198,21 +19198,21 @@ package type TQ</description>
 <wire x1="55.88" y1="92.71" x2="69.85" y2="92.71" width="0.1524" layer="91"/>
 <wire x1="69.85" y1="92.71" x2="69.85" y2="99.06" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="OC5/IC5/PMWR/CN13/RD4"/>
-<pinref part="JP5" gate="G$1" pin="4"/>
+<pinref part="OC" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="N$37" class="0">
 <segment>
 <wire x1="175.26" y1="139.7" x2="179.07" y2="139.7" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SOSCI/CN1/RC13"/>
-<pinref part="JP6" gate="G$1" pin="1"/>
+<pinref part="I/O" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$41" class="0">
 <segment>
 <wire x1="175.26" y1="137.16" x2="179.07" y2="137.16" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SOSCO/T1CK/CN0/RC14"/>
-<pinref part="JP6" gate="G$1" pin="2"/>
+<pinref part="I/O" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$42" class="0">
@@ -19220,7 +19220,7 @@ package type TQ</description>
 <wire x1="175.26" y1="132.08" x2="175.26" y2="134.62" width="0.1524" layer="91"/>
 <wire x1="175.26" y1="134.62" x2="179.07" y2="134.62" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="AETXD1/ERXD3/RF0"/>
-<pinref part="JP6" gate="G$1" pin="3"/>
+<pinref part="I/O" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$43" class="0">
@@ -19229,7 +19229,7 @@ package type TQ</description>
 <wire x1="176.53" y1="129.54" x2="176.53" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="176.53" y1="132.08" x2="179.07" y2="132.08" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="AETXD0/ERXD2/RF1"/>
-<pinref part="JP6" gate="G$1" pin="4"/>
+<pinref part="I/O" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="N$44" class="0">
