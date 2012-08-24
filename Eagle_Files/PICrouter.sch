@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -18130,7 +18130,7 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <part name="R2" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
 <part name="VDD10" library="supply1" deviceset="VDD" device=""/>
 <part name="GND20" library="supply1" deviceset="GND" device=""/>
-<part name="C14" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C14" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="C15" library="rcl" deviceset="CPOL-US" device="C" value="10uF"/>
 <part name="J2" library="pulse_j0011" deviceset="J0011" device=""/>
 <part name="R11" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="49.9"/>
@@ -18138,8 +18138,8 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <part name="R13" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="49.9"/>
 <part name="R14" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="49.9"/>
 <part name="VDD11" library="supply1" deviceset="VDD" device=""/>
-<part name="C16" library="rcl" deviceset="C-EU" device="C2012"/>
-<part name="C17" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C16" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
+<part name="C17" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="GND21" library="supply1" deviceset="GND" device=""/>
 <part name="GND22" library="supply1" deviceset="GND" device=""/>
 <part name="R15" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="4.87k"/>
@@ -18147,9 +18147,9 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <part name="R17" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="2.2k"/>
 <part name="GND23" library="supply1" deviceset="GND" device=""/>
 <part name="VDD12" library="supply1" deviceset="VDD" device=""/>
-<part name="C18" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C18" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="C19" library="rcl" deviceset="CPOL-US" device="C" value="10uF"/>
-<part name="C20" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C20" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="R18" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
 <part name="R19" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
 <part name="R20" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
@@ -18162,15 +18162,15 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 <part name="R25" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="1.5k"/>
 <part name="VDD14" library="supply1" deviceset="VDD" device=""/>
 <part name="GND25" library="supply1" deviceset="GND" device=""/>
-<part name="C21" library="rcl" deviceset="C-EU" device="C2012"/>
-<part name="C22" library="rcl" deviceset="C-EU" device="C2012"/>
-<part name="C23" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C21" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
+<part name="C22" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
+<part name="C23" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="VDD15" library="supply1" deviceset="VDD" device=""/>
 <part name="GND26" library="supply1" deviceset="GND" device=""/>
 <part name="QG1" library="crystal" deviceset="SM77H" device=""/>
 <part name="GND27" library="supply1" deviceset="GND" device=""/>
 <part name="VDD16" library="supply1" deviceset="VDD" device=""/>
-<part name="C24" library="rcl" deviceset="C-EU" device="C2012"/>
+<part name="C24" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="R26" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
 <part name="R27" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="330"/>
 <part name="J3" library="SparkFun" deviceset="POWER_JACK" device="PTH_LOCK" value="POWER_JACK"/>
@@ -19143,12 +19143,12 @@ http://www.national.com/ds/DP/DP83848VYB.pdf</description>
 </instance>
 <instance part="VDD11" gate="G$1" x="119.38" y="101.6"/>
 <instance part="C16" gate="G$1" x="124.46" y="88.9" smashed="yes">
-<attribute name="NAME" x="123.444" y="89.281" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="125.984" y="84.201" size="1.778" layer="96"/>
+<attribute name="NAME" x="123.444" y="81.661" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="123.444" y="89.281" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="C17" gate="G$1" x="119.38" y="88.9" smashed="yes">
-<attribute name="NAME" x="118.364" y="89.281" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="120.904" y="84.201" size="1.778" layer="96"/>
+<attribute name="NAME" x="118.364" y="81.661" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="118.364" y="89.281" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="GND21" gate="1" x="119.38" y="76.2"/>
 <instance part="GND22" gate="1" x="165.1" y="25.4"/>
