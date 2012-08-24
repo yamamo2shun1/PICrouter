@@ -16,10 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.5 2012/08/24
+ * osc.c,v.0.6 2012/08/24
  */
 
 #include "osc.h"
+
+//System OSC Messages for Network Settings
+char sysPrefix[]      = "/sys";
+char msgPrefix[]      = "/prefix";
+char msgSetPrefix[]   = "/prefix/set";
+char msgGetPrefix[]   = "/prefix/get";
+char msgRemoteIp[]    = "/remote/ip";
+char msgSetRemoteIp[] = "/remote/ip/set";
+char msgGetRemoteIp[] = "/remote/ip/get";
+char msgHostName[]    = "/host/name";
+char msgSetHostName[] = "/host/name/set";
+char msgGetHostName[] = "/host/name/get";
+char msgHostIp[]      = "/host/ip";
+char msgGetHostIp[]   = "/host/ip/get";
+char msgHostMac[]     = "/host/mac";
+char msgGetHostMac[]  = "/host/mac/get";
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIP, WORD remotePort)
 {
@@ -51,12 +67,12 @@ void closeOSCReceivePort(UDP_SOCKET rcvSocket)
     UDPClose(rcvSocket);
 }
 
-void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* type, ...)
+void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* command, const char* type, ...)
 {
 	UINT16 i, j;
 	va_list list;
 	char* str;
-	char *p;
+	const char *p;
 	INT32 strSize, testSize, zeroSize, testSize1, zeroSize1, totalSize;
 	INT32 prefixSize = strchr(prefix, 0) - prefix;
 	INT32 commandSize = strchr(command, 0) - command;
@@ -224,7 +240,7 @@ void sendOSCMessage(UDP_SOCKET sndSocket, char* prefix, char* command, char* typ
 	free(str);
 }
 
-BOOL isEqualToAddress(char* str, char* prefix, char* address)
+BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
 {
 	UINT16 i = 0, j;
 	char* msg;
@@ -277,7 +293,7 @@ BOOL isEqualToAddress(char* str, char* prefix, char* address)
     return flag;
 }
 
-INT32 getIntArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
+INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
 	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
     INT16 m = 0;
@@ -394,7 +410,7 @@ INT32 getIntArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index
 	return lvalue;
 }
 
-float getFloatArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
+float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
 	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
         INT16 m = 0;
@@ -511,7 +527,7 @@ float getFloatArgumentAtIndex(char* str, char* prefix, char* address, UINT16 ind
 	return fvalue;
 }
 
-char* getStringArgumentAtIndex(char* str, char* prefix, char* address, UINT16 index)
+char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
 	int i = 0, j = 0, k = 0, n = 0, m = 0, u = 0, v = 0, length = 0;
 	char* cstr;
