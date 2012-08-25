@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.6 2012/08/24
+ * picrouter-oauh.c,v.0.61 2012/08/25
  */
 
 #include "picrouter-oauh.h"
@@ -95,6 +95,12 @@ int main(int argc, char** argv) {
     // Enable optimal performance
     SYSTEMConfigPerformance(GetSystemClock());
     mOSCSetPBDIV(OSC_PB_DIV_1);				// Use 1:1 CPU Core:Peripheral clocks
+
+    //PWM
+    freq = 10000; // 10kHz
+    width = GetSystemClock() / freq;
+    OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+    OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
 
     //test INTEnableInterrupts();
 
@@ -521,6 +527,34 @@ void UDPControlTask(void)
             LATBbits.LATB10 = getIntArgumentAtIndex(buffer, "/pic/opt", 0);
         }
 #endif
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
+        {
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
+        {
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmFreq))
+        {
+            LONG f = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 0);
+            if(f > 0)
+            {
+                freq = f;
+                width = GetSystemClock() / freq;
+                PR2 = width;
+                OC1RS = width / 2;
+                OC1R = width / 2;
+            }
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmFreq))
+        {
+            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmFreq, "i", freq);
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDuty))
+        {
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDuty))
+        {
+        }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));
@@ -790,24 +824,24 @@ void convertMidiToOsc(void)
                             {
                                 case 0x80:// Note off
                                 case 0x90:// Note on
-                                    sendOSCMessage(TxSocket, msgMidi, msgNote, "iii", ch, num, val);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgNote, "iii", ch, num, val);
                                     break;
                                 case 0xA0:// Key Pressure
-                                    sendOSCMessage(TxSocket, msgMidi, msgKp, "iii", ch, num, val);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgKp, "iii", ch, num, val);
                                     break;
                                 case 0xB0:// Control Change
-                                    sendOSCMessage(TxSocket, msgMidi, msgCc, "iii", ch, num, val);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgCc, "iii", ch, num, val);
                                     break;
                                 case 0xC0:// Program Change
                                     //sendOSCMessage(TxSocket, msgMidi, msgPc, "iii", ch, num, val);
-                                    sendOSCMessage(TxSocket, msgMidi, msgPc, "i", num);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgPc, "i", num);
                                     break;
                                 case 0xD0:// Channel Pressure
                                     //sendOSCMessage(TxSocket, msgMidi, msgCp, "iii", ch, num, val);
-                                    sendOSCMessage(TxSocket, msgMidi, msgCp, "ii", ch, num);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgCp, "ii", ch, num);
                                     break;
                                 case 0xE0:// Pitch Bend
-                                    sendOSCMessage(TxSocket, msgMidi, msgPb, "iii", ch, num, val);
+                                    sendOSCMessage(TxSocket, midiPrefix, msgPb, "iii", ch, num, val);
                                     break;
                                 default:
                                     break;

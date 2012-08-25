@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.6 2012/08/24
+ * picrouter-oauh.h,v.0.61 2012/08/25
  */
 
 #include <plib.h>
@@ -138,6 +138,10 @@ BYTE midiType;
 BYTE midiNum;
 BYTE midiVal;
 
+//PWM
+LONG freq;
+LONG width;
+
 //Custom OSC Messages
 char* prefix;
 char msgLed[]   = "/led";
@@ -145,15 +149,6 @@ char msgPress[] = "/press";
 char msgSw[]    = "/sw";
 char msgAdc[]   = "/adc";
 char msgPwm[]   = "/pwm";
-
-char msgMidi[]  = "/midi";
-char msgNote[]  = "/note";
-char msgPp[]    = "/pp";
-char msgCc[]    = "/cc";
-char msgPc[]    = "/pc";
-char msgKp[]    = "/kp";
-char msgCp[]    = "/cp";
-char msgPb[]    = "/pb";
 char zero[40];
 
 APP_CONFIG AppConfig;
