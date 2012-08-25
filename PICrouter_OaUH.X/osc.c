@@ -16,32 +16,51 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.7 2012/08/24
+ * osc.c,v.0.81 2012/08/25
  */
 
 #include "osc.h"
 
+//Standard OSC Messages
+const char stdPrefix[]      = "/std";
+const char msgSetPwmState[] = "/pwm/state/set";
+const char msgGetPwmState[] = "/pwm/state/get";
+const char msgSetPwmFreq[]  = "/pwm/freq/set";
+const char msgGetPwmFreq[]  = "/pwm/freq/get";
+const char msgSetPwmDuty[]  = "/pwm/duty/set";
+const char msgGetPwmDuty[]  = "/pwm/duty/get";
+
+//OSC Messages converted from MIDI Message
+const char midiPrefix[] = "/midi";
+const char msgNote[]    = "/note";
+const char msgPp[]      = "/pp";
+const char msgCc[]      = "/cc";
+const char msgPc[]      = "/pc";
+const char msgKp[]      = "/kp";
+const char msgCp[]      = "/cp";
+const char msgPb[]      = "/pb";
+
 //System OSC Messages for Network Settings
-char sysPrefix[]        = "/sys";
-char msgPrefix[]        = "/prefix";
-char msgSetPrefix[]     = "/prefix/set";
-char msgGetPrefix[]     = "/prefix/get";
-char msgRemoteIp[]      = "/remote/ip";
-char msgSetRemoteIp[]   = "/remote/ip/set";
-char msgGetRemoteIp[]   = "/remote/ip/get";
-char msgRemotePort[]    = "/remote/port";
-char msgSetRemotePort[] = "/remote/port/set";
-char msgGetRemotePort[] = "/remote/port/get";
-char msgHostName[]      = "/host/name";
-char msgSetHostName[]   = "/host/name/set";
-char msgGetHostName[]   = "/host/name/get";
-char msgHostIp[]        = "/host/ip";
-char msgGetHostIp[]     = "/host/ip/get";
-char msgHostMac[]       = "/host/mac";
-char msgGetHostMac[]    = "/host/mac/get";
-char msgHostPort[]      = "/host/port";
-char msgSetHostPort[]   = "/host/port/set";
-char msgGetHostPort[]   = "/host/port/get";
+const char sysPrefix[]        = "/sys";
+const char msgPrefix[]        = "/prefix";
+const char msgSetPrefix[]     = "/prefix/set";
+const char msgGetPrefix[]     = "/prefix/get";
+const char msgRemoteIp[]      = "/remote/ip";
+const char msgSetRemoteIp[]   = "/remote/ip/set";
+const char msgGetRemoteIp[]   = "/remote/ip/get";
+const char msgRemotePort[]    = "/remote/port";
+const char msgSetRemotePort[] = "/remote/port/set";
+const char msgGetRemotePort[] = "/remote/port/get";
+const char msgHostName[]      = "/host/name";
+const char msgSetHostName[]   = "/host/name/set";
+const char msgGetHostName[]   = "/host/name/get";
+const char msgHostIp[]        = "/host/ip";
+const char msgGetHostIp[]     = "/host/ip/get";
+const char msgHostMac[]       = "/host/mac";
+const char msgGetHostMac[]    = "/host/mac/get";
+const char msgHostPort[]      = "/host/port";
+const char msgSetHostPort[]   = "/host/port/set";
+const char msgGetHostPort[]   = "/host/port/get";
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIP, WORD remotePort)
 {
@@ -385,7 +404,7 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
 	switch(types[index])
 	{
 		case 'i':
-			lvalue = (str[j + n + length] << 24) | (str[j + n + 1 + length] << 16) | (str[j + n + 2 + length] << 8) | str[j + n + 3 + length];
+			lvalue = ((str[j + n + 0 + length] & 0xFF) << 24) | ((str[j + n + 1 + length] & 0xFF) << 16) | ((str[j + n + 2 + length] & 0xFF) << 8) | (str[j + n + 3 + length] & 0xFF);
 			break;
 		case 'f':
 			lvalue = ((str[j + n + 0 + length] & 0xFF) << 24) | ((str[j + n + 1 + length] & 0xFF) << 16) | ((str[j + n + 2 + length] & 0xFF) << 8) | (str[j + n + 3 + length] & 0xFF);

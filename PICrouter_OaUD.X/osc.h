@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.7 2012/08/24
+ * osc.h,v.0.81 2012/08/26
  */
 
 #ifndef OSC_H
@@ -28,27 +28,46 @@
 #include <string.h>
 #include "TCPIP Stack/TCPIP.h"
 
+//Standard OSC Messages
+extern const char stdPrefix[];
+extern const char msgSetPwmState[];
+extern const char msgGetPwmState[];
+extern const char msgSetPwmFreq[];
+extern const char msgGetPwmFreq[];
+extern const char msgSetPwmDuty[];
+extern const char msgGetPwmDuty[];
+
+//OSC Messages converted from MIDI Message
+extern const char midiPrefix[];
+extern const char msgNote[];
+extern const char msgPp[];
+extern const char msgCc[];
+extern const char msgPc[];
+extern const char msgKp[];
+extern const char msgCp[];
+extern const char msgPb[];
+
 //System OSC Messages for Network Settings
-extern char sysPrefix[];
-extern char msgPrefix[];
-extern char msgSetPrefix[];
-extern char msgGetPrefix[];
-extern char msgRemoteIp[];
-extern char msgSetRemoteIp[];
-extern char msgGetRemoteIp[];
-extern char msgRemotePort[];
-extern char msgSetRemotePort[];
-extern char msgGetRemotePort[];
-extern char msgHostName[];
-extern char msgSetHostName[];
-extern char msgGetHostName[];
-extern char msgHostIp[];
-extern char msgGetHostIp[];
-extern char msgHostMac[];
-extern char msgGetHostMac[];
-extern char msgHostPort[];
-extern char msgSetHostPort[];
-extern char msgGetHostPort[];
+extern const char sysPrefix[];
+extern const char msgPrefix[];
+extern const char msgSetPrefix[];
+extern const char msgGetPrefix[];
+extern const char msgRemoteIp[];
+extern const char msgSetRemoteIp[];
+extern const char msgGetRemoteIp[];
+extern const char msgRemotePort[];
+extern const char msgSetRemotePort[];
+extern const char msgGetRemotePort[];
+extern const char msgHostName[];
+extern const char msgSetHostName[];
+extern const char msgGetHostName[];
+extern const char msgHostIp[];
+extern const char msgGetHostIp[];
+extern const char msgHostMac[];
+extern const char msgGetHostMac[];
+extern const char msgHostPort[];
+extern const char msgSetHostPort[];
+extern const char msgGetHostPort[];
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIp, WORD remotePort);
 BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort);
