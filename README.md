@@ -49,7 +49,7 @@ PICrouter_OaUD (current ver. is 0.2)
 PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
 PICrouter_OaUD.X is this project folder.
 
-PICrouter_OaUH (current ver. is 0.6)
+PICrouter_OaUH (current ver. is 0.61)
 --------------------------------
 PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
 PICrouter_OaUH.X is this project folder.
@@ -67,6 +67,10 @@ PICrouter_OaUH.X is this project folder.
 --> ***/midi/cp [channel] [pressure]***
 6. Pitch Bend (EnH)  
 --> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***
+
+### Standard OSC Messages of I/O
+1. ***/std/pwm/freq/set [int_argument]***
+2. ***/std/pwm/freq/get [no arguments]***
 
 ### System OSC Messages of Network Setting
 1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
