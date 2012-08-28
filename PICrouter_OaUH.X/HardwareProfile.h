@@ -86,28 +86,43 @@
 	#define AD_PORT12_OUT(state) LATBbits.LATB12 = state;
 	#define AD_PORT13_OUT(state) LATBbits.LATB13 = state;
 
-	#define AD_PORT0_IN  PORTBbits.RB0
-	#define AD_PORT1_IN  PORTBbits.RB1
-	#define AD_PORT2_IN  PORTBbits.RB2
-	#define AD_PORT3_IN  PORTBbits.RB3
-	#define AD_PORT4_IN  PORTBbits.RB4
-	#define AD_PORT5_IN  PORTBbits.RB5
-	#define AD_PORT6_IN  PORTBbits.RB6
-	#define AD_PORT7_IN  PORTBbits.RB7
-	#define AD_PORT8_IN  PORTBbits.RB8
-	#define AD_PORT9_IN  PORTBbits.RB9
-	#define AD_PORT10_IN PORTBbits.RB10
-	#define AD_PORT11_IN PORTBbits.RB11
-	#define AD_PORT12_IN PORTBbits.RB12
-	#define AD_PORT13_IN PORTBbits.RB13
+	#define AD_PORT0_IN()  PORTBbits.RB0
+	#define AD_PORT1_IN()  PORTBbits.RB1
+	#define AD_PORT2_IN()  PORTBbits.RB2
+	#define AD_PORT3_IN()  PORTBbits.RB3
+	#define AD_PORT4_IN()  PORTBbits.RB4
+	#define AD_PORT5_IN()  PORTBbits.RB5
+	#define AD_PORT6_IN()  PORTBbits.RB6
+	#define AD_PORT7_IN()  PORTBbits.RB7
+	#define AD_PORT8_IN()  PORTBbits.RB8
+	#define AD_PORT9_IN()  PORTBbits.RB9
+	#define AD_PORT10_IN() PORTBbits.RB10
+	#define AD_PORT11_IN() PORTBbits.RB11
+	#define AD_PORT12_IN() PORTBbits.RB12
+	#define AD_PORT13_IN() PORTBbits.RB13
 
-    #define BTN_PAD_00 PORTFbits.RF5
-    #define BTN_PAD_01 PORTGbits.RG7
-    #define BTN_PAD_10 PORTFbits.RF0
-    #define BTN_PAD_11 PORTBbits.RB14
+    #define BTN_PAD_00() PORTFbits.RF5
+    #define BTN_PAD_01() PORTGbits.RG7
+    #define BTN_PAD_10() PORTFbits.RF0
+    #define BTN_PAD_11() PORTBbits.RB14
     #define BTN_LED_00(state) LATGbits.LATG6 = state;
     #define BTN_LED_01(state) LATFbits.LATF1 = state;
     #define BTN_LED_10(state) LATGbits.LATG8 = state;
     #define BTN_LED_11(state) LATFbits.LATF4 = state;
+
+    #define D_PORT0_IO(state) TRISCbits.TRISC13 = state;
+    #define D_PORT1_IO(state) TRISCbits.TRISC14 = state;
+    #define D_PORT2_IO(state) TRISFbits.TRISF0  = state;
+    #define D_PORT3_IO(state) TRISFbits.TRISF1  = state;
+
+    #define D_PORT0_OUT(state) LATCbits.LATC13 = state;
+    #define D_PORT1_OUT(state) LATCbits.LATC14 = state;
+    #define D_PORT2_OUT(state) LATFbits.LATF0  = state;
+    #define D_PORT3_OUT(state) LATFbits.LATF1  = state;
+
+    #define D_PORT0_IN() PORTCbits.RC13
+    #define D_PORT1_IN() PORTCbits.RC14
+    #define D_PORT2_IN() PORTFbits.RF0
+    #define D_PORT3_IN() PORTFbits.RF1
 
 #endif  //HARDWARE_PROFILE_H

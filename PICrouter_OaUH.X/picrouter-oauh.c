@@ -62,7 +62,11 @@ int main(int argc, char** argv) {
 #endif
     AD1CON1 = 0x000010E6;// 0000 0000 0000 0000 1000 0000 0110 0110
     AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+#if 0
     AD1CON3 = 0x00001FFF;// 0000 0000 0000 0000 0000 1111 0000 1000
+#else
+    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+#endif
     AD1CON1bits.ON = 1;
 #else // Manual A/D Conv.
     #define CONFIG_1    ADC_MODULE_OFF | ADC_FORMAT_INTG16 | ADC_CLK_MANUAL | ADC_AUTO_SAMPLING_ON | ADC_SAMP_ON
@@ -99,8 +103,8 @@ int main(int argc, char** argv) {
     //PWM
     freq = 10000; // 10kHz
     width = GetSystemClock() / freq;
-    OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-    OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+    //OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+    //OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
 
     //test INTEnableInterrupts();
 
@@ -159,6 +163,19 @@ int main(int argc, char** argv) {
         	stateFlag2 = TRUE;
         }
 
+#ifdef ROT_ENC
+        reA[1] = D_PORT0_IN();
+        reB[1] = D_PORT1_IN();
+        if((reA[1] != reA[0]) || (reB[1] != reB[0]))
+        {
+            reD[1] = (((reA[0] << 1) + reB[0]) << 1) + ((reA[1] << 1) + reB[1]);
+            reA[0] = reA[1];
+            reB[0] = reB[1];
+
+            sendOSCMessage(TxSocket, prefix, msgEnc, "i", ((reD[1] & 0x02) >> 1) ? 1 : 0);
+        }
+#endif
+
         StackTask();
         NBNSTask();
         ZeroconfLLProcess();
@@ -213,7 +230,12 @@ void setupPitch(void)
     AD_PORT13_OUT(0);
 #endif
 
-#if OPT_DRUM
+#ifdef ROT_ENC
+    D_PORT0_IO(1);
+    D_PORT1_IO(1);
+#endif
+
+#ifdef OPT_DRUM
     AD_PORT0_IO(1);
     AD_PORT1_IO(1);
     AD_PORT2_IO(1);
@@ -522,28 +544,45 @@ void UDPControlTask(void)
         }
 #endif
 #ifdef OPT_DRUM
-        else if(isEqualToAddress(buffer, "/pic/opt"))
+        else if(isEqualToAddress(buffer, prefix, "/opt"))
         {
-            LATBbits.LATB10 = getIntArgumentAtIndex(buffer, "/pic/opt", 0);
+            LATBbits.LATB10 = getIntArgumentAtIndex(buffer, prefix, "/opt", 0);
         }
 #endif
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
         {
+            if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 0), "on") == 0)
+            {
+                OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+                onSquare = TRUE;   
+            }
+            else if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 0), "off") == 0)
+            {
+                OpenTimer23(T23_OFF | T23_SOURCE_INT | T23_PS_1_1, width);
+                OpenOC1(OC_OFF | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+                onSquare = FALSE;
+            }
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
         {
+            sendOSCMessage(TxSocket, prefix, msgGetPwmState, "s", onSquare ? "on" : "off");
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmFreq))
         {
-            LONG f = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 0);
-            if(f > 0)
-            {
-                freq = f;
-                width = GetSystemClock() / freq;
-                PR2 = width;
-                OC1RS = width / 2;
-                OC1R = width / 2;
-            }
+            freq = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 0);
+            if(freq < 20)
+                freq = 20;
+            else if(freq > 44100)
+                freq = 44100;
+            T2CONbits.TON = 0;
+            TMR2 = 0;
+            OC1CONbits.OCM = 0b000;
+            width = GetSystemClock() / freq;
+            PR2 = width;
+            OC1RS = width / 2;
+            OC1CONbits.OCM = 0b110;
+            T2CONbits.TON = 1;
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmFreq))
         {
@@ -551,9 +590,22 @@ void UDPControlTask(void)
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDuty))
         {
+            duty = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDuty, 0);
+            if(duty < 0)
+                duty = 0;
+            else if(duty > 100)
+                duty = 100;
+
+            T2CONbits.TON = 0;
+            TMR2 = 0;
+            OC1CONbits.OCM = 0b000;
+            OC1RS = (LONG)(((float)duty / 100.0) * (float)width);
+            OC1CONbits.OCM = 0b110;
+            T2CONbits.TON = 1;
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDuty))
         {
+            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmDuty, "i", duty);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
         {
@@ -656,8 +708,8 @@ void sendPad(void)
     for(i = 0; i < MAX_BTN_ROW; i++)
         btnLast[i] = btnCurrent[i];
 
-    btnCurrent[0] = BTN_PAD_00 | (BTN_PAD_01 << 1);
-    btnCurrent[1] = BTN_PAD_10 | (BTN_PAD_11 << 1);
+    btnCurrent[0] = BTN_PAD_00() | (BTN_PAD_01() << 1);
+    btnCurrent[1] = BTN_PAD_10() | (BTN_PAD_11() << 1);
 
     for(i = 0; i < MAX_BTN_ROW; i++)
     {
@@ -687,7 +739,7 @@ void sendAdc(void)
             //currentValue[i] = getAnalogWord(i, TYPE_LONG_ORIGINAL);
 #endif
 #ifdef OPT_DRUM
-            currentValue[i] = getAnalogByte(i, 0);
+            currentValue[i] = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
 #endif
             //if(currentValue[i] != prevValue[0][i] && currentValue[i] != prevValue[1][i])
             {
@@ -731,8 +783,10 @@ void UDPSendTask()
                 while(BusyADC10());
                 //test analogInHandle(0, (LONG)ReadADC10(1));
                 //test analogInHandle(1, (LONG)ReadADC10(0));
+#ifdef PITCH
                 analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
                 analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
+#endif
                 usbState = 1;
                 break;
 #ifdef PITCH

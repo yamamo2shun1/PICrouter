@@ -34,6 +34,7 @@
 #include "TCPIP Stack/TCPIP.h"
 
 #define PITCH
+//#define ROT_ENC
 //#define OPT_DRUM
  
 #include "button.h"
@@ -138,9 +139,16 @@ BYTE midiType;
 BYTE midiNum;
 BYTE midiVal;
 
+//ROT_ENC
+BYTE reA[2] = {0};
+BYTE reB[2] = {0};
+BYTE reD[4] = {0};
+
 //PWM
+BOOL onSquare;
 LONG freq;
 LONG width;
+INT16 duty;
 
 //Custom OSC Messages
 char* prefix;
@@ -148,6 +156,7 @@ char msgLed[]   = "/led";
 char msgPress[] = "/press";
 char msgSw[]    = "/sw";
 char msgAdc[]   = "/adc";
+char msgEnc[]   = "/enc";
 char msgPwm[]   = "/pwm";
 char zero[40];
 
