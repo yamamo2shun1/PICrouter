@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.61 2012/08/25
+ * picrouter-oauh.c,v.0.63 2012/08/28
  */
 
 #include "picrouter-oauh.h"
@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
     //PWM
     freq = 10000; // 10kHz
     width = GetSystemClock() / freq;
+    duty = 50;
     //OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
     //OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
 
@@ -553,14 +554,16 @@ void UDPControlTask(void)
         {
             if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 0), "on") == 0)
             {
+                LONG w = (LONG)(((float)duty / 100.0) * (float)width);
                 OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+                //OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+                OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                 onSquare = TRUE;   
             }
             else if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 0), "off") == 0)
             {
-                OpenTimer23(T23_OFF | T23_SOURCE_INT | T23_PS_1_1, width);
-                OpenOC1(OC_OFF | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, width / 2);
+                OpenTimer23(T23_OFF, width);
+                OpenOC1(OC_OFF, width / 2, 0);
                 onSquare = FALSE;
             }
         }
