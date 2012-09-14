@@ -15,16 +15,22 @@ And this is **Free Hardware** and **Free Software**.
 ### Specifications
 1. Supported Open Sound Control
 2. Supported USB device(MIDI and HID composite) and host(only MIDI) function.
-3. Supported USB HID bootloader on Mac OS X and Windows.
+3. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
 4. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)
 5. A/D port x14
 6. PWM output x4
 7. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
 8. 100mm x 33.5mm, 4-layers board
 
+[an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
+
 ### Development
-* Microchip MPLABX v1.30
+* Microchip MPLABX v1.41
 * Microchip XC32 Compiler v1.10
+
+### Bootloader Application
+* PIC32UBL.exe (Win / Download is [here][an1388])
+* PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")
 
 PICrouter Schematic and board (current ver. is 0.95)
 --------------------------------
