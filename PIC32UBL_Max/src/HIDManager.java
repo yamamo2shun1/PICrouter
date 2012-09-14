@@ -18,14 +18,14 @@ public abstract class HIDManager
      *
      * @param dev Reference to the hid device info object.
      */
-    public abstract void deviceAdded( HIDDeviceInfo dev);
+    //public abstract void deviceAdded( HIDDeviceInfo dev);
     
     /**
      * Abstract callback method which will be called when new HID device is disconnected.
      *
      * @param dev Reference to the hid device info object.
     */
-    public abstract void deviceRemoved( HIDDeviceInfo dev);
+    //public abstract void deviceRemoved( HIDDeviceInfo dev);
      
     /**
      * Get list of all the HID devices attached to the system.

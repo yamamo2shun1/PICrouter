@@ -1,0 +1,5 @@
+#include "../../c74support/max-includes/max-external-release.xcconfig"
+
+DSTROOT = $(SRCROOT)/../../../sysbuild/$(CONFIGURATION)/Cycling '74/msp-externals
+HEADER_SEARCH_PATHS = $(HEADER_SEARCH_PATHS_COMMON) "$(C74SUPPORT)/msp-includes"
+FRAMEWORK_SEARCH_PATHS = $(FRAMEWORK_SEARCH_PATHS_COMMON) "$(C74SUPPORT)/msp-includes"

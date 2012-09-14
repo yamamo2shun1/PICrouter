@@ -17,6 +17,8 @@ public class hid extends MaxObject implements Runnable
     private static final int BUFSIZE = 2048;
     private static final int MAXOBJECTS = 100;
 
+    Thread thread;
+
     int vendorId, productId;
     
     HIDDevice dev;
@@ -33,6 +35,7 @@ public class hid extends MaxObject implements Runnable
     int[] hexFile;
     int hexLength, hexLength0, percentage0, percentage1;
     boolean pgm_completed_flag = false;
+    boolean close_flag = false;
 
     public hid(int inlets, int outlets)
     {
@@ -53,7 +56,7 @@ public class hid extends MaxObject implements Runnable
         crc_table[14] = 0xe1ce;
         crc_table[15] = 0xf1ef;
 
-        Thread thread = new Thread(this);
+        thread = new Thread(this);
         thread.start();
 
         declareIO(inlets, outlets);
@@ -63,6 +66,7 @@ public class hid extends MaxObject implements Runnable
         declareAttribute("interval", null, "setPollingInterval");
         declareAttribute("openBL", null, "openBootloader");
         declareAttribute("open", null, "openDevice");
+        declareAttribute("close", null, "closeDevice");
         declareAttribute("write", null, "writeToDevice");
         declareAttribute("port", null, "setPort");
     }
@@ -131,6 +135,20 @@ public class hid extends MaxObject implements Runnable
         }
     }
 
+    protected void closeDevice() throws IOException
+    {
+        threadFlag = false;
+        close_flag = true;
+        Atom[] atom = new Atom[1];
+        atom[0] = Atom.newAtom(0x01);
+        writeToDevice(atom);
+        dev.disableBlocking();
+        dev.close();
+        hid_mgr.release();
+        System.gc();
+        //outlet(1, "Disconnected.");
+    }
+
     protected void writeToDevice(Atom[] args) throws IOException
     {
         int idx = 0, ch, l;
@@ -165,6 +183,8 @@ public class hid extends MaxObject implements Runnable
             case (byte)0x01: // READ_BOOT_INFO
             case (byte)0x02: // ERASE_FLASH
             case (byte)0x03: // PROGRAM_FLASH
+            case (byte)0x04: // VERIFY
+            case (byte)0x05: // JUMP_TO_APP
                 byte SOH = 1;
                 byte EOT = 4;
                 byte DLE = 16;
@@ -254,6 +274,9 @@ public class hid extends MaxObject implements Runnable
                         break;
                     }
                 }
+                if(outBuffer[0] == (byte)0x04) // PROGRAM_VERIFY
+                {
+                }
 
                 char crc = calculateCrc(buff, 1);
                 buff[bufflen++] = (byte)crc;
@@ -270,6 +293,8 @@ public class hid extends MaxObject implements Runnable
                 }
                 txpacket[txpacketlen++] = EOT;
                 dev.write(txpacket);
+                if(outBuffer[0] == (byte)0x05)
+                    closeDevice();
                 break;
             case (byte)0xF1:
             case (byte)0xF2:
@@ -325,130 +350,155 @@ public class hid extends MaxObject implements Runnable
 
     public void run()
     {
-        while(true)
+        try
         {
             try
             {
-                if(threadFlag)
+                while(true)
                 {
-                    int[] outs = new int[8];
-                    String[] str = new String[2];
-                    int n = dev.read(inBuffer);
-                    //outlet(1, n);
-
-                    switch(inBuffer[0])
+                    if(threadFlag)
                     {
-                        case (byte)0xF1:
-                            for(int i = 0; i < outs.length; i++)
-                            {
-                                if(inBuffer[i + 1] < 0)
-                                    outs[i] = inBuffer[i + 1] + 256;
-                                else
-                                    outs[i] = inBuffer[i + 1];
-                            }
-                            str[0] = "localIP";
-                            str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
-                            outlet(0,str);
-                            break;
-                        case (byte)0xF2:
-                            for(int i = 0; i < outs.length; i++)
-                            {
-                                if(inBuffer[i + 1] < 0)
-                                    outs[i] = inBuffer[i + 1] + 256;
-                                else
-                                    outs[i] = inBuffer[i + 1];
-                            }
-                            str[0] = "remoteIP";
-                            str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
-                            outlet(0, str);
-                            break;
-                        case (byte)0xF3:
-                            str[0] = "localPort";
-                            if(inBuffer[1] < 0)
-                                outs[0] = inBuffer[1] + 256;
-                            else 
-                                outs[0] = inBuffer[1];
-                            if(inBuffer[2] < 0)
-                                outs[1] = inBuffer[2] + 256;
-                            else 
-                                outs[1] = inBuffer[2];
-                            str[1] = String.valueOf(outs[0] | (outs[1] << 8));
-                            outlet(0, str);
-                            break;
-                        case (byte)0xF4:
-                            str[0] = "remotePort";
-                            if(inBuffer[1] < 0)
-                                outs[0] = inBuffer[1] + 256;
-                            else 
-                                outs[0] = inBuffer[1];
-                            if(inBuffer[2] < 0)
-                                outs[1] = inBuffer[2] + 256;
-                            else 
-                                outs[1] = inBuffer[2];
-                            str[1] = String.valueOf(outs[0] | (outs[1] << 8));
-                            outlet(0, str);
-                            break;
-                        case (byte)0xF6:
-                            for(int i = 0; i < outs.length; i++)
-                            {
-                                if(inBuffer[i + 1] < 0)
-                                    outs[i] = inBuffer[i + 1] + 256;
-                                else
-                                    outs[i] = inBuffer[i + 1];
-                            }
-                            str[0] = "remoteIP";
-                            str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
-                            outlet(0, str);
+                        int[] outs = new int[8];
+                        String[] str = new String[2];
+                        int n = dev.read(inBuffer);
 
-                            str[0] = "localPort";
-                            str[1] = String.valueOf(outs[4] | (outs[5] << 8));
-                            outlet(0, str);
-
-                            str[0] = "remotePort";
-                            str[1] = String.valueOf(outs[6] | (outs[7] << 8));
-                            outlet(0, str);
-                            break;
-                        default:
-                            if(inBuffer[1] == 16)
-                            {
-                                str[0] = "Bootloader Ver.";
-                                if(inBuffer[3]  != 16)
-                                    str[1] = new String(inBuffer[3] + "." + inBuffer[4]);
+                        switch(inBuffer[0])
+                        {
+                            case (byte)0xF1:
+                                for(int i = 0; i < outs.length; i++)
+                                {
+                                    if(inBuffer[i + 1] < 0)
+                                        outs[i] = inBuffer[i + 1] + 256;
+                                    else
+                                        outs[i] = inBuffer[i + 1];
+                                }
+                                str[0] = "localIP";
+                                str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
+                                outlet(0,str);
+                                break;
+                            case (byte)0xF2:
+                                for(int i = 0; i < outs.length; i++)
+                                {
+                                    if(inBuffer[i + 1] < 0)
+                                        outs[i] = inBuffer[i + 1] + 256;
+                                    else
+                                        outs[i] = inBuffer[i + 1];
+                                }
+                                str[0] = "remoteIP";
+                                str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
+                                outlet(0, str);
+                                break;
+                            case (byte)0xF3:
+                                str[0] = "localPort";
+                                if(inBuffer[1] < 0)
+                                    outs[0] = inBuffer[1] + 256;
+                                else 
+                                    outs[0] = inBuffer[1];
+                                if(inBuffer[2] < 0)
+                                    outs[1] = inBuffer[2] + 256;
+                                else 
+                                    outs[1] = inBuffer[2];
+                                str[1] = String.valueOf(outs[0] | (outs[1] << 8));
+                                outlet(0, str);
+                                break;
+                            case (byte)0xF4:
+                                str[0] = "remotePort";
+                                if(inBuffer[1] < 0)
+                                    outs[0] = inBuffer[1] + 256;
                                 else
-                                    str[1] = new String(inBuffer[4] + "." + inBuffer[5]);
-                                outlet(1, str);
-                            }
-                            else if(inBuffer[1] == 2)
-                            {
-                                outlet(1, "Program Erased");
-                            }
-                            else if(inBuffer[1] == 3)
-                            {
-                                Atom[] atom = new Atom[1];
-                                atom[0] = Atom.newAtom(3);
-                                writeToDevice(atom);
-                            }
-                            
-                            break;
-                    }
+                                    outs[0] = inBuffer[1];
+                                if(inBuffer[2] < 0)
+                                    outs[1] = inBuffer[2] + 256;
+                                else 
+                                    outs[1] = inBuffer[2];
+                                str[1] = String.valueOf(outs[0] | (outs[1] << 8));
+                                outlet(0, str);
+                                break;
+                            case (byte)0xF6:
+                                for(int i = 0; i < outs.length; i++)
+                                {
+                                    if(inBuffer[i + 1] < 0)
+                                        outs[i] = inBuffer[i + 1] + 256;
+                                    else
+                                        outs[i] = inBuffer[i + 1];
+                                }
+                                str[0] = "remoteIP";
+                                str[1] = new String(outs[0] + "." + outs[1] + "." + outs[2] + "." + outs[3]);
+                                outlet(0, str);
+
+                                str[0] = "localPort";
+                                str[1] = String.valueOf(outs[4] | (outs[5] << 8));
+                                outlet(0, str);
+
+                                str[0] = "remotePort";
+                                str[1] = String.valueOf(outs[6] | (outs[7] << 8));
+                                outlet(0, str);
+                                break;
+                            default:
+                                if(inBuffer[1] == 16)
+                                {
+                                    if(close_flag)
+                                    {
+                                        outlet(1, "Disconnected.");
+                                        close_flag = false;
+                                    }
+                                    else
+                                    {
+                                        str[0] = "Bootloader Ver.";
+                                        if(inBuffer[3]  != 16)
+                                            str[1] = new String(inBuffer[3] + "." + inBuffer[4]);
+                                        else
+                                            str[1] = new String(inBuffer[4] + "." + inBuffer[5]);
+                                        outlet(1, str);
+                                    }
+                                }
+                                else if(inBuffer[1] == 2)
+                                {
+                                    outlet(1, "Program Erased");
+                                }
+                                else if(inBuffer[1] == 3)
+                                {
+                                    Atom[] atom = new Atom[1];
+                                    atom[0] = Atom.newAtom(3);
+                                    writeToDevice(atom);
+                                }
+                                break;
+                        }
 /*
-                    if(inBuffer[1] == prevBuffer[1])
-                        continue;
-                    prevBuffer[1] = inBuffer[1];
+                        if(inBuffer[1] == prevBuffer[1])
+                            continue;
+                        prevBuffer[1] = inBuffer[1];
 */
-                    if(inBuffer[0] == (byte)0x81)
-                    {
-                        outlet(0, 1 - inBuffer[1]);
+                        if(inBuffer[0] == (byte)0x81)
+                        {
+                            outlet(0, 1 - inBuffer[1]);
+                        }
                     }
+                    try
+                    {
+                        Thread.sleep(interval);
+                    }
+                    catch(InterruptedException ire)
+                    {}
                 }
-                Thread.sleep(interval);
             }
-            catch(IOException ioe) {
-                //outlet(1, "ioe");
-            }
-            catch(InterruptedException ire) {
-                //outlet(1, "ire");
+            finally
+            {
+                threadFlag = false;
+                close_flag = true;
+                dev.disableBlocking();
+                dev.close();
+                //hid_mgr.release();
+                //System.gc();
+
+                //threadFlag = false;
+                outlet(1, "Disconnected.");
+                //dev.close();
+                //hid_mgr.release();
+                //System.gc();
             }
         }
+        catch(IOException ioe)
+        {}
     }
 }

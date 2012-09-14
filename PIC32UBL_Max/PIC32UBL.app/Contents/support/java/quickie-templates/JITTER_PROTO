@@ -1,0 +1,24 @@
+import com.cycling74.max.*;
+import com.cycling74.jitter.*;
+
+public class _PROTO_ extends MaxObject
+{
+	JitterMatrix output = new JitterMatrix();
+	
+	public _PROTO_(float gain)
+	{
+		declareIO(1,1);
+		setInletAssist(0, "input (matrix)");
+		setOutletAssist(0, "output (matrix)");
+	}
+    
+	public void jit_matrix(String mname)
+	{
+		output.frommatrix(mname);
+		
+		//insert processing here
+		
+		outlet(0, "jit_matrix", output.getName());
+	}
+
+}

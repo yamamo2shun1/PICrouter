@@ -1,0 +1,190 @@
+max db.addmetadata 2DEALR clipping tag Vizzie;
+max db.addmetadata 2DEALR clipping tag Control;
+max db.addmetadata 2DEALR clipping description "Route data to one of two output destinations";
+
+max db.addmetadata 2ROUTR clipping tag Vizzie;
+max db.addmetadata 2ROUTR clipping tag Control;
+max db.addmetadata 2ROUTR clipping description "Route a movie to one of two output destinations";
+
+max db.addmetadata 2SWITCHR clipping tag Vizzie;
+max db.addmetadata 2SWITCHR clipping tag Control;
+max db.addmetadata 2SWITCHR clipping description "Choose one of two input movies and output it";
+
+max db.addmetadata 4MIXR clipping tag Vizzie;
+max db.addmetadata 4MIXR clipping tag Control;
+max db.addmetadata 4MIXR clipping description "4 channel video mixer";
+
+max db.addmetadata CLICKR clipping tag Vizzie;
+max db.addmetadata CLICKR clipping tag Control;
+max db.addmetadata CLICKR clipping description "Use a pushbutton to turn things on and off";
+
+max db.addmetadata FADR clipping tag Vizzie;
+max db.addmetadata FADR clipping tag Control;
+max db.addmetadata FADR clipping description "Change module parameters using a simple fader";
+
+max db.addmetadata JITTR clipping tag Vizzie;
+max db.addmetadata JITTR clipping tag Control;
+max db.addmetadata JITTR clipping description "Add a random amount of offset to a data input";
+
+max db.addmetadata MEDIATR clipping tag Vizzie;
+max db.addmetadata MEDIATR clipping tag Control;
+max db.addmetadata MEDIATR clipping description "Choose data from one of two inputs and route it";
+
+max db.addmetadata NANOCTRLR clipping tag Vizzie;
+max db.addmetadata NANOCTRLR clipping tag Control;
+max db.addmetadata NANOCTRLR clipping description "Use the Korg Nanokontroller to control your patch";
+
+max db.addmetadata RANGER clipping tag Vizzie;
+max db.addmetadata RANGER clipping tag Control;
+max db.addmetadata RANGER clipping description "Change the low and high values of Vizzie data";
+
+max db.addmetadata SCRUBBR clipping tag Vizzie;
+max db.addmetadata SCRUBBR clipping tag Control;
+max db.addmetadata SCRUBBR clipping description "Control modules using a 2-dimensional Kaos pad-like surface";
+
+max db.addmetadata STARTR clipping tag Vizzie;
+max db.addmetadata STARTR clipping tag Control;
+max db.addmetadata STARTR clipping description "Starter and syncronize Vizzie effects and generators";
+
+max db.addmetadata TWISTR clipping tag Vizzie;
+max db.addmetadata TWISTR clipping tag Control;
+max db.addmetadata TWISTR clipping description "Change module parameters using a dial";
+
+
+max db.addmetadata 2TONER clipping tag Vizzie;
+max db.addmetadata 2TONER clipping tag Effect;
+max db.addmetadata 2TONER clipping description "Create a duotone image";
+
+max db.addmetadata ALPHABLENDR clipping tag Vizzie;
+max db.addmetadata ALPHABLENDR clipping tag Effect;
+max db.addmetadata ALPHABLENDR clipping description "Blend two movies using the alpha channel of a third movie";
+
+max db.addmetadata BRCOSR clipping tag Vizzie;
+max db.addmetadata BRCOSR clipping tag Effect;
+max db.addmetadata BRCOSR clipping description "Change the brightness/contrast/saturation of a movie";
+
+max db.addmetadata CHROMAKEYR clipping tag Vizzie;
+max db.addmetadata CHROMAKEYR clipping tag Effect;
+max db.addmetadata CHROMAKEYR clipping description "Blend two movies using a color as a transparency mask";
+
+max db.addmetadata CROPPR clipping tag Vizzie;
+max db.addmetadata CROPPR clipping tag Effect;
+max db.addmetadata CROPPR clipping description "Crop an input image and modify it when displaying";
+
+max db.addmetadata DELAYR clipping tag Vizzie;
+max db.addmetadata DELAYR clipping tag Effect;
+max db.addmetadata DELAYR clipping description "Create delayed feedback loops";
+
+max db.addmetadata FEEDR clipping tag Vizzie;
+max db.addmetadata FEEDR clipping tag Effect;
+max db.addmetadata FEEDR clipping description "Feedback generator";
+
+max db.addmetadata FOGGR clipping tag Vizzie;
+max db.addmetadata FOGGR clipping tag Effect;
+max db.addmetadata FOGGR clipping description "Create fogging or spattering effects";
+
+max db.addmetadata FREEZR clipping tag Vizzie;
+max db.addmetadata FREEZR clipping tag Effect;
+max db.addmetadata FREEZR clipping description "Freeze movie input and output the last frame";
+
+max db.addmetadata INTERPOL8R clipping tag Vizzie;
+max db.addmetadata INTERPOL8R clipping tag Effect;
+max db.addmetadata INTERPOL8R clipping description "Add interpolation effects to a movie";
+
+max db.addmetadata OPER8R clipping tag Vizzie;
+max db.addmetadata OPER8R clipping tag Effect;
+max db.addmetadata OPER8R clipping description "Composite two movies using math operations";
+
+max db.addmetadata PANNR clipping tag Vizzie;
+max db.addmetadata PANNR clipping tag Effect;
+max db.addmetadata PANNR clipping description "Shift a movie from side to side or up and down";
+
+max db.addmetadata PIXL8R clipping tag Vizzie;
+max db.addmetadata PIXL8R clipping tag Effect;
+max db.addmetadata PIXL8R clipping description "Pixelate a movie";
+
+max db.addmetadata ROTATR clipping tag Vizzie;
+max db.addmetadata ROTATR clipping tag Effect;
+max db.addmetadata ROTATR clipping description "Rotate a movie";
+
+max db.addmetadata SKETCHR clipping tag Vizzie;
+max db.addmetadata SKETCHR clipping tag Effect;
+max db.addmetadata SKETCHR clipping description "Make a movie look like a drawing";
+
+max db.addmetadata SLIDR clipping tag Vizzie;
+max db.addmetadata SLIDR clipping tag Effect;
+max db.addmetadata SLIDR clipping description "Temporally blend or smear a movie";
+
+max db.addmetadata WYPR clipping tag Vizzie;
+max db.addmetadata WYPR clipping tag Effect;
+max db.addmetadata WYPR clipping description "Add wipes to and from an image to a selected color";
+
+max db.addmetadata XFADR clipping tag Vizzie;
+max db.addmetadata XFADR clipping tag Effect;
+max db.addmetadata XFADR clipping description "Crossfade smoothly between two input movies";
+
+max db.addmetadata ZAMPLR clipping tag Vizzie;
+max db.addmetadata ZAMPLR clipping tag Effect;
+max db.addmetadata ZAMPLR clipping description "Idiosyncratic downsampling and saturation";
+
+max db.addmetadata ZOOMR clipping tag Vizzie;
+max db.addmetadata ZOOMR clipping tag Effect;
+max db.addmetadata ZOOMR clipping description "Zoom into or out of a movie";
+
+
+max db.addmetadata ANALYZR clipping tag Vizzie;
+max db.addmetadata ANALYZR clipping tag Generator;
+max db.addmetadata ANALYZR clipping description "Sends data about the average red/green/blue values in a movie";
+
+max db.addmetadata BIPOLR clipping tag Vizzie;
+max db.addmetadata BIPOLR clipping tag Generator;
+max db.addmetadata BIPOLR clipping description "Generates data that alternates between zero and one";
+
+max db.addmetadata CYCLR clipping tag Vizzie;
+max db.addmetadata CYCLR clipping tag Generator;
+max db.addmetadata CYCLR clipping description "Step sequencer for data";
+
+max db.addmetadata FOLLOWR clipping tag Vizzie;
+max db.addmetadata FOLLOWR clipping tag Generator;
+max db.addmetadata FOLLOWR clipping description "Generate control data based on analyzing an audio file";
+
+max db.addmetadata PRIMR Clipping tag Vizzie;
+max db.addmetadata PRIMR clipping tag Generator;
+max db.addmetadata PRIMR clipping description "Generate a one-color movie in the color of your choice";
+
+max db.addmetadata SCRIBBLR clipping tag Vizzie;
+max db.addmetadata SCRIBBLR clipping tag Generator;
+max db.addmetadata SCRIBBLR clipping description "Manually or automatically draw on top of a movie";
+
+max db.addmetadata TOGGLR clipping tag Vizzie;
+max db.addmetadata TOGGLR clipping tag Generator;
+max db.addmetadata TOGGLR clipping description "Generates message data that alternates between 'off' and 'on'";
+
+max db.addmetadata TWIDDLR clipping tag Vizzie;
+max db.addmetadata TWIDDLR clipping tag Generator;
+max db.addmetadata TWIDDLR clipping description "Generate ramp-based control data to control Vizzie modules";
+
+max db.addmetadata WANDR clipping tag Vizzie;
+max db.addmetadata WANDR clipping tag Generator;
+max db.addmetadata WANDR clipping description "Generate random control data to control Vizzie modules";
+
+
+max db.addmetadata GRABBR clipping tag Vizzie;
+max db.addmetadata GRABBR clipping tag PVR;
+max db.addmetadata GRABBR clipping description "Use your webcam in Vizzie patches";
+
+max db.addmetadata MOVIEFOLDR clipping tag Vizzie;
+max db.addmetadata MOVIEFOLDR clipping tag PVR;
+max db.addmetadata MOVIEFOLDR clipping description "Drag-and-drop folder for movies";
+
+max db.addmetadata PLAYR clipping tag Vizzie;
+max db.addmetadata PLAYR clipping tag PVR;
+max db.addmetadata PLAYR clipping description "Playback and load movies";
+
+max db.addmetadata RECORDR clipping tag Vizzie;
+max db.addmetadata RECORDR clipping tag PVR;
+max db.addmetadata RECORDR clipping description "Make a recording of the output of a Vizzie patch";
+
+max db.addmetadata VIEWR clipping tag Vizzie;
+max db.addmetadata VIEWR clipping tag PVR;
+max db.addmetadata VIEWR clipping description "View your Vizzie patch on the big screen";

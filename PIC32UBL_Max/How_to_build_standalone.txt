@@ -1,0 +1,7 @@
+* How to build standalone app by yourself
+
+If you want to re-build to make standalone, you have to
+copy the following two folder to PIC32UBL.app/Contents/supports.
+
+1. /Applications/Max6/Cycling'74/java
+2. /Applications/Max6/Cycling'74/jitter-externals/Cg.framework

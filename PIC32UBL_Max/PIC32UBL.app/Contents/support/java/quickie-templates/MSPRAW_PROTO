@@ -1,0 +1,70 @@
+import com.cycling74.max.*;
+import com.cycling74.msp.*;
+import java.lang.reflect.*;
+
+public class _PROTO_ extends MSPObject implements MSPPerformable
+{
+	private Method _p   = null;
+	private float _gain = 0.f;
+
+	private static final String[] INLET_ASSIST = new String[]{
+		"input (sig)"
+	};
+	private static final String[] OUTLET_ASSIST = new String[]{
+		"output (sig)"
+	};
+	
+	public _PROTO_(float gain)
+	{
+		declareInlets(new int[]{SIGNAL});
+		declareOutlets(new int[]{SIGNAL});
+
+		setInletAssist(INLET_ASSIST);
+		setOutletAssist(OUTLET_ASSIST);
+
+		_gain = gain;
+		_p = getPerformMethod("p");	
+	}
+    
+	public void inlet(float f)
+	{
+		_gain = f;
+	}
+
+	public Method dsp(MSPSignal[] ins, MSPSignal[] outs)
+	{
+		//If you forget the fields of MSPSignal you can select the classname above
+		//and choose Open Class Reference For Selected Class.. from the Java menu	
+		return _p;
+	}
+
+	public void p(MSPSignal[] ins, MSPSignal[] outs)
+	{
+		
+		int i;
+		float[] in = ins[0].vec;
+		float[] out = outs[0].vec;
+		for(i = 0; i < in.length;i++)
+		{
+			/*do something*/
+			out[i] = in[i] * _gain;  	
+
+		}
+	}
+	
+
+	//MSPPerformable Interface
+	public void perform(MSPSignal[] ins, MSPSignal[] outs)
+	{
+		p(ins,outs);
+	}
+
+	public void dspsetup(MSPSignal[] ins, MSPSignal[] outs)
+	{
+		dsp(ins,outs);
+	}
+	//End MSPPerformable Interface
+}
+
+
+
