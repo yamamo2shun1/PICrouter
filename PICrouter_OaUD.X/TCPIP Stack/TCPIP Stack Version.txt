@@ -7,6 +7,40 @@ Note: Please file bug-reports/bug-fixes at http://support.microchip.com/ or post
       Look for stack updates at http://www.microchip.com/mal/
 
 ********
+v5.42.02    Aug 2012
+********      
+Fixes:
+1.  (MRF24WB/G) TCPIPConfig.exe is modified to support changes in macro definitions (CFG_WF_INFRASTRUCTURE, CFG_WF_ADHOC)
+    used in WF_Config.h.
+2.  (MRF24WB/G) Ad-hoc mode was left out in the TCPIP-Demo app. This mode is reinstated back into TCPIP-Demo app.
+    2 files are changed. 
+    .\Microchip\Include\TCPIP Stack\WFDebugStrings.h 
+    .\TCPIP\Demo App\WF_Config.h 
+3.  (MRF24WB/G) SoftAP default address is changed from 192.168.1.1 to 169.254.1.1
+4.  (MRF24WG) Apply SSL fix.
+    Root cause is traced to be due to scratch pad memory to memory copy functions in WFMac_24G.c
+5.  (MRF24WG) Reset fix.
+     a.  In file WFDriverCom_24G.c, MRF24WG reset sequence is modified.  
+         - WFHardwareInit() does hard reset (putting I/O lines in correct state)
+         - ChipReset() does soft reset
+     b.  In file WFDriverPrv_24G.h, macros WF_SetCE_N() and WF_SetRST_N() modified to first set the output level, 
+         then set the I/O direction
+6.  (MRF24WG) Applies to using PICDEMNet2 board and PIC18. Related to SPI interface settings.
+     a.  In file WF_Spi.c, ConfigureSpiMRF24W() modified, for PIC18 only, to change the SPI clock idle state to low.  
+7.  (MRF24WB/G) When host attempts to read scan results while the module FW is in reconnecting state,  the module FW 
+    returns WF_ERROR_NO_STORED_BSS_DESCRIPTOR error. Reading scan results is only allowed in A) connected state; B) idle state. 
+    Fix is in WaitForMgmtResponseAndReadData(). 
+
+    void WaitForMgmtResponseAndReadData(UINT8 expectedSubtype, UINT8 numDataBytes, UINT8 startIndex, UINT8 *p_data)
+    {     ....................................
+          /* check header result and subtype fields */
+          WF_ASSERT(hdr.result  == WF_SUCCESS || hdr.result == WF_ERROR_NO_STORED_BSS_DESCRIPTOR);
+          WF_ASSERT(hdr.subtype == expectedSubtype);
+          ....................................
+    } 
+ 
+
+********
 v5.42       Jul 2012
 ********      
 Changes:

@@ -1,6 +1,6 @@
 /******************************************************************************
 
- MRF24W10C Driver Console messages
+ MRF24W Driver Console messages
  Module for Microchip TCP/IP Stack
   -Provides access to MRF24W10C WiFi controller
   -Reference: MRF24W10C Data sheet, IEEE 802.11 Standard
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Created for MRF24WB0M
+ KH                 27 Jan 2010 Created for MRF24W
 ******************************************************************************/
 
 #ifndef __WFCONSOLEVT100_H

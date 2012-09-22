@@ -217,6 +217,10 @@ Description:
 #define USTAT_EP0_IN_ODD    0x0C
 #define ENDPOINT_MASK       0xF0
 
+#define BDT_BASE_ADDR_TAG   __attribute__ ((aligned (512)))
+#define CTRL_TRF_SETUP_ADDR_TAG
+#define CTRL_TRF_DATA_ADDR_TAG
+
 typedef union
 {
     WORD UEP[16];
@@ -269,6 +273,8 @@ typedef union _POINTER
 
 #define ConvertToPhysicalAddress(a) ((DWORD)KVA_TO_PA(a))
 #define ConvertToVirtualAddress(a)  PA_TO_KVA1(a)
+
+#define USBIE 0x02000000
 
 /****************************************************************
     Function:
@@ -363,16 +369,32 @@ typedef union _POINTER
 
 //STALLIE, IDLEIE, TRNIE, and URSTIE are all enabled by default and are required
 #if defined(USB_INTERRUPT)
-    #define USBEnableInterrupts() {IEC1bits.USBIE = 1;IPC11CLR=0x0000FF00;IPC11SET=0x00001000; INTEnableSystemMultiVectoredInt(); INTEnableInterrupts();}
+    #if ((__PIC32_FEATURE_SET__ >= 100) && (__PIC32_FEATURE_SET__ <= 299))
+    	#define USBEnableInterrupts() {\
+            IEC1SET = USBIE;\
+            IPC7CLR=0x00FF0000;\
+            IPC7SET=0x00100000;\
+            INTEnableSystemMultiVectoredInt();\
+            INTEnableInterrupts();
+        }
+    #else
+        #define USBEnableInterrupts() {\
+            IEC1SET = USBIE;\
+            IPC11CLR = 0x0000FF00;\
+            IPC11SET = 0x00001000;\
+            INTEnableSystemMultiVectoredInt();\
+            INTEnableInterrupts();\
+        }
+    #endif
 #else
     #define USBEnableInterrupts()
 #endif
 
-#define USBDisableInterrupts() {IEC1bits.USBIE = 0;}
+#define USBDisableInterrupts() {IEC1CLR = USBIE;}
 
 #if defined(USB_INTERRUPT)
-    #define USBMaskInterrupts() {IEC1bits.USBIE = 0;}
-    #define USBUnmaskInterrupts() {IEC1bits.USBIE = 1;}
+    #define USBMaskInterrupts() {IEC1CLR = USBIE;}
+    #define USBUnmaskInterrupts() {IEC1SET = USBIE;}
 #else
     #define USBMaskInterrupts() 
     #define USBUnmaskInterrupts() 

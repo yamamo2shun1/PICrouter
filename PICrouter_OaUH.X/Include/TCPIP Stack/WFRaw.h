@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver Raw driver
+ MRF24W Driver Raw driver
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFRaw.h
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 /*
@@ -52,6 +52,9 @@
 *                                       DEFINES
 *********************************************************************************************************
 */
+#ifndef __WF_RAW_H
+#define __WF_RAW_H
+
 #define RAW_ID_0                        (0)
 #define RAW_ID_1                        (1)
 
@@ -60,8 +63,8 @@
 #define RAW_TX_ID                       RAW_ID_1
 #define RAW_INVALID_ID                  (0xff)
 
-// Source/Destination objects on the MRF24WB0M
-#define RAW_MAC                         (0x00)   /* Cmd processor (aka MRF24WB0M MAC)              */
+// Source/Destination objects on the MRF24W
+#define RAW_MAC                         (0x00)   /* Cmd processor (aka MRF24W MAC)              */
 #define RAW_MGMT_POOL                   (0x10)   /* For 802.11 Management packets                  */
 #define RAW_DATA_POOL                   (0x20)   /* Data Memory pool used for tx and rx operations */
 #define RAW_SCRATCH_POOL                (0x30)   /* Scratch object                                 */
@@ -136,3 +139,5 @@ void    RawToRawCopy(UINT8 rawdestId, UINT16 length);
     /* Not needed for MCHP */
     void RawSendUntamperedData(UINT8 *pReq, UINT16 len);
 #endif    
+
+#endif /* __WF_RAW_H */

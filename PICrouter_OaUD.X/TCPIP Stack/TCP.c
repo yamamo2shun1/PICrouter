@@ -5515,23 +5515,8 @@ void TCPSSLHandleIncoming(TCP_SOCKET hTCP)
 					wLen = MyTCBStub.bufferEnd - wSrc + 1;
 					if(wLen > wToMove)
 						wLen = wToMove;
-				#if defined(WF_CS_TRIS)
-					{
-						int tmp_wLen = wLen; PTR_BASE tmp_wSrc = wSrc,tmp_wDest = wDest;
-						BYTE  buf_move[16]={0};
-						while(tmp_wLen>0)
-						{
-							TCPRAMCopy((PTR_BASE)buf_move,TCP_PIC_RAM,
-								tmp_wSrc, MyTCBStub.vMemoryMedium, (tmp_wLen<16)?tmp_wLen:16);
-							TCPRAMCopy(tmp_wDest, MyTCBStub.vMemoryMedium, 
-								(PTR_BASE)buf_move,TCP_PIC_RAM,(tmp_wLen<16)?tmp_wLen:16);
-							tmp_wLen -= 16; tmp_wSrc += 16; tmp_wDest += 16;
-						}
-					}
-				#else
 					TCPRAMCopy(wDest, MyTCBStub.vMemoryMedium, 
 							   wSrc, MyTCBStub.vMemoryMedium, wLen);
-				#endif
 					wDest += wLen;
 					wSrc = MyTCBStub.bufferRxStart;
 					wToMove -= wLen;
@@ -5543,23 +5528,8 @@ void TCPSSLHandleIncoming(TCP_SOCKET hTCP)
 					wLen = MyTCBStub.bufferEnd - wDest + 1;
 					if(wLen > wToMove)
 						wLen = wToMove;
-				#if defined(WF_CS_TRIS)
-					{
-						int tmp_wLen = wLen; PTR_BASE tmp_wSrc = wSrc,tmp_wDest = wDest;
-						BYTE buf_move[16]={0};
-						while(tmp_wLen>0)
-						{
-							TCPRAMCopy((PTR_BASE)buf_move,TCP_PIC_RAM,
-								tmp_wSrc, MyTCBStub.vMemoryMedium, (tmp_wLen<16)?tmp_wLen:16);
-							TCPRAMCopy(tmp_wDest, MyTCBStub.vMemoryMedium, 
-								(PTR_BASE)buf_move,TCP_PIC_RAM,(tmp_wLen<16)?tmp_wLen:16);
-							tmp_wLen -= 16; tmp_wSrc += 16; tmp_wDest += 16;
-						}
-					}
-				#else
 					TCPRAMCopy(wDest, MyTCBStub.vMemoryMedium, 
 							   wSrc, MyTCBStub.vMemoryMedium, wLen);
-				#endif
 					wDest = MyTCBStub.bufferRxStart;
 					wSrc += wLen;
 					wToMove -= wLen;
@@ -5568,23 +5538,8 @@ void TCPSSLHandleIncoming(TCP_SOCKET hTCP)
 				// If data still remains, copy from from front + len to front
 				if(wToMove)
 				{
-				#if defined(WF_CS_TRIS)
-					{
-						int tmp_wLen = wToMove;  PTR_BASE tmp_wSrc = wSrc,tmp_wDest = wDest;
-						BYTE buf_move[16]={0};
-						while(tmp_wLen>0)
-						{
-							TCPRAMCopy((PTR_BASE)buf_move,TCP_PIC_RAM,
-								tmp_wSrc, MyTCBStub.vMemoryMedium, (tmp_wLen<16)?tmp_wLen:16);
-							TCPRAMCopy(tmp_wDest, MyTCBStub.vMemoryMedium, 
-								(PTR_BASE)buf_move,TCP_PIC_RAM,(tmp_wLen<16)?tmp_wLen:16);
-							tmp_wLen -= 16; tmp_wSrc += 16; tmp_wDest += 16;
-						}
-					}
-				#else
 					TCPRAMCopy(wDest, MyTCBStub.vMemoryMedium,
 							   wSrc, MyTCBStub.vMemoryMedium, wToMove);
-				#endif
 				}
 
 				// Since bytes poofed, we need to move the head pointers 

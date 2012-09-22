@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver 
+ MRF24W Driver 
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFEasyConfig.h
@@ -45,7 +45,7 @@
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  Steve Collmeyer    24 Sep 2009 Initial
- Brad Rex           09 Feb 2010 Update for RoadRunner
+ Brad Rex           09 Feb 2010 Update for MRF24WB
 ******************************************************************************/
 
 #ifndef __WFEASYCONFIG_H
@@ -80,7 +80,7 @@ typedef struct {
     BYTE            isWifiNeedToConfigure;
     BYTE            isWifiDoneConfigure;
     BYTE            ssid[33];               // 32 for ssid and one for term character
-    UINT8           type;                   // Net type infrastructure vs adhoc
+    BYTE            type;                   // Net type infrastructure vs adhoc
     BYTE            prevSSID[33];           // previous SSID we were connected to
     BYTE            prevWLAN;               // previous WLAN type
     
@@ -116,11 +116,7 @@ void WFScanEventHandler(UINT16 scanResults);
 
 void WFDisplayScanMgr(void);
 
-#if defined (WF_HOST_SCAN)
-UINT16 WFStartHostScan(UINT8);
-#else
 UINT16 WFStartScan(void);
-#endif
 
 UINT16 WFRetrieveScanResult(UINT8 Idx, tWFScanResult *p_ScanResult);
 

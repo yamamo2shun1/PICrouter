@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef __WFCONSOLE_IWCONFIG_H
@@ -58,11 +58,11 @@ typedef struct
 {
 	UINT8 powerSaveState;	// power save state
 
-	UINT8 cpId; 	// ID of a connection profle that is created by this
-					// iwconfig cmd
-	UINT8 connState;	// connection state
-	BOOL	isIdle;		// true if connState is WF_CSTATE_NOT_CONNECTED
-} tWFIwconfigCb;	// iwconfig control block
+	UINT8 cpId;         // ID of a connection profle that is created by this
+                        // iwconfig cmd
+	UINT8 connState;    // connection state
+	BOOL  isIdle;       // true if connState is WF_CSTATE_NOT_CONNECTED
+} tWFIwconfigCb;        // iwconfig control block
 
 extern tWFIwconfigCb iwconfigCb;
 

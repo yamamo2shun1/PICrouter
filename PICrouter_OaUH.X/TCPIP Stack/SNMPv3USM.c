@@ -67,8 +67,8 @@ UINT8 HmacSHADigest[20];
 UINT8 ivEncrptKeyOut[16];
 UINT8 deciphered_text[16];
 UINT8 cipher_text[16];
-UINT8 snmpV3AesEncryptInitVector[16];//128 Bit
-UINT8 snmpV3AesDecryptInitVector[16];//128 Bit
+UINT8 snmpV3AesEncryptInitVector[16+1];//128 Bit
+UINT8 snmpV3AesDecryptInitVector[16+1];//128 Bit
 snmpV3EngnUserDataBase snmpV3UserDataBase[SNMPV3_USM_MAX_USER];
 
 

@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver 
+ MRF24W Driver 
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFMac.h
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef __WFMAC_H
@@ -56,13 +56,18 @@
 
 #include "HardwareProfile.h"
 
-#if 1//test defined(WF_CS_TRIS)
-    //test #include "WF_Config.h"
+#if defined(WF_CS_TRIS)
     #include "TCPIP Stack/WFApi.h"
-    //test #include "TCPIP Stack/WFDriverPrv.h"
     #include "TCPIP Stack/WFMgmtMsg.h"
-    //test #include "TCPIP Stack/WFRaw.h"
-#endif
+    #include "TCPIP Stack/WFDebugStrings.h"
+    #if defined(MRF24WG)
+        #include "TCPIP Stack/WFDriverPrv_24G.h"
+        #include "TCPIP Stack/WFRaw_24G.h"
+    #else /* MRF24WB */
+        #include "TCPIP Stack/WFDriverPrv.h"
+        #include "TCPIP Stack/WFRaw.h"
+    #endif        
+#endif /* WF_CS_TRIS */
 
 
 #endif /* __WFMAC_H */

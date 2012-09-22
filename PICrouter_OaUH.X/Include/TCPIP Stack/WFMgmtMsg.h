@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver Management messages
+ MRF24W Driver Management messages
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFMgmtMsg.h
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef __WF_MGMT_MSG_H
@@ -104,48 +104,98 @@ typedef enum
     
 } tMgmtMsgSubtypes;
 
+#if defined(MRF24WG)
+    /*-------------------------------------------------------------*/
+    /* Connection Profile Element ID’s                             */
+    /* Used in conjunction with the WF_CP_SET_ELEMENT_SUBTYPE and  */ 
+    /* WF_CP_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
+    /*-------------------------------------------------------------*/
+    typedef enum 
+    {
+        WF_CP_ELEMENT_ALL               = 0,  /* sends all elements in CP struct */
+        WF_CP_ELEMENT_SSID         	    = 1,
+        WF_CP_ELEMENT_BSSID        	    = 2,
+        WF_CP_ELEMENT_SECURITY 	        = 3,
+        WF_CP_ELEMENT_NETWORK_TYPE  	= 4,
+        WF_CP_ELEMENT_ADHOC_BEHAVIOR	= 5,
+        WF_CP_ELEMENT_WEP_KEY_INDEX     = 6,
+        WF_CP_ELEMENT_SSID_TYPE       	= 7,
+        WF_CP_ELEMENT_WEPKEY_TYPE		= 8,
+        WF_CP_ELEMENT_UPDATE_PMK		= 9,
+        WF_CP_ELEMENT_READ_WPS_CRED		= 10
+    } tCPElementIds;
+#else /* MRF24WB */
+    /*-------------------------------------------------------------*/
+    /* Connection Profile Element ID’s                             */
+    /* Used in conjunction with the WF_CP_SET_ELEMENT_SUBTYPE and  */ 
+    /* WF_CP_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
+    /*-------------------------------------------------------------*/
+    typedef enum 
+    {
+        WF_CP_ELEMENT_ALL               = 0,  /* sends all elements in CP struct */
+        WF_CP_ELEMENT_SSID         	    = 1,
+        WF_CP_ELEMENT_BSSID        	    = 2,
+        WF_CP_ELEMENT_SECURITY 	        = 3,
+        WF_CP_ELEMENT_NETWORK_TYPE  	= 4,
+        WF_CP_ELEMENT_ADHOC_BEHAVIOR	= 5,
+        WF_CP_ELEMENT_WEP_KEY_INDEX     = 6,
+        WF_CP_ELEMENT_SSID_TYPE       	= 7,
+        WF_CP_ELEMENT_WEPKEY_TYPE		= 8
+    } tCPElementIds;
+#endif
 
-/*-------------------------------------------------------------*/
-/* Connection Profile Element ID’s                             */
-/* Used in conjunction with the WF_CP_SET_ELEMENT_SUBTYPE and  */ 
-/* WF_CP_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
-/*-------------------------------------------------------------*/
-typedef enum 
-{
-    WF_CP_ELEMENT_ALL               = 0,  /* sends all elements in CP struct */
-    WF_CP_ELEMENT_SSID         	    = 1,
-    WF_CP_ELEMENT_BSSID        	    = 2,
-    WF_CP_ELEMENT_SECURITY 	        = 3,
-    WF_CP_ELEMENT_NETWORK_TYPE  	= 4,
-    WF_CP_ELEMENT_ADHOC_BEHAVIOR	= 5,
-    WF_CP_ELEMENT_WEP_KEY_INDEX     = 6,
-    WF_CP_ELEMENT_SSID_TYPE       	= 7,
-    WF_CP_ELEMENT_WEPKEY_TYPE		= 8
-} tCPElementIds;
+#if defined(MRF24WG)
+    /*-------------------------------------------------------------*/
+    /* Connection Algorithm Element ID’s                           */
+    /* Used in conjunction with the WF_CA_SET_ELEMENT_SUBTYPE and  */ 
+    /* WF_CA_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
+    /*-------------------------------------------------------------*/
+    typedef enum 
+    {
+        WF_CA_ELEMENT_ALL                          = 0,
+        WF_CA_ELEMENT_SCANTYPE                     = 1,
+        WF_CA_ELEMENT_RSSI                         = 2,
+        WF_CA_ELEMENT_CP_LIST                      = 3,
+        WF_CA_ELEMENT_LIST_RETRY_COUNT             = 4,
+        WF_CA_ELEMENT_EVENT_NOTIFICATION_ACTION    = 5,
+        WF_CA_ELEMENT_BEACON_TIMEOUT_ACTION        = 6,
+        WF_CA_ELEMENT_DEAUTH_ACTION                = 7,
+        WF_CA_ELEMENT_CHANNEL_LIST                 = 8,
+        WF_CA_ELEMENT_LISTEN_INTERVAL              = 9,
+        WF_CA_ELEMENT_BEACON_TIMEOUT               = 10,
+        WF_CA_ELEMENT_SCAN_COUNT                   = 11,
+        WF_CA_ELEMENT_MIN_CHANNEL_TIME             = 12,
+        WF_CA_ELEMENT_MAX_CHANNEL_TIME             = 13,
+        WF_CA_ELEMENT_PROBE_DELAY                  = 14,
+        WF_CA_ELEMENT_DTIM_INTERVAL                = 15,
+        WF_CA_ELEMENT_BEACON_PERIOD                = 16
+    } tCAElementIds;
 
-/*-------------------------------------------------------------*/
-/* Connection Algorithm Element ID’s                           */
-/* Used in conjunction with the WF_CA_SET_ELEMENT_SUBTYPE and  */ 
-/* WF_CA_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
-/*-------------------------------------------------------------*/
-typedef enum 
-{
-    WF_CA_ELEMENT_ALL                          = 0,
-    WF_CA_ELEMENT_SCANTYPE                     = 1,
-    WF_CA_ELEMENT_RSSI                         = 2,
-    WF_CA_ELEMENT_CP_LIST                      = 3,
-    WF_CA_ELEMENT_LIST_RETRY_COUNT             = 4,
-    WF_CA_ELEMENT_EVENT_NOTIFICATION_ACTION    = 5,
-    WF_CA_ELEMENT_BEACON_TIMEOUT_ACTION        = 6,
-    WF_CA_ELEMENT_DEAUTH_ACTION                = 7,
-    WF_CA_ELEMENT_CHANNEL_LIST                 = 8,
-    WF_CA_ELEMENT_LISTEN_INTERVAL              = 9,
-    WF_CA_ELEMENT_BEACON_TIMEOUT               = 10,
-    WF_CA_ELEMENT_SCAN_COUNT                   = 11,
-    WF_CA_ELEMENT_MIN_CHANNEL_TIME             = 12,
-    WF_CA_ELEMENT_MAX_CHANNEL_TIME             = 13,
-    WF_CA_ELEMENT_PROBE_DELAY                  = 14
-} tCAElementIds;
+#else /* MRF24WB */
+    /*-------------------------------------------------------------*/
+    /* Connection Algorithm Element ID’s                           */
+    /* Used in conjunction with the WF_CA_SET_ELEMENT_SUBTYPE and  */ 
+    /* WF_CA_GET_ELEMENT_SUBTYPE message subtypes                  */                                                                               
+    /*-------------------------------------------------------------*/
+    typedef enum 
+    {
+        WF_CA_ELEMENT_ALL                          = 0,
+        WF_CA_ELEMENT_SCANTYPE                     = 1,
+        WF_CA_ELEMENT_RSSI                         = 2,
+        WF_CA_ELEMENT_CP_LIST                      = 3,
+        WF_CA_ELEMENT_LIST_RETRY_COUNT             = 4,
+        WF_CA_ELEMENT_EVENT_NOTIFICATION_ACTION    = 5,
+        WF_CA_ELEMENT_BEACON_TIMEOUT_ACTION        = 6,
+        WF_CA_ELEMENT_DEAUTH_ACTION                = 7,
+        WF_CA_ELEMENT_CHANNEL_LIST                 = 8,
+        WF_CA_ELEMENT_LISTEN_INTERVAL              = 9,
+        WF_CA_ELEMENT_BEACON_TIMEOUT               = 10,
+        WF_CA_ELEMENT_SCAN_COUNT                   = 11,
+        WF_CA_ELEMENT_MIN_CHANNEL_TIME             = 12,
+        WF_CA_ELEMENT_MAX_CHANNEL_TIME             = 13,
+        WF_CA_ELEMENT_PROBE_DELAY                  = 14
+    } tCAElementIds;
+#endif
 
 #if defined(WF_CM_DEBUG)
 /*-------------------------------------------------------------*/
@@ -159,58 +209,119 @@ typedef enum
 } tCMInfoID;
 #endif
 
-/* tWFParam - Names (ID's) of WF MAC configurable parameters. */
-typedef enum
-{
-
-    PARAM_MAC_ADDRESS                 = 1,       /* the device MAC address (6 bytes)                            */
-    PARAM_REGIONAL_DOMAIN             = 2,       /* the device Regional Domain (1 byte)                         */
-    PARAM_RTS_THRESHOLD               = 3,       /* the RTS byte threshold 256 - 2347 (2 bytes)                 */
-    PARAM_LONG_FRAME_RETRY_LIMIT      = 4,       /* the long Frame Retry limit  (1 byte)                        */ 
-    PARAM_SHORT_FRAME_RETRY_LIMIT     = 5,       /* the short Frame Retry limit (1 byte)                        */
-    PARAM_TX_LIFETIME_TU              = 6,       /* the Tx Request lifetime in TU's 0 - 4194303 (4 bytes)       */
-    PARAM_RX_LIFETIME_TU              = 7,       /* the Rx Frame lifetime in TU's 0 - 4194303 (4 bytes)         */
-    PARAM_SUPPLICANT_ON_OFF           = 8,       /* boolean 1 = on 0 = off (1 byte)                             */
-    PARAM_CONFIRM_DATA_TX_REQ         = 9,       /* boolean 1 = on 0 = off (1 byte)                             */
-    PARAM_MASTER_STATE                = 10,      /* master state of the MAC using enumerated values (1 byte)    */
-    PARAM_HOST_ALERT_BITS             = 11,      /* a bit field which enables/disables various asynchronous     */
-                                                 /*   indications from the MAC to the host (2 bytes)            */
-    PARAM_NUM_MISSED_BEACONS          = 12,      /* number of consecutive beacons MAC can miss before it        */
-                                                 /*   considers the network lost (1 byte)                       */        
-    PARAM_DIFS_AND_EIFS               = 13,      /* delay intervals in usec DIFS and EIFS ( 2 * 2 bytes)        */
-    PARAM_TX_POWER                    = 14,      /* max and min boundaries for Tx power (2 * 2 bytes)           */
-    PARAM_DEFAULT_DEST_MAC_ADDR       = 15,      /* stores a persistant destination MAC address for small       */
-                                                 /*   Tx Requests (6 bytes)                                     */
-    PARAM_WPA_INFO_ELEMENT            = 16,      /* stores a WPA info element (IE) in 802.11 IE format.  Used   */
-                                                 /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
-    PARAM_RSN_INFO_ELEMENT            = 17,      /* stores a RSN info element (IE) in 802.11 IE format.  Used   */
-                                                 /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
-    PARAM_ON_OFF_RADIO                = 18,      /* bool to force a radio state change 1 = on 0 = off (1 byte)  */
-    PARAM_COMPARE_ADDRESS             = 19,      /* A MAC address used to filter received frames                */
-                                                 /*   (sizeof(tAddressFilterInput) = 8 bytes)                   */
-    PARAM_SUBTYPE_FILTER              = 20,      /* Bitfield used to filter received frames based on type and   */
-                                                 /* sub-type (sizeof(tAddressFilterInput) = 4 bytes)            */
-    PARAM_ACK_CONTROL                 = 21,      /* Bitfield used to control the type of frames that cause ACK  */
-                                                 /*   responses (sizeof(tAckControlInput) = 4 bytes)            */
-    PARAM_STAT_COUNTERS               = 22,      /* Complete set of statistics counters that are maintained by  */
-                                                 /*   the MAC                                                   */
-    PARAM_TX_THROTTLE_TABLE           = 23,      /* Custom Tx Rate throttle table to be used to control tx Rate */
-    PARAM_TX_THROTTLE_TABLE_ON_OFF    = 24,      /* A boolean to enable/disable use of the throttle Table and a */
-                                                 /*   tx rate to use if the throttle table is disabled          */
-    PARAM_TX_CONTENTION_ARRAY         = 25,      /* Custom Retry contention ladder used for backoff calculation */
-                                                 /*   prior to a Tx attempt                                     */
-    PARAM_SYSTEM_VERSION              = 26,      /* 2 byte representation of a version number for the ROM and   */
-                                                 /*  Patch                                                      */
-    PARAM_STATUE_INFO                 = 27,      /* MAC State information                                       */
-	PARAM_SECURITY_CONTROL            = 28,      /* 2 byte data structure to enable/disable encryption          */
-    PARAM_FACTORY_SET_TX_MAX_POWER    = 29,      /* gets the factory-set tx max power level                     */
-    PARAM_MRF24WB0M                   = 30,       /* a set enables MRF24WB0M Mode, a get gets the version       */  
-    PARAM_BROADCAST_PROBE_RESPONSE    = 31,       /* Allows broadcast probe response in Adhoc mode       */   
-    PARAM_AGGRESSIVE_PS    			  = 32,       /* Allows to turn off RF power quicker       */ 
-    PARAM_CONNECT_CONTEXT             = 33,       /* gets current connection status      */ 
-    PARAM_DEFERRED_POWERSAVE          = 34       /* delay power start after dhcp done      */ 
-} tWFParam;
-
+#if defined(MRF24WG)
+    /* tWFParam - Names (ID's) of WF MAC configurable parameters. */
+    typedef enum
+    {
+    
+        PARAM_MAC_ADDRESS                 = 1,       /* the device MAC address (6 bytes)                            */
+        PARAM_REGIONAL_DOMAIN             = 2,       /* the device Regional Domain (1 byte)                         */
+        PARAM_RTS_THRESHOLD               = 3,       /* the RTS byte threshold 256 - 2347 (2 bytes)                 */
+        PARAM_LONG_FRAME_RETRY_LIMIT      = 4,       /* the long Frame Retry limit  (1 byte)                        */ 
+        PARAM_SHORT_FRAME_RETRY_LIMIT     = 5,       /* the short Frame Retry limit (1 byte)                        */
+        PARAM_TX_LIFETIME_TU              = 6,       /* the Tx Request lifetime in TU's 0 - 4194303 (4 bytes)       */
+        PARAM_RX_LIFETIME_TU              = 7,       /* the Rx Frame lifetime in TU's 0 - 4194303 (4 bytes)         */
+        PARAM_SUPPLICANT_ON_OFF           = 8,       /* boolean 1 = on 0 = off (1 byte)                             */
+        PARAM_CONFIRM_DATA_TX_REQ         = 9,       /* boolean 1 = on 0 = off (1 byte)                             */
+        PARAM_MASTER_STATE                = 10,      /* master state of the MAC using enumerated values (1 byte)    */
+        PARAM_HOST_ALERT_BITS             = 11,      /* a bit field which enables/disables various asynchronous     */
+                                                     /*   indications from the MAC to the host (2 bytes)            */
+        PARAM_NUM_MISSED_BEACONS          = 12,      /* number of consecutive beacons MAC can miss before it        */
+                                                     /*   considers the network lost (1 byte)                       */        
+        PARAM_DIFS_AND_EIFS               = 13,      /* delay intervals in usec DIFS and EIFS ( 2 * 2 bytes)        */
+        PARAM_TX_POWER                    = 14,      /* max and min boundaries for Tx power (2 * 2 bytes)           */
+        PARAM_DEFAULT_DEST_MAC_ADDR       = 15,      /* stores a persistant destination MAC address for small       */
+                                                     /*   Tx Requests (6 bytes)                                     */
+        PARAM_WPA_INFO_ELEMENT            = 16,      /* stores a WPA info element (IE) in 802.11 IE format.  Used   */
+                                                     /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
+        PARAM_RSN_INFO_ELEMENT            = 17,      /* stores a RSN info element (IE) in 802.11 IE format.  Used   */
+                                                     /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
+        PARAM_ON_OFF_RADIO                = 18,      /* bool to force a radio state change 1 = on 0 = off (1 byte)  */
+        PARAM_COMPARE_ADDRESS             = 19,      /* A MAC address used to filter received frames                */
+                                                     /*   (sizeof(tAddressFilterInput) = 8 bytes)                   */
+        PARAM_SUBTYPE_FILTER              = 20,      /* Bitfield used to filter received frames based on type and   */
+                                                     /* sub-type (sizeof(tAddressFilterInput) = 4 bytes)            */
+        PARAM_ACK_CONTROL                 = 21,      /* Bitfield used to control the type of frames that cause ACK  */
+                                                     /*   responses (sizeof(tAckControlInput) = 4 bytes)            */
+        PARAM_STAT_COUNTERS               = 22,      /* Complete set of statistics counters that are maintained by  */
+                                                     /*   the MAC                                                   */
+        PARAM_TX_THROTTLE_TABLE           = 23,      /* Custom Tx Rate throttle table to be used to control tx Rate */
+        PARAM_TX_THROTTLE_TABLE_ON_OFF    = 24,      /* A boolean to enable/disable use of the throttle Table and a */
+                                                     /*   tx rate to use if the throttle table is disabled          */
+        PARAM_TX_CONTENTION_ARRAY         = 25,      /* Custom Retry contention ladder used for backoff calculation */
+                                                     /*   prior to a Tx attempt                                     */
+        PARAM_SYSTEM_VERSION              = 26,      /* 2 byte representation of a version number for the ROM and   */
+                                                     /*  Patch                                                      */
+        PARAM_STATUE_INFO                 = 27,      /* MAC State information                                       */
+    	PARAM_SECURITY_CONTROL            = 28,      /* 2 byte data structure to enable/disable encryption          */
+        PARAM_FACTORY_SET_TX_MAX_POWER    = 29,      /* gets the factory-set tx max power level                     */
+        PARAM_MRF24WB0M                   = 30,       /* a set enables MRF24WB0M Mode, a get gets the version       */   
+        PARAM_CONNECT_CONTEXT             = 31,       /* gets current connection status      */ 
+        PARAM_WICOM_MODE 	              = 32,       /* a set enables WiCom mode     */ 
+        PARAM_WPA_TIMEOUT				  = 33,		 /* configure 4 way handshaking transaction timeout */
+        PARAM_TX_MODE				  	  = 34,		 /* choose tx mode */
+		PARAM_ENABLE_DEBUG_PRINT		  = 35,		 /* enable WPS / P2P debug prints */
+		PARAM_BROADCAST_PROBE_RESPONSE    = 36,		/* enable broadcast probe response */
+	    PARAM_LINK_DOWN_THRESHOLD		  = 37,		 /* sets link down threshold */
+	    PARAM_STACK_VERSION		  	  = 38,		 /* notifies stack version to RF FW */
+	    PARAM_SET_PSK				  = 39,		/* set psk */
+	    PARAM_YIELD_PASSPHRASE_TOHOST = 40,		/* forces module FW to send passphrase to host in WPS */
+	    PARAM_USE_SW_MULTICAST_FILTER = 41		/* force to use sw multicast filter instead of hw filter */
+    } tWFParam;
+#else /* MRF24WB */
+    /* tWFParam - Names (ID's) of WF MAC configurable parameters. */
+    typedef enum
+    {
+    
+        PARAM_MAC_ADDRESS                 = 1,       /* the device MAC address (6 bytes)                            */
+        PARAM_REGIONAL_DOMAIN             = 2,       /* the device Regional Domain (1 byte)                         */
+        PARAM_RTS_THRESHOLD               = 3,       /* the RTS byte threshold 256 - 2347 (2 bytes)                 */
+        PARAM_LONG_FRAME_RETRY_LIMIT      = 4,       /* the long Frame Retry limit  (1 byte)                        */ 
+        PARAM_SHORT_FRAME_RETRY_LIMIT     = 5,       /* the short Frame Retry limit (1 byte)                        */
+        PARAM_TX_LIFETIME_TU              = 6,       /* the Tx Request lifetime in TU's 0 - 4194303 (4 bytes)       */
+        PARAM_RX_LIFETIME_TU              = 7,       /* the Rx Frame lifetime in TU's 0 - 4194303 (4 bytes)         */
+        PARAM_SUPPLICANT_ON_OFF           = 8,       /* boolean 1 = on 0 = off (1 byte)                             */
+        PARAM_CONFIRM_DATA_TX_REQ         = 9,       /* boolean 1 = on 0 = off (1 byte)                             */
+        PARAM_MASTER_STATE                = 10,      /* master state of the MAC using enumerated values (1 byte)    */
+        PARAM_HOST_ALERT_BITS             = 11,      /* a bit field which enables/disables various asynchronous     */
+                                                     /*   indications from the MAC to the host (2 bytes)            */
+        PARAM_NUM_MISSED_BEACONS          = 12,      /* number of consecutive beacons MAC can miss before it        */
+                                                     /*   considers the network lost (1 byte)                       */        
+        PARAM_DIFS_AND_EIFS               = 13,      /* delay intervals in usec DIFS and EIFS ( 2 * 2 bytes)        */
+        PARAM_TX_POWER                    = 14,      /* max and min boundaries for Tx power (2 * 2 bytes)           */
+        PARAM_DEFAULT_DEST_MAC_ADDR       = 15,      /* stores a persistant destination MAC address for small       */
+                                                     /*   Tx Requests (6 bytes)                                     */
+        PARAM_WPA_INFO_ELEMENT            = 16,      /* stores a WPA info element (IE) in 802.11 IE format.  Used   */
+                                                     /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
+        PARAM_RSN_INFO_ELEMENT            = 17,      /* stores a RSN info element (IE) in 802.11 IE format.  Used   */
+                                                     /*   in Assoc Request and Supplicant exchange (3 - 258 bytes)  */
+        PARAM_ON_OFF_RADIO                = 18,      /* bool to force a radio state change 1 = on 0 = off (1 byte)  */
+        PARAM_COMPARE_ADDRESS             = 19,      /* A MAC address used to filter received frames                */
+                                                     /*   (sizeof(tAddressFilterInput) = 8 bytes)                   */
+        PARAM_SUBTYPE_FILTER              = 20,      /* Bitfield used to filter received frames based on type and   */
+                                                     /* sub-type (sizeof(tAddressFilterInput) = 4 bytes)            */
+        PARAM_ACK_CONTROL                 = 21,      /* Bitfield used to control the type of frames that cause ACK  */
+                                                     /*   responses (sizeof(tAckControlInput) = 4 bytes)            */
+        PARAM_STAT_COUNTERS               = 22,      /* Complete set of statistics counters that are maintained by  */
+                                                     /*   the MAC                                                   */
+        PARAM_TX_THROTTLE_TABLE           = 23,      /* Custom Tx Rate throttle table to be used to control tx Rate */
+        PARAM_TX_THROTTLE_TABLE_ON_OFF    = 24,      /* A boolean to enable/disable use of the throttle Table and a */
+                                                     /*   tx rate to use if the throttle table is disabled          */
+        PARAM_TX_CONTENTION_ARRAY         = 25,      /* Custom Retry contention ladder used for backoff calculation */
+                                                     /*   prior to a Tx attempt                                     */
+        PARAM_SYSTEM_VERSION              = 26,      /* 2 byte representation of a version number for the ROM and   */
+                                                     /*  Patch                                                      */
+        PARAM_STATUE_INFO                 = 27,      /* MAC State information                                       */
+    	PARAM_SECURITY_CONTROL            = 28,      /* 2 byte data structure to enable/disable encryption          */
+        PARAM_FACTORY_SET_TX_MAX_POWER    = 29,      /* gets the factory-set tx max power level                     */
+        PARAM_MRF24WB0M                   = 30,       /* a set enables MRF24WB0M Mode, a get gets the version       */ 
+        PARAM_BROADCAST_PROBE_RESPONSE    = 31,       /* Allows broadcast probe response in Adhoc mode       */   
+    	PARAM_AGGRESSIVE_PS    			  = 32,       /* Allows to turn off RF power quicker       */ 
+    	PARAM_CONNECT_CONTEXT             = 33,       /* gets current connection status      */ 
+    	PARAM_DEFERRED_POWERSAVE          = 34,       /* delay power start after dhcp done      */
+	PARAM_LINK_DOWN_THRESHOLD	  = 35		 /* sets link down threshold */
+    } tWFParam;
+#endif	/* MRF24WG */
 
 /* used in byte 2 of WF_CONNECTION_LOST_EVENT_SUBTYPE */
 #define WF_CONNECTION_TEMPORARILY_LOST  ((UINT8)0)
@@ -299,7 +410,7 @@ kZGMACResultNoStoredBssDesc          // 39
 /*==========================================================================*/
 
 /* This structure describes the format of the first four bytes of all */
-/* mgmt response messages received from the MRF24WB0M                 */
+/* mgmt response messages received from the MRF24W                 */
 typedef struct mgmtRxHdrStruct
 {
     UINT8  type;          /* always 0x02                  */
@@ -316,7 +427,19 @@ typedef struct mgmtIndicateHdrStruct
     UINT8 subType;    /* event type                           */
 } tMgmtIndicateHdr;    
 
+typedef struct mgmtIndicatePassphraseReady
+{
+	UINT8 keyLen;
+	UINT8 key[64];
+	UINT8 ssidLen;
+	UINT8 ssid[32];
+} tMgmtIndicatePassphraseReady;   
 
+typedef struct PassphraseReady
+{
+    BOOL valid;
+	tMgmtIndicatePassphraseReady passphrase;
+} tPassphraseReady;  
 
 /*==========================================================================*/
 /*                                  FUNCTION PROTOTYPES                     */
@@ -353,20 +476,19 @@ BOOL WFisTxMgmtReady(void);
 
 void WFFreeMgmtTx(void);
 
-BOOL SendRAWManagementFrame(UINT16 bufLen);
+void SendRAWManagementFrame(UINT16 bufLen);
 
 void WFEnableMRF24WB0MMode(void);
+void WFGetMRF24WB0MVersion(UINT8 *p_version);
 
 void WFEnableBroadcastProbeResponse(void);
 void WFEnableDeferredPowerSave(void);
 
 #if defined (WF_AGGRESSIVE_PS)
+#if !defined(MRF24WG)
 void WFEnableAggressivePowerSave(void);
 #endif
-
-void WFGetMRF24WB0MVersion(UINT8 *p_version);
-
-void IgnoreNextMgmtResult();
+#endif
 
 /* When asserts are enabled, call this function.  When asserts are not enabled compile it out */
 #if defined(WF_DEBUG)

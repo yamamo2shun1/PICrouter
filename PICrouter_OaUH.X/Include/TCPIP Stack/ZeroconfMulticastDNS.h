@@ -47,7 +47,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Pradeep Reddy        31 Mar 2009 Initial creation
  * Pradeep Reddy        23 Apr 2009 DNS-SD implementation
- * Brad Rex             05 Apr 2010 Updated for MRF24WB0M
+ * Brad Rex             05 Apr 2010 Updated for MRF24W
  ********************************************************************/
 #ifndef __ZEROCONF_MULTICAST_DNS_H
 #define __ZEROCONF_MULTICAST_DNS_H
@@ -62,6 +62,9 @@
 
 // define the debugging levels
 #include "TCPIP Stack/ZeroconfHelper.h"
+#if defined(MRF24WG)
+#include "WFApi.h"
+#endif
 
 // For verbose debugging
 #ifdef DEBUG_MDNS

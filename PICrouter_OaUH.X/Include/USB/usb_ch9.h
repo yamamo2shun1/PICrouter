@@ -591,7 +591,7 @@ This is used in the descriptors.
 #define _BULK       0x02            //Bulk Transfer
 
 #define _INTERRUPT        0x03            //Interrupt Transfer
-#if defined(__18CXX) || defined(__C30__)
+#if defined(__18CXX) || defined(__C30__) || defined __XC16__
     #define _INT        0x03            //Interrupt Transfer
 #endif
 

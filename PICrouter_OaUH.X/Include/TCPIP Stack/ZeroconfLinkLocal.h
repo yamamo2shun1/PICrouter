@@ -46,7 +46,7 @@
  * Author               Date        Comment
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Pradeep Reddy        01 Mar 2009 Initial
- * Brad Rex             05 Apr 2010 Updated for MRF24WB0M.
+ * Brad Rex             05 Apr 2010 Updated for MRF24W.
  ********************************************************************/
 #ifndef __ZEROCONF_LINK_LOCAL_H
 #define __ZEROCONF_LINK_LOCAL_H

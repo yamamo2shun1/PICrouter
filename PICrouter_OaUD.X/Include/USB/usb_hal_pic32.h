@@ -132,7 +132,7 @@ Description:
 #endif
 
 #define USBSetBDTAddress(addr)         {U1BDTP3 = (((DWORD)KVA_TO_PA(addr)) >> 24); U1BDTP2 = (((DWORD)KVA_TO_PA(addr)) >> 16); U1BDTP1 = (((DWORD)KVA_TO_PA(addr)) >> 8);}
-#define USBPowerModule() U1PWRCSET = 1;
+#define USBPowerModule() U1PWRCbits.USBPWR = 1;
 #define USBPingPongBufferReset U1CONbits.PPBRST
 
 #define USBTransactionCompleteIE U1IEbits.TRNIE
@@ -297,7 +297,7 @@ typedef union _POINTER
     U1CON = 0;\
     U1IE = 0;\
     U1OTGIE = 0;\
-    U1PWRCSET = 1;\
+    U1PWRCbits.USBPWR = 1;\
     USBDeviceState = DETACHED_STATE;\
 }    
 

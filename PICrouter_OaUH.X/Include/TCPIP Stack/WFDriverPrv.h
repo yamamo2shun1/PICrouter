@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver Internal use
+ MRF24W Driver Internal use
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFDriverPrv.h
@@ -45,7 +45,7 @@
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  KO                 31 Oct 2008 Port to PIC24F and PIC32 for TCP/IP stack v4.52
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef _WFDRIVERPRV_H_
@@ -70,7 +70,7 @@
 /*-------------------*/
 /* Endianness Macros */
 /*-------------------*/
-/* if the Host CPU is Little Endian, which does not match the MRF24WB0M */
+/* if the Host CPU is Little Endian, which does not match the MRF24W */
 #if (HOST_CPU_ENDIANNESS == WF_LITTLE_ENDIAN)
     
     /* 32-bit data type conversion */
@@ -81,7 +81,7 @@
     #define HSTOWFS(a) (((a) << 8) | ((a) >> 8))
     #define WFSTOHS(a) HSTOWFS(a)
     
-/* else Host CPU is Big-Endian, which matches the MRF24WB0M */
+/* else Host CPU is Big-Endian, which matches the MRF24W */
 #else
     #define HTOWFL(a)   (a)
     #define WFTOHL(a)   (a)    
@@ -136,13 +136,13 @@
 
 
 /*--------------------------------*/
-/* MRF24WB0M 8-bit Host Registers */
+/* MRF24W 8-bit Host Registers */
 /*--------------------------------*/
 #define WF_HOST_INTR_REG            ((UINT8)(0x01))  /* 8-bit register containing 1st level interrupt bits. */
 #define WF_HOST_MASK_REG            ((UINT8)(0x02))  /* 8-bit register containing 1st level interrupt mask. */
 
 /*---------------------------------*/
-/* MRF24WB0M 16-bit Host Registers */
+/* MRF24W 16-bit Host Registers */
 /*---------------------------------*/
 #define WF_HOST_RAW0_CTRL1_REG      ((UINT16)(0x26))
 #define WF_HOST_RAW0_STATUS_REG     ((UINT16)(0x28))
@@ -165,16 +165,16 @@
 #define WF_INDEX_DATA_REG           ((UINT16)(0x3f)) /* 16-bit register to read or write address-indexed register           */
 
 /*----------------------------------------------------------------------------------------*/
-/* MRF24WB0M registers accessed via the WF_INDEX_ADDR_REG and WF_INDEX_DATA_REG registers */
+/* MRF24W registers accessed via the WF_INDEX_ADDR_REG and WF_INDEX_DATA_REG registers */
 /*----------------------------------------------------------------------------------------*/
 #define WF_HW_STATUS_REG            ((UINT16)(0x2a)) /* 16-bit read only register providing hardware status bits */
 #define WF_CONFIG_CTRL0_REG         ((UINT16)(0x2e)) /* 16-bit register used to initiate Hard reset              */
 #define WF_LOW_POWER_STATUS_REG     ((UINT16)(0x3e)) /* 16-bit register read to determine when low power is done */
 
 /* This bit mask is used in the HW_STATUS_REG to determine */
-/* when the MRF24WB0M has completed its hardware reset.       */
-/*  0 : MRF24WB0M is in reset                                 */
-/*  1 : MRF24WB0M is not in reset                             */
+/* when the MRF24W has completed its hardware reset.       */
+/*  0 : MRF24W is in reset                                 */
+/*  1 : MRF24W is not in reset                             */
 #define WF_HW_STATUS_NOT_IN_RESET_MASK ((UINT16)(0x1000)) 
 
 /* Definitions represent individual interrupt bits for the 8-bit host interrupt registers */

@@ -68,10 +68,22 @@ extern	DWORD_VAL snmpEngineMaxMessageSize;
 extern UINT8 snmpEngnIDLength;
 #define SNMPV3_USM_MAX_USER	3
 
-#define USER_SECURITY_NAME_LEN 16
-#define AUTH_LOCALIZED_PASSWORD_KEY_LEN	20
+//SNMPv3 User Security Name length
+#define USER_SECURITY_NAME_LEN (16)
+//User security name length for memory validation
+#define SNMPV3_USER_SECURITY_NAME_LEN_MEM_USE (USER_SECURITY_NAME_LEN+1)
+
+//SNMPv3 Authentication Localized passwed key lenegth size
+#define AUTH_LOCALIZED_PASSWORD_KEY_LEN	(20)
+//SNMPv3 authentication localized Key length for memory validation
+#define SNMPV3_AUTH_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE (AUTH_LOCALIZED_PASSWORD_KEY_LEN+1)
+
 //#define PRIV_LOCALIZED_PASSWORD_KEY_LEN	16
-#define PRIV_LOCALIZED_PASSWORD_KEY_LEN	20
+// SNMPv3 Privacy Pasword key length size
+#define PRIV_LOCALIZED_PASSWORD_KEY_LEN	(20)
+//SNMPv3 privacy key length size for memory validation
+#define SNMPV3_PRIV_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE (PRIV_LOCALIZED_PASSWORD_KEY_LEN+1)
+
 
 /* 
 Registering Responsibility for Handling SNMP PDUs 
@@ -188,11 +200,11 @@ struct dispatcherProcessPdu  //process Request/Notification PDU
 typedef struct
 {
 	
-	UINT8 userName[USER_SECURITY_NAME_LEN];
-	UINT8 userAuthPswd[AUTH_LOCALIZED_PASSWORD_KEY_LEN]; //RFC specifies not to save password with the managed nodes instead store pswd ipad and opad values.
-	UINT8 userPrivPswd[PRIV_LOCALIZED_PASSWORD_KEY_LEN];
-	UINT8 userAuthPswdLoclizdKey[AUTH_LOCALIZED_PASSWORD_KEY_LEN];
-	UINT8 userPrivPswdLoclizdKey[PRIV_LOCALIZED_PASSWORD_KEY_LEN];
+	UINT8 userName[SNMPV3_USER_SECURITY_NAME_LEN_MEM_USE];
+	UINT8 userAuthPswd[SNMPV3_AUTH_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE]; //RFC specifies not to save password with the managed nodes instead store pswd ipad and opad values.
+	UINT8 userPrivPswd[SNMPV3_PRIV_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE];
+	UINT8 userAuthPswdLoclizdKey[SNMPV3_AUTH_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE];
+	UINT8 userPrivPswdLoclizdKey[SNMPV3_PRIV_LOCALIZED_PASSWORD_KEY_LEN_MEM_USE];
 	//UINT8 userPrivPswdLoclizdKey[20];
 	UINT8 userAuthLocalKeyHmacIpad[64];
 	UINT8 userAuthLocalKeyHmacOpad[64];

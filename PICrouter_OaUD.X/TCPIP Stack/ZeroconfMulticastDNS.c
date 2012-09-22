@@ -2732,7 +2732,7 @@ SET_PROBE_ANNOUNCE_TIMER:
 							INFO_MDNS_PRINT("MDNS_STATE_ANNOUNCE --> MDNS_STATE_DEFEND \r\n");
 
 							DisplayHostName(gHostCtx.szHostName);
-                            //syama DisplayIPValue(AppConfig.MyIPAddr);
+                            //DisplayIPValue(AppConfig.MyIPAddr);
 						}
 						else
 						{
@@ -2957,7 +2957,7 @@ mDNSMulticastFilterRegister(void)
 void mDNSDumpInfo(void)
 {
 	BYTE tmp[8];
-#if 0//syama
+#if 0
 	putsUART("   Host registered: "); putsUART((char *)gHostCtx.szUserChosenHostName); putsUART("\r\n");
 	putsUART("         qualified: "); putsUART((char *)gHostCtx.szHostName); putsUART("\r\n");
 	putsUART("Service registered: "); putsUART((char *)gSDCtx.srv_name); putsUART("\r\n");
@@ -2965,7 +2965,7 @@ void mDNSDumpInfo(void)
 	sprintf((char *) tmp, "%d", gSDCtx.sd_port);
 	putsUART("              port: "); putsUART((char *)tmp); putsUART("\r\n");
 	putsUART("    TXT registered: "); putsUART((char *)gSDCtx.sd_txt_rec); putsUART("\r\n");
-#endif//syama
+#endif
 }
 
 //#endif

@@ -70,9 +70,12 @@
 #define _SNMPSetTxOffset(o)     (SNMPTxOffset = o)
 #define _SNMPGetTxOffset()      SNMPTxOffset
 
+//This macro will be used to avoid SNMP OID memory buffer corruption 
+#define SNMP_MAX_OID_LEN_MEM_USE   (18)
 
 //Change this to match your OID string length.
-#define OID_MAX_LEN             (18)
+#define OID_MAX_LEN             (SNMP_MAX_OID_LEN_MEM_USE+1)
+
 
 #define SNMP_START_OF_VAR       (0)
 #define SNMP_END_OF_VAR         (0xff)
@@ -83,9 +86,12 @@
 //This table maintains list of intereseted receivers
 //who should receive notifications when some interesting
 //event occurs.
-#define TRAP_TABLE_SIZE         (2)
-#define TRAP_COMMUNITY_MAX_LEN       (8)
 
+//This macro will be used to avoid SNMP OID memory buffer corruption 
+#define SNMP_TRAP_COMMUNITY_MAX_LEN_MEM_USE   (8)
+
+#define TRAP_TABLE_SIZE         (2)
+#define TRAP_COMMUNITY_MAX_LEN       (SNMP_TRAP_COMMUNITY_MAX_LEN_MEM_USE+1)
 
 
 // Section:  SNMP specific data validation

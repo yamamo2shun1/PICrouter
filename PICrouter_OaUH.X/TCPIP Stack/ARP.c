@@ -192,57 +192,6 @@ BOOL ARPDeRegisterCallbacks(CHAR reg_id)
 
 /*****************************************************************************
   Function:
-	void ARPSendPkt(IP_ADDR* SrcIPAddr, IP_ADDR* DestIPAddr, int op_req )
-
-  Summary:
-	Transmits an ARP request/Reply initated by Application or external module.
-	
-  Description:
-  	This function transmits and ARP request/reply to determine the hardware
-  	address of a given IP address (or) Announce self-address to all nodes in
-    network. Extended for zeroconf protocol. 
-
-  Precondition:
-	ARP packet is ready in the MAC buffer.
-
-  Parameters:
-	SrcIPAddr - The Source IP-address 
-    DestIPAddr - The Destination IP-Address
-    op_req     - Operation Request (ARP_REQ/ARP_RESP)
-
-  Returns:
-    TRUE - The ARP packet was generated properly
-  	FALSE - Not possible return value
-
-  Remarks:
-  	This API is to give control over AR-packet to external modules. 
-  ***************************************************************************/
-BOOL ARPSendPkt(DWORD SrcIPAddr, DWORD DestIPAddr, BYTE op_req )
-{
-    ARP_PACKET packet;
-
-    if(op_req == ARP_REQ)
-        packet.Operation = ARP_OPERATION_REQ;
-    else if (op_req == ARP_RESP) 
-        packet.Operation = ARP_OPERATION_RESP;
-    else
-        return FALSE; // Invalid op-code
-
-	packet.TargetMACAddr.v[0]   = 0xff;
-	packet.TargetMACAddr.v[1]   = 0xff;
-	packet.TargetMACAddr.v[2]   = 0xff;
-	packet.TargetMACAddr.v[3]   = 0xff;
-	packet.TargetMACAddr.v[4]   = 0xff;
-	packet.TargetMACAddr.v[5]   = 0xff;
-
-    packet.TargetIPAddr.Val	= DestIPAddr;
-    packet.SenderIPAddr.Val = SrcIPAddr;
-
-    return ( ARPPut(&packet) );
-}
-
-/*****************************************************************************
-  Function:
 	void ARPProcessRxPkt(ARP_PACKET* packet)
 
   Summary:
@@ -296,6 +245,73 @@ void ARPProcessRxPkt(ARP_PACKET* packet)
     }
 }
 #endif
+
+/*****************************************************************************
+  Function:
+	void ARPSendPkt(IP_ADDR* SrcIPAddr, IP_ADDR* DestIPAddr, int op_req )
+
+  Summary:
+	Transmits an ARP request/Reply initated by Application or external module.
+	
+  Description:
+  	This function transmits and ARP request/reply to determine the hardware
+  	address of a given IP address (or) Announce self-address to all nodes in
+    network. Extended for zeroconf protocol. 
+
+  Precondition:
+	ARP packet is ready in the MAC buffer.
+
+  Parameters:
+	SrcIPAddr - The Source IP-address 
+    DestIPAddr - The Destination IP-Address
+    op_req     - Operation Request (ARP_REQ/ARP_RESP)
+
+  Returns:
+    TRUE - The ARP packet was generated properly
+  	FALSE - Not possible return value
+
+  Remarks:
+  	This API is to give control over AR-packet to external modules. 
+  ***************************************************************************/
+BOOL ARPSendPkt(DWORD SrcIPAddr, DWORD DestIPAddr, BYTE op_req )
+{
+    ARP_PACKET packet;
+
+#ifdef STACK_USE_ZEROCONF_LINK_LOCAL
+#define KS_ARP_IP_MULTICAST_HACK y
+#ifdef KS_ARP_IP_MULTICAST_HACK
+	DWORD_VAL *DestAddr = (DWORD_VAL *)&DestIPAddr;
+	if ((DestAddr->v[0] >= 224) &&(DestAddr->v[0] <= 239)) {
+		// "Resolve" the IP to MAC address mapping for
+		// IP multicast address range from 224.0.0.0 to 239.255.255.255
+	
+		Cache.MACAddr.v[0] = 0x01;
+		Cache.MACAddr.v[1] = 0x00;
+		Cache.MACAddr.v[2] = 0x5E;
+		Cache.MACAddr.v[3] = 0x7f & DestAddr->v[1];
+		Cache.MACAddr.v[4] = DestAddr->v[2];
+		Cache.MACAddr.v[5] = DestAddr->v[3];
+	
+		Cache.IPAddr.Val = DestAddr->Val;
+	
+		return TRUE;
+	}
+#endif
+#endif
+
+    packet.Operation = op_req;
+	packet.TargetMACAddr.v[0]   = 0xff;
+	packet.TargetMACAddr.v[1]   = 0xff;
+	packet.TargetMACAddr.v[2]   = 0xff;
+	packet.TargetMACAddr.v[3]   = 0xff;
+	packet.TargetMACAddr.v[4]   = 0xff;
+	packet.TargetMACAddr.v[5]   = 0xff;
+
+    packet.TargetIPAddr.Val	= DestIPAddr;
+    packet.SenderIPAddr.Val = SrcIPAddr;
+
+    return ( ARPPut(&packet) );
+}
 
 
 /*****************************************************************************
@@ -479,7 +495,7 @@ BOOL ARPProcess(void)
                                 * was leading to flooding of ARP-answeres */
                                 if(!memcmp (&packet.SenderMACAddr, &AppConfig.MyMACAddr, 6))
                                 {
-                                     //syama putsUART("Loopback answer suppressed \r\n");
+                                     //putsUART("Loopback answer suppressed \r\n");
                                      return TRUE;
                                 }
 #endif
@@ -531,8 +547,6 @@ BOOL ARPProcess(void)
 
     return TRUE;
 }
-
-
 
 /*****************************************************************************
   Function:
@@ -606,6 +620,7 @@ void ARPResolve(IP_ADDR* IPAddr)
     ARPPut(&packet);
 }
 #endif
+
 
 
 

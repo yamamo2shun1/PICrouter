@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver Console Messages
+ MRF24W Driver Console Messages
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFConsoleMsgs.h
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef __WFCONSOLEMSGS_H
@@ -65,9 +65,16 @@ enum validConsoleCmds
     GET_WF_VERSION_MSG,
     RESET_HOST,
     CLEAR_SCREEN_MSG,
+#if defined(MRF24WG)
+    WPS_PIN_MSG,
+    WPS_PUSHBUTTON_MSG,
+    WPS_GET_CREDENTIALS_MSG,
+#endif /* MRF24WG */
+
     IFCONFIG_MSG,
     IWCONFIG_MSG,
     IWPRIV_MSG,
+
     INVALID_CMD = 0xFF
 };
 
@@ -110,12 +117,12 @@ extern  const UINT8     g_numCmds;
 //                                 Function Prototypes
 //----------------------------------------------------------------------------
 void   TokenizeCmdLine(INT8 *p_line);
-UINT8           GetCmdId(void);
+UINT8  GetCmdId(void);
 void   Output_Monitor_Hdr(void);
-BOOL         ConvertASCIIHexToBinary(INT8 *p_ascii, UINT16 *p_binary);
-BOOL         ConvertASCIIUnsignedDecimalToBinary(INT8 *p_ascii, UINT16 *p_binary);
-BOOL         ConvertASCIISignedDecimalToBinary(INT8 *p_ascii, INT16 *p_binary);
-UINT8           HexToBin(UINT8 hexChar);
+BOOL   ConvertASCIIHexToBinary(INT8 *p_ascii, UINT16 *p_binary);
+BOOL   ConvertASCIIUnsignedDecimalToBinary(INT8 *p_ascii, UINT16 *p_binary);
+BOOL   ConvertASCIISignedDecimalToBinary(INT8 *p_ascii, INT16 *p_binary);
+UINT8  HexToBin(UINT8 hexChar);
 void   WFConsoleSetMsgFlag(void);
 
 

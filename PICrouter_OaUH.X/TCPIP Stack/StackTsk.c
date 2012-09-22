@@ -82,9 +82,9 @@ NODE_INFO remoteNode;
 #if defined (WF_CS_TRIS) && defined (STACK_USE_DHCP_CLIENT)
 BOOL g_DhcpRenew = FALSE;
 extern void SetDhcpProgressState(void);
+UINT32 g_DhcpRetryTimer = 0;
 #endif
 
-extern BOOL ARPProcess(void);
 
 /*********************************************************************
  * Function:        void StackInit(void)
@@ -103,6 +103,7 @@ extern BOOL ARPProcess(void);
  ********************************************************************/
 void StackInit(void)
 {
+	static BOOL once = FALSE;
     smStack                     = SM_STACK_IDLE;
 
 #if defined(STACK_USE_IP_GLEANING) || defined(STACK_USE_DHCP_CLIENT)
@@ -114,10 +115,22 @@ void StackInit(void)
 
 #endif
 
-	// Seed the LFSRRand() function
-	LFSRSeedRand(GenerateRandomDWORD());
+#if defined (WF_CS_TRIS) && defined (STACK_USE_DHCP_CLIENT)
+	g_DhcpRenew = FALSE;
+	g_DhcpRetryTimer = 0;
+#endif
+
+	if (!once) {
+		// Seed the LFSRRand() function
+		LFSRSeedRand(GenerateRandomDWORD());
+		once = TRUE;
+	}
 
     MACInit();
+
+#if defined (WF_AGGRESSIVE_PS) && defined (WF_CS_TRIS)
+	WFEnableAggressivePowerSave();
+#endif
 
 #if defined(WF_CS_TRIS) && defined(STACK_USE_EZ_CONFIG) && !defined(__18CXX)
     WFEasyConfigInit();
@@ -207,12 +220,11 @@ void StackTask(void)
 
    
     #if defined( WF_CS_TRIS )
-        // This task performs low-level MAC processing specific to the MRF24WB0M
+        // This task performs low-level MAC processing specific to the MRF24W
         MACProcess();
         #if defined( STACK_USE_EZ_CONFIG ) && !defined(__18CXX)
             WFEasyConfigMgr();
         #endif
-        
         
     	#if defined(STACK_USE_DHCP_CLIENT)
         	// Normally, an application would not include  DHCP module
@@ -228,6 +240,12 @@ void StackTask(void)
         			AppConfig.MyMask.Val = AppConfig.DefaultMask.Val;
         			AppConfig.Flags.bInConfigMode = TRUE;
         			DHCPInit(0);
+					g_DhcpRetryTimer = (UINT32)TickGet();
+        		} else {
+        			if (g_DhcpRetryTimer && TickGet() - g_DhcpRetryTimer >= TICKS_PER_SECOND * 8) {
+						DHCPInit(0);
+						g_DhcpRetryTimer = (UINT32)TickGet();
+        			}
         		}
         	
         		// DHCP must be called all the time even after IP configuration is
@@ -236,13 +254,14 @@ void StackTask(void)
         		// time.
         		DHCPTask();
         		
-        		if(DHCPIsBound(0))
+        		if(DHCPIsBound(0)) {
         			AppConfig.Flags.bInConfigMode = FALSE;
+					g_DhcpRetryTimer = 0;
+        		}
         	}
     	#endif // STACK_USE_DHCP_CLIENT
         
-        
-    #endif
+    #endif // WF_CS_TRIS
 
 
 	#if defined(STACK_USE_DHCP_CLIENT) && !defined(WF_CS_TRIS)
@@ -278,6 +297,7 @@ void StackTask(void)
 			AppConfig.Flags.bInConfigMode = FALSE;
 	}
 	#endif
+	
 
     #if defined (STACK_USE_AUTO_IP)
     AutoIPTasks();
@@ -474,5 +494,8 @@ void RenewDhcp(void)
     g_DhcpRenew = TRUE;
     SetDhcpProgressState();
 }    
+    
 #endif
+
+
 

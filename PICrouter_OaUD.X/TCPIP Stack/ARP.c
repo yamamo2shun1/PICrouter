@@ -495,7 +495,7 @@ BOOL ARPProcess(void)
                                 * was leading to flooding of ARP-answeres */
                                 if(!memcmp (&packet.SenderMACAddr, &AppConfig.MyMACAddr, 6))
                                 {
-                                     //syama putsUART("Loopback answer suppressed \r\n");
+                                     //putsUART("Loopback answer suppressed \r\n");
                                      return TRUE;
                                 }
 #endif

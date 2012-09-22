@@ -1,9 +1,9 @@
 /******************************************************************************
 
- MRF24WB0M Driver Console
+ MRF24W Driver Console
  Module for Microchip TCP/IP Stack
-  -Provides access to MRF24WB0M WiFi controller
-  -Reference: MRF24WB0M Data sheet, IEEE 802.11 Standard
+  -Provides access to MRF24W WiFi controller
+  -Reference: MRF24W Data sheet, IEEE 802.11 Standard
 
 *******************************************************************************
  FileName:		WFConsole.h
@@ -44,7 +44,7 @@
 
  Author				Date		Comment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- KH                 27 Jan 2010 Updated for MRF24WB0M
+ KH                 27 Jan 2010 Updated for MRF24W
 ******************************************************************************/
 
 #ifndef _WFCONSOLE_H_
@@ -76,7 +76,6 @@ extern void WFConsoleInit(void);
 extern void WFConsoleProcess(void);
 extern void WFConsoleProcessEpilogue(void);
 extern void WFConsoleReqClear(void);
-extern void WFConsoleProcess(void);
 extern BOOL WFConsoleIsConsoleMsgReceived(void);
 extern void WFConsoleReleaseConsoleMsg(void);
 extern INT8 ** WFConsoleGetCmdLineArgv(void);

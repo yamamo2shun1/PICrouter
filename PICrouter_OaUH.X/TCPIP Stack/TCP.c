@@ -3100,13 +3100,7 @@ static void SendTCP(BYTE vTCPFlags, BYTE vSendFlags)
 	}
 	if(vTCPFlags & FIN)
 	{
-		if(MyTCB.flags.bFINSent)
-			header.SeqNumber--;
-		else
-		{
-			MyTCB.MySEQ++;
-			MyTCB.flags.bFINSent = 1;
-		}
+        MyTCB.flags.bFINSent = 1;   // do not advance the seq no for FIN!
 	}
 
 	// Calculate the amount of free space in the RX buffer area of this socket
@@ -3853,11 +3847,19 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 			dwTemp = MyTCB.MySEQ + (DWORD)wTemp;
 
 			// Drop the packet if it ACKs something we haven't sent
-			if((LONG)(dwTemp - localAckNumber) < (LONG)0)
-			{
-				SendTCP(ACK, 0);
-				return;
-			}
+            dwTemp = (LONG)localAckNumber - (LONG)dwTemp;
+            if((LONG)dwTemp > 0)
+            {   // acknowledged more than we've sent??
+                if(!MyTCB.flags.bFINSent || dwTemp != 1)
+                {
+                    SendTCP(ACK, 0);
+                    return;
+                }
+                else
+                {
+                    localAckNumber--;   // since we don't count the FIN anyway
+                }
+            }
 
 			// Throw away all ACKnowledged TX data:
 			// Calculate what the last acknowledged sequence number was (ignoring any FINs we sent)
@@ -4011,7 +4013,7 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 
 		case TCP_LAST_ACK:
 			// Check to see if our FIN has been ACKnowledged
-			if(MyTCB.MySEQ == localAckNumber)
+			if(MyTCB.MySEQ + 1 == localAckNumber)
 				CloseSocket();
 			return;
 

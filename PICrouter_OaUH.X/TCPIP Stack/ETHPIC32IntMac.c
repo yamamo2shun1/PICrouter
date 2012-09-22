@@ -13,8 +13,8 @@
  * Software License Agreement
  *
  * The software supplied herewith by Microchip Technology Incorporated
- * (the ï¿½Companyï¿½) for its PICmicroï¿½ Microcontroller is intended and
- * supplied to you, the Companyï¿½s customer, for use solely and
+ * (the “Company”) for its PICmicro® Microcontroller is intended and
+ * supplied to you, the Company’s customer, for use solely and
  * exclusively on Microchip PICmicro Microcontroller products. The
  * software is owned by the Company and/or its supplier, and is
  * protected under applicable copyright laws. All rights are reserved.
@@ -23,7 +23,7 @@
  * civil liability for the breach of the terms and conditions of this
  * license.
  *
- * THIS SOFTWARE IS PROVIDED IN AN ï¿½AS ISï¿½ CONDITION. NO WARRANTIES,
+ * THIS SOFTWARE IS PROVIDED IN AN “AS IS” CONDITION. NO WARRANTIES,
  * WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
  * TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
  * PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
@@ -143,35 +143,35 @@ void MACInit(void)
         BYTE		addr[6];            // address itself
     }SysMACAddr;        // aligned MAC address
 
-    int     ix;
-    eEthRes ethRes, phyInitRes;
-    BYTE    useFactMACAddr[6] = {0x00, 0x04, 0xa3, 0x00, 0x00, 0x00};		// to check if factory programmed MAC address needed
-    BYTE    unsetMACAddr[6] =   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};		// not set MAC address
+    int		ix;
+	eEthRes		ethRes, phyInitRes;
+	BYTE		useFactMACAddr[6] = {0x00, 0x04, 0xa3, 0x00, 0x00, 0x00};		// to check if factory programmed MAC address needed
+	BYTE		unsetMACAddr[6] =   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};		// not set MAC address
 
-    int     initFail=0;
+    int		initFail=0;
 
-    _stackMgrRxBadPkts=_stackMgrRxOkPkts=_stackMgrInGetHdr=_stackMgrRxDiscarded=0;
-    _CurrWrPtr=_CurrRdPtr=0;
+	_stackMgrRxBadPkts=_stackMgrRxOkPkts=_stackMgrInGetHdr=_stackMgrRxDiscarded=0;
+	_CurrWrPtr=_CurrRdPtr=0;
 
-    // set the TX/RX pointers
-    for(ix=0; ix<sizeof(_TxDescriptors)/sizeof(*_TxDescriptors); ix++)
-    {
-        _TxDescriptors[ix].txBusy=0;
-    }
-    _pTxCurrDcpt=_TxDescriptors+0; _TxLastDcptIx=0; _TxCurrSize=0;
+	// set the TX/RX pointers
+	for(ix=0; ix<sizeof(_TxDescriptors)/sizeof(*_TxDescriptors); ix++)
+	{
+		_TxDescriptors[ix].txBusy=0;
+	}
+	_pTxCurrDcpt=_TxDescriptors+0; _TxLastDcptIx=0; _TxCurrSize=0;
 
-    _pRxCurrBuff=0; _RxCurrSize=0;
+	_pRxCurrBuff=0; _RxCurrSize=0;	
 
-    _linkNegotiation=_linkPresent=0;
-    _linkPrev=ETH_LINK_ST_DOWN;
+	_linkNegotiation=_linkPresent=0;
+	_linkPrev=ETH_LINK_ST_DOWN;
 	
 		
-    while(1)
-    {
-        eEthLinkStat	linkStat;
-        eEthOpenFlags	oFlags, linkFlags;
-	eEthMacPauseType pauseType;
-	eEthPhyCfgFlags cfgFlags;
+	while(1)
+	{
+		eEthLinkStat	linkStat;
+		eEthOpenFlags	oFlags, linkFlags;
+		eEthMacPauseType pauseType;
+		eEthPhyCfgFlags cfgFlags;
 
 
 		
@@ -189,100 +189,101 @@ void MACInit(void)
 
 
 	#if ETH_CFG_LINK
-		oFlags=ETH_CFG_AUTO?ETH_OPEN_AUTO:0;
-		oFlags|=ETH_CFG_10?ETH_OPEN_10:0;
-		oFlags|=ETH_CFG_100?ETH_OPEN_100:0;
-		oFlags|=ETH_CFG_HDUPLEX?ETH_OPEN_HDUPLEX:0;
-		oFlags|=ETH_CFG_FDUPLEX?ETH_OPEN_FDUPLEX:0;
-		if(ETH_CFG_AUTO_MDIX)
-		{
-                    oFlags|=ETH_OPEN_MDIX_AUTO;
-		}
-		else
-		{
-                    oFlags|=ETH_CFG_SWAP_MDIX?ETH_OPEN_MDIX_SWAP:ETH_OPEN_MDIX_NORM;
-		}			
+			oFlags=ETH_CFG_AUTO?ETH_OPEN_AUTO:0;
+			oFlags|=ETH_CFG_10?ETH_OPEN_10:0;
+			oFlags|=ETH_CFG_100?ETH_OPEN_100:0;
+			oFlags|=ETH_CFG_HDUPLEX?ETH_OPEN_HDUPLEX:0;
+			oFlags|=ETH_CFG_FDUPLEX?ETH_OPEN_FDUPLEX:0;
+			if(ETH_CFG_AUTO_MDIX)
+			{
+				oFlags|=ETH_OPEN_MDIX_AUTO;
+			}
+			else
+			{
+				oFlags|=ETH_CFG_SWAP_MDIX?ETH_OPEN_MDIX_SWAP:ETH_OPEN_MDIX_NORM;
+			}			
 	#else
 		oFlags= ETH_OPEN_DEFAULT;
 	#endif // ETH_CFG_LINK
 
 		
-	pauseType=(oFlags&ETH_OPEN_FDUPLEX)?ETH_MAC_PAUSE_CPBL_MASK:ETH_MAC_PAUSE_TYPE_NONE;
-
-	// start the initialization sequence	
-	EthInit();
-
-	phyInitRes=EthPhyInit(oFlags, cfgFlags, &linkFlags);
+		pauseType=(oFlags&ETH_OPEN_FDUPLEX)?ETH_MAC_PAUSE_CPBL_MASK:ETH_MAC_PAUSE_TYPE_NONE;
 		
-	// let the auto-negotiation (if any) take place
-	// continue the initialization
-	EthRxFiltersClr(ETH_FILT_ALL_FILTERS);
-	EthRxFiltersSet(ETH_FILT_CRC_ERR_REJECT|ETH_FILT_RUNT_REJECT|ETH_FILT_ME_UCAST_ACCEPT|ETH_FILT_MCAST_ACCEPT|ETH_FILT_BCAST_ACCEPT);
+		// start the initialization sequence	
+		EthInit();
 
+		phyInitRes=EthPhyInit(oFlags, cfgFlags, &linkFlags);
+		
+		// let the auto-negotiation (if any) take place
+		// continue the initialization
+		EthRxFiltersClr(ETH_FILT_ALL_FILTERS);
+		EthRxFiltersSet(ETH_FILT_CRC_ERR_REJECT|ETH_FILT_RUNT_REJECT|ETH_FILT_ME_UCAST_ACCEPT|ETH_FILT_MCAST_ACCEPT|ETH_FILT_BCAST_ACCEPT);
+
+		
 		// set the MAC address
         memcpy(SysMACAddr.addr, AppConfig.MyMACAddr.v, sizeof(SysMACAddr.addr));
         if(memcmp(SysMACAddr.addr, useFactMACAddr, sizeof(useFactMACAddr))==0 || memcmp(SysMACAddr.addr, unsetMACAddr, sizeof(unsetMACAddr))==0 )
-	{	// use the factory programmed address existent in the MAC
+		{	// use the factory programmed address existent in the MAC
             unsigned short* pS=(unsigned short*)SysMACAddr.addr;
             *pS++=EMACxSA2;
             *pS++=EMACxSA1;
             *pS=EMACxSA0;
             memcpy(AppConfig.MyMACAddr.v, SysMACAddr.addr, sizeof(SysMACAddr.addr));
-	}
+		}
         else
         {   // use the supplied address
-            EthMACSetAddress(SysMACAddr.addr);
+			EthMACSetAddress(SysMACAddr.addr);                
         }
+				
+		if(EthDescriptorsPoolAdd(EMAC_TX_DESCRIPTORS, ETH_DCPT_TYPE_TX, _MacAllocCallback, 0)!=EMAC_TX_DESCRIPTORS)
+		{
+			initFail++;
+		}
 
-	if(EthDescriptorsPoolAdd(EMAC_TX_DESCRIPTORS, ETH_DCPT_TYPE_TX, _MacAllocCallback, 0)!=EMAC_TX_DESCRIPTORS)
-	{
-            initFail++;
-	}
+		if(EthDescriptorsPoolAdd(EMAC_RX_DESCRIPTORS, ETH_DCPT_TYPE_RX, _MacAllocCallback, 0)!=EMAC_RX_DESCRIPTORS)
+		{
+			initFail++;
+		}
 
-	if(EthDescriptorsPoolAdd(EMAC_RX_DESCRIPTORS, ETH_DCPT_TYPE_RX, _MacAllocCallback, 0)!=EMAC_RX_DESCRIPTORS)
-	{
-            initFail++;
-	}
+		EthRxSetBufferSize(EMAC_RX_BUFF_SIZE);
 
-	EthRxSetBufferSize(EMAC_RX_BUFF_SIZE);
+		// set the RX buffers as permanent receive buffers
+		for(ix=0, ethRes=ETH_RES_OK; ix<EMAC_RX_DESCRIPTORS && ethRes==ETH_RES_OK; ix++)
+		{
+			void* pRxBuff=_RxBuffers[ix];
+			ethRes=EthRxBuffersAppend(&pRxBuff, 1, ETH_BUFF_FLAG_RX_STICKY);
+		}
 
-	// set the RX buffers as permanent receive buffers
-	for(ix=0, ethRes=ETH_RES_OK; ix<EMAC_RX_DESCRIPTORS && ethRes==ETH_RES_OK; ix++)
-	{
-            void* pRxBuff=_RxBuffers[ix];
-            ethRes=EthRxBuffersAppend(&pRxBuff, 1, ETH_BUFF_FLAG_RX_STICKY);
-	}
-
-	if(ethRes!=ETH_RES_OK)
-	{
-            initFail++;
-	}
+		if(ethRes!=ETH_RES_OK)
+		{
+			initFail++;
+		}
 
 
-	if(phyInitRes==ETH_RES_OK)
-	{	// PHY was detected
-            _linkPresent=1;
-            if(oFlags&ETH_OPEN_AUTO)
-            {	// we'll just wait for the negotiation to be done
-                _linkNegotiation=1;	// performing the negotiation
-		linkStat=_LinkReconfigure()?ETH_LINK_ST_UP:ETH_LINK_ST_DOWN;	// if negotiation not done yet we need to try it next time
-            }
-            else
-            {	// no need of negotiation results; just update the MAC
-                EthMACOpen(linkFlags, pauseType);
-		linkStat=EthPhyGetLinkStatus(0);
-            }
+		if(phyInitRes==ETH_RES_OK)
+		{	// PHY was detected
+			_linkPresent=1;
+			if(oFlags&ETH_OPEN_AUTO)
+			{	// we'll just wait for the negotiation to be done
+				_linkNegotiation=1;	// performing the negotiation
+				linkStat=_LinkReconfigure()?ETH_LINK_ST_UP:ETH_LINK_ST_DOWN;	// if negotiation not done yet we need to try it next time
+			}
+			else
+			{	// no need of negotiation results; just update the MAC
+				EthMACOpen(linkFlags, pauseType);
+				linkStat=EthPhyGetLinkStatus(0);
+			}
 			
-            _linkUpdTick=TickGet();		// the last time we performed the link read
-            _linkPrev=linkStat;
-	}
-	else
-	{
-            initFail++;
-	}
+			_linkUpdTick=TickGet();		// the last time we performed the link read
+			_linkPrev=linkStat;
+		}
+		else
+		{
+			initFail++;
+		}
 
-	break;
-    }
+		break;
+	}
 
 	
 //	return !initFail;	// at this point initFail gives some indication of any existent problems

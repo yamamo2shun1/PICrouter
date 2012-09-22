@@ -731,7 +731,7 @@ void ZeroconfLLProcess(void)
 									AppConfig.MyIPAddr.v[2], 
 									AppConfig.MyIPAddr.v[3]);
 								INFO_ZCLL_PRINT((char *)zeroconf_dbg_msg);
-								//syama DisplayIPValue(AppConfig.MyIPAddr); // LCD Disaply
+								//DisplayIPValue(AppConfig.MyIPAddr); // LCD Disaply
 
 								time_recorded = 0; // Cancel Timer
 								zcll_dhcp_substate = ZCLL_DHCP_PHASE_2;
@@ -824,7 +824,7 @@ void ZeroconfLLProcess(void)
 		ZeroconfStateMachineReset(FALSE);
 		conflict_count = 0;
 		AppConfig.MyIPAddr.Val = 0x0;
-		//syama DisplayIPValue(AppConfig.MyIPAddr); // LCD Display
+		//DisplayIPValue(AppConfig.MyIPAddr); // LCD Display
 
 #ifdef STACK_CLIENT_MODE
 		ARPInit();
@@ -1043,7 +1043,7 @@ void ZeroconfLLProcess(void)
 			AppConfig.MyIPAddr = temp_IP_addr;
 			AppConfig.MyMask.Val = 0x0000FFFF;
 			zcll_state = SM_ADDR_DEFEND;
-			//syama DisplayIPValue(AppConfig.MyIPAddr);
+			//DisplayIPValue(AppConfig.MyIPAddr);
 			INFO_ZCLL_MESG(zeroconf_dbg_msg,"\r\n******** Taken IP-Addr: " \
 				"%d.%d.%d.%d ******** \r\n",
 				AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], 

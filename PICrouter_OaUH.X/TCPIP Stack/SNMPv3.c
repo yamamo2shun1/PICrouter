@@ -87,7 +87,7 @@ Header length ( 2 + 2 bytes)  + engineID ( snmpEngnIDLength bytes)
 
 
 /* Snmp Engine Group */
-UINT8 snmpEngineID[32]; //Reserving 32 bytes for the snmpEngineID as the octet string length can vary form 5 to 32 
+UINT8 snmpEngineID[32+1]; //Reserving 32 bytes for the snmpEngineID as the octet string length can vary form 5 to 32 
 UINT32 snmpEngineBoots=0;//The number of times that the SNMP engine has (re-)initialized itself since snmpEngineID was last configured.
 DWORD_VAL snmpEngineTime;//The number of seconds since the value of the snmpEngineBoots object last changed
 DWORD_VAL snmpEngineMaxMessageSize; //The maximum message size the SNMP engine can handle. 
@@ -102,14 +102,14 @@ DWORD_VAL authoritativeSnmpEngineBoots;
 //The number of seconds since the value of the authoritativeSnmpEngineBoots object last changed
 DWORD_VAL authoritativeSnmpEngineTime;
 
-UINT8 snmpInMsgAuthParamStrng[12]; //Reserving 12 bytes for the incoming SNMPv3 msg authentication parameters.
+UINT8 snmpInMsgAuthParamStrng[12+1]; //Reserving 12 bytes for the incoming SNMPv3 msg authentication parameters.
 UINT8 snmpInMsgAuthParamLen=12; //Incoming SNMPv3 msg authentication parameters string is 12 bytes long.
-UINT8 snmpInMsgPrvParamStrng[8]; //Reserving 8 bytes for the incoming SNMPv3 msg privacy parameters.
+UINT8 snmpInMsgPrvParamStrng[8+1]; //Reserving 8 bytes for the incoming SNMPv3 msg privacy parameters.
 UINT8 snmpInMsgPrivParamLen=8; //Incoming SNMPv3 msg privacy parameters string is 8 bytes long.
 
-UINT8 snmpOutMsgAuthParamStrng[12]; //Reserving 12 bytes for the outgoing SNMPv3 msg authentication parameters.
+UINT8 snmpOutMsgAuthParamStrng[12+1]; //Reserving 12 bytes for the outgoing SNMPv3 msg authentication parameters.
 UINT8 snmpOutMsgAuthParamLen=12; //Outgoing SNMPv3 msg authentication parameters string is 12 bytes long.
-UINT8 snmpOutMsgPrvParamStrng[8]; //Reserving 8 bytes for the outgoing SNMPv3 msg privacy parameters.
+UINT8 snmpOutMsgPrvParamStrng[8+1]; //Reserving 8 bytes for the outgoing SNMPv3 msg privacy parameters.
 UINT8 snmpOutMsgPrivParamLen=8; //Outgoing SNMPv3 msg privacy parameters string is 8 bytes long.
 
 UINT32 snmpEngineSecurityModel=0;//Type of security model used. Value Maximum range (2^31-1), RFC3411
@@ -2796,7 +2796,7 @@ static BOOL IsSnmpv3ValidOID(BYTE* oid, BYTE* len)
    tempLen = Snmpv3GetBufferData(gSNMPv3ScopedPduRequestBuf,++gSNMPv3ScopedPduDataPos);
 
     // Make sure that OID length is within our capability.
-    if (tempLen > (BYTE)OID_MAX_LEN )
+    if (tempLen > (BYTE)SNMP_MAX_OID_LEN_MEM_USE )
         return FALSE;
 
     *len = tempLen;

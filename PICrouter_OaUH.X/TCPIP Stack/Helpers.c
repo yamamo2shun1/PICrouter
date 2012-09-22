@@ -55,6 +55,7 @@
  ********************************************************************/
 #define __HELPERS_C
 
+#include <stdarg.h>
 #include "TCPIP Stack/TCPIP.h"
 
 
@@ -499,7 +500,7 @@ BOOL StringToIPAddress(BYTE* str, IP_ADDR* IPAddress)
 	// Make sure the very last character is a valid termination character 
 	// (i.e., not more hostname, which could be legal and not an IP 
 	// address as in "10.5.13.233.picsaregood.com"
-	if(i != 0u && i != '/' && i != '\r' && i != '\n' && i != ' ' && i != '\t')
+	if(i != 0u && i != '/' && i != '\r' && i != '\n' && i != ' ' && i != '\t' && i != ':')
 		return FALSE;
 
 	// Verify and convert the last octet and return the result
@@ -1190,76 +1191,6 @@ WORD CalcIPChecksum(BYTE* buffer, WORD count)
 
 /*****************************************************************************
   Function:
-	WORD CalcIPBufferChecksum(WORD len)
-
-  Summary:
-	Calculates an IP checksum in the MAC buffer itself.
-
-  Description:
-	This function calculates an IP checksum over an array of input data 
-	existing in the MAC buffer.  The checksum is the 16-bit one's complement 
-	of one's complement sum of all words in the data (with zero-padding if 
-	an odd number of bytes are summed).  This checksum is defined in RFC 793.
-
-  Precondition:
-	TCP is initialized and the MAC buffer pointer is set to the start of
-	the buffer.
-
-  Parameters:
-	len - number of bytes to be checksummed
-
-  Returns:
-	The calculated checksum.
-
-  Remarks:
-	All Microchip MACs should perform this function in hardware.
-  ***************************************************************************/
-#if defined(NON_MCHP_MAC)
-WORD CalcIPBufferChecksum(WORD len)
-{
-	DWORD_VAL Checksum = {0x00000000ul};
-	WORD ChunkLen;
-	BYTE DataBuffer[20];	// Must be an even size
-	WORD *DataPtr;
-
-	while(len)
-	{
-		// Obtain a chunk of data (less SPI overhead compared 
-		// to requesting one byte at a time)
-		ChunkLen = len > sizeof(DataBuffer) ? sizeof(DataBuffer) : len;
-		MACGetArray(DataBuffer, ChunkLen);
-		len -= ChunkLen;
-
-		// Take care of a last odd numbered data byte
-		if(((WORD_VAL*)&ChunkLen)->bits.b0)
-		{
-			DataBuffer[ChunkLen] = 0x00;
-			ChunkLen++;
-		}
-
-		// Calculate the checksum over this chunk
-		DataPtr = (WORD*)&DataBuffer[0];
-		while(ChunkLen)
-		{
-			Checksum.Val += *DataPtr++;
-			ChunkLen -= 2;
-		}
-	}
-	
-	// Do an end-around carry (one's complement arrithmatic)
-	Checksum.Val = (DWORD)Checksum.w[0] + (DWORD)Checksum.w[1];
-
-	// Do another end-around carry in case if the prior add 
-	// caused a carry out
-	Checksum.w[0] += Checksum.w[1];
-
-	// Return the resulting checksum
-	return ~Checksum.w[0];
-}
-#endif
-
-/*****************************************************************************
-  Function:
 	char* strupr(char* s)
 
   Summary:
@@ -1469,6 +1400,71 @@ char * strnchr(const char *searchString, size_t count, char c)
 	}
 	return NULL;
 }
+
+
+/*****************************************************************************
+  Function:
+	char* strncpy_m(char* destStr, size_t destSize, int nStrings, ...)
+
+  Summary:
+	Copies multiple strings to a destination
+
+  Description:
+	Copies multiple strings to a destination
+    but doesn't copy more than destSize characters.
+    Useful where the destination is actually an array and an extra \0
+    won't be appended to overflow the buffer
+    
+  Precondition:
+	- valid string pointers
+    - destSize should be > 0
+
+  Parameters:
+	destStr - Pointer to a string to be initialized with the multiple strings provided as arguments.
+
+    destSize    - the maximum size of the destStr field, that cannot be exceeded.
+                  An \0 won't be appended if the resulting size is > destSize
+
+    nStrings    - number of string parameters to be copied into destStr
+
+    ...         - variable number of arguments
+    
+	
+  Returns:
+	Length of the destination string, terminating \0 (if exists) not included
+  ***************************************************************************/
+size_t strncpy_m(char* destStr, size_t destSize, int nStrings, ...)
+{
+    va_list     args;
+    const char* str;
+    char*       end;
+    size_t      len;
+
+    destStr[0] = '\0';
+    end = destStr + destSize - 1;
+    *end = '\0';
+    len = 0;
+    
+    va_start( args, nStrings );
+    
+    while(nStrings--)
+    {
+        if(*end)
+        {   // if already full don't calculate strlen outside the string area
+            len = destSize;
+            break;
+        }
+        
+        str = va_arg(args, const char*);
+        strncpy(destStr + len, str, destSize - len);
+        len += strlen(str);
+    }
+
+    va_end( args );
+    
+    return len;
+}
+
 
 /*****************************************************************************
   Function:
