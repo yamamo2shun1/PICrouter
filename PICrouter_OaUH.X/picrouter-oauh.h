@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.63 2012/08/28
+ * picrouter-oauh.h,v.0.73 2012/09/24
  */
 
 #include <plib.h>
@@ -33,9 +33,11 @@
 
 #include "TCPIP Stack/TCPIP.h"
 
-#define PITCH
+#define USE_PITCH
 //#define ROT_ENC
-//#define OPT_DRUM
+//#define USE_OPT_DRUM
+//#define USE_LED_PAD_16
+#define USE_LED_ENC
  
 #include "button.h"
 #include "analog.h"
@@ -79,6 +81,9 @@ USB_AUDIO_MIDI_PACKET TxHostMidiDataBuffer;
 #define MIDI_UART_BUFFER_SIZE    (BYTE)64
 #define NUM_MIDI_PKTS_IN_USB_PKT (BYTE)1
 
+// PWM
+#define PWM_NUM 2
+
 typedef enum
 {
 	STATE_INITIALIZE = 0,
@@ -107,7 +112,7 @@ typedef struct
                                                 //  numOfMIDIPackets MID packets within each USB packet.
     USB_AUDIO_MIDI_PACKET*  pBufReadLocation;   // Pointer to USB packet that is being read from
     USB_AUDIO_MIDI_PACKET*  pBufWriteLocation;  // Pointer to USB packet that is being written to
-}ENDPOINT_BUFFER;
+} ENDPOINT_BUFFER;
 
 
 // *****************************************************************************
@@ -135,20 +140,23 @@ BOOL somethingToSend;
 WORD NumGets;
 WORD NumSends;
 
-BYTE midiType;
-BYTE midiNum;
-BYTE midiVal;
+BYTE midiType = 0;
+BYTE midiCh = 0;
+BYTE midiNum = 0;
+BYTE midiVal = 0;
 
 //ROT_ENC
 BYTE reA[2] = {0};
 BYTE reB[2] = {0};
-BYTE reD[4] = {0};
+BYTE reD = 0;
+int reStep = 0;
 
 //PWM
-BOOL onSquare;
-LONG freq;
-LONG width;
-INT16 duty;
+BOOL onTimer23 = FALSE;
+BOOL onSquare[PWM_NUM];
+LONG freq[PWM_NUM];
+LONG width[PWM_NUM];
+INT16 duty[PWM_NUM];
 
 //Custom OSC Messages
 char* prefix;
@@ -156,8 +164,6 @@ char msgLed[]   = "/led";
 char msgPress[] = "/press";
 char msgSw[]    = "/sw";
 char msgAdc[]   = "/adc";
-char msgEnc[]   = "/enc";
-char msgPwm[]   = "/pwm";
 char zero[40];
 
 APP_CONFIG AppConfig;
@@ -175,12 +181,28 @@ BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
 WORD remotePort = 8000;
 WORD localPort  = 8080;
 
+DWORD encVelocityCount = 0;
+DWORD dwLedData = 0;
+DWORD dwLedSequence[100] = {0};
+BYTE intensity[32] = {0};
+BOOL ledOn = FALSE;
+WORD ledCount = 0;
+BOOL ledFlag = TRUE;
+BYTE ledIntensity = 10;
+BYTE ledIntensityIndex = 0;
+
+WORD ledState = 0;
+
 BYTE currentState;
 BYTE prevState;
 BYTE stateFlag = 0;
 BYTE stateFlag2 = 0;
 
 BYTE midiValue = 0;
+BYTE data0;
+BYTE data1;
+BYTE data2;
+BOOL sendMidiFlag = FALSE;
 
 //BYTE currentValue[USE_ADC_NUM];
 //BYTE prevValue[2][USE_ADC_NUM];
@@ -191,7 +213,21 @@ WORD currentValue[USE_ADC_NUM];
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, 
         MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
 
+#ifdef USE_PITCH
 void setupPitch(void);
+#endif
+#ifdef USE_OPT_DRUM
+void setupOptDrum(void);
+#endif
+#ifdef USE_LED_PAD_16
+void setupLedPad16(void);
+#endif
+#ifdef USE_LED_ENC
+void setupLedEnc(void);
+#endif
+
+void setupOptDrum(void);
+
 
 void UDPControlTask(void);
 void UDPSendTask(void);
@@ -200,5 +236,6 @@ void sendPad();
 void sendAdc();
 
 // USB Host
+//test void convertOscToMidi(BYTE buffer);
 void convertMidiToOsc(void);
 BOOL USB_ApplicationEventHandler(BYTE address, USB_EVENT event, void *data, DWORD size);

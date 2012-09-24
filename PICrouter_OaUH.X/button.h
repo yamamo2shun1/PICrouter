@@ -24,8 +24,9 @@
 
 #include <GenericTypeDefs.h>
 
-#define MAX_BTN_ROW 2
-#define MAX_BTN_COL 2
+
+#define MAX_BTN_ROW 4//1 // 2
+#define MAX_BTN_COL 4//16 // 2
 
 WORD btnCurrent[MAX_BTN_ROW];
 WORD btnLast[MAX_BTN_ROW];

@@ -16,10 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.81 2012/08/25
+ * osc.c,v.0.83 2012/09/24
  */
 
 #include "osc.h"
+
+const char msgOnboardLed[]         = "/onboard/led";
+const char msgVolumeLed[]          = "/volume/led";
+const char msgLatticeLed[]         = "/lattice/led";
+const char msgRotaryLedStep[]      = "/rotary/led/step";
+const char msgRotaryLedBits[]      = "/rotary/led/bits";
+const char msgRotaryLedIntensity[] = "/rotary/led/intensity";
+const char msgRotaryLedAllInt[]    = "/rotary/led/allint";
+const char msgRotaryEnc[]          = "/rotary/enc";
+const char msgRotaryEncSwitch[]    = "/rotary/switch";
 
 //Standard OSC Messages
 const char stdPrefix[]      = "/std";
@@ -39,6 +49,13 @@ const char msgPc[]      = "/pc";
 const char msgKp[]      = "/kp";
 const char msgCp[]      = "/cp";
 const char msgPb[]      = "/pb";
+const char msgSetNote[]    = "/note/set";
+const char msgSetPp[]      = "/pp/set";
+const char msgSetCc[]      = "/cc/set";
+const char msgSetPc[]      = "/pc/set";
+const char msgSetKp[]      = "/kp/set";
+const char msgSetCp[]      = "/cp/set";
+const char msgSetPb[]      = "/pb/set";
 
 //System OSC Messages for Network Settings
 const char sysPrefix[]        = "/sys";

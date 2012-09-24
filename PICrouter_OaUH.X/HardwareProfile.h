@@ -1,3 +1,24 @@
+/*
+ * Copylight (C) 2012, Shunichi Yamamoto, tkrworks.net
+ *
+ * This file is part of PICrouter.
+ *
+ * PICrouter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option ) any later version.
+ *
+ * PICrouter is distributed in the hope that it will be useful,
+ * but WITHIOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
+ *
+ * HardwareProfile.c,v.0.3 2012/09/22
+ */
+
 #ifndef HARDWARE_PROFILE_H
 #define HARDWARE_PROFILE_H
 
@@ -124,5 +145,17 @@
     #define D_PORT1_IN() PORTCbits.RC14
     #define D_PORT2_IN() PORTFbits.RF0
     #define D_PORT3_IN() PORTFbits.RF1
+
+    // LED_PAD_16
+    #define LD_LOAD(state) LATCbits.LATC13 = state;
+    #define SR_SL(state)   LATCbits.LATC14 = state;
+    #define SR_CLK(state)  LATFbits.LATF0  = state;
+    #define SR_QH()        PORTFbits.RF1
+
+    // LED_ENC
+    #define LD_LOAD(state) LATCbits.LATC13 = state;
+    #define RE_SW()        PORTCbits.RC14
+    #define RE_A()         PORTFbits.RF0
+    #define RE_B()         PORTFbits.RF1
 
 #endif  //HARDWARE_PROFILE_H
