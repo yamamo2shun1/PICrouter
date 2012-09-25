@@ -14,6 +14,7 @@ And this is **Free Hardware** and **Free Software**.
 [cc-by-sa]:http://creativecommons.org/licenses/by-sa/3.0/ "Creative Commons Attribute-ShareAlike 3.0 Unported"
 
 ### Specifications
+0. Supported Zeroconf(Bonjour on Mac OS X), DHCP and NBNS
 1. Supported Open Sound Control
 2. Supported USB device(MIDI and HID composite) and host(only MIDI) function.
 3. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
@@ -56,7 +57,7 @@ PICrouter_OaUD (current ver. is 0.2)
 PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
 PICrouter_OaUD.X is this project folder.
 
-PICrouter_OaUH (current ver. is 0.63)
+PICrouter_OaUH (current ver. is 0.73)
 --------------------------------
 PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
 PICrouter_OaUH.X is this project folder.
