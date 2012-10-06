@@ -57,7 +57,7 @@ PICrouter_OaUD (current ver. is 0.2)
 PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
 PICrouter_OaUD.X is this project folder.
 
-PICrouter_OaUH (current ver. is 0.73)
+PICrouter_OaUH (current ver. is 0.80)
 --------------------------------
 PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
 PICrouter_OaUH.X is this project folder.
