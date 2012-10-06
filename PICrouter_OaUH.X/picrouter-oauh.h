@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.73 2012/09/24
+ * picrouter-oauh.h,v.0.80 2012/10/07
  */
 
 #include <plib.h>
@@ -33,14 +33,15 @@
 
 #include "TCPIP Stack/TCPIP.h"
 
-#define USE_PITCH
-//#define ROT_ENC
+//#define USE_PITCH
 //#define USE_OPT_DRUM
 //#define USE_LED_PAD_16
+//#define USE_LED_PAD_64
 #define USE_LED_ENC
  
 #include "button.h"
 #include "analog.h"
+#include "encoder.h"
 #include "osc.h"
 
 /** CONFIGURATION **************************************************/
@@ -82,7 +83,7 @@ USB_AUDIO_MIDI_PACKET TxHostMidiDataBuffer;
 #define NUM_MIDI_PKTS_IN_USB_PKT (BYTE)1
 
 // PWM
-#define PWM_NUM 2
+#define PWM_NUM 4
 
 typedef enum
 {
@@ -145,17 +146,11 @@ BYTE midiCh = 0;
 BYTE midiNum = 0;
 BYTE midiVal = 0;
 
-//ROT_ENC
-BYTE reA[2] = {0};
-BYTE reB[2] = {0};
-BYTE reD = 0;
-int reStep = 0;
-
 //PWM
 BOOL onTimer23 = FALSE;
 BOOL onSquare[PWM_NUM];
-LONG freq[PWM_NUM];
-LONG width[PWM_NUM];
+LONG freq;
+LONG width;
 INT16 duty[PWM_NUM];
 
 //Custom OSC Messages
@@ -181,22 +176,28 @@ BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
 WORD remotePort = 8000;
 WORD localPort  = 8080;
 
-DWORD encVelocityCount = 0;
 DWORD dwLedData = 0;
 DWORD dwLedSequence[100] = {0};
 BYTE intensity[32] = {0};
 BOOL ledOn = FALSE;
 WORD ledCount = 0;
-BOOL ledFlag = TRUE;
 BYTE ledIntensity = 10;
 BYTE ledIntensityIndex = 0;
 
 WORD ledState = 0;
+WORD matrixLed[4] = {0};
+const WORD matrixLedData[4][4] = {{0x01, 0x03, 0x10, 0x12},
+                                  {0x00, 0x02, 0x11, 0x13},
+                                  {0x33, 0x31, 0x22, 0x21},
+                                  {0x32, 0x30, 0x23, 0x20}};
 
 BYTE currentState;
-BYTE prevState;
-BYTE stateFlag = 0;
-BYTE stateFlag2 = 0;
+BYTE prevState = 1;
+BOOL stateFlag = FALSE;
+
+BYTE currentSwitch;
+BYTE prevSwitch = 1;
+BOOL switchFlag = FALSE;
 
 BYTE midiValue = 0;
 BYTE data0;
@@ -213,27 +214,32 @@ WORD currentValue[USE_ADC_NUM];
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, 
         MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
 
+void sendSpiOneWord(WORD msb);
+void sendSpiTwoWord(WORD msb, WORD lsb);
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1);
+
 #ifdef USE_PITCH
-void setupPitch(void);
+  void setupPitch(void);
 #endif
 #ifdef USE_OPT_DRUM
-void setupOptDrum(void);
+  void setupOptDrum(void);
 #endif
 #ifdef USE_LED_PAD_16
-void setupLedPad16(void);
+  void setupLedPad16(void);
+#endif
+#ifdef USE_LED_PAD_64
+  void setupLedPad64(void);
 #endif
 #ifdef USE_LED_ENC
-void setupLedEnc(void);
+  void setupLedEnc(void);
 #endif
-
-void setupOptDrum(void);
-
 
 void UDPControlTask(void);
 void UDPSendTask(void);
 
-void sendPad();
-void sendAdc();
+void sendPad(void);
+void sendAdc(void);
+void sendEnc(void);
 
 // USB Host
 //test void convertOscToMidi(BYTE buffer);

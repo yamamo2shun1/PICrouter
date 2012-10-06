@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.73 2012/09/24
+ * picrouter-oauh.c,v.0.80 2012/10/07
  */
 
 #include "picrouter-oauh.h"
@@ -46,23 +46,70 @@ int main(int argc, char** argv) {
 	int value, i;
     static DWORD t = 0;
 
-    mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
+   mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
-#if 1 //A/D Auto Scan 
+  //Port Initialization
   #ifdef USE_PITCH
     setupPitch();
+  #endif
+  #ifdef USE_OPT_DRUM
+    setupOptDrum();
+  #endif
+  #ifdef USE_LED_PAD_64
+    setupLedPad64();
+  #endif
+  #ifdef USE_LED_ENC
+    setupLedEnc();
+  #endif
+
+    initSW();
+    initLEDs();
+    buttonInit();
+    //encoderInit();
+
+    LED_1_On();
+    LED_2_On();
+
+    //PWM
+    for(i = 0; i < PWM_NUM; i++)
+    {
+        freq = 10000; // 10kHz
+        width = GetSystemClock() / freq;
+        duty[i] = 50;
+    }
+
+    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
+    memcpy(prefix, "/pic", strlen("/pic"));
+    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
+    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+
+    // Enable multi-vectored interrupts
+    //test INTEnableSystemMultiVectoredInt();
+
+    // Enable the cache for the best performance
+    //CheKseg0CacheOn();
+
+    // Enable optimal performance
+    SYSTEMConfigPerformance(GetSystemClock());
+    mOSCSetPBDIV(OSC_PB_DIV_1);             // Use 1:1 CPU Core:Peripheral clocks
+
+     //A/D Auto Scan 
+  #ifdef USE_PITCH
     AD1PCFG = 0x0000FFFC;// 0000 0000 0000 0000 1111 1111 1111 1100
     AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0001 1100
     AD1CSSL = 0x00000003;// 0000 0000 0000 0000 0000 0000 0000 0011
   #endif
   #ifdef USE_OPT_DRUM
-    setupOptDrum();
     AD1PCFG = 0x0000FC00;// 0000 0000 0000 0000 1111 1100 0000 0000
     AD1CON2 = 0x0000043C;// 0000 0000 0000 0000 0000 0100 0010 0100
     AD1CSSL = 0x000003FF;// 0000 0000 0000 0000 0000 0011 1111 1111
   #endif
+  #ifdef USE_LED_PAD_64
+    AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
+    AD1CON2 = 0x0000043C;// 0000 0000 0000 0000 0000 0100 0010 0100
+    AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+  #endif
   #ifdef USE_LED_ENC
-    setupLedEnc();
     AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
     AD1CON2 = 0x0000043C;// 0000 0000 0000 0000 0000 0100 0010 0100
     AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
@@ -71,54 +118,11 @@ int main(int argc, char** argv) {
     AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
     AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
     AD1CON1bits.ON = 1;
-#else // Manual A/D Conv.
-    #define CONFIG_1    ADC_MODULE_OFF | ADC_FORMAT_INTG16 | ADC_CLK_MANUAL | ADC_AUTO_SAMPLING_ON | ADC_SAMP_ON
-    #define CONFIG_2    ADC_VREF_AVDD_AVSS | ADC_OFFSET_CAL_DISABLE | ADC_SCAN_OFF | ADC_SAMPLES_PER_INT_2 | ADC_ALT_BUF_OFF | ADC_ALT_INPUT_ON
-    #define CONFIG_3    ADC_SAMPLE_TIME_31 | ADC_CONV_CLK_SYSTEM | ADC_CONV_CLK_32Tcy
-    #define CONFIG_PORT ENABLE_AN0_ANA | ENABLE_AN1_ANA
-    #define CONFIG_SKIP SKIP_SCAN_ALL
-    #define CONFIG_MULT ADC_CH0_POS_SAMPLEA_AN0 | ADC_CH0_NEG_SAMPLEA_NVREF | ADC_CH0_POS_SAMPLEA_AN1 | ADC_CH0_NEG_SAMPLEA_NVREF
-    OpenADC10(CONFIG_1, CONFIG_2, CONFIG_3, CONFIG_PORT, CONFIG_SKIP);
-    SetChanADC10(CONFIG_MULT);
-    EnableADC10();
-#endif
 
-//#ifdef USE_LED_PAD_16
-#ifdef USE_LED_ENC
+  #if defined(USE_LED_PAD_16) || defined(USE_LED_PAD_64) || defined(USE_LED_ENC)
     SpiChnOpen(2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
     //test OpenSPI2(ENABLE_SDO_PIN | SPI_MODE16_ON | SPI_SMP_OFF | SPI_CKE_ON | MASTER_ENABLE_ON | CLK_POL_ACTIVE_HIGH | SEC_PRESCAL_2_1 | PRI_PRESCAL_1_1, SPI_ENABLE | SPI_IDLE_CON);
-#endif
-
-    initSW();
-    initLEDs();
-    buttonInit();
-
-    stateFlag = FALSE;
-    prevState = 1;
-    currentState = 1;
-
-    LED_1_On();
-    LED_2_On();
-
-    // Enable the cache for the best performance
-    CheKseg0CacheOn();
-
-    // Enable optimal performance
-    SYSTEMConfigPerformance(GetSystemClock());
-    mOSCSetPBDIV(OSC_PB_DIV_1);				// Use 1:1 CPU Core:Peripheral clocks
-
-    //PWM
-    for(i = 0; i < PWM_NUM; i++)
-    {
-        freq[i] = 10000; // 10kHz
-        width[i] = GetSystemClock() / freq[i];
-        duty[i] = 50;
-    }
-
-    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
-    memcpy(prefix, "/pic", strlen("/pic"));
-    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
-    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+  #endif
 
     TickInit();
     InitAppConfig();
@@ -135,8 +139,14 @@ int main(int argc, char** argv) {
                         );
     mDNSMulticastFilterRegister();
 
-    // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
+
+    #ifdef USE_LED_ENC
+        OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
+        ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_1);
+    #endif
+        OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 50);
+        ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_1);
 
     //USB Initialization
     #if defined(USE_USB_BUS_SENSE_IO)
@@ -152,106 +162,84 @@ int main(int argc, char** argv) {
     LED_1_Off();
     LED_2_Off();
 
+#ifdef USE_LED_PAD_64
+    sendSpiFourWord(0x0000, 0x0000, 0x0000, 0x0000);
+#endif
+
 #ifdef USE_LED_ENC
     for(i = 0; i < 32; i++)
-    {
         intensity[i] = ledIntensity;
-    }
-
-    LD_LOAD(0);
-    putcSPI2(0x0000);
-    putcSPI2(0x0000);
-    delayUs(1);
-    LD_LOAD(1);
+    sendSpiTwoWord(0x0000, 0x0000);
 #endif
 
     while(1)
     {
-#if 1
         if(TickGet() - t >= TICK_SECOND / 2ul)
         {
             t = TickGet();
-            //LED_1_Toggle();
             LED_2_Toggle();
         }
-#endif
-		currentState = SW_State();
-
-        if(prevState != currentState)
-        {
-        	stateFlag = TRUE;
-        	stateFlag2 = TRUE;
-        }
-
-#ifdef USE_LED_ENC
-        reA[1] = RE_A();
-        reB[1] = RE_B();
-
-        if((reA[1] != reA[0]) || (reB[1] != reB[0]))
-        {
-            reD = (((reA[0] << 1) + reB[0]) << 1) + ((reA[1] << 1) + reB[1]);
-            reA[0] = reA[1];
-            reB[0] = reB[1];
-
-            if(initSendFlag)
-                sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iii", ((reD & 0x02) >> 1) ? 1 : 0, reStep, encVelocityCount);
-            if((reD & 0x02) >> 1)
-            {
-                reStep--;
-                if(reStep < 0)
-                    reStep = 255;
-            }
-            else
-            {
-                reStep++;
-                if(reStep > 255)
-                    reStep = 0;
-            }
-            encVelocityCount = 0;
-        }
-        else
-        {
-            if(encVelocityCount < 100000)
-                encVelocityCount++;
-        }
-#endif
 
         StackTask();
         NBNSTask();
         ZeroconfLLProcess();
         mDNSProcess();
 
-#ifdef USE_PITCH
-        //if(usbState == 5)
-#endif
-        {
-            UDPControlTask();
-        }
+        UDPControlTask();
         UDPSendTask();
 
-        USBHostTasks();
-        convertMidiToOsc();
+        //USBHostTasks();
+        //convertMidiToOsc();
 
+        currentState = SW_State();
+        if(prevState != currentState)
+        {
+            stateFlag = TRUE;
+            prevState = currentState;
+        }
+
+#if 0
 #ifdef USE_LED_ENC
         if(ledOn)
         {
             WORD msb, lsb;
             msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
             lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
-            LD_LOAD(0);
-            putcSPI2(msb);
-            putcSPI2(lsb);
-            delayUs(8);
-            LD_LOAD(1);
+            sendSpiTwoWord(msb, lsb);
             ledIntensityIndex++;
             if(ledIntensityIndex == 100)
                 ledIntensityIndex = 0;
         }
 #endif
-        prevState = currentState;
+#endif
     }
-
     return (EXIT_SUCCESS);
+}
+
+void sendSpiOneWord(WORD msb)
+{
+    LD_LOAD(0);
+    putcSPI2(msb);
+    delayUs(8);
+    LD_LOAD(1);
+}
+void sendSpiTwoWord(WORD msb, WORD lsb)
+{
+    LD_LOAD(0);
+    putcSPI2(lsb);
+    putcSPI2(msb);
+    //delayUs(20);
+    //LD_LOAD(1);
+}
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1)
+{
+    LD_LOAD(0);
+    putcSPI2(lsb1);
+    putcSPI2(msb1);
+    putcSPI2(lsb0);
+    putcSPI2(msb0);
+    delayUs(8);
+    LD_LOAD(1);
 }
 
 #ifdef USE_PITCH
@@ -367,6 +355,48 @@ void setupLedPad16(void)
 }
 #endif
 
+#ifdef USE_LED_PAD_64
+void setupLedPad64(void)
+{
+    AD_PORT0_IO(0);
+    AD_PORT1_IO(0);
+    AD_PORT2_IO(0);
+    AD_PORT3_IO(0);
+    AD_PORT4_IO(0);
+    AD_PORT5_IO(0);
+    AD_PORT6_IO(0);
+    AD_PORT7_IO(0);
+    AD_PORT8_IO(0);
+    AD_PORT9_IO(0);
+    AD_PORT10_IO(0);
+    AD_PORT11_IO(0);
+    AD_PORT12_IO(0);
+    AD_PORT13_IO(0);
+
+    AD_PORT0_OUT(0);
+    AD_PORT1_OUT(0);
+    AD_PORT2_OUT(0);
+    AD_PORT3_OUT(0);
+    AD_PORT4_OUT(0);
+    AD_PORT5_OUT(0);
+    AD_PORT6_OUT(0);
+    AD_PORT7_OUT(0);
+    AD_PORT8_OUT(0);
+    AD_PORT9_OUT(0);
+    AD_PORT10_OUT(0);
+    AD_PORT11_OUT(0);
+    AD_PORT12_OUT(0);
+    AD_PORT13_OUT(0);
+
+    D_PORT0_IO(0);
+    D_PORT1_IO(0);
+    D_PORT2_IO(0);
+    D_PORT3_IO(0);
+    TRISBbits.TRISB14 = 0;
+    TRISFbits.TRISF4  = 1;
+}
+#endif
+
 #ifdef USE_LED_ENC
 void setupLedEnc(void)
 {
@@ -413,7 +443,7 @@ void setupLedEnc(void)
 void UDPControlTask(void)
 {
 	unsigned int RcvLen;
-	static BYTE	buffer[128];
+	static BYTE	buffer[1024];
     BYTE index, i, j, k;
 
 	if(!initReceiveFlag)
@@ -689,11 +719,47 @@ void UDPControlTask(void)
             else
                 ledState &= ~((1 << y) << (x * 4));
 
-            LD_LOAD(0);
-            //putcSPI2(0x0000);
-            putcSPI2(ledState);
-            delayUs(2);
-            LD_LOAD(1);
+            sendSpiOneWord(ledState);
+#endif
+#ifdef USE_LED_PAD_64
+            BYTE x1, y1;
+            if(x < 4 && y < 4)
+            {
+                y1 = (matrixLedData[y][x] & 0x0F);
+                x1 = ((matrixLedData[y][x] >> 4) & 0x0F);
+                if(state)
+                    matrixLed[0] |= (1 << y1) << (x1 * 4);
+                else
+                    matrixLed[0] &= ~((1 << y1) << (x1 * 4));
+            }
+            else if(x >= 4 && y < 4)
+            {
+                y1 = (matrixLedData[y][x - 4] & 0x0F);
+                x1 = ((matrixLedData[y][x - 4] >> 4) & 0x0F);
+                if(state)
+                    matrixLed[1] |= (1 << y1) << (x1 * 4);
+                else
+                    matrixLed[1] &= ~((1 << y1) << (x1 * 4));
+            }
+            else if(x < 4 && y >= 4)
+            {
+                y1 = (matrixLedData[y - 4][x] & 0x0F);
+                x1 = ((matrixLedData[y - 4][x] >> 4) & 0x0F);
+                if(state)
+                    matrixLed[2] |= (1 << y1) << (x1 * 4);
+                else
+                    matrixLed[2] &= ~((1 << y1) << (x1 * 4));
+            }
+            else if(x >= 4 && y >= 4)
+            {
+                y1 = (matrixLedData[y - 4][x - 4] & 0x0F);
+                x1 = ((matrixLedData[y - 4][x - 4] >> 4) & 0x0F);
+                if(state)
+                    matrixLed[3] |= (1 << y1) << (x1 * 4);
+                else
+                    matrixLed[3] &= ~((1 << y1) << (x1 * 4));
+            }
+            sendSpiFourWord(matrixLed[0], matrixLed[1], matrixLed[2], matrixLed[3]);
 #endif
         }
 #ifdef USE_LED_ENC
@@ -730,11 +796,7 @@ void UDPControlTask(void)
             else
             {
                 ledOn = FALSE;
-                LD_LOAD(0);
-                putcSPI2(0);
-                putcSPI2(0);
-                delayUs(4);
-                LD_LOAD(1);
+                sendSpiTwoWord(0x0000, 0x0000);
             }
         }
         else if(isEqualToAddress(buffer, prefix, msgRotaryLedBits))
@@ -758,11 +820,7 @@ void UDPControlTask(void)
             else
             {
                 ledOn = FALSE;
-                LD_LOAD(0);
-                putcSPI2(0);
-                putcSPI2(0);
-                delayUs(4);
-                LD_LOAD(1);
+                sendSpiTwoWord(0x0000, 0x0000);
             }
         }
         else if(isEqualToAddress(buffer, prefix, msgRotaryLedIntensity))
@@ -808,75 +866,89 @@ void UDPControlTask(void)
 #endif
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
-            if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 1), "on") == 0)
+            index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 0);
+            if(strcmp(getStringArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 1), "on") == 0)
             {
-                LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width[index]);
+                LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
                 if(!onTimer23)
                 {
-                    OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width[index]);
+                    OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
                     onTimer23 = TRUE;
                 }
                 switch(index)
                 {
                     case 0:
-                        OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width[index] / 2, w);
+                        OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                         break;
                     case 1:
-                        OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width[index] / 2, w);
+                        OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                         break;
                     case 2:
+                        OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                         break;
                     case 3:
+                        OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                         break;
                 }
                 onSquare[index] = TRUE;
             }
-            else if(strcmp(getStringArgumentAtIndex(buffer, prefix, msgSetPwmState, 1), "off") == 0)
+            else if(strcmp(getStringArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 1), "off") == 0)
             {
                 if(onTimer23)
                 {
                     CloseTimer23();
                     onTimer23 = FALSE;
                 }
-                CloseOC1();
+                switch(index)
+                {
+                    case 0:
+                        CloseOC1();
+                        break;
+                    case 1:
+                        CloseOC3();
+                        break;
+                    case 2:
+                        CloseOC4();
+                        break;
+                    case 3:
+                        CloseOC5();
+                        break;
+                }
                 onSquare[index] = FALSE;
             }
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
-            sendOSCMessage(TxSocket, prefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
+            index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmState, 0);
+            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmFreq))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
-            freq[index] = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 1);
-            if(freq[index] < 20)
+            freq = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 0);
+            if(freq < 20)
             {
-                freq[index] = 20;
+                freq = 20;
             }
-            else if(freq[index] > 44100)
+            else if(freq > 44100)
             {
-                freq[index] = 44100;
+                freq = 44100;
             }
             T2CONbits.TON = 0;
             TMR2 = 0;
             OC1CONbits.OCM = 0b000;
-            width[index] = GetSystemClock() / freq[index];
-            PR2 = width[index];
-            OC1RS = width[index] / 2;
+            width = GetSystemClock() / freq;
+            PR2 = width;
+            OC1RS = width / 2;
             OC1CONbits.OCM = 0b110;
             T2CONbits.TON = 1;
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmFreq))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
-            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmFreq, "ii", index, freq[index]);
+            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmFreq, "i", freq);
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDuty))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
+            index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDuty, 0);
             duty[index] = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDuty, 1);
             if(duty[index] < 0)
             {
@@ -888,14 +960,34 @@ void UDPControlTask(void)
             }
             T2CONbits.TON = 0;
             TMR2 = 0;
-            OC1CONbits.OCM = 0b000;
-            OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width[index]);
-            OC1CONbits.OCM = 0b110;
+            switch(index)
+            {
+                case 0:
+                    OC1CONbits.OCM = 0b000;
+                    OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    OC1CONbits.OCM = 0b110;
+                    break;
+                case 1:
+                    OC3CONbits.OCM = 0b000;
+                    OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    OC3CONbits.OCM = 0b110;
+                    break;
+                case 2:
+                    OC4CONbits.OCM = 0b000;
+                    OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    OC4CONbits.OCM = 0b110;
+                    break;
+                case 3:
+                    OC5CONbits.OCM = 0b000;
+                    OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    OC5CONbits.OCM = 0b110;
+                    break;
+            }
             T2CONbits.TON = 1;
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDuty))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgSetPwmState, 0);
+            index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDuty, 0);
             sendOSCMessage(TxSocket, stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
         }
 #if 0
@@ -1096,7 +1188,57 @@ void sendPad(void)
             delayUs(5);
         }
     }
-#else
+#endif
+#ifdef USE_LED_PAD_64
+    static BYTE start_row = 0;
+    if(start_row == 0)
+    {
+        SR_A(0);
+        SR_CLK1(1);
+        SR_A(1);
+    }
+
+    for(i = start_row; i < start_row + 4; i++)
+    {
+        SR_CLK1(1);
+        //for(k = 0; k < 5; k++)
+        //    asm("NOP");
+        delayUs(1);
+        SR_CLK1(0);
+        delayUs(1);
+
+        btnLast[i] = btnCurrent[i];
+
+        SR_SHLD(0);
+        delayUs(1);
+        SR_SHLD(1);
+
+        for(j = 0; j < 8; j++)
+        {
+            if(SR_QH())
+                btnCurrent[i] &= ~(1 << j);
+            else
+                btnCurrent[i] |= (1 << j);
+
+            SR_CLK2(1);
+            delayUs(1);
+            SR_CLK2(0);
+
+            if(buttonCheck(i, j))
+            {
+                sendOSCMessage(TxSocket, prefix, msgPress, "iii", i, 7 - j, (btnCurrent[i] & (1 << j)) ? 1 : 0);
+            }
+        }
+    }
+    delayUs(2);
+
+    start_row += 4;
+    if(start_row >= 8)
+    {
+        start_row = 0;
+    }
+#endif
+#ifdef USE_PITCH
     for(i = 0; i < MAX_BTN_ROW; i++)
     {
         btnLast[i] = btnCurrent[i];
@@ -1154,6 +1296,68 @@ void sendAdc(void)
     }
 }
 
+#ifdef USE_LED_ENC
+void sendEnc(void)
+{
+    currentSwitch = RE_SW();
+    if(prevSwitch != currentSwitch)
+    {
+        switchFlag = TRUE;
+        prevSwitch = currentSwitch;
+    }
+
+    if(initSendFlag && sendEncFlag)
+    {
+        if(reFlag[0])
+        {
+            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiff", direction, reStep, omega[0], alpha[0]);
+        }
+        else if(reFlag[1])
+        {
+            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiff", direction, reStep, omega[1], alpha[1]);
+        }
+        sendEncFlag = FALSE;
+    }
+
+    if(initSendFlag && switchFlag)
+    {
+        sendOSCMessage(TxSocket, prefix, msgRotaryEncSwitch, "i", currentSwitch);
+        switchFlag = FALSE;
+    }
+}
+
+void __ISR(_TIMER_4_VECTOR, ipl1) T4Handler(void)
+{
+    encoderCheck(RE_A(), RE_B());
+    mT4ClearIntFlag();
+}
+void __ISR(_TIMER_5_VECTOR, ipl1) T5Handler(void)
+{
+    static BYTE test = 0;
+    if(ledOn)
+    {
+        WORD msb, lsb;
+        switch(test)
+        {
+            case 0:
+                test = 1;
+                msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
+                lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
+                sendSpiTwoWord(msb, lsb);
+                break;
+            case 1:
+                test = 0;
+                LD_LOAD(1);
+                ledIntensityIndex++;
+                if(ledIntensityIndex == 100)
+                    ledIntensityIndex = 0;
+                break;
+        }
+    }
+    mT5ClearIntFlag();
+}
+#endif
+
 #if 0
 void convertOscToMidi(BYTE buffer)
 {
@@ -1190,31 +1394,41 @@ void UDPSendTask()
             stateFlag = FALSE;
             //sendOSCMessage(TxSocket, prefix, msgSw, "i", (currentState ? 0 : 1));
             if(!currentState)
-            {
                 sendOSCMessage(TxSocket, sysPrefix, msgPrefix, "is", -2, prefix);
-            }
         }
 
         switch(usbState)
         {
             case 0:
+                USBHostTasks();
+                convertMidiToOsc();
+                usbState = 1;
+                break;
+            case 1:
+            #ifdef USE_PITCH
                 //test ConvertADC10();
                 while(BusyADC10());
                 //test analogInHandle(0, (LONG)ReadADC10(1));
                 //test analogInHandle(1, (LONG)ReadADC10(0));
-#ifdef USE_PITCH
                 analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
                 analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
-#endif
-                usbState = 1;
-                break;
-#ifdef USE_PITCH
-            case 1:
-                //test sendAdc();
+            #endif
                 usbState = 2;
                 break;
             case 2:
-                //test sendPad();
+                #ifdef USE_PITCH
+                    sendAdc();
+                #endif
+                usbState = 3;
+                break;
+            case 3:
+                sendPad();
+                usbState = 4;
+                break;
+            case 4:
+                #ifdef USE_LED_ENC
+                    sendEnc();
+                #endif
                 usbState = 0;
                 break;
 #if 0
@@ -1222,7 +1436,6 @@ void UDPSendTask()
                 convertOSCtoMIDI();
                 usbState = 0;
                 break;
-#endif
 #endif
 #ifdef USE_OPT_DRUM
             case 1:
@@ -1327,6 +1540,7 @@ void convertMidiToOsc(void)
                                 }
                             }
                         }
+                        break;
                     case RX_DATA_WAIT:
                         if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
                         {
@@ -1339,6 +1553,7 @@ void convertMidiToOsc(void)
                         }
                         break;
                 }
+                delayUs(2);
     		}
     		break;
     	case STATE_ERROR:
