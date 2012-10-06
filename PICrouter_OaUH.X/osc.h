@@ -98,4 +98,3 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 
 #endif	/* OSC_H */
-
