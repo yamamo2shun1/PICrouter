@@ -35,7 +35,7 @@ void buttonInit(void)
   }
 }
 
-BOOL buttonCheck(int row, int index)
+BOOL buttonCheck(BYTE row, BYTE index)
 {
   BOOL flag = FALSE;
 

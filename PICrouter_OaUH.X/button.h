@@ -25,8 +25,8 @@
 #include <GenericTypeDefs.h>
 
 
-#define MAX_BTN_ROW 4//1 // 2
-#define MAX_BTN_COL 4//16 // 2
+#define MAX_BTN_ROW 8//4//1 // 2
+#define MAX_BTN_COL 8//4//16 // 2
 
 WORD btnCurrent[MAX_BTN_ROW];
 WORD btnLast[MAX_BTN_ROW];
@@ -34,7 +34,6 @@ WORD btnState[MAX_BTN_ROW];
 WORD btnDebounceCount[MAX_BTN_ROW][MAX_BTN_COL];
 
 void buttonInit(void);
-BOOL buttonCheck(int row, int index);
+BOOL buttonCheck(BYTE row, BYTE index);
 
 #endif	/* BUTTON_H */
-
