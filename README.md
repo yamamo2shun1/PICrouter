@@ -76,6 +76,17 @@ PICrouter_OaUH.X is this project folder.
 6. Pitch Bend (EnH)  
 --> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***
 
+### Basic OSC Messages
+1. ***/onboard/led [id] [state]***
+2. ***/volume/led [value]***
+3. ***/lattice/led [x] [y] [state]***
+4. ***/rotary/led/step [id] [length]***
+5. ***/rotary/led/bits [data]***
+6. ***/rotary/led/intensity [id] [intensity]***
+7. ***/rotary/led/allint [intensity]***
+8. ***/rotary/enc [direction] [step] [velocity] [acceralation]***
+9. ***/rotary/switch [state]***
+
 ### Standard OSC Messages of I/O
 1. ***/std/pwm/state/set [state(string)]***
 2. ***/std/pwm/state/get [no arguments]***
