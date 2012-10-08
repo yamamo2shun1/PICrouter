@@ -41,7 +41,6 @@
 #include "Include/Framework/Framework.h"
 #include "Include/NVMem.h"
 #include <plib.h>
-#include <peripheral/int.h>
 
 
 const UINT countPerMicroSec = ((SYS_FREQ/1000000)/2);
