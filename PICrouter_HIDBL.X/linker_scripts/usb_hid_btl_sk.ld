@@ -54,7 +54,7 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 MEMORY
 {
 	
-  kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3400 /* 12KB of Program Flash*/
+  kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3080 /* 12KB of Program Flash*/
   kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0      
   exception_mem              : ORIGIN = 0x9FC01000, LENGTH = 0x1000 
    

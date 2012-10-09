@@ -101,7 +101,7 @@
 #define ReadExtSw0Status() PORTFbits.RF5
 #define ReadExtSw1Status() PORTGbits.RG7
 // Error indication.
-#define Error()   do{LATDbits.LATD8 = 1; LATDbits.LATD9 = 1;} while(0);
+//#define Error()   do{LATDbits.LATD8 = 1; LATDbits.LATD9 = 1;} while(0);
 
 
 #endif  //HARDWARE_PROFILE_H

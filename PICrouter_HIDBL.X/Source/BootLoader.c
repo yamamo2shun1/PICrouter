@@ -46,16 +46,6 @@
 
 // Configuring the Device Configuration Registers
 // 80Mhz Core/Periph, Pri Osc w/PLL, Write protect Boot Flash
-#if 0
-    #pragma config UPLLEN   = ON        // USB PLL Enabled
-    #pragma config UPLLIDIV = DIV_5         // USB PLL Input Divider
-    #pragma config DEBUG    = OFF      // Background Debugger Enable: OFF
-    #pragma config FPLLMUL = MUL_20, FPLLIDIV = DIV_5, FPLLODIV = DIV_1, FWDTEN = OFF
-    #pragma config POSCMOD = HS, FNOSC = PRIPLL, FPBDIV = DIV_1
-    #pragma config ICESEL = ICS_PGx1, BWP = OFF
-    #pragma config FVBUSONIO = OFF
-    #pragma config FSOSCEN = OFF
-#else
     #pragma config UPLLEN    = ON        // USB PLL Enabled
     #pragma config FPLLMUL   = MUL_20    // PLL Multiplier
     #pragma config UPLLIDIV  = DIV_5     // USB PLL Input Divider
@@ -63,23 +53,14 @@
     #pragma config FPLLODIV  = DIV_1     // PLL Output Divider
     #pragma config FPBDIV    = DIV_1     // Peripheral Clock divisor
     #pragma config FWDTEN    = OFF       // Watchdog Timer
-    //test #pragma config WDTPS    = PS1       // Watchdog Timer Postscale
-    //test #pragma config FCKSM    = CSDCMD    // Clock Switching & Fail Safe Clock Monitor
-    //test #pragma config OSCIOFNC = OFF       // CLKO Enable
     #pragma config POSCMOD   = HS        // Primary Oscillator
-    //test #pragma config IESO     = OFF       // Internal/External Switch-over
     #pragma config FSOSCEN   = OFF       // Secondary Oscillator Enable (KLO was off)
     #pragma config FNOSC     = PRIPLL    // Oscillator Selection
     #pragma config FVBUSONIO = OFF
-    //test #pragma config CP       = OFF       // Code Protect
-    //test #pragma config BWP      = OFF       // Boot Flash Write Protect
-    //test #pragma config PWP      = OFF       // Program Flash Write Protect
     #pragma config ICESEL    = ICS_PGx1  // ICE/ICD Comm Channel Select
-    //tes #pragma config DEBUG    = ON        // Background Debugger Enable
     #pragma config FMIIEN    = OFF // external PHY in RMII/default configuration
     #pragma config FETHIO    = ON
     #pragma config DEBUG     = OFF
-#endif
 
 #define SWITCH_PRESSED 0
 #define PAD_PRESSED 1
@@ -172,14 +153,7 @@ INT main(void)
 ********************************************************************/
 BOOL  CheckTrigger(void)
 {
-	UINT SwitchStatus;
-    UINT ExtSw0Status;
-    UINT ExtSw1Status;
-	SwitchStatus = ReadSwitchStatus();
-    ExtSw0Status = ReadExtSw0Status();
-    ExtSw1Status = ReadExtSw1Status();
-
-	if(SwitchStatus == SWITCH_PRESSED || (ExtSw0Status == PAD_PRESSED && ExtSw1Status == PAD_PRESSED))
+	if(ReadSwitchStatus() == SWITCH_PRESSED || (ReadExtSw0Status() == PAD_PRESSED && ReadExtSw1Status() == PAD_PRESSED))
 	{
 		// Switch is pressed
 		return TRUE;		
