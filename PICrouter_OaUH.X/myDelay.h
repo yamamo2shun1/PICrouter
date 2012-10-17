@@ -7,7 +7,7 @@
 
 #define Fosc 80
 
-void delayUs(unsigned int usec);
-void delayMs(unsigned int msec);
+void delayUs(DWORD usec);
+void delayMs(DWORD msec);
 
 #endif
