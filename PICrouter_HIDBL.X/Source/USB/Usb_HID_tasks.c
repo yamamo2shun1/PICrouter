@@ -52,6 +52,7 @@
 #define UsbTxBusy() 		(USBHandleBusy(USBInHandle))
 #define UsbRxDataAvlbl() 	(!USBHandleBusy(USBOutHandle))
 
+
 #define MaxUsbPacketSize 64
 
 
@@ -62,6 +63,7 @@ static UINT8 UsbTxData[FRAMEWORK_BUFF_SIZE];
 
 USB_HANDLE USBOutHandle = 0;
 USB_HANDLE USBInHandle = 0;
+
 
 /********************************************************************
 * Function: 	UsbInit()
@@ -149,7 +151,7 @@ void UsbInit(UINT pbClk)
 ********************************************************************/
 void UsbClose(void)
 {
-	IEC1bits.USBIE = 0;
+    USBDisableInterrupts();
 	
 }	
 
@@ -173,55 +175,62 @@ void UsbTasks(void)
 {
 	UINT TxLen;
 	UINT8 *TxPtr;
+	volatile test;
+	
 	
 	 #if defined(USB_POLLING)		
 	//This function must be called everytime. This is a stack function.
 	USBDeviceTasks();
 	 #endif
 
-	// Check if bootloader has something to send out to PC. 
-	TxLen = FRAMEWORK_GetTransmitFrame(UsbTxData);
-
-	// Initialize the transmit pointer.
-	TxPtr = &UsbTxData[0];
-	
-	while(TxLen)	
+    if(USBGetDeviceState() == CONFIGURED_STATE)
 	{
-	
-		while(UsbTxBusy()); // Wait for USB transmit completion.	
-		
-		// Send the packet (USB endpoint size is always 64 bytes)
-		USBTxOnePacket(HID_EP, TxPtr, MaxUsbPacketSize);	
-		
-		if(TxLen > MaxUsbPacketSize)
-		{
-			// Send pending bytes in next loop.
-			TxLen -= MaxUsbPacketSize;
-			// Point to next 64bytes.
-			TxPtr += MaxUsbPacketSize;
-			// Probably a wait is needed here, otherwise PC app may miss frames.
-			//Wait();			
-		}	
-		else
-		{
-			// No more bytes.
-			TxLen = 0;
-		}			
-	}
-	
-	// Following part of the code checks if there is any data from USB.
-	// If there are any data available, it just pushes the data to the frame work. 
-	// Framework decodes the packet and takes necessary action like erasing/ programming etc.	
-		
-	if(UsbRxDataAvlbl())// Check if we have got any data from USB.	 		
-    {
-	    // Yes, we got a packet from HID End point.	    
-	    // Pass the buffer to frame work. Framework decodes the packet and executes the Bootloder specific commands (Erasing/Programming etc).
-		FRAMEWORK_BuildRxFrame(UsbRxData, MaxUsbPacketSize);
-	    	    
-	    // Re-arm the HID endpoint to receive next packet.(Remember! We have armed the HID endpoint for the first time in function USBCBInitEP())
-	    USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)UsbRxData,MaxUsbPacketSize);	    	    		
-	}	
+    	// Check if bootloader has something to send out to PC. 
+    	TxLen = FRAMEWORK_GetTransmitFrame(UsbTxData);
+    
+    	// Initialize the transmit pointer.
+    	TxPtr = &UsbTxData[0];
+    	
+    	while(TxLen)	
+    	{
+    	
+    		while(UsbTxBusy()); // Wait for USB transmit completion.	
+    		
+    		// Send the packet (USB endpoint size is always 64 bytes)
+    		USBTxOnePacket(HID_EP, TxPtr, MaxUsbPacketSize);	
+    		
+    		if(TxLen > MaxUsbPacketSize)
+    		{
+    			// Send pending bytes in next loop.
+    			TxLen -= MaxUsbPacketSize;
+    			// Point to next 64bytes.
+    			TxPtr += MaxUsbPacketSize;
+    			// Probably a wait is needed here, otherwise PC app may miss frames.
+    			//Wait();			
+    		}	
+    		else
+    		{
+    			// No more bytes.
+    			TxLen = 0;
+    		}			
+    	}
+    	
+    	// Following part of the code checks if there is any data from USB.
+    	// If there are any data available, it just pushes the data to the frame work. 
+    	// Framework decodes the packet and takes necessary action like erasing/ programming etc.	
+    		
+    	if(UsbRxDataAvlbl())// Check if we have got any data from USB.	 		
+        {
+    	    // Yes, we got a packet from HID End point.	    
+    	    // Pass the buffer to frame work. Framework decodes the packet and executes the Bootloder specific commands (Erasing/Programming etc).
+    		FRAMEWORK_BuildRxFrame(UsbRxData, MaxUsbPacketSize);
+    	    	    
+    	    // Re-arm the HID endpoint to receive next packet.(Remember! We have armed the HID endpoint for the first time in function USBCBInitEP())
+    	    USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)UsbRxData,MaxUsbPacketSize);	    	    		
+    	}
+    
+    }// if device configured.   
+       	
 	
 }	
 
