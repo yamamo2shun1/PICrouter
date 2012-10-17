@@ -28,7 +28,7 @@ And this is **Free Hardware** and **Free Software**.
 
 ### Development
 * Microchip MPLABX v1.41
-* Microchip XC32 Compiler v1.10
+* Microchip XC32 Compiler v1.11
 
 ### Bootloader Application
 * PIC32UBL.exe (Win / Download is [here][an1388])
