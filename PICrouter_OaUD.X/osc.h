@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.81 2012/08/26
+ * osc.h,v.0.86 2012/11/27
  */
 
 #ifndef OSC_H
@@ -27,6 +27,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include "TCPIP Stack/TCPIP.h"
+
+extern const char msgOnboardLed[];
+extern const char msgVolumeLed[];
+extern const char msgLatticeLed[];
+extern const char msgLatticeLedColumn[];
+extern const char msgLatticeLedRow[];
+extern const char msgRotaryLedStep[];
+extern const char msgRotaryLedBits[];
+extern const char msgRotaryLedIntensity[];
+extern const char msgRotaryLedAllInt[];
+extern const char msgRotaryEnc[];
+extern const char msgSetRotaryEncStep[];
+extern const char msgRotaryEncSwitch[];
 
 //Standard OSC Messages
 extern const char stdPrefix[];
@@ -46,6 +59,13 @@ extern const char msgPc[];
 extern const char msgKp[];
 extern const char msgCp[];
 extern const char msgPb[];
+extern const char msgSetNote[];
+extern const char msgSetPp[];
+extern const char msgSetCc[];
+extern const char msgSetPc[];
+extern const char msgSetKp[];
+extern const char msgSetCp[];
+extern const char msgSetPb[];
 
 //System OSC Messages for Network Settings
 extern const char sysPrefix[];
@@ -69,6 +89,10 @@ extern const char msgHostPort[];
 extern const char msgSetHostPort[];
 extern const char msgGetHostPort[];
 
+extern UINT16 rcvAddressLength;
+extern UINT16 rcvTypesStartIndex;
+extern INT16 rcvArgumentsLength;
+
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIp, WORD remotePort);
 BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort);
 void closeOSCSendPort(UDP_SOCKET sndSocket);
@@ -81,4 +105,3 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 
 #endif	/* OSC_H */
-

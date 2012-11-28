@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.83 2012/09/24
+ * osc.h,v.0.86 2012/11/27
  */
 
 #ifndef OSC_H
@@ -31,11 +31,14 @@
 extern const char msgOnboardLed[];
 extern const char msgVolumeLed[];
 extern const char msgLatticeLed[];
+extern const char msgLatticeLedColumn[];
+extern const char msgLatticeLedRow[];
 extern const char msgRotaryLedStep[];
 extern const char msgRotaryLedBits[];
 extern const char msgRotaryLedIntensity[];
 extern const char msgRotaryLedAllInt[];
 extern const char msgRotaryEnc[];
+extern const char msgSetRotaryEncStep[];
 extern const char msgRotaryEncSwitch[];
 
 //Standard OSC Messages
@@ -85,6 +88,10 @@ extern const char msgGetHostMac[];
 extern const char msgHostPort[];
 extern const char msgSetHostPort[];
 extern const char msgGetHostPort[];
+
+extern UINT16 rcvAddressLength;
+extern UINT16 rcvTypesStartIndex;
+extern INT16 rcvArgumentsLength;
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIp, WORD remotePort);
 BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort);

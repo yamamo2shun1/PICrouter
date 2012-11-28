@@ -16,10 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.81 2012/08/26
+ * osc.c,v.0.86 2012/11/27
  */
 
 #include "osc.h"
+
+const char msgOnboardLed[]         = "/onboard/led";
+const char msgVolumeLed[]          = "/volume/led";
+const char msgLatticeLed[]         = "/lattice/led";
+const char msgLatticeLedColumn[]   = "/lattice/led_col";
+const char msgLatticeLedRow[]      = "/lattice/led_row";
+const char msgRotaryLedStep[]      = "/rotary/led/step";
+const char msgRotaryLedBits[]      = "/rotary/led/bits";
+const char msgRotaryLedIntensity[] = "/rotary/led/intensity";
+const char msgRotaryLedAllInt[]    = "/rotary/led/allint";
+const char msgRotaryEnc[]          = "/rotary/enc";
+const char msgSetRotaryEncStep[]   = "/rotary/enc/step/set";
+const char msgRotaryEncSwitch[]    = "/rotary/enc/switch";
 
 //Standard OSC Messages
 const char stdPrefix[]      = "/std";
@@ -39,6 +52,13 @@ const char msgPc[]      = "/pc";
 const char msgKp[]      = "/kp";
 const char msgCp[]      = "/cp";
 const char msgPb[]      = "/pb";
+const char msgSetNote[]    = "/note/set";
+const char msgSetPp[]      = "/pp/set";
+const char msgSetCc[]      = "/cc/set";
+const char msgSetPc[]      = "/pc/set";
+const char msgSetKp[]      = "/kp/set";
+const char msgSetCp[]      = "/cp/set";
+const char msgSetPb[]      = "/pb/set";
 
 //System OSC Messages for Network Settings
 const char sysPrefix[]        = "/sys";
@@ -61,6 +81,12 @@ const char msgGetHostMac[]    = "/host/mac/get";
 const char msgHostPort[]      = "/host/port";
 const char msgSetHostPort[]   = "/host/port/set";
 const char msgGetHostPort[]   = "/host/port/get";
+
+UINT16 rcvAddressLength;
+UINT16 rcvTypesStartIndex;
+INT16 rcvArgumentsLength;
+char rcvArgsTypeArray[128] = {0};
+UINT16 rcvArgumentsStartIndex[128] = {0};
 
 BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIP, WORD remotePort)
 {
@@ -106,119 +132,64 @@ void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* comman
 	strSize = prefixSize + commandSize;
 	testSize = strSize;
 	zeroSize = 0;
-	do
+
+	if(UDPIsPutReady(sndSocket))
 	{
-		if(testSize <= 8)
+		do
 		{
-			zeroSize = (8 - testSize);
-			testSize -= 8;
-		}
-		else
-			testSize -= 8;
-	} while(testSize > 0);
-	if(zeroSize == 0)
-		zeroSize = 4;
-	else if(zeroSize > 4 && zeroSize < 8)
-		zeroSize -= 4;
-
-	testSize1 = typeSize + 1;
-	zeroSize1 = 0;
-	do
-	{
-		if(testSize1 <= 4)
-		{
-			zeroSize1 = (4 - testSize1);
-			testSize1 -= 4;
-		}
-		else
-			testSize1 -= 4;
-	} while(testSize1 > 0);
-	if(zeroSize1 == 0)
-		zeroSize1 = 4;
-
-	totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
-	p = type;
-
-	va_start(list, type);
-
-	int ivalue;
-	float fvalue;
-	char* fchar;
-	char* cstr;
-	while(*p != '\0')
-	{
-		if(*p == 'i')
-		{
-			ivalue = va_arg(list, int);
-			totalSize += 4;
-		}
-		else if(*p == 'f')
-		{
-			fvalue = va_arg(list, double);
-			totalSize += 4;
-		}
-		else if(*p == 's')
-		{
-			cstr = va_arg(list, char*);
-			i = 0;
-			while(cstr[i] != '\0')
-				i++;
-			j = 0;
-			do
+			if(testSize <= 8)
 			{
-				if(i < 4)
-				{
-					i = 0;
-					j += 4;
-				}
-				else if(i == 4)
-				{
-					i -= 4;
-					j += 8;
-				}
-				else
-				{
-					i -= 4;
-					j += 4;
-				}
+				zeroSize = (8 - testSize);
+				testSize -= 8;
+			}
+			else
+				testSize -= 8;
+		} while(testSize > 0);
 
-			} while(i > 0);
-			totalSize += j;
-		}
-		p++;
-	}
-	va_end(list);
+		if(zeroSize == 0)
+			zeroSize = 4;
+		else if(zeroSize > 4 && zeroSize < 8)
+			zeroSize -= 4;
 
-	str = (char *)calloc(totalSize, sizeof(char));
-	sprintf(str, "%s%s", prefix, command);
-
-	va_start(list, type);
-
-	sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
-
-	int index = 0;
-	while(*type != '\0')
-	{
-		switch(*type)
+		testSize1 = typeSize + 1;
+		zeroSize1 = 0;
+		do
 		{
-			case 'i':
+			if(testSize1 <= 4)
+			{
+				zeroSize1 = (4 - testSize1);
+				testSize1 -= 4;
+			}
+			else
+				testSize1 -= 4;
+		} while(testSize1 > 0);
+
+		if(zeroSize1 == 0)
+			zeroSize1 = 4;
+
+		totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
+		p = type;
+
+		va_start(list, type);
+
+		int ivalue;
+		float fvalue;
+		char* fchar;
+		char* cstr;
+		while(*p != '\0')
+		{
+			if(*p == 'i')
+			{
 				ivalue = va_arg(list, int);
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
-				index += 4;
-				break;
-			case 'f':
-				fvalue = (float)va_arg(list, double);
-				fchar = (char *)&fvalue;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
-				*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
-				index += 4;
-				break;
-			case 's':
+				totalSize += 4;
+			}
+			else if(*p == 'f')
+			{
+				fvalue = va_arg(list, double);
+				totalSize += 4;
+			}
+			else if(*p == 's')
+			{
 				cstr = va_arg(list, char*);
 				i = 0;
 				while(cstr[i] != '\0')
@@ -242,53 +213,127 @@ void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* comman
 						j += 4;
 					}
 				} while(i > 0);
-				i = 0;
-				while(cstr[i] != '\0')
-				{
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + i)) = cstr[i] & 0xFF;
-					i++;
-				}
-				index += j;
-				break;
+				totalSize += j;
+			}
+			p++;
 		}
-		type++;
-	}
+		va_end(list);
 
-	if(UDPIsPutReady(sndSocket))
-    {
-        UDPDiscard();
+		str = (char *)calloc(totalSize, sizeof(char));
+		sprintf(str, "%s%s", prefix, command);
+
+		va_start(list, type);
+
+		sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
+
+		int index = 0;
+		while(*type != '\0')
+		{
+			switch(*type)
+			{
+				case 'i':
+					ivalue = va_arg(list, int);
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
+					index += 4;
+					break;
+				case 'f':
+					fvalue = (float)va_arg(list, double);
+					fchar = (char *)&fvalue;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
+					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
+					index += 4;
+					break;
+				case 's':
+					cstr = va_arg(list, char*);
+					i = 0;
+					while(cstr[i] != '\0')
+						i++;
+					j = 0;
+					do
+					{
+						if(i < 4)
+						{
+							i = 0;
+							j += 4;
+						}
+						else if(i == 4)
+						{
+							i -= 4;
+							j += 8;
+						}
+						else
+						{
+							i -= 4;
+							j += 4;
+						}
+					} while(i > 0);
+					i = 0;
+					while(cstr[i] != '\0')
+					{
+						*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + i)) = cstr[i] & 0xFF;
+						i++;
+					}
+					index += j;
+					break;
+			}
+			type++;
+		}
+
         UDPPutArray((BYTE *)str, totalSize);
         UDPFlush();
-    }
 
-	va_end(list);
-	free(str);
+        free(str);
+		str = NULL;
+		va_end(list);
+    }
 }
 
 BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
 {
-	UINT16 i = 0, j;
+	UINT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
+	INT16 m = 0;
 	char* msg;
-    BOOL flag;
+    BOOL flag = TRUE;
+    BOOL mflag = FALSE;
 
 	while(str[i] != 0x00)
 	{
 		i++;
+		if(i > strlen(str))
+		{
+			flag = FALSE;
+		}
 		if(str[i] == 0x00)
 		{
 			msg = (char *)calloc(i, sizeof(char));
 			memcpy(msg, str, i);
+			mflag = TRUE;
 		}
 	}
 
-    for(j = 0; j < i; j++)
+    if(!flag)
+    {
+    	if(mflag)
+    	{
+    		free(msg);
+    		msg = NULL;
+    	}
+    	return FALSE;
+    }
+
+	rcvAddressLength = i;
+
+	for(j = 0; j < rcvAddressLength; j++)
     {
         if(j < strlen(prefix))
         {
         	if(msg[j] == prefix[j])
-        	{
             	flag = TRUE;
-        	}
         	else
         	{
             	flag = FALSE;
@@ -298,9 +343,7 @@ BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
         else if(j >= strlen(prefix))
         {
         	if(msg[j] == address[j - strlen(prefix)])
-        	{
             	flag = TRUE;
-        	}
         	else
         	{
             	flag = FALSE;
@@ -313,73 +356,44 @@ BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
         	break;
         }
     }
-    free(msg);
-
-    return flag;
-}
-
-INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
-{
-	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
-    INT16 m = 0;
-	INT32 sign, exponent, mantissa;
-	INT64 lvalue;
-	float fvalue;
-	float sum;
-	char* msg;
-	char* types;
-
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(str[i] == 0x00)
-		{
-			msg = (char *)calloc(i, sizeof(char));
-			memcpy(msg, str, i);
-		}
-	}
+    if(mflag)
+    {
+    	free(msg);
+    	msg = NULL;
+    }
+    if(!flag)
+    	return FALSE;
 
 	while(str[i] != 0x2C)
-	{
 		i++;
-		if(str[i] == 0x2C)
-			j = i;
-	}
+	j = i;
+	rcvTypesStartIndex = j;
 
 	while(str[i] != 0x00)
-	{
 		i++;
-		if(str[i] == 0x00)
-		{
-			types = (char *)calloc(i - j - 1, sizeof(char));
-			memcpy(types, str + j + 1, i - j - 1);
-		}
-	}
+	for(k = 0; k < i - j - 1; k++)
+		rcvArgsTypeArray[k] = str[k + j + 1];
+	rcvArgumentsLength = i - j;
 
-	m = i - j;
-	n = 0;
+	m = rcvArgumentsLength;
 	do
 	{
 		n += 4;
 		m -= 4;
 	} while(m >= 0);
 
-	if(index >= (i - j - 1))
-		return 0;
-
-	length = 0;
-	for(k = 0; k <= index; k++)
+	for(k = 0; k < rcvArgumentsLength - 1; k++)
 	{
-		switch(types[k])
+		rcvArgumentsStartIndex[k] = rcvTypesStartIndex + length + n;
+		switch(rcvArgsTypeArray[k])
 		{
 			case 'i':
 			case 'f':
-				if(k != index)
-					length += 4;
+				length += 4;
 				break;
 			case 's':
 				u = 0;
-				while(str[j + n + length + u] != '\0')
+				while(str[rcvTypesStartIndex + n + length + u] != '\0')
 					u++;
 				v = 0;
 				do
@@ -395,19 +409,38 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
 						v += 8;
 					}
 				} while(u > 0);
-				if(k != index)
-					length += v;
+				length += v;
 				break;
 		}
 	}
+    return TRUE;
+}
 
-	switch(types[index])
+INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
+{
+	UINT16 k = 0, s = 0;
+    INT16 m = rcvArgumentsLength;
+	INT32 sign, exponent, mantissa;
+	INT64 lvalue;
+	float fvalue;
+	float sum;
+
+	if(index >= rcvArgumentsLength - 1)
+		return 0;
+
+	switch(rcvArgsTypeArray[index])
 	{
 		case 'i':
-			lvalue = ((str[j + n + 0 + length] & 0xFF) << 24) | ((str[j + n + 1 + length] & 0xFF) << 16) | ((str[j + n + 2 + length] & 0xFF) << 8) | (str[j + n + 3 + length] & 0xFF);
+			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
+				     ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+				     ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+				      (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
 			break;
 		case 'f':
-			lvalue = ((str[j + n + 0 + length] & 0xFF) << 24) | ((str[j + n + 1 + length] & 0xFF) << 16) | ((str[j + n + 2 + length] & 0xFF) << 8) | (str[j + n + 3 + length] & 0xFF);
+			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
+					 ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+					 ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+					 (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
 			lvalue &= 0xffffffff;
 
 			sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
@@ -429,103 +462,35 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
 			lvalue = (int)fvalue;
 			break;
 	}
-	free(msg);
-	free(types);
-
 	return lvalue;
 }
 
 float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	UINT16 i = 0, j = 0, k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
-        INT16 m = 0;
+	UINT16 k = 0, s = 0;
+    INT16 m = rcvArgumentsLength;
 	INT32 sign, exponent, mantissa;
 	INT64 lvalue;
 	float fvalue;
 	float sum;
-	char* msg;
-	char* types;
 
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(str[i] == 0x00)
-		{
-			msg = (char *)calloc(i, sizeof(char));
-			memcpy(msg, str, i);
-		}
-	}
-
-	while(str[i] != 0x2C)
-	{
-		i++;
-		if(str[i] == 0x2C)
-			j = i;
-	}
-
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(str[i] == 0x00)
-		{
-			types = (char *)calloc(i - j - 1, sizeof(char));
-			memcpy(types, str + j + 1, i - j - 1);
-		}
-	}
-
-	m = i - j;
-	n = 0;
-	do
-	{
-		n += 4;
-		m -= 4;
-	} while(m >= 0);
-
-	if(index >= (i - j - 1))
+	if(index >= rcvArgumentsLength - 1)
 		return 0.0;
 
-	length = 0;
-	for(k = 0; k <= index; k++)
-	{
-		switch(types[k])
-		{
-			case 'i':
-			case 'f':
-				if(k != index)
-					length += 4;
-				break;
-			case 's':
-				u = 0;
-				while(str[j + n + length + u] != '\0')
-					u++;
-				v = 0;
-				do
-				{
-					if(u < 8)
-					{
-						u = 0;
-						v += 8;
-					}
-					else
-					{
-						u -= 8;
-						v += 8;
-					}
-				} while(u > 0);
-				if(k != index)
-					length += v;
-				break;
-		}
-	}
-
-	switch(types[index])
+	switch(rcvArgsTypeArray[index])
 	{
 		case 'i':
-			lvalue = (str[j + n + length] << 24) | (str[j + n + 1+ length] << 16) | (str[j + n + 2+ length] << 8) | str[j + n + 3+ length];
+			lvalue = (str[rcvArgumentsStartIndex[index] + 0] << 24) |
+					 (str[rcvArgumentsStartIndex[index] + 1] << 16) |
+					 (str[rcvArgumentsStartIndex[index] + 2] << 8) |
+					 str[rcvArgumentsStartIndex[index] + 3];
 			fvalue = (float)lvalue;
 			break;
 		case 'f':
-			lvalue = ((str[j + n + 0 + length] & 0xFF) << 24) | ((str[j + n + 1 + length] & 0xFF) << 16) | ((str[j + n + 2 + length] & 0xFF) << 8) | (str[j + n + 3 + length] & 0xFF);
+			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
+					 ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+					 ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+					 (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
 			lvalue &= 0xffffffff;
 
 			sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
@@ -546,61 +511,28 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
 				fvalue = sign * sum * (1.0 / (float)(1 << abs(exponent)));
 			break;
 	}
-	free(msg);
-	free(types);
-
 	return fvalue;
 }
 
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	int i = 0, j = 0, k = 0, n = 0, m = 0, u = 0, v = 0, length = 0;
+	UINT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
+    INT16 m = rcvArgumentsLength;
 	char* cstr;
-	char* msg;
-	char* types;
 
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(str[i] == 0x00)
-		{
-			msg = (char *)calloc(i, sizeof(char));
-			memcpy(msg, str, i);
-		}
-	}
-
-	while(str[i] != 0x2C)
-	{
-		i++;
-		if(str[i] == 0x2C)
-			j = i;
-	}
-
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(str[i] == 0x00)
-		{
-			types = (char *)calloc(i - j - 1, sizeof(char));
-			memcpy(types, str + j + 1, i - j - 1);
-		}
-	}
-
-	m = i - j;
-	n = 0;
 	do
 	{
 		n += 4;
 		m -= 4;
 	} while(m >= 0);
 
-	if(index >= (i - j - 1))
+	if(index >= rcvArgumentsLength - 1)
 		return 0;
 
 	length = 0;
 	for(k = 0; k <= index; k++)
 	{
-		switch(types[k])
+		switch(rcvArgsTypeArray[k])
 		{
 			case 'i':
 			case 'f':
@@ -609,7 +541,7 @@ char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* 
 				break;
 			case 's':
 				u = 0;
-				while(str[j + n + length + u] != '\0')
+				while(str[rcvTypesStartIndex + n + length + u] != '\0')
 					u++;
 				v = 0;
 				do
@@ -631,20 +563,17 @@ char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* 
 		}
 	}
 
-	switch(types[index])
+	switch(rcvArgsTypeArray[index])
 	{
 		case 'i':
 		case 'f':
 			cstr = (char *)calloc(4, sizeof(char));
-			memcpy(cstr, str + j + n + length, 4);
+			memcpy(cstr, str + rcvTypesStartIndex + n + length, 4);
 			break;
 		case 's':
 			cstr = (char *)calloc(v, sizeof(char));
-			memcpy(cstr, str + j + n + length, v);
+			memcpy(cstr, str + rcvTypesStartIndex + n + length, v);
 			break;
 	}
-	free(msg);
-	free(types);
-
 	return cstr;
 }
