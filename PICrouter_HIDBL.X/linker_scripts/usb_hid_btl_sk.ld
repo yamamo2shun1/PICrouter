@@ -29,8 +29,8 @@ INPUT("processor.o")
 /*************************************************************************
  * Processor-specific peripheral libraries are optional
  *************************************************************************/
-/*test OPTIONAL("libmchp_peripheral.a")
-       OPTIONAL("libmchp_peripheral_32MX795F512L.a") */
+OPTIONAL("libmchp_peripheral.a")
+OPTIONAL("libmchp_peripheral_32MX675F512H.a")
 
 _ramfunc_begin = 0;
 
@@ -60,8 +60,8 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 MEMORY
 {
 	
-  kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000 /* 12KB of Program Flash*/
-  kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0      
+  kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x2DA0 /* 12KB of Program Flash*/
+  kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0
   exception_mem              : ORIGIN = 0x9FC01000, LENGTH = 0x1000 
    
   kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x490
@@ -70,7 +70,7 @@ MEMORY
   config2                    : ORIGIN = 0xBFC02FF4, LENGTH = 0x4
   config1                    : ORIGIN = 0xBFC02FF8, LENGTH = 0x4
   config0                    : ORIGIN = 0xBFC02FFC, LENGTH = 0x4
-  kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 0x2000
+  kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 0x10000
   sfrs                       : ORIGIN = 0xBF800000, LENGTH = 0x100000
   configsfrs                 : ORIGIN = 0xBFC02FF0, LENGTH = 0x10
 	

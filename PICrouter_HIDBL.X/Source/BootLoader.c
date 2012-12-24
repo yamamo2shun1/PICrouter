@@ -90,6 +90,7 @@ BOOL ValidAppPresent(void);
 INT main(void)
 {
 	UINT pbClk;
+        UINT bSoftResetFlag = 0;
 
 	// Setup configuration
 	pbClk = SYSTEMConfig(SYS_FREQ, SYS_CFG_WAIT_STATES | SYS_CFG_PCACHE);
@@ -98,16 +99,15 @@ INT main(void)
 
     TRISBbits.TRISB15 = 1;//test
 
-    TRISFbits.TRISF5 = 0;
-    TRISGbits.TRISG7 = 0;
-    LATFbits.LATF5 = 0;
-    LATGbits.LATG7 = 0;
+    bSoftResetFlag = *(unsigned int *)(NVM_DATA);
+    if(bSoftResetFlag == 1)
+    {
+        NVMErasePage((void*)NVM_DATA);
+        NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x00);
+    }
 
-    TRISFbits.TRISF5 = 1;
-    TRISGbits.TRISG7 = 1;
-	
 	// Enter firmware upgrade mode if there is a trigger or if the application is not valid
-	if(CheckTrigger() || !ValidAppPresent())
+	if(bSoftResetFlag == 1 || CheckTrigger() || !ValidAppPresent())
 	{
 		// Initialize the transport layer - UART/USB/Ethernet
 		TRANS_LAYER_Init(pbClk);
@@ -153,7 +153,7 @@ INT main(void)
 ********************************************************************/
 BOOL  CheckTrigger(void)
 {
-	if(ReadSwitchStatus() == SWITCH_PRESSED || (ReadExtSw0Status() == PAD_PRESSED && ReadExtSw1Status() == PAD_PRESSED))
+	if(ReadSwitchStatus() == SWITCH_PRESSED)
 	{
 		// Switch is pressed
 		return TRUE;		
