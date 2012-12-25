@@ -27,21 +27,23 @@ And this is **Free Hardware** and **Free Software**.
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
 ### Development
-* Microchip MPLABX v1.41
-* Microchip XC32 Compiler v1.11
+* Microchip MPLABX v1.51
+* Microchip XC32 Compiler v1.20
 
 ### Bootloader Application
 * PIC32UBL.exe (Win / Download is [here][an1388])
 * PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")
 
-PICrouter Schematic and board (current ver. is 0.95)
+PICrouter Schematic and board (current ver. is 1.00)
 --------------------------------
 PICrouter.sch and .brd are drawn by Eagel v6.  
 Additionaly, we use [Sparkfun eagle library][sparkfun].  
 This library is also licensed by CC by-SA 3.0.  
 
-And then We extend a special thank you to Tomoya.  
-He gave many advices for designing of this board.
+And then We extend a special thank you to Tomoya(@tomoya723) and Rundog(@rundog).  
+Tomoya gave many advices for designing of this board and Rundog  
+assisted us with this board's production.
+
 
 [sparkfun]: http://www.opencircuits.com/SFE_Footprint_Library_Eagle
 
