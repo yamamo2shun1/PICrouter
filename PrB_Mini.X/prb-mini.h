@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * prb-mini.h,v.0.10 2012/10/21
+ * prb-mini.h,v.0.50 2012/12/25
  */
 
 #include <plib.h>
