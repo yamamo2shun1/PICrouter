@@ -41,8 +41,8 @@ Additionaly, we use [Sparkfun eagle library][sparkfun].
 This library is also licensed by CC by-SA 3.0.  
 
 And then We extend a special thank you to Tomoya(@tomoya723) and Rundog(@rundog).  
-Tomoya gave many advices for designing of this board and Rundog  
-assisted us with this board's production.
+Tomoya gave many advices for designing of this board.  
+Rundog assisted us with this board's production.
 
 
 [sparkfun]: http://www.opencircuits.com/SFE_Footprint_Library_Eagle
