@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.001" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -838,6 +838,70 @@ http://stores.ebay.com/Audio-Grade?_rdc=1</description>
 <hole x="-1.5" y="0" drill="0.9"/>
 <hole x="1.5" y="0" drill="0.9"/>
 <text x="-4.1" y="2.9" size="1.016" layer="25">&gt;NAME</text>
+<wire x1="-3.048" y1="0.508" x2="-3.048" y2="-0.508" width="0.127" layer="21"/>
+<wire x1="-2.921" y1="0.8382" x2="2.921" y2="0.8382" width="0.127" layer="21"/>
+<wire x1="3.048" y1="0.508" x2="3.048" y2="-0.508" width="0.127" layer="21"/>
+<wire x1="-2.921" y1="-1.143" x2="2.921" y2="-1.143" width="0.127" layer="21"/>
+</package>
+<package name="EC11E1834403">
+<pad name="P$3" x="0" y="-7.5" drill="1"/>
+<pad name="P$2" x="2.5" y="-7.5" drill="1"/>
+<pad name="P$1" x="-2.5" y="-7.5" drill="1"/>
+<pad name="P$4" x="-2.5" y="7" drill="1"/>
+<pad name="P$5" x="2.5" y="7" drill="1"/>
+<pad name="P$6" x="5.5" y="0" drill="2.6"/>
+<pad name="P$7" x="-5.5" y="0" drill="2.6"/>
+<wire x1="-5.5" y1="2.5" x2="-5.5" y2="7" width="0.127" layer="21"/>
+<wire x1="5.5" y1="7" x2="5.5" y2="2.5" width="0.127" layer="21"/>
+<wire x1="-5.5" y1="-2.5" x2="-5.5" y2="-7.5" width="0.127" layer="21"/>
+<wire x1="-5.5" y1="-7.5" x2="-4" y2="-7.5" width="0.127" layer="21"/>
+<wire x1="4" y1="-7.5" x2="5.5" y2="-7.5" width="0.127" layer="21"/>
+<wire x1="5.5" y1="-7.5" x2="5.5" y2="-2.5" width="0.127" layer="21"/>
+<wire x1="-5.5" y1="7" x2="-4" y2="7" width="0.127" layer="21"/>
+<wire x1="4" y1="7" x2="5.5" y2="7" width="0.127" layer="21"/>
+<wire x1="-1" y1="7" x2="1" y2="7" width="0.127" layer="21"/>
+<circle x="0" y="0" radius="2.69258125" width="0.127" layer="21"/>
+</package>
+<package name="EM14A0D-C24-L064S">
+<pad name="RE_B" x="-3.175" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<pad name="VCC" x="-1.905" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<pad name="SW2" x="-0.635" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<pad name="SW1" x="0.635" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<pad name="RE_A" x="1.905" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<pad name="GND" x="3.175" y="-6.25" drill="0.64" diameter="0.8128" shape="octagon"/>
+<wire x1="-7.38" y1="-7.125" x2="7.38" y2="-7.125" width="0.127" layer="21"/>
+<wire x1="7.38" y1="7.125" x2="-7.38" y2="7.125" width="0.127" layer="21"/>
+<wire x1="-7.38" y1="7.125" x2="-7.38" y2="-7.125" width="0.127" layer="21"/>
+<wire x1="7.38" y1="7.125" x2="7.38" y2="-1.8" width="0.127" layer="21"/>
+<wire x1="7.38" y1="-1.8" x2="7.38" y2="-2.01" width="0.127" layer="21"/>
+<text x="-3.475" y="-5.5" size="0.8128" layer="21">B</text>
+<text x="-2.205" y="-5.5" size="0.8128" layer="21">+</text>
+<text x="-0.935" y="-5.5" size="0.8128" layer="21">2</text>
+<text x="0.335" y="-5.5" size="0.8128" layer="21">1</text>
+<text x="1.605" y="-5.5" size="0.8128" layer="21">A</text>
+<text x="2.875" y="-5.5" size="0.8128" layer="21">-</text>
+<wire x1="7.38" y1="-2.01" x2="7.38" y2="-7.125" width="0.127" layer="21"/>
+</package>
+<package name="EMS22A50--M25-LD6">
+<pad name="P$4" x="-1" y="-8.62" drill="0.8"/>
+<pad name="P$3" x="1" y="-8.62" drill="0.8"/>
+<pad name="P$2" x="3" y="-8.62" drill="0.8"/>
+<pad name="P$1" x="5" y="-8.62" drill="0.8"/>
+<pad name="P$5" x="-3" y="-8.62" drill="0.8"/>
+<pad name="P$6" x="-5" y="-8.62" drill="0.8"/>
+<wire x1="-8" y1="-11.42" x2="8" y2="-11.42" width="0.127" layer="21"/>
+<wire x1="-8" y1="-11.42" x2="-8" y2="9.79" width="0.127" layer="21"/>
+<wire x1="8" y1="-11.42" x2="8" y2="9.79" width="0.127" layer="21"/>
+<wire x1="-8" y1="9.79" x2="8" y2="9.79" width="0.127" layer="21"/>
+<text x="-5.5" y="-7.62" size="1.27" layer="21">6</text>
+<text x="-3.5" y="-7.62" size="1.27" layer="21">5</text>
+<text x="-1.5" y="-7.62" size="1.27" layer="21">4</text>
+<text x="0.5" y="-7.62" size="1.27" layer="21">3</text>
+<text x="2.5" y="-7.62" size="1.27" layer="21">2</text>
+<text x="4.5" y="-7.62" size="1.27" layer="21">1</text>
+<text x="-4" y="1.38" size="1.27" layer="21">EMS22A</text>
+<wire x1="-1.27" y1="0" x2="1.27" y2="0" width="0" layer="21"/>
+<wire x1="0" y1="0.27" x2="0" y2="-2.27" width="0" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -986,6 +1050,51 @@ http://stores.ebay.com/Audio-Grade?_rdc=1</description>
 <text x="-3.175" y="-3.175" size="1.27" layer="94">2</text>
 <text x="2.54" y="-5.715" size="1.27" layer="94">3</text>
 </symbol>
+<symbol name="ROT-ENC-SW">
+<pin name="A" x="-5.08" y="12.7" visible="off" length="middle"/>
+<pin name="B" x="-5.08" y="2.54" visible="off" length="middle"/>
+<pin name="C" x="-5.08" y="7.62" visible="off" length="middle"/>
+<pin name="D" x="17.78" y="10.16" visible="off" length="middle" rot="R180"/>
+<pin name="E" x="17.78" y="5.08" visible="off" length="middle" rot="R180"/>
+<wire x1="0" y1="15.24" x2="0" y2="0" width="0.254" layer="94"/>
+<wire x1="0" y1="0" x2="12.7" y2="0" width="0.254" layer="94"/>
+<wire x1="12.7" y1="0" x2="12.7" y2="15.24" width="0.254" layer="94"/>
+<wire x1="12.7" y1="15.24" x2="0" y2="15.24" width="0.254" layer="94"/>
+<pin name="P$1" x="5.08" y="-2.54" visible="pad" length="short" direction="pwr" rot="R90"/>
+<pin name="P$2" x="10.16" y="-2.54" visible="off" length="short" direction="pwr" rot="R90"/>
+<text x="2.54" y="12.7" size="1.27" layer="94" align="center">A</text>
+<text x="2.54" y="7.62" size="1.27" layer="94" align="center">C</text>
+<text x="2.54" y="2.54" size="1.27" layer="94" align="center">B</text>
+<text x="10.16" y="10.16" size="1.27" layer="94" align="center">D</text>
+<text x="10.16" y="5.08" size="1.27" layer="94" align="center">E</text>
+<text x="7.62" y="2.54" size="1.27" layer="94" align="center">GND</text>
+</symbol>
+<symbol name="EM14A0D-C24-L064S">
+<pin name="RE_A" x="-5.08" y="2.54" visible="pin" length="middle" direction="out"/>
+<pin name="RE_B" x="-5.08" y="-2.54" visible="pin" length="middle" direction="out"/>
+<pin name="VCC" x="7.62" y="17.78" visible="off" length="middle" direction="pwr" rot="R270"/>
+<pin name="GND" x="7.62" y="-12.7" visible="off" length="middle" direction="pwr" rot="R90"/>
+<pin name="SW1" x="22.86" y="5.08" visible="pin" length="middle" rot="R180"/>
+<pin name="SW2" x="22.86" y="0" visible="pin" length="middle" rot="R180"/>
+<text x="6.35" y="-6.35" size="1.778" layer="95">GND</text>
+<text x="5.08" y="8.89" size="1.778" layer="95">VCC</text>
+<wire x1="0" y1="12.7" x2="0" y2="-7.62" width="0.254" layer="94"/>
+<wire x1="0" y1="-7.62" x2="17.78" y2="-7.62" width="0.254" layer="94"/>
+<wire x1="17.78" y1="-7.62" x2="17.78" y2="12.7" width="0.254" layer="94"/>
+<wire x1="17.78" y1="12.7" x2="0" y2="12.7" width="0.254" layer="94"/>
+</symbol>
+<symbol name="EMS22A50-M25-LD6">
+<pin name="DIN" x="-7.62" y="5.08" length="middle" direction="in"/>
+<pin name="CLK" x="-7.62" y="2.54" length="middle" direction="in"/>
+<pin name="CS" x="-7.62" y="0" length="middle" direction="in"/>
+<pin name="DOUT" x="20.32" y="2.54" length="middle" direction="out" rot="R180"/>
+<pin name="GND" x="5.08" y="-13.97" length="middle" direction="pwr" rot="R90"/>
+<pin name="VCC" x="5.08" y="19.05" length="middle" direction="pwr" rot="R270"/>
+<wire x1="-2.54" y1="13.97" x2="-2.54" y2="-8.89" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="-8.89" x2="15.24" y2="-8.89" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-8.89" x2="15.24" y2="13.97" width="0.254" layer="94"/>
+<wire x1="15.24" y1="13.97" x2="-2.54" y2="13.97" width="0.254" layer="94"/>
+</symbol>
 </symbols>
 <devicesets>
 <deviceset name="RK097-SINGLE">
@@ -1062,6 +1171,67 @@ http://stores.ebay.com/Audio-Grade?_rdc=1</description>
 <connect gate="G$1" pin="P$5" pad="P$5"/>
 <connect gate="G$1" pin="P$6" pad="P$6"/>
 <connect gate="G$1" pin="P$7" pad="P$7"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="EC11E1834403">
+<gates>
+<gate name="G$1" symbol="ROT-ENC-SW" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="EC11E1834403">
+<connects>
+<connect gate="G$1" pin="A" pad="P$1"/>
+<connect gate="G$1" pin="B" pad="P$2"/>
+<connect gate="G$1" pin="C" pad="P$3"/>
+<connect gate="G$1" pin="D" pad="P$4"/>
+<connect gate="G$1" pin="E" pad="P$5"/>
+<connect gate="G$1" pin="P$1" pad="P$6"/>
+<connect gate="G$1" pin="P$2" pad="P$7"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="EM14A0D-C24-L064S">
+<gates>
+<gate name="G$1" symbol="EM14A0D-C24-L064S" x="-10.16" y="-2.54"/>
+</gates>
+<devices>
+<device name="" package="EM14A0D-C24-L064S">
+<connects>
+<connect gate="G$1" pin="GND" pad="GND"/>
+<connect gate="G$1" pin="RE_A" pad="RE_A"/>
+<connect gate="G$1" pin="RE_B" pad="RE_B"/>
+<connect gate="G$1" pin="SW1" pad="SW1"/>
+<connect gate="G$1" pin="SW2" pad="SW2"/>
+<connect gate="G$1" pin="VCC" pad="VCC"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="EMS22A50-M25-LD6">
+<gates>
+<gate name="G$1" symbol="EMS22A50-M25-LD6" x="-5.08" y="-2.54"/>
+</gates>
+<devices>
+<device name="" package="EMS22A50--M25-LD6">
+<connects>
+<connect gate="G$1" pin="CLK" pad="P$2"/>
+<connect gate="G$1" pin="CS" pad="P$6"/>
+<connect gate="G$1" pin="DIN" pad="P$1"/>
+<connect gate="G$1" pin="DOUT" pad="P$4"/>
+<connect gate="G$1" pin="GND" pad="P$3"/>
+<connect gate="G$1" pin="VCC" pad="P$5"/>
 </connects>
 <technologies>
 <technology name=""/>

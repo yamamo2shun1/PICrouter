@@ -2946,30 +2946,6 @@ will be further integrated into the Sparkfun Library for other footprints.  It c
 <vertex x="-2.25" y="3.15"/>
 </polygon>
 </package>
-<package name="PANASONIC_C@1">
-<description>&lt;b&gt;Panasonic Aluminium Electrolytic Capacitor VS-Serie Package E&lt;/b&gt;</description>
-<wire x1="-2.6" y1="2.45" x2="1.6" y2="2.45" width="0.2032" layer="21"/>
-<wire x1="1.6" y1="2.45" x2="2.7" y2="1.35" width="0.2032" layer="21"/>
-<wire x1="2.7" y1="-1.75" x2="1.6" y2="-2.85" width="0.2032" layer="21"/>
-<wire x1="1.6" y1="-2.85" x2="-2.6" y2="-2.85" width="0.2032" layer="21"/>
-<wire x1="-2.6" y1="2.45" x2="1.6" y2="2.45" width="0.1016" layer="51"/>
-<wire x1="1.6" y1="2.45" x2="2.7" y2="1.35" width="0.1016" layer="51"/>
-<wire x1="2.7" y1="-1.75" x2="1.6" y2="-2.85" width="0.1016" layer="51"/>
-<wire x1="1.6" y1="-2.85" x2="-2.6" y2="-2.85" width="0.1016" layer="51"/>
-<wire x1="-2.6" y1="2.45" x2="-2.6" y2="0.35" width="0.2032" layer="21"/>
-<wire x1="-2.6" y1="-2.85" x2="-2.6" y2="-0.75" width="0.2032" layer="21"/>
-<wire x1="2.7" y1="1.35" x2="2.7" y2="0.35" width="0.2032" layer="21"/>
-<wire x1="2.7" y1="-1.75" x2="2.7" y2="-0.7" width="0.2032" layer="21"/>
-<wire x1="-2.6" y1="2.45" x2="-2.6" y2="-2.85" width="0.1016" layer="51"/>
-<wire x1="2.7" y1="1.35" x2="2.7" y2="-1.75" width="0.1016" layer="51"/>
-<wire x1="-2.4" y1="0.35" x2="2.45" y2="0.3" width="0.2032" layer="21" curve="-156.699401"/>
-<wire x1="2.5" y1="-0.7" x2="-2.4" y2="-0.75" width="0.2032" layer="21" curve="-154.694887"/>
-<circle x="0.05" y="-0.2" radius="2.5004" width="0.1016" layer="51"/>
-<smd name="-" x="-1.8" y="-0.2" dx="2.2" dy="0.65" layer="1"/>
-<smd name="+" x="1.9" y="-0.2" dx="2.2" dy="0.65" layer="1"/>
-<text x="-2.6" y="2.7" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-2.6" y="-3.45" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
 <package name="NIPPON_F80">
 <wire x1="-3.3" y1="3.3" x2="1.7" y2="3.3" width="0.2032" layer="21"/>
 <wire x1="1.7" y1="3.3" x2="3.3" y2="2" width="0.2032" layer="21"/>
@@ -2992,42 +2968,6 @@ will be further integrated into the Sparkfun Library for other footprints.  It c
 <smd name="+" x="2.4" y="0" dx="2.95" dy="1" layer="1"/>
 <text x="-3.2" y="3.5" size="0.4064" layer="25">&gt;NAME</text>
 <text x="-3.2" y="-3.85" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
-<package name="PANASONIC_D@1">
-<wire x1="-3.25" y1="3.25" x2="1.55" y2="3.25" width="0.1016" layer="51"/>
-<wire x1="1.55" y1="3.25" x2="3.25" y2="1.55" width="0.1016" layer="51"/>
-<wire x1="3.25" y1="1.55" x2="3.25" y2="-1.55" width="0.1016" layer="51"/>
-<wire x1="3.25" y1="-1.55" x2="1.55" y2="-3.25" width="0.1016" layer="51"/>
-<wire x1="1.55" y1="-3.25" x2="-3.25" y2="-3.25" width="0.1016" layer="51"/>
-<wire x1="-3.25" y1="-3.25" x2="-3.25" y2="3.25" width="0.1016" layer="51"/>
-<wire x1="-3.25" y1="0.95" x2="-3.25" y2="3.25" width="0.1016" layer="21"/>
-<wire x1="-3.25" y1="3.25" x2="1.55" y2="3.25" width="0.1016" layer="21"/>
-<wire x1="1.55" y1="3.25" x2="3.25" y2="1.55" width="0.1016" layer="21"/>
-<wire x1="3.25" y1="1.55" x2="3.25" y2="0.95" width="0.1016" layer="21"/>
-<wire x1="3.25" y1="-0.95" x2="3.25" y2="-1.55" width="0.1016" layer="21"/>
-<wire x1="3.25" y1="-1.55" x2="1.55" y2="-3.25" width="0.1016" layer="21"/>
-<wire x1="1.55" y1="-3.25" x2="-3.25" y2="-3.25" width="0.1016" layer="21"/>
-<wire x1="-3.25" y1="-3.25" x2="-3.25" y2="-0.95" width="0.1016" layer="21"/>
-<wire x1="2.95" y1="0.95" x2="-2.95" y2="0.95" width="0.1016" layer="21" curve="144.299363"/>
-<wire x1="-2.95" y1="-0.95" x2="2.95" y2="-0.95" width="0.1016" layer="21" curve="144.299363"/>
-<wire x1="-2.1" y1="2.25" x2="-2.1" y2="-2.2" width="0.1016" layer="51"/>
-<circle x="0" y="0" radius="3.1" width="0.1016" layer="51"/>
-<smd name="+" x="2.4" y="0" dx="3" dy="1.4" layer="1"/>
-<smd name="-" x="-2.4" y="0" dx="3" dy="1.4" layer="1"/>
-<text x="-1.75" y="1" size="1.016" layer="25">&gt;NAME</text>
-<text x="-1.75" y="-1.975" size="1.016" layer="27">&gt;VALUE</text>
-<rectangle x1="-3.65" y1="-0.35" x2="-3.05" y2="0.35" layer="51"/>
-<rectangle x1="3.05" y1="-0.35" x2="3.65" y2="0.35" layer="51"/>
-<polygon width="0.1016" layer="51">
-<vertex x="-2.15" y="2.15"/>
-<vertex x="-2.6" y="1.6"/>
-<vertex x="-2.9" y="0.9"/>
-<vertex x="-3.05" y="0"/>
-<vertex x="-2.9" y="-0.95"/>
-<vertex x="-2.55" y="-1.65"/>
-<vertex x="-2.15" y="-2.15"/>
-<vertex x="-2.15" y="2.1"/>
-</polygon>
 </package>
 <package name="CPOL-RADIAL-1000UF-63V">
 <wire x1="-3.175" y1="1.905" x2="-4.445" y2="1.905" width="0.2032" layer="21"/>
@@ -3121,6 +3061,66 @@ will be further integrated into the Sparkfun Library for other footprints.  It c
 <smd name="+" x="0" y="-3.2" dx="5" dy="1.6" layer="1"/>
 <text x="-2.28" y="0.66" size="0.4064" layer="25">&gt;NAME</text>
 <text x="-2.31" y="-1.21" size="0.4064" layer="27">&gt;VALUE</text>
+</package>
+<package name="PANASONIC_C">
+<description>&lt;b&gt;Panasonic Aluminium Electrolytic Capacitor VS-Serie Package E&lt;/b&gt;</description>
+<wire x1="-2.6" y1="2.45" x2="1.6" y2="2.45" width="0.2032" layer="21"/>
+<wire x1="1.6" y1="2.45" x2="2.7" y2="1.35" width="0.2032" layer="21"/>
+<wire x1="2.7" y1="-1.75" x2="1.6" y2="-2.85" width="0.2032" layer="21"/>
+<wire x1="1.6" y1="-2.85" x2="-2.6" y2="-2.85" width="0.2032" layer="21"/>
+<wire x1="-2.6" y1="2.45" x2="1.6" y2="2.45" width="0.1016" layer="51"/>
+<wire x1="1.6" y1="2.45" x2="2.7" y2="1.35" width="0.1016" layer="51"/>
+<wire x1="2.7" y1="-1.75" x2="1.6" y2="-2.85" width="0.1016" layer="51"/>
+<wire x1="1.6" y1="-2.85" x2="-2.6" y2="-2.85" width="0.1016" layer="51"/>
+<wire x1="-2.6" y1="2.45" x2="-2.6" y2="0.35" width="0.2032" layer="21"/>
+<wire x1="-2.6" y1="-2.85" x2="-2.6" y2="-0.75" width="0.2032" layer="21"/>
+<wire x1="2.7" y1="1.35" x2="2.7" y2="0.35" width="0.2032" layer="21"/>
+<wire x1="2.7" y1="-1.75" x2="2.7" y2="-0.7" width="0.2032" layer="21"/>
+<wire x1="-2.6" y1="2.45" x2="-2.6" y2="-2.85" width="0.1016" layer="51"/>
+<wire x1="2.7" y1="1.35" x2="2.7" y2="-1.75" width="0.1016" layer="51"/>
+<wire x1="-2.4" y1="0.35" x2="2.45" y2="0.3" width="0.2032" layer="21" curve="-156.699401"/>
+<wire x1="2.5" y1="-0.7" x2="-2.4" y2="-0.75" width="0.2032" layer="21" curve="-154.694887"/>
+<circle x="0.05" y="-0.2" radius="2.5004" width="0.1016" layer="51"/>
+<smd name="-" x="-1.8" y="-0.2" dx="2.2" dy="0.65" layer="1"/>
+<smd name="+" x="1.9" y="-0.2" dx="2.2" dy="0.65" layer="1"/>
+<text x="-2.6" y="2.7" size="0.4064" layer="25">&gt;NAME</text>
+<text x="-2.6" y="-3.45" size="0.4064" layer="27">&gt;VALUE</text>
+</package>
+<package name="PANASONIC_D">
+<wire x1="-3.25" y1="3.25" x2="1.55" y2="3.25" width="0.1016" layer="51"/>
+<wire x1="1.55" y1="3.25" x2="3.25" y2="1.55" width="0.1016" layer="51"/>
+<wire x1="3.25" y1="1.55" x2="3.25" y2="-1.55" width="0.1016" layer="51"/>
+<wire x1="3.25" y1="-1.55" x2="1.55" y2="-3.25" width="0.1016" layer="51"/>
+<wire x1="1.55" y1="-3.25" x2="-3.25" y2="-3.25" width="0.1016" layer="51"/>
+<wire x1="-3.25" y1="-3.25" x2="-3.25" y2="3.25" width="0.1016" layer="51"/>
+<wire x1="-3.25" y1="0.95" x2="-3.25" y2="3.25" width="0.1016" layer="21"/>
+<wire x1="-3.25" y1="3.25" x2="1.55" y2="3.25" width="0.1016" layer="21"/>
+<wire x1="1.55" y1="3.25" x2="3.25" y2="1.55" width="0.1016" layer="21"/>
+<wire x1="3.25" y1="1.55" x2="3.25" y2="0.95" width="0.1016" layer="21"/>
+<wire x1="3.25" y1="-0.95" x2="3.25" y2="-1.55" width="0.1016" layer="21"/>
+<wire x1="3.25" y1="-1.55" x2="1.55" y2="-3.25" width="0.1016" layer="21"/>
+<wire x1="1.55" y1="-3.25" x2="-3.25" y2="-3.25" width="0.1016" layer="21"/>
+<wire x1="-3.25" y1="-3.25" x2="-3.25" y2="-0.95" width="0.1016" layer="21"/>
+<wire x1="2.95" y1="0.95" x2="-2.95" y2="0.95" width="0.1016" layer="21" curve="144.299363"/>
+<wire x1="-2.95" y1="-0.95" x2="2.95" y2="-0.95" width="0.1016" layer="21" curve="144.299363"/>
+<wire x1="-2.1" y1="2.25" x2="-2.1" y2="-2.2" width="0.1016" layer="51"/>
+<circle x="0" y="0" radius="3.1" width="0.1016" layer="51"/>
+<smd name="+" x="2.4" y="0" dx="3" dy="1.4" layer="1"/>
+<smd name="-" x="-2.4" y="0" dx="3" dy="1.4" layer="1"/>
+<text x="-1.75" y="1" size="1.016" layer="25">&gt;NAME</text>
+<text x="-1.75" y="-1.975" size="1.016" layer="27">&gt;VALUE</text>
+<rectangle x1="-3.65" y1="-0.35" x2="-3.05" y2="0.35" layer="51"/>
+<rectangle x1="3.05" y1="-0.35" x2="3.65" y2="0.35" layer="51"/>
+<polygon width="0.1016" layer="51">
+<vertex x="-2.15" y="2.15"/>
+<vertex x="-2.6" y="1.6"/>
+<vertex x="-2.9" y="0.9"/>
+<vertex x="-3.05" y="0"/>
+<vertex x="-2.9" y="-0.95"/>
+<vertex x="-2.55" y="-1.65"/>
+<vertex x="-2.15" y="-2.15"/>
+<vertex x="-2.15" y="2.1"/>
+</polygon>
 </package>
 </packages>
 <symbols>
@@ -4611,7 +4611,7 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <technology name=""/>
 </technologies>
 </device>
-<device name="C" package="PANASONIC_C@1">
+<device name="C" package="PANASONIC_C">
 <connects>
 <connect gate="G$1" pin="+" pad="+"/>
 <connect gate="G$1" pin="-" pad="-"/>
@@ -4629,7 +4629,7 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <technology name=""/>
 </technologies>
 </device>
-<device name="D" package="PANASONIC_D@1">
+<device name="D" package="PANASONIC_D">
 <connects>
 <connect gate="G$1" pin="+" pad="+"/>
 <connect gate="G$1" pin="-" pad="-"/>
@@ -14104,9 +14104,17 @@ Source: http://www.osram.convergy.de/ ... Lb_q993.pdf</description>
 <text x="1.905" y="-0.635" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
 <rectangle x1="-0.45" y1="0.45" x2="0.45" y2="0.85" layer="51"/>
 <rectangle x1="-0.45" y1="-0.85" x2="0.45" y2="-0.45" layer="51"/>
-<rectangle x1="-0.45" y1="0" x2="-0.3" y2="0.0762" layer="21"/>
-<rectangle x1="0.3" y1="0" x2="0.45" y2="0.0762" layer="21"/>
-<rectangle x1="-0.15" y1="0" x2="0.15" y2="0.127" layer="21"/>
+<wire x1="0" y1="0.1778" x2="-0.3556" y2="-0.1778" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.1778" x2="0.3556" y2="-0.1778" width="0.0635" layer="21"/>
+<wire x1="-0.3556" y1="-0.1778" x2="0.3556" y2="-0.1778" width="0.0635" layer="21"/>
+<wire x1="-0.2794" y1="-0.127" x2="0.2794" y2="-0.127" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.127" x2="0" y2="0.1016" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.1016" x2="-0.2032" y2="-0.1016" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.1016" x2="0.2032" y2="-0.1016" width="0.0635" layer="21"/>
+<wire x1="-0.127" y1="-0.0762" x2="0.127" y2="-0.0762" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.0254" x2="0.0762" y2="-0.0508" width="0.0635" layer="21"/>
+<wire x1="0" y1="0.0254" x2="-0.0762" y2="-0.0508" width="0.0635" layer="21"/>
+<wire x1="-0.0762" y1="-0.0508" x2="0.0762" y2="-0.0508" width="0.0635" layer="21"/>
 </package>
 <package name="CHIP-LED0805">
 <description>&lt;b&gt;Hyper CHIPLED Hyper-Bright LED&lt;/b&gt;&lt;p&gt;
@@ -15637,76 +15645,6 @@ package type TQ</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="alps_japan_potentiometers">
-<description>ALPS Potentiometers, Series RK097, RK27
-Single and Dual Elements, Rotary and Push Lock Switch
-ALPS Japan
-
-By Omar Masri
-Audiosquare.com
-http://stores.ebay.com/Audio-Grade?_rdc=1</description>
-<packages>
-<package name="SSSS810701">
-<smd name="P$5" x="-3.65" y="-1.1" dx="1" dy="0.8" layer="1"/>
-<smd name="P$4" x="-3.65" y="1.1" dx="1" dy="0.8" layer="1"/>
-<smd name="P$6" x="3.65" y="1.1" dx="1" dy="0.8" layer="1"/>
-<smd name="P$7" x="3.65" y="-1.1" dx="1" dy="0.8" layer="1"/>
-<smd name="P$1" x="-2.25" y="1.75" dx="0.7" dy="1.5" layer="1"/>
-<smd name="P$2" x="0.75" y="1.75" dx="0.7" dy="1.5" layer="1"/>
-<smd name="P$3" x="2.25" y="1.75" dx="0.7" dy="1.5" layer="1"/>
-<hole x="-1.5" y="0" drill="0.9"/>
-<hole x="1.5" y="0" drill="0.9"/>
-<text x="-4.1" y="2.9" size="1.016" layer="25">&gt;NAME</text>
-</package>
-</packages>
-<symbols>
-<symbol name="SW-SLIDE">
-<pin name="P$2" x="-8.89" y="0" visible="pad" length="middle"/>
-<pin name="P$1" x="11.43" y="5.08" visible="pad" length="middle" rot="R180"/>
-<pin name="P$3" x="11.43" y="-5.08" visible="pad" length="middle" rot="R180"/>
-<circle x="-2.54" y="0" radius="1.27" width="0.254" layer="94"/>
-<circle x="5.08" y="5.08" radius="1.27" width="0.254" layer="94"/>
-<circle x="5.08" y="-5.08" radius="1.27" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="0" x2="5.08" y2="2.54" width="0.254" layer="94"/>
-<text x="-5.08" y="8.255" size="1.778" layer="95">&gt;NAME</text>
-<wire x1="-5.08" y1="7.62" x2="-5.08" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="-5.08" y1="-7.62" x2="7.62" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="7.62" y1="-7.62" x2="7.62" y2="7.62" width="0.254" layer="94"/>
-<wire x1="7.62" y1="7.62" x2="-5.08" y2="7.62" width="0.254" layer="94"/>
-<pin name="P$4" x="-3.81" y="-10.16" visible="off" length="short" direction="pwr" rot="R90"/>
-<pin name="P$5" x="-1.27" y="-10.16" visible="off" length="short" direction="pwr" rot="R90"/>
-<pin name="P$6" x="1.27" y="-10.16" visible="off" length="short" direction="pas" rot="R90"/>
-<pin name="P$7" x="3.81" y="-10.16" visible="off" length="short" direction="pwr" rot="R90"/>
-<text x="-1.905" y="-6.985" size="1.27" layer="94">GND</text>
-<text x="2.54" y="4.445" size="1.27" layer="94">1</text>
-<text x="-3.175" y="-3.175" size="1.27" layer="94">2</text>
-<text x="2.54" y="-5.715" size="1.27" layer="94">3</text>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="SSSS810701-1-2">
-<gates>
-<gate name="G$1" symbol="SW-SLIDE" x="-2.54" y="0"/>
-</gates>
-<devices>
-<device name="" package="SSSS810701">
-<connects>
-<connect gate="G$1" pin="P$1" pad="P$1"/>
-<connect gate="G$1" pin="P$2" pad="P$2"/>
-<connect gate="G$1" pin="P$3" pad="P$3"/>
-<connect gate="G$1" pin="P$4" pad="P$4"/>
-<connect gate="G$1" pin="P$5" pad="P$5"/>
-<connect gate="G$1" pin="P$6" pad="P$6"/>
-<connect gate="G$1" pin="P$7" pad="P$7"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="my-crystal">
 <description>&lt;b&gt;Crystals and Crystal Resonators&lt;/b&gt;&lt;p&gt;
 &lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
@@ -16962,16 +16900,16 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <part name="GND18" library="supply1" deviceset="GND" device=""/>
 <part name="SPI2" library="SparkFun" deviceset="M03" device="PTH"/>
 <part name="SPI4" library="SparkFun" deviceset="M03" device="PTH"/>
-<part name="AN" library="SparkFun" deviceset="M14" device="" value=""/>
-<part name="OC" library="SparkFun" deviceset="M04" device="PTH"/>
-<part name="I/O" library="SparkFun" deviceset="M04" device="PTH"/>
+<part name="ANALOG" library="SparkFun" deviceset="M14" device="" value=""/>
+<part name="PWM" library="SparkFun" deviceset="M04" device="PTH"/>
+<part name="DI/O" library="SparkFun" deviceset="M04" device="PTH"/>
 <part name="R8" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="10k"/>
 <part name="VDD9" library="supply1" deviceset="VDD" device=""/>
-<part name="3.3V" library="SparkFun" deviceset="M03" device="PTH"/>
-<part name="GND" library="SparkFun" deviceset="M03" device="PTH"/>
+<part name="3V3" library="SparkFun" deviceset="M04" device="PTH"/>
+<part name="GND" library="SparkFun" deviceset="M04" device="PTH"/>
 <part name="VDD8" library="supply1" deviceset="VDD" device=""/>
 <part name="GND14" library="supply1" deviceset="GND" device=""/>
-<part name="5V" library="SparkFun" deviceset="M03" device="PTH"/>
+<part name="5V" library="SparkFun" deviceset="M04" device="PTH"/>
 <part name="P+2" library="supply1" deviceset="VCC" device=""/>
 <part name="C9" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="GND19" library="supply1" deviceset="GND" device=""/>
@@ -16997,7 +16935,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <part name="GND23" library="supply1" deviceset="GND" device=""/>
 <part name="VDD12" library="supply1" deviceset="VDD" device=""/>
 <part name="C21" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
-<part name="C27" library="SparkFun" deviceset="CAP_POL" device="1206" value="10uF"/>
+<part name="C27" library="SparkFun" deviceset="CAP_POL" device="6032" value="10uF"/>
 <part name="C22" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="R13" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
 <part name="R14" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="33"/>
@@ -17026,7 +16964,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <part name="IC3" library="SparkFun" deviceset="TPS2111A" device="" value="TPS2111A"/>
 <part name="GND31" library="supply1" deviceset="GND" device=""/>
 <part name="C14" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
-<part name="R2" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="400"/>
+<part name="R2" library="SparkFun" deviceset="RESISTOR" device="0603-RES" value="402"/>
 <part name="C13" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
 <part name="C17" library="rcl" deviceset="C-EU" device="C2012" value="10uF"/>
@@ -17038,7 +16976,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <part name="J2" library="SparkFun" deviceset="POWER_JACK" device="PTH_LOCK" value="POWER_JACK"/>
 <part name="C16" library="rcl" deviceset="C-EU" device="C2012" value="0.1uF"/>
 <part name="X2" library="SparkFun" deviceset="USB" device="-A-H"/>
-<part name="F1" library="SparkFun" deviceset="PTC" device="SMD"/>
+<part name="F1" library="SparkFun" deviceset="PTC" device="SMD" value="PTC"/>
 <part name="P+4" library="supply1" deviceset="VCC" device=""/>
 <part name="C19" library="rcl" deviceset="CPOL-US" device="D" value="220uF"/>
 <part name="GND6" library="supply1" deviceset="GND" device=""/>
@@ -17046,13 +16984,11 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <part name="C18" library="rcl" deviceset="CPOL-US" device="C" value="100uF"/>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="VDD17" library="supply1" deviceset="VDD" device=""/>
-<part name="S3" library="alps_japan_potentiometers" deviceset="SSSS810701-1-2" device=""/>
-<part name="GND28" library="supply1" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
 <plain>
-<text x="213.9" y="17.4" size="1.778" layer="91">PICrouter v0.95</text>
+<text x="213.9" y="17.4" size="1.778" layer="91">PICrouter v0.96</text>
 <text x="202.74" y="12.78" size="1.778" layer="91">Designed by Shunichi Yamamoto</text>
 <text x="215.82" y="9.16" size="1.778" layer="91">05/15/2012</text>
 <text x="193.84" y="5" size="1.143" layer="91">Released under Creative Commons Attribution-Share Alike 3.0 Unported</text>
@@ -17126,20 +17062,20 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <instance part="GND18" gate="1" x="10.16" y="50.8"/>
 <instance part="SPI2" gate="G$1" x="198.12" y="83.82" rot="R180"/>
 <instance part="SPI4" gate="G$1" x="218.44" y="91.44" rot="R180"/>
-<instance part="AN" gate="G$1" x="36.83" y="101.6" rot="MR180"/>
-<instance part="OC" gate="G$1" x="50.8" y="77.47" rot="MR180"/>
-<instance part="I/O" gate="G$1" x="184.15" y="116.84" smashed="yes" rot="R180">
+<instance part="ANALOG" gate="G$1" x="36.83" y="101.6" rot="MR180"/>
+<instance part="PWM" gate="G$1" x="50.8" y="77.47" rot="MR180"/>
+<instance part="DI/O" gate="G$1" x="184.15" y="116.84" smashed="yes" rot="R180">
 <attribute name="VALUE" x="189.23" y="124.46" size="1.778" layer="96" rot="R180"/>
 <attribute name="NAME" x="186.69" y="123.698" size="1.778" layer="95" rot="R180"/>
 </instance>
 <instance part="R8" gate="G$1" x="29.21" y="66.04" rot="R90"/>
 <instance part="VDD9" gate="G$1" x="29.21" y="77.47"/>
-<instance part="3.3V" gate="G$1" x="217.17" y="49.53"/>
+<instance part="3V3" gate="G$1" x="217.17" y="49.53"/>
 <instance part="GND" gate="G$1" x="200.66" y="49.53"/>
-<instance part="VDD8" gate="G$1" x="227.33" y="57.15"/>
+<instance part="VDD8" gate="G$1" x="227.33" y="62.23"/>
 <instance part="GND14" gate="1" x="210.82" y="43.18"/>
 <instance part="5V" gate="G$1" x="233.68" y="49.53"/>
-<instance part="P+2" gate="VCC" x="242.57" y="57.15"/>
+<instance part="P+2" gate="VCC" x="242.57" y="62.23"/>
 <instance part="C9" gate="G$1" x="224.79" y="101.6" smashed="yes" rot="R180">
 <attribute name="NAME" x="223.266" y="101.219" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="232.156" y="101.219" size="1.778" layer="96" rot="R180"/>
@@ -17281,11 +17217,11 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="S2" gate="S" pin="4"/>
 </segment>
 <segment>
-<wire x1="208.28" y1="46.99" x2="210.82" y2="46.99" width="0.1524" layer="91"/>
+<wire x1="205.74" y1="46.99" x2="210.82" y2="46.99" width="0.1524" layer="91"/>
 <wire x1="210.82" y1="46.99" x2="210.82" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="208.28" y1="49.53" x2="210.82" y2="49.53" width="0.1524" layer="91"/>
+<wire x1="205.74" y1="49.53" x2="210.82" y2="49.53" width="0.1524" layer="91"/>
 <wire x1="210.82" y1="49.53" x2="210.82" y2="46.99" width="0.1524" layer="91"/>
-<wire x1="208.28" y1="52.07" x2="210.82" y2="52.07" width="0.1524" layer="91"/>
+<wire x1="205.74" y1="52.07" x2="210.82" y2="52.07" width="0.1524" layer="91"/>
 <wire x1="210.82" y1="52.07" x2="210.82" y2="49.53" width="0.1524" layer="91"/>
 <junction x="210.82" y="49.53"/>
 <junction x="210.82" y="46.99"/>
@@ -17293,6 +17229,10 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="GND14" gate="1" pin="GND"/>
 <pinref part="GND" gate="G$1" pin="2"/>
 <pinref part="GND" gate="G$1" pin="3"/>
+<pinref part="GND" gate="G$1" pin="4"/>
+<wire x1="205.74" y1="54.61" x2="210.82" y2="54.61" width="0.1524" layer="91"/>
+<wire x1="210.82" y1="54.61" x2="210.82" y2="52.07" width="0.1524" layer="91"/>
+<junction x="210.82" y="52.07"/>
 </segment>
 <segment>
 <wire x1="224.79" y1="99.06" x2="224.79" y2="97.79" width="0.1524" layer="91"/>
@@ -17311,11 +17251,12 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="IC4" gate="A1" pin="VI"/>
 </segment>
 <segment>
-<wire x1="241.3" y1="52.07" x2="242.57" y2="52.07" width="0.1524" layer="91"/>
+<wire x1="238.76" y1="52.07" x2="242.57" y2="52.07" width="0.1524" layer="91"/>
 <wire x1="242.57" y1="52.07" x2="242.57" y2="54.61" width="0.1524" layer="91"/>
-<wire x1="241.3" y1="49.53" x2="242.57" y2="49.53" width="0.1524" layer="91"/>
+<wire x1="242.57" y1="54.61" x2="242.57" y2="59.69" width="0.1524" layer="91"/>
+<wire x1="238.76" y1="49.53" x2="242.57" y2="49.53" width="0.1524" layer="91"/>
 <wire x1="242.57" y1="49.53" x2="242.57" y2="52.07" width="0.1524" layer="91"/>
-<wire x1="241.3" y1="46.99" x2="242.57" y2="46.99" width="0.1524" layer="91"/>
+<wire x1="238.76" y1="46.99" x2="242.57" y2="46.99" width="0.1524" layer="91"/>
 <wire x1="242.57" y1="46.99" x2="242.57" y2="49.53" width="0.1524" layer="91"/>
 <junction x="242.57" y="52.07"/>
 <junction x="242.57" y="49.53"/>
@@ -17323,6 +17264,9 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="P+2" gate="VCC" pin="VCC"/>
 <pinref part="5V" gate="G$1" pin="2"/>
 <pinref part="5V" gate="G$1" pin="1"/>
+<pinref part="5V" gate="G$1" pin="4"/>
+<wire x1="238.76" y1="54.61" x2="242.57" y2="54.61" width="0.1524" layer="91"/>
+<junction x="242.57" y="54.61"/>
 </segment>
 </net>
 <net name="VDD" class="0">
@@ -17404,18 +17348,22 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="R8" gate="G$1" pin="2"/>
 </segment>
 <segment>
-<wire x1="224.79" y1="52.07" x2="227.33" y2="52.07" width="0.1524" layer="91"/>
+<wire x1="222.25" y1="52.07" x2="227.33" y2="52.07" width="0.1524" layer="91"/>
 <wire x1="227.33" y1="52.07" x2="227.33" y2="54.61" width="0.1524" layer="91"/>
-<wire x1="224.79" y1="49.53" x2="227.33" y2="49.53" width="0.1524" layer="91"/>
+<wire x1="227.33" y1="54.61" x2="227.33" y2="59.69" width="0.1524" layer="91"/>
+<wire x1="222.25" y1="49.53" x2="227.33" y2="49.53" width="0.1524" layer="91"/>
 <wire x1="227.33" y1="49.53" x2="227.33" y2="52.07" width="0.1524" layer="91"/>
-<wire x1="224.79" y1="46.99" x2="227.33" y2="46.99" width="0.1524" layer="91"/>
+<wire x1="222.25" y1="46.99" x2="227.33" y2="46.99" width="0.1524" layer="91"/>
 <wire x1="227.33" y1="46.99" x2="227.33" y2="49.53" width="0.1524" layer="91"/>
 <junction x="227.33" y="52.07"/>
 <junction x="227.33" y="49.53"/>
-<pinref part="3.3V" gate="G$1" pin="3"/>
+<pinref part="3V3" gate="G$1" pin="3"/>
 <pinref part="VDD8" gate="G$1" pin="VDD"/>
-<pinref part="3.3V" gate="G$1" pin="2"/>
-<pinref part="3.3V" gate="G$1" pin="1"/>
+<pinref part="3V3" gate="G$1" pin="2"/>
+<pinref part="3V3" gate="G$1" pin="1"/>
+<pinref part="3V3" gate="G$1" pin="4"/>
+<wire x1="222.25" y1="54.61" x2="227.33" y2="54.61" width="0.1524" layer="91"/>
+<junction x="227.33" y="54.61"/>
 </segment>
 </net>
 <net name="N$6" class="0">
@@ -17445,7 +17393,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <junction x="48.26" y="129.54"/>
 <pinref part="ICSP" gate="G$1" pin="5"/>
 <pinref part="IC1" gate="G$1" pin="PGEC1/AN1/VREF-/CVREF-/CN3/RB1"/>
-<pinref part="AN" gate="G$1" pin="2"/>
+<pinref part="ANALOG" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -17456,7 +17404,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <junction x="46.99" y="132.08"/>
 <pinref part="ICSP" gate="G$1" pin="4"/>
 <pinref part="IC1" gate="G$1" pin="PGED1/AN0/VREF+/CVREF+PMA6/CN2/RB0"/>
-<pinref part="AN" gate="G$1" pin="1"/>
+<pinref part="ANALOG" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -17526,7 +17474,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="114.3" x2="49.53" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="49.53" y1="114.3" x2="49.53" y2="127" width="0.1524" layer="91"/>
 <wire x1="49.53" y1="127" x2="78.74" y2="127" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="3"/>
+<pinref part="ANALOG" gate="G$1" pin="3"/>
 <pinref part="IC1" gate="G$1" pin="AN2/C2IN-/CN4/RB2"/>
 </segment>
 </net>
@@ -17535,7 +17483,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="111.76" x2="50.8" y2="111.76" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="111.76" x2="50.8" y2="124.46" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="124.46" x2="78.74" y2="124.46" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="4"/>
+<pinref part="ANALOG" gate="G$1" pin="4"/>
 <pinref part="IC1" gate="G$1" pin="AN3/C2IN+/CN5/RB3"/>
 </segment>
 </net>
@@ -17544,7 +17492,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="109.22" x2="52.07" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="52.07" y1="109.22" x2="52.07" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="52.07" y1="121.92" x2="78.74" y2="121.92" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="5"/>
+<pinref part="ANALOG" gate="G$1" pin="5"/>
 <pinref part="IC1" gate="G$1" pin="AN4/C1IN-/CN6/RB4"/>
 </segment>
 </net>
@@ -17553,7 +17501,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="106.68" x2="53.34" y2="106.68" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="106.68" x2="53.34" y2="119.38" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="119.38" x2="78.74" y2="119.38" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="6"/>
+<pinref part="ANALOG" gate="G$1" pin="6"/>
 <pinref part="IC1" gate="G$1" pin="AN5/C1IN+/VBUSON/CN7/RB5"/>
 </segment>
 </net>
@@ -17562,7 +17510,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="104.14" x2="54.61" y2="104.14" width="0.1524" layer="91"/>
 <wire x1="54.61" y1="104.14" x2="54.61" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="54.61" y1="116.84" x2="78.74" y2="116.84" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="7"/>
+<pinref part="ANALOG" gate="G$1" pin="7"/>
 <pinref part="IC1" gate="G$1" pin="PGEC2/AN6/OCFA/RB6"/>
 </segment>
 </net>
@@ -17571,7 +17519,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="101.6" x2="55.88" y2="101.6" width="0.1524" layer="91"/>
 <wire x1="55.88" y1="101.6" x2="55.88" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="55.88" y1="114.3" x2="78.74" y2="114.3" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="8"/>
+<pinref part="ANALOG" gate="G$1" pin="8"/>
 <pinref part="IC1" gate="G$1" pin="PGED2/AN7/RB7"/>
 </segment>
 </net>
@@ -17580,7 +17528,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="99.06" x2="57.15" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="57.15" y1="99.06" x2="57.15" y2="111.76" width="0.1524" layer="91"/>
 <wire x1="57.15" y1="111.76" x2="78.74" y2="111.76" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="9"/>
+<pinref part="ANALOG" gate="G$1" pin="9"/>
 <pinref part="IC1" gate="G$1" pin="AN8/SS4/U5RX/U2CTS/C1OUT/RB8"/>
 </segment>
 </net>
@@ -17589,7 +17537,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="96.52" x2="58.42" y2="96.52" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="96.52" x2="58.42" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="109.22" x2="78.74" y2="109.22" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="10"/>
+<pinref part="ANALOG" gate="G$1" pin="10"/>
 <pinref part="IC1" gate="G$1" pin="AN9/C2OUT/PMA7/RB9"/>
 </segment>
 </net>
@@ -17598,7 +17546,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="93.98" x2="59.69" y2="93.98" width="0.1524" layer="91"/>
 <wire x1="59.69" y1="93.98" x2="59.69" y2="106.68" width="0.1524" layer="91"/>
 <wire x1="59.69" y1="106.68" x2="78.74" y2="106.68" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="11"/>
+<pinref part="ANALOG" gate="G$1" pin="11"/>
 <pinref part="IC1" gate="G$1" pin="TMS/AN10/CVREFOUT/PMA13/RB10"/>
 </segment>
 </net>
@@ -17607,7 +17555,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="91.44" x2="60.96" y2="91.44" width="0.1524" layer="91"/>
 <wire x1="60.96" y1="91.44" x2="60.96" y2="104.14" width="0.1524" layer="91"/>
 <wire x1="60.96" y1="104.14" x2="78.74" y2="104.14" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="12"/>
+<pinref part="ANALOG" gate="G$1" pin="12"/>
 <pinref part="IC1" gate="G$1" pin="TDO/AN11/PMA12/RB11"/>
 </segment>
 </net>
@@ -17616,7 +17564,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="88.9" x2="62.23" y2="88.9" width="0.1524" layer="91"/>
 <wire x1="62.23" y1="88.9" x2="62.23" y2="101.6" width="0.1524" layer="91"/>
 <wire x1="62.23" y1="101.6" x2="78.74" y2="101.6" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="13"/>
+<pinref part="ANALOG" gate="G$1" pin="13"/>
 <pinref part="IC1" gate="G$1" pin="TCK/AN12/PMA11/RB12"/>
 </segment>
 </net>
@@ -17625,7 +17573,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="46.99" y1="86.36" x2="63.5" y2="86.36" width="0.1524" layer="91"/>
 <wire x1="63.5" y1="86.36" x2="63.5" y2="99.06" width="0.1524" layer="91"/>
 <wire x1="63.5" y1="99.06" x2="78.74" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="AN" gate="G$1" pin="14"/>
+<pinref part="ANALOG" gate="G$1" pin="14"/>
 <pinref part="IC1" gate="G$1" pin="TDI/AN13/PMA10/RB13"/>
 </segment>
 </net>
@@ -17692,7 +17640,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="66.04" y1="88.9" x2="66.04" y2="80.01" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="80.01" x2="55.88" y2="80.01" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="OC1/INT0/RD0"/>
-<pinref part="OC" gate="G$1" pin="1"/>
+<pinref part="PWM" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$38" class="0">
@@ -17701,7 +17649,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="67.31" y1="83.82" x2="67.31" y2="77.47" width="0.1524" layer="91"/>
 <wire x1="67.31" y1="77.47" x2="55.88" y2="77.47" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SDA3/SDI3/U1RX/OC3/RD2"/>
-<pinref part="OC" gate="G$1" pin="2"/>
+<pinref part="PWM" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$39" class="0">
@@ -17710,7 +17658,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="68.58" y1="81.28" x2="68.58" y2="74.93" width="0.1524" layer="91"/>
 <wire x1="68.58" y1="74.93" x2="55.88" y2="74.93" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SCL3/SDO3/U1TX/OC4/RD3"/>
-<pinref part="OC" gate="G$1" pin="3"/>
+<pinref part="PWM" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$40" class="0">
@@ -17719,21 +17667,21 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="55.88" y1="72.39" x2="69.85" y2="72.39" width="0.1524" layer="91"/>
 <wire x1="69.85" y1="72.39" x2="69.85" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="OC5/IC5/PMWR/CN13/RD4"/>
-<pinref part="OC" gate="G$1" pin="4"/>
+<pinref part="PWM" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="N$37" class="0">
 <segment>
 <wire x1="175.26" y1="119.38" x2="179.07" y2="119.38" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SOSCI/CN1/RC13"/>
-<pinref part="I/O" gate="G$1" pin="1"/>
+<pinref part="DI/O" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$41" class="0">
 <segment>
 <wire x1="175.26" y1="116.84" x2="179.07" y2="116.84" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="SOSCO/T1CK/CN0/RC14"/>
-<pinref part="I/O" gate="G$1" pin="2"/>
+<pinref part="DI/O" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$42" class="0">
@@ -17741,7 +17689,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="175.26" y1="111.76" x2="175.26" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="175.26" y1="114.3" x2="179.07" y2="114.3" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="AETXD1/ERXD3/RF0"/>
-<pinref part="I/O" gate="G$1" pin="3"/>
+<pinref part="DI/O" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="N$43" class="0">
@@ -17750,7 +17698,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="176.53" y1="109.22" x2="176.53" y2="111.76" width="0.1524" layer="91"/>
 <wire x1="176.53" y1="111.76" x2="179.07" y2="111.76" width="0.1524" layer="91"/>
 <pinref part="IC1" gate="G$1" pin="AETXD0/ERXD2/RF1"/>
-<pinref part="I/O" gate="G$1" pin="4"/>
+<pinref part="DI/O" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="N$44" class="0">
@@ -17895,7 +17843,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <sheet>
 <plain>
 <frame x1="0" y1="0" x2="223.52" y2="152.4" columns="8" rows="5" layer="91"/>
-<text x="183.42" y="17.4" size="1.778" layer="91">PICrouter v0.95</text>
+<text x="183.42" y="17.4" size="1.778" layer="91">PICrouter v0.96</text>
 <text x="172.26" y="12.78" size="1.778" layer="91">Designed by Shunichi Yamamoto</text>
 <text x="185.34" y="9.16" size="1.778" layer="91">05/15/2012</text>
 <text x="163.36" y="5" size="1.143" layer="91">Released under Creative Commons Attribution-Share Alike 3.0 Unported</text>
@@ -18545,7 +18493,7 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <text x="128.27" y="91.44" size="1.778" layer="97">USB Device</text>
 <text x="130.81" y="58.42" size="1.778" layer="97">USB Host</text>
 <frame x1="0" y1="0" x2="149.86" y2="101.6" columns="8" rows="5" layer="91"/>
-<text x="109.76" y="17.4" size="1.778" layer="91">PICrouter v0.95</text>
+<text x="109.76" y="17.4" size="1.778" layer="91">PICrouter v0.96</text>
 <text x="98.6" y="12.78" size="1.778" layer="91">Designed by Shunichi Yamamoto</text>
 <text x="111.68" y="9.16" size="1.778" layer="91">05/15/2012</text>
 <text x="89.7" y="5" size="1.143" layer="91">Released under Creative Commons Attribution-Share Alike 3.0 Unported</text>
@@ -18597,8 +18545,6 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 </instance>
 <instance part="C18" gate="G$1" x="60.96" y="52.07"/>
 <instance part="GND10" gate="1" x="60.96" y="41.91"/>
-<instance part="S3" gate="G$1" x="40.64" y="22.86"/>
-<instance part="GND28" gate="1" x="36.83" y="7.62"/>
 </instances>
 <busses>
 </busses>
@@ -18691,24 +18637,6 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <pinref part="GND10" gate="1" pin="GND"/>
 <wire x1="60.96" y1="46.99" x2="60.96" y2="44.45" width="0.1524" layer="91"/>
 </segment>
-<segment>
-<pinref part="S3" gate="G$1" pin="P$4"/>
-<pinref part="GND28" gate="1" pin="GND"/>
-<wire x1="36.83" y1="12.7" x2="36.83" y2="11.43" width="0.1524" layer="91"/>
-<pinref part="S3" gate="G$1" pin="P$5"/>
-<wire x1="36.83" y1="11.43" x2="36.83" y2="10.16" width="0.1524" layer="91"/>
-<wire x1="39.37" y1="12.7" x2="39.37" y2="11.43" width="0.1524" layer="91"/>
-<wire x1="39.37" y1="11.43" x2="36.83" y2="11.43" width="0.1524" layer="91"/>
-<pinref part="S3" gate="G$1" pin="P$6"/>
-<wire x1="41.91" y1="12.7" x2="41.91" y2="11.43" width="0.1524" layer="91"/>
-<wire x1="41.91" y1="11.43" x2="39.37" y2="11.43" width="0.1524" layer="91"/>
-<pinref part="S3" gate="G$1" pin="P$7"/>
-<wire x1="44.45" y1="12.7" x2="44.45" y2="11.43" width="0.1524" layer="91"/>
-<wire x1="44.45" y1="11.43" x2="41.91" y2="11.43" width="0.1524" layer="91"/>
-<junction x="36.83" y="11.43"/>
-<junction x="39.37" y="11.43"/>
-<junction x="41.91" y="11.43"/>
-</segment>
 </net>
 <net name="N$61" class="0">
 <segment>
@@ -18794,23 +18722,6 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="121.92" y1="64.77" x2="121.92" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="VBUS_HOST" class="0">
-<segment>
-<pinref part="F1" gate="G$1" pin="2"/>
-<pinref part="C19" gate="G$1" pin="+"/>
-<junction x="121.92" y="48.26"/>
-<wire x1="121.92" y1="48.26" x2="121.92" y2="50.8" width="0.1524" layer="91"/>
-<wire x1="121.92" y1="48.26" x2="116.84" y2="48.26" width="0.1524" layer="91"/>
-<label x="101.6" y="48.26" size="1.778" layer="95"/>
-<wire x1="121.92" y1="48.26" x2="133.35" y2="48.26" width="0.1524" layer="91"/>
-<pinref part="X2" gate="G$1" pin="VBUS"/>
-</segment>
-<segment>
-<pinref part="S3" gate="G$1" pin="P$1"/>
-<wire x1="52.07" y1="27.94" x2="55.88" y2="27.94" width="0.1524" layer="91"/>
-<label x="55.88" y="27.94" size="1.778" layer="95"/>
-</segment>
-</net>
 <net name="N$5" class="0">
 <segment>
 <wire x1="87.7" y1="8" x2="87.7" y2="12" width="0.1524" layer="91"/>
@@ -18842,17 +18753,17 @@ Source: www.pletronics.com .. sm77h%203.3v.pdf</description>
 <wire x1="62.23" y1="81.28" x2="73.66" y2="81.28" width="0.1524" layer="91"/>
 <junction x="73.66" y="81.28"/>
 </segment>
-<segment>
-<pinref part="S3" gate="G$1" pin="P$3"/>
-<wire x1="52.07" y1="17.78" x2="55.88" y2="17.78" width="0.1524" layer="91"/>
-<label x="55.88" y="17.78" size="1.778" layer="95"/>
-</segment>
 </net>
 <net name="VBUS" class="0">
 <segment>
-<pinref part="S3" gate="G$1" pin="P$2"/>
-<wire x1="31.75" y1="22.86" x2="27.94" y2="22.86" width="0.1524" layer="91"/>
-<label x="21.59" y="22.86" size="1.778" layer="95"/>
+<pinref part="F1" gate="G$1" pin="2"/>
+<pinref part="C19" gate="G$1" pin="+"/>
+<junction x="121.92" y="48.26"/>
+<wire x1="121.92" y1="48.26" x2="121.92" y2="50.8" width="0.1524" layer="91"/>
+<wire x1="121.92" y1="48.26" x2="116.84" y2="48.26" width="0.1524" layer="91"/>
+<label x="109.22" y="48.26" size="1.778" layer="95"/>
+<wire x1="121.92" y1="48.26" x2="133.35" y2="48.26" width="0.1524" layer="91"/>
+<pinref part="X2" gate="G$1" pin="VBUS"/>
 </segment>
 </net>
 </nets>
