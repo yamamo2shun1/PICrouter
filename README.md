@@ -98,6 +98,7 @@ PICrouter_OaUH.X is this project folder.
 6. ***/std/pwm/duty/get [no arguments]***
 
 ### System OSC Messages of Network Setting
+0. ***/sys/soft/reset [no arguments]***
 1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
 2. ***/sys/remote/ip/get [no arguments]***
 3. ***/sys/remote/port/set [port_number(int)]***
