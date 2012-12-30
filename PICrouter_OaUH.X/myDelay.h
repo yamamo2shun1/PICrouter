@@ -5,7 +5,7 @@
 #include "GenericTypeDefs.h"
 #endif
 
-#define Fosc 80
+#define Fosc 10//80
 
 void delayUs(DWORD usec);
 void delayMs(DWORD msec);

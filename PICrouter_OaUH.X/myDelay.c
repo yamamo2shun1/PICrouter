@@ -5,7 +5,10 @@ void delayUs(DWORD usec)
 {
     unsigned int i, max;
     max = usec * 80 / Fosc;
-    for(i = 0; i < max; i++) {}
+    for(i = 0; i < max; i++)
+    {
+        Nop();
+    }
 }
 
 void delayMs(DWORD msec)
