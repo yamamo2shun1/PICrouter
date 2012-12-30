@@ -66,23 +66,23 @@ PICrouter_OaUH.X is this project folder.
 
 ### Supported MIDI messages
 1. Note On/Off (8nH/9nH)  
---> ***/midi/note [channel] [note_number] [velocity]***
---> ***/midi/note/set [channel] [note_number] [velocity]***
+--> ***/midi/note [channel] [note_number] [velocity]***  
+--> ***/midi/note/set [channel] [note_number] [velocity]***  
 2. Polyphonic Key Pressure (AnH)  
---> ***/midi/kp [channel] [note_number] [pressure]***
---> ***/midi/kp/set [channel] [note_number] [pressure]***
+--> ***/midi/kp [channel] [note_number] [pressure]***  
+--> ***/midi/kp/set [channel] [note_number] [pressure]***  
 3. Control Change (BnH)  
---> ***/midi/cc [channel] [control_number] [control_value]***
---> ***/midi/cc/set [channel] [control_number] [control_value]***
+--> ***/midi/cc [channel] [control_number] [control_value]***  
+--> ***/midi/cc/set [channel] [control_number] [control_value]***  
 4. Program Change (CnH)  
---> ***/midi/pc [program_number]***
---> ***/midi/pc/set [program_number]***
+--> ***/midi/pc [program_number]***  
+--> ***/midi/pc/set [program_number]***  
 5. Channel Pressure (DnH)  
---> ***/midi/cp [channel] [pressure]***
---> ***/midi/cp/set [channel] [pressure]***
+--> ***/midi/cp [channel] [pressure]***  
+--> ***/midi/cp/set [channel] [pressure]***  
 6. Pitch Bend (EnH)  
---> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***
---> ***/midi/pb/set [channel] [pitch_bend_MSB] [pitch_bend_LSB]***
+--> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
+--> ***/midi/pb/set [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
 
 ### Basic OSC Messages
 1. ***/onboard/led [id] [state]***
