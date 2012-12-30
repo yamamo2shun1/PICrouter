@@ -4,8 +4,8 @@ PICrouter
 PICrouter is a versatile board to develop musical instruments and controllers.  
 And this is **Free Hardware** and **Free Software**.
 
-![PICrouter](http://farm6.staticflickr.com/5076/7425609390_5f318ec3ee.jpg "PICrouter")  
-![PICrouter-brd](http://farm9.staticflickr.com/8459/7986846230_a655f44c61_z.jpg "PICrouter-brd")
+![PICrouter](http://farm9.staticflickr.com/8067/8231868524_8f18a08331.jpg "PICrouter")  
+![PICrouter-brd](http://farm9.staticflickr.com/8223/8305992542_a3f8db07b4.jpg "PICrouter-brd")
 
 ### Licenses
 * Hardware : [Creative Commons Attribute-ShareAlike 3.0 Unported][cc-by-sa]  
@@ -27,21 +27,23 @@ And this is **Free Hardware** and **Free Software**.
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
 ### Development
-* Microchip MPLABX v1.41
-* Microchip XC32 Compiler v1.11
+* Microchip MPLABX v1.51
+* Microchip XC32 Compiler v1.20
 
 ### Bootloader Application
 * PIC32UBL.exe (Win / Download is [here][an1388])
 * PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")
 
-PICrouter Schematic and board (current ver. is 0.95)
+PICrouter Schematic and board (current ver. is 1.00)
 --------------------------------
 PICrouter.sch and .brd are drawn by Eagel v6.  
 Additionaly, we use [Sparkfun eagle library][sparkfun].  
 This library is also licensed by CC by-SA 3.0.  
 
-And then We extend a special thank you to Tomoya.  
-He gave many advices for designing of this board.
+And then We extend a special thank you to Tomoya(@tomoya723) and Rundog(@rundog).  
+Tomoya gave many advices for designing of this board.  
+Rundog assisted us with this board's production.
+
 
 [sparkfun]: http://www.opencircuits.com/SFE_Footprint_Library_Eagle
 
@@ -96,6 +98,7 @@ PICrouter_OaUH.X is this project folder.
 6. ***/std/pwm/duty/get [no arguments]***
 
 ### System OSC Messages of Network Setting
+0. ***/sys/soft/reset [no arguments]***
 1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
 2. ***/sys/remote/ip/get [no arguments]***
 3. ***/sys/remote/port/set [port_number(int)]***
