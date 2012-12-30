@@ -147,16 +147,23 @@
     #define D_PORT3_IN() PORTFbits.RF1
 
     // LED_PAD_16
+    #define LD16_LOAD(state) state
 #if 0
-    #define LD_LOAD(state) LATCbits.LATC13 = state;
-    #define SR_SL(state)   LATCbits.LATC14 = state;
-    #define SR_CLK(state)  LATFbits.LATF0  = state;
-    #define SR_QH()        PORTFbits.RF1
+    #define LD16_LOAD(state) LATCbits.LATC13 = state;
+    #define SR_SL(state)     LATCbits.LATC14 = state;
+    #define SR_CLK(state)    LATFbits.LATF0  = state;
+    #define SR_QH()          PORTFbits.RF1
+#else
+    //#define LD16_LOAD(state) LATBbits.LATB13 = state;//LATCbits.LATC13 = state;
+    //#define SR_SL(state)     LATBbits.LATB12 = state;//LATCbits.LATC14 = state;
+    //#define SR_CLK(state)    LATBbits.LATB11 = state;//LATFbits.LATF0  = state;
+    //#define SR_QH()          PORTBbits.RB10//PORTFbits.RF1
 #endif
 
     // LED_PAD_64
+    //#define LD64_LOAD(state) state
 #if 0
-    #define LD_LOAD(state) LATCbits.LATC13 = state;
+    #define LD64_LOAD(state) LATCbits.LATC13 = state;
     #define SR_CLK1(state) LATCbits.LATC14 = state;
     #define SR_A(state)    LATFbits.LATF0  = state;
     #define SR_CLK2(state) LATFbits.LATF1  = state;
@@ -166,11 +173,15 @@
 #endif
 
     // LED_ENC
-#if 1
-    #define LD_LOAD(state) LATCbits.LATC13 = state;
-    #define RE_SW()        PORTCbits.RC14
-    #define RE_A()         PORTFbits.RF0
-    #define RE_B()         PORTFbits.RF1
+    //#define LD32_LOAD(state) state
+#if 0
+    #define LD32_LOAD(state) LATCbits.LATC13 = state;
+    #define RE_SW()          PORTCbits.RC14
+    #define RE_A()           PORTFbits.RF0
+    #define RE_B()           PORTFbits.RF1
 #endif
+
+    #define P_OUT 0
+    #define P_IN  1
 
 #endif  //HARDWARE_PROFILE_H

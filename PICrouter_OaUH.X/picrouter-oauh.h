@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.h,v.0.80 2012/10/07
+ * picrouter-oauh.h,v.0.90 2012/12/30
  */
 
 #include <plib.h>
@@ -37,7 +37,7 @@
 //#define USE_OPT_DRUM
 //#define USE_LED_PAD_16
 //#define USE_LED_PAD_64
-#define USE_LED_ENC
+//#define USE_LED_ENC
  
 #include "button.h"
 #include "analog.h"
@@ -70,8 +70,7 @@
 #pragma config FETHIO = ON
 
 /** DEFINITIONS ****************************************************/
-#define NVM_PROGRAM_PAGE 0xbd006000
-#define NVM_PAGE_SIZE    4096
+#define NVM_DATA 0x9D07F000
 
 //for USB_HOST
 USB_AUDIO_MIDI_PACKET RxHostMidiDataBuffer;
@@ -126,13 +125,7 @@ PROC_STATE ProcState;
 ENDPOINT_BUFFER* endpointBuffers;
 
 // MIDI packet used to translate MIDI UART to MIDI USB, with flag
-USB_AUDIO_MIDI_PACKET UARTTranslatedToUSB;
-BOOL UARTmidiPacketTranslated;
-
-// MIDI packet used to translate MIDI UART to MIDI USB for real time messages, with flag, and buffer
-USB_AUDIO_MIDI_PACKET UARTRealTimeToUSB;
-USB_AUDIO_MIDI_PACKET UARTRealTimeToUSBBuffer;
-BOOL UARTRealTimePacketTranslated;
+USB_AUDIO_MIDI_PACKET OSCTranslatedToUSB;
 
 BYTE usbState = 0;
 
@@ -214,9 +207,11 @@ WORD currentValue[USE_ADC_NUM];
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, 
         MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
 
-void sendSpiOneWord(WORD msb);
-void sendSpiTwoWord(WORD msb, WORD lsb);
-void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1);
+#define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
+
+void sendSpiOneWord(WORD msb, DWORD usec);
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec);
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec);
 
 #ifdef USE_PITCH
   void setupPitch(void);

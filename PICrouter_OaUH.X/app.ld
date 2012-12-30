@@ -11,11 +11,9 @@ ENTRY(_reset)
  *                     available for the heap.  Can be overridden from
  *                     the command line using the linker's --defsym option.
  */
-/*
 EXTERN (_min_stack_size _min_heap_size)
 PROVIDE(_min_stack_size = 0x400) ;
 PROVIDE(_min_heap_size = 0) ;
-*/
 
 /*************************************************************************
  * Processor-specific object file.  Contains SFR definitions.
@@ -25,10 +23,8 @@ INPUT("processor.o")
 /*************************************************************************
  * Processor-specific peripheral libraries are optional
  *************************************************************************/
-/*
 OPTIONAL("libmchp_peripheral.a")
 OPTIONAL("libmchp_peripheral_32MX675F512H.a")
-*/
 
 /*************************************************************************
  * For interrupt vector handling
@@ -64,18 +60,21 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 MEMORY
 {
   /* IVT */
-  exception_mem              : ORIGIN = 0x9D006000,                 LENGTH = 0x1000
+  exception_mem              : ORIGIN = 0x9D006000, 				    LENGTH = 0x1000
   /* Start-up Codes*/
-  kseg0_boot_mem             : ORIGIN = (0x9D006000 + 0x1000) ,         LENGTH = 0x970
-  kseg1_boot_mem             : ORIGIN = (0x9D006000 + 0x1000 + 0x970),      LENGTH = 0x490
+  kseg0_boot_mem             : ORIGIN = (0x9D006000 + 0x1000) , 			LENGTH = 0x970
+  kseg1_boot_mem             : ORIGIN = (0x9D006000 + 0x1000 + 0x970), 		LENGTH = 0x490
   /* Text + data section */
-  kseg0_program_mem    (rx)  : ORIGIN = (0x9D006000 + 0x1000 + 0x970 + 0x490),  LENGTH = 0x78200
-  
+  /* User has to modify the LENGTH of kseg0_program_mem based on the Flash Size available in the chosen part number.*/
+  kseg0_program_mem    (rx)  : ORIGIN = (0x9D006000 + 0x1000 + 0x970 + 0x490), 	LENGTH = 0x7B1F0
+
   debug_exec_mem             : ORIGIN = 0xBFC02000, LENGTH = 0xFF0
   config3                    : ORIGIN = 0xBFC02FF0, LENGTH = 0x4
   config2                    : ORIGIN = 0xBFC02FF4, LENGTH = 0x4
   config1                    : ORIGIN = 0xBFC02FF8, LENGTH = 0x4
   config0                    : ORIGIN = 0xBFC02FFC, LENGTH = 0x4
+  
+   /* User has to modify the LENGTH of kseg1_data_mem based on the RAM Size available in the chosen part number.*/
   kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 0x10000
   sfrs                       : ORIGIN = 0xBF800000, LENGTH = 0x100000
   configsfrs                 : ORIGIN = 0xBFC02FF0, LENGTH = 0x10
