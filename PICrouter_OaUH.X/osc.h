@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.86 2012/11/27
+ * osc.h,v.0.87 2012/11/30
  */
 
 #ifndef OSC_H
@@ -88,6 +88,8 @@ extern const char msgGetHostMac[];
 extern const char msgHostPort[];
 extern const char msgSetHostPort[];
 extern const char msgGetHostPort[];
+extern const char msgSoftReset[];
+extern const char msgDebug[];
 
 extern UINT16 rcvAddressLength;
 extern UINT16 rcvTypesStartIndex;

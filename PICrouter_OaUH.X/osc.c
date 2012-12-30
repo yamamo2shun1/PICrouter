@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.86 2012/11/27
+ * osc.c,v.0.87 2012/11/30
  */
 
 #include "osc.h"
@@ -81,6 +81,8 @@ const char msgGetHostMac[]    = "/host/mac/get";
 const char msgHostPort[]      = "/host/port";
 const char msgSetHostPort[]   = "/host/port/set";
 const char msgGetHostPort[]   = "/host/port/get";
+const char msgSoftReset[]     = "/soft/reset";
+const char msgDebug[]         = "/debug";
 
 UINT16 rcvAddressLength;
 UINT16 rcvTypesStartIndex;
@@ -120,7 +122,7 @@ void closeOSCReceivePort(UDP_SOCKET rcvSocket)
 
 void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* command, const char* type, ...)
 {
-	UINT16 i, j;
+	INT16 i, j;
 	va_list list;
 	char* str;
 	const char *p;
@@ -295,7 +297,7 @@ void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* comman
 
 BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
 {
-	UINT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
+	INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
 	INT16 m = 0;
 	char* msg;
     BOOL flag = TRUE;
@@ -418,7 +420,7 @@ BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
 
 INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	UINT16 k = 0, s = 0;
+	INT16 s = 0;
     INT16 m = rcvArgumentsLength;
 	INT32 sign, exponent, mantissa;
 	INT64 lvalue;
@@ -467,7 +469,7 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
 
 float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	UINT16 k = 0, s = 0;
+	INT16 s = 0;
     INT16 m = rcvArgumentsLength;
 	INT32 sign, exponent, mantissa;
 	INT64 lvalue;
@@ -516,7 +518,7 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
 
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	UINT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
+	INT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
     INT16 m = rcvArgumentsLength;
 	char* cstr;
 
