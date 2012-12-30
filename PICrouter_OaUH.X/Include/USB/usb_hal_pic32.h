@@ -274,8 +274,11 @@ typedef union _POINTER
 #define ConvertToPhysicalAddress(a) ((DWORD)KVA_TO_PA(a))
 #define ConvertToVirtualAddress(a)  PA_TO_KVA1(a)
 
+#if ((__PIC32_FEATURE_SET__ >= 100) && (__PIC32_FEATURE_SET__ <= 299))
+#define USBIE 0x00000008
+#else
 #define USBIE 0x02000000
-
+#endif
 /****************************************************************
     Function:
         void USBModuleDisable(void)
@@ -375,7 +378,7 @@ typedef union _POINTER
             IPC7CLR=0x00FF0000;\
             IPC7SET=0x00100000;\
             INTEnableSystemMultiVectoredInt();\
-            INTEnableInterrupts();
+            INTEnableInterrupts();\
         }
     #else
         #define USBEnableInterrupts() {\

@@ -514,6 +514,7 @@ typedef struct _USB_DEVICE_INFO
     BYTE                deviceAddress;                      // Device address.
     BYTE                errorCode;                          // Error code of last operation.
     BYTE                deviceClientDriver;                 // Index of client driver for this device if bfUseDeviceClientDriver=1.
+    BYTE                deviceEP0Driver;                    // Index of EP0 driver for this device if bfUseEP0Driver=1.
     WORD                currentConfigurationPower;          // Max power in milli-amps.
 
     USB_CONFIGURATION   *pConfigurationDescriptorList;      // Pointer to the list of Cnfiguration Descriptors of the attached device.
@@ -531,6 +532,7 @@ typedef struct _USB_DEVICE_INFO
             BYTE        bfPingPongIn                : 1;    // Ping-pong status of IN buffers (default = 0).
             BYTE        bfPingPongOut               : 1;    // Ping-pong status of OUT buffers (default = 0).
             BYTE        bfUseDeviceClientDriver     : 1;    // Indicates driver should use a single client driver (deviceClientDriver)
+            BYTE        bfUseEP0Driver              : 1;
         };
         WORD            val;
     }                   flags;

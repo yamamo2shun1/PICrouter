@@ -141,6 +141,7 @@ static void _DHCPSend(BYTE messageType, BOOL bRenewing);
 
 #if defined (WF_CS_IO)
 extern void SignalDHCPSuccessful(void);
+extern void SetDhcpProgressState(void);
 #endif
 
 /*****************************************************************************
@@ -506,12 +507,6 @@ void DHCPTask(void)
 				if(!MACIsLinked())
 					break;
 	
-            	#if defined(WF_CS_IO) && defined(STACK_USE_UART)
-					// Note: Use this debug message out to UART with caution. It can prevent slow down stack
-					// performance and possibly prevent STA from properly receiving DHCP IP.
-            	    // putrsUART("DHCP Send Discovery...\r\n");
-                #endif
-            	
 				// Ensure transmitter is ready to accept data
 				if(UDPIsPutReady(DHCPClient.hDHCPSocket) < 300u)
 					break;
@@ -657,7 +652,10 @@ void DHCPTask(void)
 			case SM_DHCP_SEND_RENEW3:
 				if(UDPIsPutReady(DHCPClient.hDHCPSocket) < 258u)
 					break;
-	
+
+                                #if defined(WF_CS_IO)
+                                    SetDhcpProgressState();
+                                #endif
 				// Send the DHCP request message
 				_DHCPSend(DHCP_REQUEST_MESSAGE, TRUE);
 				DHCPClient.flags.bits.bOfferReceived = FALSE;

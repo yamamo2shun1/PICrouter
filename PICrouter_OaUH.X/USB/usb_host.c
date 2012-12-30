@@ -1155,10 +1155,17 @@ void USBHostShutdown( void )
 
             powerRequest.port = 0;  // Currently was have only one port.
 
-            USB_HOST_APP_EVENT_HANDLER( usbDeviceInfo.deviceAddress, EVENT_VBUS_RELEASE_POWER,
-                &powerRequest, sizeof(USB_VBUS_POWER_EVENT_DATA) );
-            _USB_NotifyClients(usbDeviceInfo.deviceAddress, EVENT_DETACH,
-                &usbDeviceInfo.deviceAddress, sizeof(BYTE) );
+            USB_HOST_APP_EVENT_HANDLER( usbDeviceInfo.deviceAddress,
+                                        EVENT_VBUS_RELEASE_POWER,
+                                        &powerRequest,
+                                        sizeof(USB_VBUS_POWER_EVENT_DATA)
+                                      );
+            
+            _USB_NotifyClients( usbDeviceInfo.deviceAddress,
+                                EVENT_DETACH,
+                                &usbDeviceInfo.deviceAddress,
+                                sizeof(BYTE)
+                              );
 
 
         }
@@ -1892,7 +1899,10 @@ void USBHostTasks( void )
                             // Set up and send GET CONFIGURATION (n) DESCRIPTOR with a length of 8
                             pEP0Data[0] = USB_SETUP_DEVICE_TO_HOST | USB_SETUP_TYPE_STANDARD | USB_SETUP_RECIPIENT_DEVICE;
                             pEP0Data[1] = USB_REQUEST_GET_DESCRIPTOR;
-                            pEP0Data[2] = countConfigurations-1;    // USB 2.0 - range is 0 - count-1
+
+                            //MCHP: probably should get all of the configuration descriptors.
+                            pEP0Data[2] = 0;
+//                            pEP0Data[2] = countConfigurations-1;    // USB 2.0 - range is 0 - count-1
                             pEP0Data[3] = USB_DESCRIPTOR_CONFIGURATION;
                             pEP0Data[4] = 0;
                             pEP0Data[5] = 0;
@@ -1973,7 +1983,8 @@ void USBHostTasks( void )
                             // Set up and send GET CONFIGURATION (n) DESCRIPTOR.
                             pEP0Data[0] = USB_SETUP_DEVICE_TO_HOST | USB_SETUP_TYPE_STANDARD | USB_SETUP_RECIPIENT_DEVICE;
                             pEP0Data[1] = USB_REQUEST_GET_DESCRIPTOR;
-                            pEP0Data[2] = countConfigurations-1;
+                            //MCHP: probably should get all of the configuration descriptors.
+                            pEP0Data[2] = 0;
                             pEP0Data[3] = USB_DESCRIPTOR_CONFIGURATION;
                             pEP0Data[4] = 0;
                             pEP0Data[5] = 0;
@@ -2265,6 +2276,18 @@ void USBHostTasks( void )
                                     pCurrentInterface = pCurrentInterface->next;
                                 }
                             }
+
+                            //Load the EP0 driver, if there was any
+                            if(usbDeviceInfo.flags.bfUseEP0Driver == 1)
+                            {
+                                temp = usbDeviceInfo.deviceEP0Driver;
+                                if (!usbClientDrvTable[temp].Initialize(usbDeviceInfo.deviceAddress, usbClientDrvTable[temp].flags, temp))
+                                {
+                                    _USB_SetErrorCode( USB_HOLDING_CLIENT_INIT_ERROR );
+                                    _USB_SetHoldState();
+                                }
+                            }
+
                             break;
 
                         default:
@@ -2838,9 +2861,9 @@ BOOL _USB_FindClassDriver( BYTE bClass, BYTE bSubClass, BYTE bProtocol, BYTE *pb
     while (i < NUM_TPL_ENTRIES)
     {
         if ((usbTPL[i].flags.bfIsClassDriver == 1        ) &&
-            (usbTPL[i].device.bClass         == bClass   ) &&
-            (usbTPL[i].device.bSubClass      == bSubClass) &&
-            (usbTPL[i].device.bProtocol      == bProtocol)   )
+            (((usbTPL[i].flags.bfIgnoreClass == 0) ? (usbTPL[i].device.bClass == bClass) : TRUE)) &&
+            (((usbTPL[i].flags.bfIgnoreSubClass == 0) ? (usbTPL[i].device.bSubClass == bSubClass) : TRUE)) &&
+            (((usbTPL[i].flags.bfIgnoreProtocol == 0) ? (usbTPL[i].device.bProtocol == bProtocol) : TRUE))  )
         {
             // Make sure the application layer does not have a problem with the selection.
             // If the application layer returns FALSE, which it should if the event is not
@@ -2904,6 +2927,7 @@ BOOL _USB_FindDeviceLevelClientDriver( void )
     // Scan TPL
     i = 0;
     usbDeviceInfo.flags.bfUseDeviceClientDriver = 0;
+    usbDeviceInfo.flags.bfUseEP0Driver = 0;
     while (i < NUM_TPL_ENTRIES)
     {
         if (usbTPL[i].flags.bfIsClassDriver)
@@ -2924,9 +2948,23 @@ BOOL _USB_FindDeviceLevelClientDriver( void )
             if ((usbTPL[i].device.idVendor  == pDesc->idVendor ) &&
                 (usbTPL[i].device.idProduct == pDesc->idProduct))
             {
-                DEBUG_PutString( "HOST: Device validated by VID/PID\r\n" );
+                if( usbTPL[i].flags.bfEP0OnlyCustomDriver == 1 )
+                {
+                    usbDeviceInfo.flags.bfUseEP0Driver = 1;
+                    usbDeviceInfo.deviceEP0Driver = usbTPL[i].ClientDriver;
 
-                usbDeviceInfo.flags.bfUseDeviceClientDriver = 1;
+                    // Select configuration if it is given in the TPL
+                    if (usbTPL[i].flags.bfSetConfiguration)
+                    {
+                        usbDeviceInfo.currentConfiguration = usbTPL[i].bConfiguration;
+                    }
+                }
+                else
+                {
+                    DEBUG_PutString( "HOST: Device validated by VID/PID\r\n" );
+
+                    usbDeviceInfo.flags.bfUseDeviceClientDriver = 1;
+                }
             }
 
             #ifdef ALLOW_GLOBAL_VID_AND_PID
@@ -4504,6 +4542,11 @@ void _USB_NotifyClients( BYTE address, USB_EVENT event, void *data, unsigned int
             {
                 usbClientDrvTable[pInterface->clientDriver].EventHandler(address, event, data, size);
                 pInterface = pInterface->next;
+            }
+
+            if(usbDeviceInfo.flags.bfUseEP0Driver == 1)
+            {
+                usbClientDrvTable[usbDeviceInfo.deviceEP0Driver].EventHandler(address, event, data, size);
             }
             break;
     }

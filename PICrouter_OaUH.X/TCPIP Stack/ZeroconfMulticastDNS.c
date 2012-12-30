@@ -2131,7 +2131,7 @@ MDNS_STATIC void mDNSResponder(void)
             mDNSRemote.MACAddr.v[5]=0xFB;
 
 			
-			mDNS_socket = UDPOpenEx((DWORD)&mDNSRemote,UDP_OPEN_NODE_INFO,MDNS_PORT,MDNS_PORT);
+			mDNS_socket = UDPOpenEx((DWORD)(PTR_BASE)&mDNSRemote,UDP_OPEN_NODE_INFO,MDNS_PORT,MDNS_PORT);
 
 			if(mDNS_socket == INVALID_UDP_SOCKET)
             {
@@ -2732,7 +2732,7 @@ SET_PROBE_ANNOUNCE_TIMER:
 							INFO_MDNS_PRINT("MDNS_STATE_ANNOUNCE --> MDNS_STATE_DEFEND \r\n");
 
 							DisplayHostName(gHostCtx.szHostName);
-                            //DisplayIPValue(AppConfig.MyIPAddr);
+                            //test DisplayIPValue(AppConfig.MyIPAddr);
 						}
 						else
 						{
@@ -2956,16 +2956,15 @@ mDNSMulticastFilterRegister(void)
 //#if defined(DEBUG_MDNS) || defined(INFO_MDNS)
 void mDNSDumpInfo(void)
 {
-	BYTE tmp[8];
-#if 0
-	putsUART("   Host registered: "); putsUART((char *)gHostCtx.szUserChosenHostName); putsUART("\r\n");
-	putsUART("         qualified: "); putsUART((char *)gHostCtx.szHostName); putsUART("\r\n");
-	putsUART("Service registered: "); putsUART((char *)gSDCtx.srv_name); putsUART("\r\n");
-	putsUART("         qualified: "); putsUART((char *)gSDCtx.sd_qualified_name); putsUART("\r\n");
-	sprintf((char *) tmp, "%d", gSDCtx.sd_port);
-	putsUART("              port: "); putsUART((char *)tmp); putsUART("\r\n");
-	putsUART("    TXT registered: "); putsUART((char *)gSDCtx.sd_txt_rec); putsUART("\r\n");
-#endif
+	//test BYTE tmp[8];
+
+	//test putsUART("   Host registered: "); putsUART((char *)gHostCtx.szUserChosenHostName); putsUART("\r\n");
+	//test putsUART("         qualified: "); putsUART((char *)gHostCtx.szHostName); putsUART("\r\n");
+	//test putsUART("Service registered: "); putsUART((char *)gSDCtx.srv_name); putsUART("\r\n");
+	//test putsUART("         qualified: "); putsUART((char *)gSDCtx.sd_qualified_name); putsUART("\r\n");
+	//test sprintf((char *) tmp, "%d", gSDCtx.sd_port);
+	//test putsUART("              port: "); putsUART((char *)tmp); putsUART("\r\n");
+	//test putsUART("    TXT registered: "); putsUART((char *)gSDCtx.sd_txt_rec); putsUART("\r\n");
 }
 
 //#endif

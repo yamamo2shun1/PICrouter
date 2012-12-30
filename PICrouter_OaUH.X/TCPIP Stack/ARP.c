@@ -395,7 +395,7 @@ void ARPInit(void)
     Cache.MACAddr.v[4] = 0xff;
     Cache.MACAddr.v[5] = 0xff;
 
-	Cache.IPAddr.Val = 0x0;
+	Cache.IPAddr.Val = 0xfffffffful;
 }
 #endif
 
@@ -495,7 +495,7 @@ BOOL ARPProcess(void)
                                 * was leading to flooding of ARP-answeres */
                                 if(!memcmp (&packet.SenderMACAddr, &AppConfig.MyMACAddr, 6))
                                 {
-                                     //putsUART("Loopback answer suppressed \r\n");
+                                     //test putsUART("Loopback answer suppressed \r\n");
                                      return TRUE;
                                 }
 #endif
