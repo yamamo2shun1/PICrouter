@@ -37,7 +37,7 @@ BYTE reB[2];
 BYTE reD;
 int reStep;
 
-BOOL sendEncFlag;
+volatile BOOL sendEncFlag;
 BOOL reFlag[2];
 float omega[2];
 float omega_ma[2][8];

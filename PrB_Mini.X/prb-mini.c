@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * prb-mini.c,v.0.50 2012/12/25
+ * prb-mini.c,v.0.60 2012/12/30
  */
 
 #include "prb-mini.h"
@@ -627,56 +627,164 @@ void UDPControlTask(void)
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDuty, 0);
             sendOSCMessage(TxSocket, stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
         }
-#if 0
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetNote))
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetNote)) // Note On/Off
         {
-            if(ProcState == STATE_READY)
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 0);
+            BYTE num = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 1);
+            BYTE vel = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 2);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_NOTE_ON;
+            OSCTranslatedToUSB.DATA_0 = 0x90 + ch;
+            OSCTranslatedToUSB.DATA_1 = num;
+            OSCTranslatedToUSB.DATA_2 = vel;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
             {
-                BYTE currentEndpoint;
-                ENDPOINT_DIRECTION direction;
-
-                endpointBuffers = malloc(sizeof(ENDPOINT_BUFFER) * USBHostMIDINumberOfEndpoints(deviceHandle));
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    direction = USBHostMIDIEndpointDirection(deviceHandle, currentEndpoint);
-                    if(direction == OUT)
-                    {
-                        endpointBuffers[currentEndpoint].TransferState = TX_DATA;
-                    }
-                    data0 = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 0);
-                    data1 = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 1);
-                    data2 = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 2);
-                    endpointBuffers[currentEndpoint].pBufReadLocation->DATA_0 = data0;
-                    endpointBuffers[currentEndpoint].pBufReadLocation->DATA_1 = data1;
-                    endpointBuffers[currentEndpoint].pBufReadLocation->DATA_2 = data2;
-                    if(USBHostMIDIWrite(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufReadLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET)) == USB_SUCCESS)
-                    {
-                        //test endpointBuffers[currentEndpoint].TransferState = TX_DATA_WAIT;
-                        LED_1_Toggle();
-                    }
-
-                    if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
-                    {
-                        endpointBuffers[currentEndpoint].TransferState = TX_DATA;
-                        endpointBuffers[currentEndpoint].pBufReadLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-                        if(endpointBuffers[currentEndpoint].pBufReadLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                        {
-                            endpointBuffers[currentEndpoint].pBufReadLocation = endpointBuffers[currentEndpoint].bufferStart;
-                        }
-                    }
-                }
-            }
-
-            //test BYTE currentEndpoint = 0;
-            //test for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
                 
-                //test LED_1_Toggle();
-                //testUSBHostMIDIWrite(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufReadLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET));
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
             }
         }
-#endif
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetCc)) // Control Change
+        {
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 0);
+            BYTE num = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 1);
+            BYTE val = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 2);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+            OSCTranslatedToUSB.DATA_0 = 0xB0 + ch;
+            OSCTranslatedToUSB.DATA_1 = num;
+            OSCTranslatedToUSB.DATA_2 = val;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
+            }
+        }
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetKp)) // Polyphonic Key Pressure
+        {
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetKp, 0);
+            BYTE num = getIntArgumentAtIndex(buffer, midiPrefix, msgSetKp, 1);
+            BYTE prs = getIntArgumentAtIndex(buffer, midiPrefix, msgSetKp, 2);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_POLY_KEY_PRESS;
+            OSCTranslatedToUSB.DATA_0 = 0xA0 + ch;
+            OSCTranslatedToUSB.DATA_1 = num;
+            OSCTranslatedToUSB.DATA_2 = prs;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
+            }
+        }
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetPc)) // Program Change
+        {
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetPc, 0);
+            BYTE pnum = getIntArgumentAtIndex(buffer, midiPrefix, msgSetPc, 1);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PROGRAM_CHANGE;
+            OSCTranslatedToUSB.DATA_0 = 0xC0 + ch;
+            OSCTranslatedToUSB.DATA_1 = pnum;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
+            }
+        }
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetCp)) // Channel Pressure
+        {
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetCp, 0);
+            BYTE prs = getIntArgumentAtIndex(buffer, midiPrefix, msgSetCp, 1);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CHANNEL_PREASURE;
+            OSCTranslatedToUSB.DATA_0 = 0xD0 + ch;
+            OSCTranslatedToUSB.DATA_1 = prs;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
+            }
+        }
+        else if(isEqualToAddress(buffer, midiPrefix, msgSetPb)) // Pitch Bend
+        {
+            BYTE currentEndpoint;
+            
+            BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetPb, 0);
+            BYTE msb = getIntArgumentAtIndex(buffer, midiPrefix, msgSetPb, 1);
+            BYTE lsb = getIntArgumentAtIndex(buffer, midiPrefix, msgSetPb, 2);
+
+            OSCTranslatedToUSB.Val = 0;
+            OSCTranslatedToUSB.CableNumber = 0;
+            OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PITCH_BEND_CHANGE;
+            OSCTranslatedToUSB.DATA_0 = 0xE0 + ch;
+            OSCTranslatedToUSB.DATA_1 = msb;
+            OSCTranslatedToUSB.DATA_2 = lsb;
+
+            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            {
+                endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                
+                if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                }
+                break;
+            }
+        }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
         {
             char* rip = getStringArgumentAtIndex(buffer, sysPrefix, msgSetRemoteIp, 0);
@@ -767,10 +875,6 @@ void UDPControlTask(void)
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSoftReset))
         {
-            //BYTE ps = getIntArgumentAtIndex(buffer, sysPrefix, msgSoftReset, 0);
-            //TRISDbits.TRISD10 = 0;
-            //LATDbits.LATD10 = ps;
-            //delayMs(500);
             NVMErasePage((void*)NVM_DATA);
             NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
 
@@ -1426,6 +1530,27 @@ void convertMidiToOsc(void)
                                 endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
                             }
                         }
+                        break;
+                    case TX_DATA:
+                        if(endpointBuffers[currentEndpoint].pBufReadLocation != endpointBuffers[currentEndpoint].pBufWriteLocation)
+                        {
+                            if(USBHostMIDIWrite(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufReadLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET)) == USB_SUCCESS)
+                            {
+                                endpointBuffers[currentEndpoint].TransferState = TX_DATA_WAIT;
+                            }
+                        }    
+                        break;
+                    case TX_DATA_WAIT:
+                        if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
+                        {
+                            endpointBuffers[currentEndpoint].TransferState = TX_DATA;
+                            endpointBuffers[currentEndpoint].pBufReadLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+                                
+                            if(endpointBuffers[currentEndpoint].pBufReadLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                            {
+                                endpointBuffers[currentEndpoint].pBufReadLocation = endpointBuffers[currentEndpoint].bufferStart;
+                            }
+                        }        
                         break;
                 }
                 delayUs(2);

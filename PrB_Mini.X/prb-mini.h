@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * prb-mini.h,v.0.50 2012/12/25
+ * prb-mini.h,v.0.60 2012/12/30
  */
 
 #include <plib.h>
@@ -69,10 +69,6 @@
 /** DEFINITIONS ****************************************************/
 
 #define NVM_DATA 0x9D07F000
-#if 0//test
-    #define NVM_PROGRAM_PAGE 0xbd006000
-    #define NVM_PAGE_SIZE    4096
-#endif
 
 //for USB_HOST
 USB_AUDIO_MIDI_PACKET RxHostMidiDataBuffer;
@@ -129,13 +125,7 @@ PROC_STATE ProcState;
 ENDPOINT_BUFFER* endpointBuffers;
 
 // MIDI packet used to translate MIDI UART to MIDI USB, with flag
-USB_AUDIO_MIDI_PACKET UARTTranslatedToUSB;
-BOOL UARTmidiPacketTranslated;
-
-// MIDI packet used to translate MIDI UART to MIDI USB for real time messages, with flag, and buffer
-USB_AUDIO_MIDI_PACKET UARTRealTimeToUSB;
-USB_AUDIO_MIDI_PACKET UARTRealTimeToUSBBuffer;
-BOOL UARTRealTimePacketTranslated;
+USB_AUDIO_MIDI_PACKET OSCTranslatedToUSB;
 
 BYTE usbState = 0;
 
@@ -183,12 +173,12 @@ WORD remotePort = 8000;
 WORD localPort  = 8080;
 
 DWORD dwLedData = 0;
-DWORD dwLedSequence[100] = {0};
+volatile DWORD dwLedSequence[100] = {0};
 BYTE intensity[32] = {0};
 BOOL ledOn = FALSE;
 WORD ledCount = 0;
 BYTE ledIntensity = 10;
-BYTE ledIntensityIndex = 0;
+volatile BYTE ledIntensityIndex = 0;
 
 WORD ledState = 0;
 WORD matrixLed[4] = {0};
@@ -237,15 +227,15 @@ BYTE reAvgIndex = 0;
 BYTE reVelAvgIndex = 0;
 int reVelAvgIndex2 = 0;
 BYTE reMatchCount = 0;
-BYTE reState[16] = {0};
+volatile BYTE reState[16] = {0};
 WORD rePosData[AVG_NUM] = {0};
 float reAbsAnglePosLast = 0;
-float reAbsAnglePos = 0;
-int reDirection = 0;
+volatile float reAbsAnglePos = 0;
+volatile int reDirection = 0;
 DWORD reCounting = 0;
 float reCounted = 0;
 DWORD reAvgCounted[8] = {0};
-float reVelocity = 0; 
+volatile float reVelocity = 0; 
 float reAvgVelocity[16] = {0};
 
 // MAC address Initialization
