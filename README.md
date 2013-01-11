@@ -28,7 +28,7 @@ And this is **Free Hardware** and **Free Software**.
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
 ### Development
-* Microchip MPLABX v1.51
+* Microchip MPLABX v1.60
 * Microchip XC32 Compiler v1.20
 
 ### Bootloader Application
