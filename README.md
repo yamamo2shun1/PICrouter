@@ -4,7 +4,7 @@ PICrouter
 PICrouter is a versatile board to develop musical instruments and controllers.  
 And this is **Free Hardware** and **Free Software**.
 
-![PICrouter](http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1.jpg "PICrouter")  
+<img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_c.jpg" width="800" />  
 ![PICrouter-brd](http://farm9.staticflickr.com/8223/8305992542_a3f8db07b4.jpg "PICrouter-brd")
 
 ### Licenses
