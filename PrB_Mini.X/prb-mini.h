@@ -42,29 +42,21 @@
 #include "osc.h"
 
 /** CONFIGURATION **************************************************/
-#pragma config UPLLEN   = ON        // USB PLL Enabled
-#pragma config FPLLMUL  = MUL_20    // PLL Multiplier
-//test #pragma config FPLLMUL  = MUL_15    // PLL Multiplier
-#pragma config UPLLIDIV = DIV_5     // USB PLL Input Divider
-#pragma config FPLLIDIV = DIV_5     // PLL Input Divider
-#pragma config FPLLODIV = DIV_1     // PLL Output Divider
-#pragma config FPBDIV   = DIV_1     // Peripheral Clock divisor
-#pragma config FWDTEN   = OFF       // Watchdog Timer
-//test #pragma config WDTPS    = PS1       // Watchdog Timer Postscale
-//test #pragma config FCKSM    = CSDCMD    // Clock Switching & Fail Safe Clock Monitor
-//test #pragma config OSCIOFNC = OFF       // CLKO Enable
-#pragma config POSCMOD  = HS        // Primary Oscillator
-//test #pragma config IESO     = OFF       // Internal/External Switch-over
-#pragma config FSOSCEN  = OFF       // Secondary Oscillator Enable (KLO was off)
-#pragma config FNOSC    = PRIPLL    // Oscillator Selection
+#pragma config UPLLEN    = ON        // USB PLL Enabled
+#pragma config FPLLMUL   = MUL_20    // PLL Multiplier
+#pragma config UPLLIDIV  = DIV_5     // USB PLL Input Divider
+#pragma config FPLLIDIV  = DIV_5     // PLL Input Divider
+#pragma config FPLLODIV  = DIV_1     // PLL Output Divider
+#pragma config FPBDIV    = DIV_1     // Peripheral Clock divisor
+#pragma config FWDTEN    = OFF       // Watchdog Timer
+#pragma config POSCMOD   = HS        // Primary Oscillator
+#pragma config FSOSCEN   = OFF       // Secondary Oscillator Enable (KLO was off)
+#pragma config FNOSC     = PRIPLL    // Oscillator Selection
 #pragma config FVBUSONIO = OFF
-//test #pragma config CP       = OFF       // Code Protect
-//test #pragma config BWP      = OFF       // Boot Flash Write Protect
-//test #pragma config PWP      = OFF       // Program Flash Write Protect
-#pragma config ICESEL   = ICS_PGx1  // ICE/ICD Comm Channel Select
-#pragma config FMIIEN = OFF // external PHY in RMII/default configuration
-#pragma config FETHIO = ON
-#pragma config DEBUG    = OFF        // Background Debugger Enable
+#pragma config ICESEL    = ICS_PGx1  // ICE/ICD Comm Channel Select
+#pragma config FMIIEN    = OFF // external PHY in RMII/default configuration
+#pragma config FETHIO    = ON
+#pragma config DEBUG     = OFF        // Background Debugger Enable
 
 /** DEFINITIONS ****************************************************/
 
@@ -208,10 +200,13 @@ BOOL initInterruptFlag = FALSE;
 int currentValue[USE_ADC_NUM] = {0};
 int prevValue[USE_ADC_NUM] = {0};
 int boundaryValue[USE_ADC_NUM] = {0};
+int currentDirectionValue[USE_ADC_NUM] = {0};
 int currentPosition = 0;
 int currentPosition1 = 0;
 int prevPosition = 0;
-int boundaryPosition = 0;
+//int boundaryPosition = 0;
+//int boundaryPosition0 = 0;
+int boundaryPosition[USE_ADC_NUM] = {0};
 int centerPosition = 0;
 int currentSection = 0;
 int prevSection = 0;

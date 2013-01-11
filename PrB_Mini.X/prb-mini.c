@@ -90,7 +90,8 @@ int main(int argc, char** argv) {
     AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
 #else// CF-X2
     AD1PCFG = 0x0000FF03;// 0000 0000 0000 0000 1111 1111 0000 0011
-    AD1CON2 = 0x0000042C;// 0000 0000 0000 0000 0000 0100 0010 1100
+    //AD1CON2 = 0x0000042C;// 0000 0000 0000 0000 0000 0100 0010 1100
+    AD1CON2 = 0x00000414;// 0000 0000 0000 0000 0000 0100 0001 0100
     AD1CSSL = 0x000000FC;// 0000 0000 0000 0000 0000 0000 1111 1100
     AD1CON1 = 0x000010E6;// 0000 0000 0000 0000 1000 0000 1110 0110
     AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
@@ -276,18 +277,18 @@ void setupLedEnc(void)
 *********************************************/
 void UDPControlTask(void)
 {
-	unsigned int RcvLen;
-	static BYTE	buffer[1024];
+    unsigned int RcvLen;
+    static BYTE	buffer[1024];
     BYTE index, i, j, k;
 
-	if(!initReceiveFlag)
-	{
+    if(!initReceiveFlag)
+    {
         RxSocket = UDPOpen(localPort, NULL, 0);
-		if(RxSocket != INVALID_UDP_SOCKET)
+        if(RxSocket != INVALID_UDP_SOCKET)
         {
-			initReceiveFlag = TRUE;
+            initReceiveFlag = TRUE;
         }
-	}
+    }
     if(initReceiveFlag && UDPIsGetReady(RxSocket))
     {
         LED_2_On();
@@ -985,14 +986,26 @@ void sendAdc(void)
 #if 1// CF-X2
     BOOL flag = FALSE;
     int b_min = 120;
-    int b_max = 136;
+    int b_max = 132;
 
     for(i = 0; i < USE_ADC_NUM; i++)
     {
         if(getAnalogFlag(i))
         {
-            //currentValue[i] = getAnalogWord(i, TYPE_LONG_ORIGINAL);
-            currentValue[i] = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
+            int value = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
+            if(value != currentValue[i])
+                prevValue[i] = currentValue[i];
+
+            currentValue[i] = value;//getAnalogByte(i, TYPE_MIDI_ORIGINAL);
+
+            if(currentValue[i] != prevValue[i])
+            {
+                if(currentValue[i] > prevValue[i])
+                    currentDirectionValue[i] = 1;
+                else if(currentValue[i] < prevValue[i])
+                    currentDirectionValue[i] = -1;
+            }
+
             flag = TRUE;
 
             resetAnalogFlag(i);
@@ -1008,9 +1021,14 @@ void sendAdc(void)
         {
             currentSection = 0;
             currentPosition = 152 - currentValue[5 - currentSection];
-            
-            if(currentPosition > currentPosition1 && prevDirection == -1)
-                currentPosition = currentPosition1;
+        }
+        else if((currentValue[0] >= b_min && currentValue[0] <= b_max) &&
+                (currentValue[1] >= b_min && currentValue[1] <= b_max) &&
+                (currentValue[2] >= b_min && currentValue[2] <= b_max) &&
+                (currentValue[5] < b_min/*92*/))
+        {
+            currentSection = 1;
+            currentPosition = (192 - currentValue[5 - currentSection]) + 90;
         }
         else if((currentValue[2] >= b_min && currentValue[2] <= b_max) &&
                 (currentValue[3] >= b_min && currentValue[3] <= b_max) &&
@@ -1018,99 +1036,54 @@ void sendAdc(void)
                 (currentValue[5] >= b_min && currentValue[5] <= b_max))
         {
             currentSection = 5;
-            currentPosition = currentValue[5 - currentSection] - 88;
-        }
-        else if((currentValue[0] >= b_min && currentValue[0] <= b_max) &&
-                (currentValue[1] >= b_min && currentValue[1] <= b_max) &&
-                (currentValue[2] >= b_min && currentValue[2] <= b_max))
-        {
-            currentSection = 1;
-
-            if(currentSection != prevSection)
-            {
-                boundaryValue[5 - currentSection] = currentValue[5 - currentSection];
-                boundaryPosition = currentPosition;
-            }
-            currentPosition = (boundaryValue[5 - currentSection] - currentValue[5 - currentSection]) + boundaryPosition;
+            currentPosition = 192 - currentValue[5 - currentSection] + 550;
         }
         else if((currentValue[3] >= b_min && currentValue[3] <= b_max) &&
                 (currentValue[4] >= b_min && currentValue[4] <= b_max) &&
-                (currentValue[5] >= b_min && currentValue[5] <= b_max))
+                (currentValue[5] >= b_min && currentValue[5] <= b_max)
+                 /*currentValue[2] < 72*/)
         {
             currentSection = 4;
-
-            if(currentSection != prevSection)
-            {
-                boundaryValue[5 - currentSection] = currentValue[5 - currentSection];
-                boundaryPosition = currentPosition;
-            }
-            currentPosition = currentValue[5 - currentSection] - boundaryValue[5 - currentSection] + boundaryPosition;
+            currentPosition = (184 - currentValue[5 - currentSection]) + 430;
         }
         else if((currentValue[0] >= b_min && currentValue[0] <= b_max) &&
                 (currentValue[1] >= b_min && currentValue[1] <= b_max) &&
-                (currentValue[5] >= b_min && currentValue[5] <= b_max))
+                (currentValue[5] >= b_min && currentValue[5] <= b_max) &&
+                //(currentValue[4] < 80))
+                (currentValue[4] < 120))
         {
             currentSection = 2;
-
-            if(currentSection != prevSection)
-            {
-                boundaryValue[5 - currentSection] = currentValue[5 - currentSection];
-                boundaryPosition = currentPosition;
-            }
-            currentPosition = (boundaryValue[5 - currentSection] - currentValue[5 - currentSection]) + boundaryPosition;
-
-            if(prevSection == 3)
-                centerPosition = currentPosition;
+            currentPosition = (192 - currentValue[5 - currentSection]) + 202;
         }
-        else if((currentValue[0] >= b_min && currentValue[0] <= b_max) &&
+        else if((currentValue[0] >= b_min && currentValue[0] <= 135) &&
                 (currentValue[4] >= b_min && currentValue[4] <= b_max) &&
                 (currentValue[5] >= b_min && currentValue[5] <= b_max))
         {
             currentSection = 3;
-
-            if(currentSection != prevSection)
-            {
-                boundaryValue[5 - currentSection] = currentValue[5 - currentSection];
-                boundaryPosition = currentPosition;
-            }
-            currentPosition = currentValue[5 - currentSection] - boundaryValue[5 - currentSection] + boundaryPosition;
-
-            if(prevSection == 2)
-                centerPosition = currentPosition;
+            currentPosition = (192 - currentValue[5 - currentSection]) + 312;
         }
-#if 0
-        if((currentValue[0] >= b_min && currentValue[0] <= b_max) &&
-           (currentValue[1] >= b_min && currentValue[1] <= b_max) &&
-           (currentValue[4] >= b_min && currentValue[4] <= b_max) &&
-           (currentValue[5] >= b_min && currentValue[5] <= b_max))
+        else
         {
-            currentPosition = 150;
+            currentSection = -1;
         }
-#endif
+
         if((currentPosition >> 1) != (currentPosition1 >> 1))
             prevPosition = currentPosition1;
 
-        if(currentPosition > 255)
-            sendOSCMessage(TxSocket, prefix, msgAdc, "iiii", 127, prevPosition >> 1, 0, currentSection);
-        else
-        {
-            if(currentSection < 3)
-            {
-                if((currentPosition >> 1) > (prevPosition >> 1))
-                    currentDirection = 1;
-                else if((currentPosition >> 1) < (prevPosition >> 1))
-                    currentDirection = -1;
-                sendOSCMessage(TxSocket, prefix, msgAdc, "iiii", (currentPosition >> 1), (prevPosition >> 1), currentDirection, currentSection);
-            }
-            else
-            {
-                if((currentPosition >> 1) > prevPosition)
-                    currentDirection = -1;
-                else if((currentPosition >> 1) < prevPosition)
-                    currentDirection = 1;
-                sendOSCMessage(TxSocket, prefix, msgAdc, "iiii", 255 - (currentPosition >> 1), (prevPosition >> 1), currentDirection, currentSection);
-            }
-        }
+        if((currentPosition >> 1) > (prevPosition >> 1))
+            currentDirection = 1;
+        else if((currentPosition >> 1) < (prevPosition >> 1))
+            currentDirection = -1;
+        sendOSCMessage(TxSocket, prefix, msgAdc, "iiiiiiiii",
+                        (currentPosition >> 1),
+                        currentDirection,
+                        currentSection,
+                        currentValue[0],
+                        currentValue[1],
+                        currentValue[2],
+                        currentValue[3],
+                        currentValue[4],
+                        currentValue[5]);
 
         StackTask();
 
@@ -1433,12 +1406,21 @@ void UDPSendTask()
             analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
             analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
 #else// CF-X2
+#if 0
             analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF6) / 2));
             analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF7) / 2));
             analogInHandle(2, (LONG)((ADC1BUF2 + ADC1BUF8) / 2));
             analogInHandle(3, (LONG)((ADC1BUF3 + ADC1BUF9) / 2));
             analogInHandle(4, (LONG)((ADC1BUF4 + ADC1BUFA) / 2));
             analogInHandle(5, (LONG)((ADC1BUF5 + ADC1BUFB) / 2));
+#else
+            analogInHandle(0, (LONG)(ADC1BUF0));
+            analogInHandle(1, (LONG)(ADC1BUF1));
+            analogInHandle(2, (LONG)(ADC1BUF2));
+            analogInHandle(3, (LONG)(ADC1BUF3));
+            analogInHandle(4, (LONG)(ADC1BUF4));
+            analogInHandle(5, (LONG)(ADC1BUF5));
+#endif
 #endif
             sendAdc();
         }
