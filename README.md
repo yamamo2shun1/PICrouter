@@ -68,56 +68,8 @@ PICrouter_OaUH (current ver. is 0.90)
 PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
 PICrouter_OaUH.X is this project folder.
 
-### Supported MIDI messages
-1. Note On/Off (8nH/9nH)  
---> ***/midi/note [channel] [note_number] [velocity]***  
---> ***/midi/note/set [channel] [note_number] [velocity]***  
-2. Polyphonic Key Pressure (AnH)  
---> ***/midi/kp [channel] [note_number] [pressure]***  
---> ***/midi/kp/set [channel] [note_number] [pressure]***  
-3. Control Change (BnH)  
---> ***/midi/cc [channel] [control_number] [control_value]***  
---> ***/midi/cc/set [channel] [control_number] [control_value]***  
-4. Program Change (CnH)  
---> ***/midi/pc [program_number]***  
---> ***/midi/pc/set [program_number]***  
-5. Channel Pressure (DnH)  
---> ***/midi/cp [channel] [pressure]***  
---> ***/midi/cp/set [channel] [pressure]***  
-6. Pitch Bend (EnH)  
---> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
---> ***/midi/pb/set [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
+Supported Open Sound Control Messages
+--------------------------------
+See [osc pages][].
 
-### Basic OSC Messages
-1. ***/onboard/led [id] [state]***
-2. ***/volume/led [value]***
-3. ***/lattice/led [x] [y] [state]***
-4. ***/rotary/led/step [id] [length]***
-5. ***/rotary/led/bits [data]***
-6. ***/rotary/led/intensity [id] [intensity]***
-7. ***/rotary/led/allint [intensity]***
-8. ***/rotary/enc [direction] [step] [velocity] [acceralation]***
-9. ***/rotary/switch [state]***
-
-### Standard OSC Messages of I/O
-1. ***/std/pwm/state/set [state(string)]***
-2. ***/std/pwm/state/get [no arguments]***
-3. ***/std/pwm/freq/set [frequencey(int)]***
-4. ***/std/pwm/freq/get [no arguments]***
-5. ***/std/pwm/duty/set [duty(int)]***
-6. ***/std/pwm/duty/get [no arguments]***
-
-### System OSC Messages of Network Setting
-0. ***/sys/soft/reset [no arguments]***
-1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
-2. ***/sys/remote/ip/get [no arguments]***
-3. ***/sys/remote/port/set [port_number(int)]***
-4. ***/sys/remote/port/get [no arguments]***
-5. ***/sys/host/name/set [host_name(string)]***
-6. ***/sys/host/name/get [no arguments]***
-7. ***/sys/host/ip/get [no arguments]***
-8. ***/sys/host/mac/get [no arguments]***
-9. ***/sys/host/port/set [port_number(int)]***
-10. ***/sys/host/port/get [no arguments]***
-11. ***/sys/prefix/set [prefix(string)]***
-12. ***/sys/prefix/get [no arguments]***
+[osc pages]: https://github.com/tkrworks/PICrouter/wiki/Supported-OSC-Messages
