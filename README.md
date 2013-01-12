@@ -4,8 +4,8 @@ PICrouter
 PICrouter is a versatile board to develop musical instruments and controllers.  
 And this is **Free Hardware** and **Free Software**.
 
-<a href="http://www.flickr.com/photos/yamamo2/8369607593/"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" /></a>  
-<a href="http://www.flickr.com/photos/yamamo2/8369762163/"><img src="http://farm9.staticflickr.com/8219/8369762163_daa2bac802_z.jpg" /></a>  
+<a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a>  
+<a href="http://www.flickr.com/photos/yamamo2/8369762163/" title="PICrouter v1.0 ETH/USB VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8219/8369762163_daa2bac802_z.jpg" width="640" height="346" alt="PICrouter v1.0 ETH/USB VIEW"></a>  
 *Photographed by Kiyasu/TechnikLAB**  
 
 ### Licenses
@@ -26,6 +26,9 @@ And this is **Free Hardware** and **Free Software**.
 8. 100mm x 33.5mm, 4-layers board
 
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
+
+### Pin Assign
+<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_0c59ca6045_z.jpg" width="469" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
 
 ### Development
 * Microchip MPLABX v1.60
