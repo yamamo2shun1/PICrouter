@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Picrouter by tkrworks</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Picrouter</h1>
+          <h2>PICrouter is Free Hardware and Free Software!</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/tkrworks/PICrouter/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/tkrworks/PICrouter/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/tkrworks/PICrouter" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>PICrouter</h1>
+
+<h3>Descriptions</h3>
+
+<p>PICrouter is a versatile board to develop musical instruments and controllers.<br>
+And this is <strong>Free Hardware</strong> and <strong>Free Software</strong>.</p>
+
+<p><a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a><br><a href="http://www.flickr.com/photos/yamamo2/8369762163/" title="PICrouter v1.0 ETH/USB VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8219/8369762163_daa2bac802_z.jpg" width="640" height="346" alt="PICrouter v1.0 ETH/USB VIEW"></a><br><em>Photographed by Kiyasu/TechnikLAB</em>*  </p>
+
+<h3>Licenses</h3>
+
+<ul>
+<li>Hardware : <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribute-ShareAlike 3.0 Unported">Creative Commons Attribute-ShareAlike 3.0 Unported</a><br>
+</li>
+<li>Software : GNU General Public License version 3<br>
+</li>
+</ul><h3>Specifications</h3>
+
+<ol>
+<li>Supported Zeroconf(Bonjour on Mac OS X), DHCP and NBNS</li>
+<li>Supported Open Sound Control</li>
+<li>Supported USB device(MIDI and HID composite) and host(only MIDI) function.</li>
+<li>Supported <a href="http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&amp;nodeId=1824&amp;appnote=en554836" title="AN1388">USB HID bootloader</a> on Mac OS X and Windows.</li>
+<li>PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)</li>
+<li>A/D port x14</li>
+<li>PWM output x4</li>
+<li>SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1</li>
+<li>100mm x 33.5mm, 4-layers board</li>
+</ol><h3>Pin Assign</h3>
+
+<p><a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_7a317dd2ee.jpg" height="500" alt="PICrouter v1.0 PIN ASSIGN"></a>  </p>
+
+<h3>Development</h3>
+
+<ul>
+<li>Microchip MPLABX v1.60</li>
+<li>Microchip XC32 Compiler v1.20</li>
+</ul><h3>Bootloader Application</h3>
+
+<ul>
+<li>PIC32UBL.exe (Win / Download is <a href="http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&amp;nodeId=1824&amp;appnote=en554836" title="AN1388">here</a>)</li>
+<li>PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")</li>
+</ul><h2>PICrouter Schematic and board (current ver. is 1.00)</h2>
+
+<p>PICrouter.sch and .brd are drawn by Eagel v6.<br>
+Additionaly, we use <a href="http://www.opencircuits.com/SFE_Footprint_Library_Eagle">Sparkfun eagle library</a>.<br>
+This library is also licensed by CC by-SA 3.0.  </p>
+
+<p>And then We extend a special thank you to Tomoya(<a href="https://github.com/tomoya723" class="user-mention">@tomoya723</a>) and Rundog(<a href="https://github.com/rundog" class="user-mention">@rundog</a>).<br>
+Tomoya gave many advices for designing of this board.<br>
+Rundog assisted us with this board's production.</p>
+
+<h2>PICrouter_HIDBL</h2>
+
+<p>PICrouter_HIDBL.X is the USB HID Bootloader project files.<br>
+Look at <a href="http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&amp;nodeId=1824&amp;appnote=en554836" title="AN1388">AN1388</a> for details.</p>
+
+<h2>PICrouter_OaUD (current ver. is 0.2)</h2>
+
+<p>PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).<br>
+PICrouter_OaUD.X is this project folder.</p>
+
+<h2>PICrouter_OaUH (current ver. is 0.90)</h2>
+
+<p>PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).<br>
+PICrouter_OaUH.X is this project folder.</p>
+
+<h2>Supported Open Sound Control Messages</h2>
+
+<p>See <a href="https://github.com/tkrworks/PICrouter/wiki/Supported-OSC-Messages">osc pages</a>.</p>
+        </section>
+
+        <footer>
+          Picrouter is maintained by <a href="https://github.com/tkrworks">tkrworks</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
