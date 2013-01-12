@@ -28,7 +28,7 @@ And this is **Free Hardware** and **Free Software**.
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
 ### Pin Assign
-<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_0c59ca6045_z.jpg" width="469" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
+<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_7a317dd2ee_z.jpg" width="464" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
 
 ### Development
 * Microchip MPLABX v1.60
