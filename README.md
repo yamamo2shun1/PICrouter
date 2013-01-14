@@ -1,7 +1,7 @@
 <div align="center">
 <table>
 <tr>
-<td colspan="4" align="center">index</td>
+<th colspan="4" align="center">INDEX</th>
 </tr>
 <tr align="center">
 <td><a href="#licenses">Licenses</a></td><td><a href="#specifications">Specifications</a></td><td><a href="#pin-assign">Pin Assign</a></td><td><a href="#development">Development</a></td>
