@@ -1,7 +1,13 @@
 PICrouter
 ======
 PICrouter is a versatile and prototyping board specialized for [Open Sound Control].  
-The main function is to communicate between OSC and USB-MIDI and USB-HID.
+The main function is to communicate between OSC and USB-MIDI/HID.
+
+PICrouter will be an useful with the following purpose.
+
+* Develop an OSC/MIDI/HID controller for music or visual.
+* Study a PIC32 microcontroller.
+* Study a communication with usb and ethernet.
 
 [Open Sound Control]:http://opensoundcontrol.org
 
@@ -43,8 +49,12 @@ Pin Assign
 
 Development
 ------
-* Microchip MPLABX v1.60
-* Microchip XC32 Compiler v1.20
+* Microchip [MPLABX] v1.60
+* Microchip [MPLAB XC32 Compiler] v1.20  
+  *To develop application, you can use free version.*
+
+[MPLABX]: http://www.microchip.com/pagehandler/en-us/family/mplabx/
+[MPLAB XC32 Compiler]: http://www.microchip.com/pagehandler/en_us/devtools/mplabxc/
 
 Bootloader Application
 ------
