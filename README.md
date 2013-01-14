@@ -1,15 +1,16 @@
-| **[Licenses]** | **[Specifications]** | **[Pin Assign]** | **[Development]** |
-|----------------|:--------------------:|------------------|-------------------|
-| **[Bootloader App]** | **[Sch & Brd]** | **[App Projects]** | **[Supported OSC Msgs]** |
-
-[Licenses]: #licenses
-[Specifications]: #specifications
-[Pin Assign]: #pin-assign
-[Development]: #development
-[Bootloader App]: #bootloader-application
-[Sch & Brd]: #schematic-and-board-current-ver-is-100
-[App Projects]: #application-projects
-[Supported OSC Msgs]: #supported-osc-messages
+<div align="center">
+<table>
+<tr>
+<td colspan="4" align="center">index</td>
+</tr>
+<tr align="center">
+<td><a href="#licenses">Licenses</a></td><td><a href="#specifications">Specifications</a></td><td><a href="#pin-assign">Pin Assign</a></td><td><a href="#development">Development</a></td>
+</tr>
+<tr align="center">
+<td><a href="#bootloader-application">Bootloader App.</a></td><td><a href="#schematic-and-board-current-ver-is-100">Sch & Brd Data</a></td><td><a href="#application-projects">App. Projects</a></td><td><a href="#supported-osc-messages">Supported OSC Msgs</a></td>
+</tr>
+</table>
+</div>
 
 PICrouter
 ======
