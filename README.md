@@ -1,3 +1,16 @@
+| **[Licenses]** | **[Specifications]** | **[Pin Assign]** | **[Development]** |
+|----------------|:--------------------:|------------------|-------------------|
+| **[Bootloader App]** | **[Sch & Brd]** | **[App Projects]** | **[Supported OSC Msgs]** |
+
+[Licenses]: #licenses
+[Specifications]: #specifications
+[Pin Assign]: #pin-assign
+[Development]: #development
+[Bootloader App]: #bootloader-application
+[Sch & Brd]: #schematic-and-board-current-ver-is-100
+[App Projects]: #application-projects
+[Supported OSC Msgs]: #supported-osc-messages
+
 PICrouter
 ======
 PICrouter is a versatile and prototyping board specialized for [Open Sound Control].  
