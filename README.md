@@ -1,19 +1,48 @@
+<div align="center">
+<table>
+<tr>
+<th colspan="4" align="center">INDEX</th>
+</tr>
+<tr align="center">
+<td><a href="#licenses">Licenses</a></td><td><a href="#specifications">Specifications</a></td><td><a href="#pin-assign">Pin Assign</a></td><td><a href="#development">Development</a></td>
+</tr>
+<tr align="center">
+<td><a href="#bootloader-application">Bootloader App.</a></td><td><a href="#schematic-and-board-current-ver-is-100">Sch & Brd Data</a></td><td><a href="#application-projects">App. Projects</a></td><td><a href="#supported-osc-messages">Supported OSC Msgs</a></td>
+</tr>
+</table>
+</div>
+
 PICrouter
-================================
-### Descriptions
-PICrouter is a versatile board to develop musical instruments and controllers.  
-And this is **Free Hardware** and **Free Software**.
+======
+PICrouter is a versatile and prototyping board specialized for [Open Sound Control].  
+The main function is to communicate between OSC and USB-MIDI/HID.
 
-![PICrouter](http://farm9.staticflickr.com/8067/8231868524_8f18a08331.jpg "PICrouter")  
-![PICrouter-brd](http://farm9.staticflickr.com/8223/8305992542_a3f8db07b4.jpg "PICrouter-brd")
+PICrouter will be an useful with the following purpose.
 
-### Licenses
+* Develop an OSC/MIDI/HID controller for music or visual.
+* Study a PIC32 microcontroller.
+* Study a communication with usb and ethernet.
+
+[Open Sound Control]:http://opensoundcontrol.org
+
+<div align="center">
+<a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a>  
+<a href="http://www.flickr.com/photos/yamamo2/8369762163/" title="PICrouter v1.0 ETH/USB VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8219/8369762163_daa2bac802_z.jpg" width="640" height="346" alt="PICrouter v1.0 ETH/USB VIEW"></a>  
+</div>
+<div align="right">
+Photographed by Kiyasu/TechnikLAB*
+</div>
+
+Licenses
+------
+PICrouter is **Free Hardware** and **Free Software**.
 * Hardware : [Creative Commons Attribute-ShareAlike 3.0 Unported][cc-by-sa]  
 * Software : GNU General Public License version 3  
 
 [cc-by-sa]:http://creativecommons.org/licenses/by-sa/3.0/ "Creative Commons Attribute-ShareAlike 3.0 Unported"
 
-### Specifications
+Specifications
+------
 0. Supported Zeroconf(Bonjour on Mac OS X), DHCP and NBNS
 1. Supported Open Sound Control
 2. Supported USB device(MIDI and HID composite) and host(only MIDI) function.
@@ -26,15 +55,27 @@ And this is **Free Hardware** and **Free Software**.
 
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
-### Development
-* Microchip MPLABX v1.51
-* Microchip XC32 Compiler v1.20
+Pin Assign
+------
+<div align="center">
+<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_7a317dd2ee_z.jpg" width="464" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
+</div>
 
-### Bootloader Application
+Development
+------
+* Microchip [MPLABX] v1.60
+* Microchip [MPLAB XC32 Compiler] v1.20  
+  *To develop application, you can use free version.*
+
+[MPLABX]: http://www.microchip.com/pagehandler/en-us/family/mplabx/
+[MPLAB XC32 Compiler]: http://www.microchip.com/pagehandler/en_us/devtools/mplabxc/
+
+Bootloader Application
+------
 * PIC32UBL.exe (Win / Download is [here][an1388])
 * PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")
 
-PICrouter Schematic and board (current ver. is 1.00)
+Schematic and Board (current ver. is 1.00)
 --------------------------------
 PICrouter.sch and .brd are drawn by Eagel v6.  
 Additionaly, we use [Sparkfun eagle library][sparkfun].  
@@ -47,73 +88,24 @@ Rundog assisted us with this board's production.
 
 [sparkfun]: http://www.opencircuits.com/SFE_Footprint_Library_Eagle
 
-PICrouter_HIDBL
---------------------------------
-PICrouter_HIDBL.X is the USB HID Bootloader project files.  
-Look at [AN1388][] for details.
+Application Projects
+------
+#### PICrouter_HIDBL  
+  PICrouter_HIDBL.X is the USB HID Bootloader project files.  
+  Look at [AN1388][] for details.  
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-PICrouter_OaUD (current ver. is 0.2)
+#### PICrouter_OaUD (current ver. is 0.2)  
+  PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
+  PICrouter_OaUD.X is this project folder.  
+  
+#### PICrouter_OaUH (current ver. is 0.90)  
+  PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
+  PICrouter_OaUH.X is this project folder.  
+
+Supported OSC Messages
 --------------------------------
-PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
-PICrouter_OaUD.X is this project folder.
+See [osc pages][].
 
-PICrouter_OaUH (current ver. is 0.90)
---------------------------------
-PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
-PICrouter_OaUH.X is this project folder.
-
-### Supported MIDI messages
-1. Note On/Off (8nH/9nH)  
---> ***/midi/note [channel] [note_number] [velocity]***  
---> ***/midi/note/set [channel] [note_number] [velocity]***  
-2. Polyphonic Key Pressure (AnH)  
---> ***/midi/kp [channel] [note_number] [pressure]***  
---> ***/midi/kp/set [channel] [note_number] [pressure]***  
-3. Control Change (BnH)  
---> ***/midi/cc [channel] [control_number] [control_value]***  
---> ***/midi/cc/set [channel] [control_number] [control_value]***  
-4. Program Change (CnH)  
---> ***/midi/pc [program_number]***  
---> ***/midi/pc/set [program_number]***  
-5. Channel Pressure (DnH)  
---> ***/midi/cp [channel] [pressure]***  
---> ***/midi/cp/set [channel] [pressure]***  
-6. Pitch Bend (EnH)  
---> ***/midi/pb [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
---> ***/midi/pb/set [channel] [pitch_bend_MSB] [pitch_bend_LSB]***  
-
-### Basic OSC Messages
-1. ***/onboard/led [id] [state]***
-2. ***/volume/led [value]***
-3. ***/lattice/led [x] [y] [state]***
-4. ***/rotary/led/step [id] [length]***
-5. ***/rotary/led/bits [data]***
-6. ***/rotary/led/intensity [id] [intensity]***
-7. ***/rotary/led/allint [intensity]***
-8. ***/rotary/enc [direction] [step] [velocity] [acceralation]***
-9. ***/rotary/switch [state]***
-
-### Standard OSC Messages of I/O
-1. ***/std/pwm/state/set [state(string)]***
-2. ***/std/pwm/state/get [no arguments]***
-3. ***/std/pwm/freq/set [frequencey(int)]***
-4. ***/std/pwm/freq/get [no arguments]***
-5. ***/std/pwm/duty/set [duty(int)]***
-6. ***/std/pwm/duty/get [no arguments]***
-
-### System OSC Messages of Network Setting
-0. ***/sys/soft/reset [no arguments]***
-1. ***/sys/remote/ip/set [xxx.xxx.xxx.xxx(string)]***
-2. ***/sys/remote/ip/get [no arguments]***
-3. ***/sys/remote/port/set [port_number(int)]***
-4. ***/sys/remote/port/get [no arguments]***
-5. ***/sys/host/name/set [host_name(string)]***
-6. ***/sys/host/name/get [no arguments]***
-7. ***/sys/host/ip/get [no arguments]***
-8. ***/sys/host/mac/get [no arguments]***
-9. ***/sys/host/port/set [port_number(int)]***
-10. ***/sys/host/port/get [no arguments]***
-11. ***/sys/prefix/set [prefix(string)]***
-12. ***/sys/prefix/get [no arguments]***
+[osc pages]: https://github.com/tkrworks/PICrouter/wiki/Supported-OSC-Messages
