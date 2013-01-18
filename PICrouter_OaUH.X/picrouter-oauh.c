@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.93 2013/01/18
+ * picrouter-oauh.c,v.0.94 2013/01/18
  */
 
 #include "picrouter-oauh.h"
@@ -357,6 +357,9 @@ void receiveOSCTask(void)
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 0);
+            if(index > 4)
+                return;
+
             if(strcmp(getStringArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 1), "on") == 0)
             {
                 LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
@@ -384,7 +387,8 @@ void receiveOSCTask(void)
             }
             else if(strcmp(getStringArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 1), "off") == 0)
             {
-                if(onTimer23)
+                onSquare[index] = FALSE;
+                if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                 {
                     CloseTimer23();
                     onTimer23 = FALSE;
@@ -404,7 +408,6 @@ void receiveOSCTask(void)
                         CloseOC5();
                         break;
                 }
-                onSquare[index] = FALSE;
             }
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
