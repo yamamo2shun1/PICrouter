@@ -21,6 +21,31 @@
 
 #include "analog.h"
 
+void initAnalogVariables(void)
+{
+    BYTE i, j;
+
+    for(i = 0; i < USE_ADC_NUM; i++)
+    {
+        analogEnable[i] = FALSE;
+        analogSendFlag[i] = FALSE;
+        count[i] = 0;
+        currentAnalog[i] = 0;
+        prevAnalog[i] = 0;
+
+        for(j = 0; j < FLTR_ADC_CNT; j++)
+            analog[i][j] = 0;
+    }
+
+    // A/D Manual Scan 
+    AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
+    AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+    AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+    AD1CON1 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+}
+
 void resetAnalogFlag(BYTE port)
 {
 	analogSendFlag[port] = FALSE;
@@ -38,7 +63,7 @@ BYTE getAnalogByte(BYTE port, BYTE type)
 
   switch(type)
   {
-    case TYPE_MIDI_FADER:
+    case MIDI_FADER:
     	fader = (float)(currentAnalog[port] >> 3) * 1.008;
        	if(fader < 2.0)
           fader = 0.0;
@@ -46,7 +71,7 @@ BYTE getAnalogByte(BYTE port, BYTE type)
           fader = 127.0;
        	vol = (BYTE)fader;
     	break;
-    case TYPE_MIDI_VOLUME:
+    case MIDI_VOLUME:
 #if 0
       vol = (BYTE)(127 - (currentAnalog[port] >> 2));
       if(vol > 60 && vol < 66)
@@ -57,7 +82,7 @@ BYTE getAnalogByte(BYTE port, BYTE type)
         vol = 127;
 #endif
     	break;
-    case TYPE_MIDI_ORIGINAL:
+    case MIDI_ORIGINAL:
       vol = (BYTE)(currentAnalog[port] >> 2);
       break;
     default:
@@ -73,7 +98,7 @@ WORD getAnalogWord(BYTE port, BYTE type)
 
   switch(type)
   {
-    case TYPE_LONG_FADER:
+    case LONG_FADER:
       fader = (float)(currentAnalog[port]) * 1.008;
       if(fader < 8.0)
         fader = 0.0;
@@ -81,12 +106,12 @@ WORD getAnalogWord(BYTE port, BYTE type)
         fader = 1024.0;
       vol = (WORD)fader;
       break;
-    case TYPE_LONG_VOLUME:
+    case LONG_VOLUME:
       vol = (WORD)(1024 - currentAnalog[port]);
       if(vol > 506 && vol < 518)
         vol = 512;
       break;
-    case TYPE_LONG_ORIGINAL:
+    case LONG_ORIGINAL:
       vol = (WORD)currentAnalog[port];
       break;
     default:
@@ -116,4 +141,19 @@ void analogInHandle(BYTE port, LONG value)
     }
     count[port] = 0;
   }
+}
+
+void sendAdc()
+{
+    BYTE i;
+
+    for(i = 0; i < USE_ADC_NUM; i++)
+    {
+        if(getAnalogFlag(i))
+        {
+            sendOSCMessage(prefix, msgGetAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
+            resetAnalogFlag(i);
+            delayUs(20);
+        }
+    }
 }
