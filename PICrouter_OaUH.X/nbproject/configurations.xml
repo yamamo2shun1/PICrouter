@@ -51,6 +51,7 @@
       <itemPath>osc.h</itemPath>
       <itemPath>picrouter-oauh.h</itemPath>
       <itemPath>encoder.h</itemPath>
+      <itemPath>iosetting.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -88,6 +89,7 @@
       <itemPath>osc.c</itemPath>
       <itemPath>picrouter-oauh.c</itemPath>
       <itemPath>encoder.c</itemPath>
+      <itemPath>iosetting.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -103,7 +105,7 @@
         <targetDevice>PIC32MX675F512H</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>1.20</languageToolchainVersion>
         <platform>4</platform>
@@ -137,7 +139,6 @@
         <property key="extra-include-directories" value="./;./Include;./USB"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
-        <property key="keep-inline" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value=""/>
         <property key="place-data-into-section" value="false"/>
@@ -169,6 +170,7 @@
         <appendMe value="-gdwarf-2"/>
       </C32-AS>
       <C32-LD>
+        <property key="additional-options-use-response-files" value="false"/>
         <property key="enable-check-sections" value="false"/>
         <property key="exclude-floating-point-library" value="false"/>
         <property key="exclude-standard-libraries" value="false"/>
@@ -203,7 +205,6 @@
         <property key="extra-include-directories" value=""/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
-        <property key="keep-inline" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value=""/>
         <property key="place-data-into-section" value="false"/>
@@ -218,8 +219,8 @@
       <C32Global>
         <property key="legacy-libc" value="false"/>
       </C32Global>
-      <PICkit3PlatformTool>
-      </PICkit3PlatformTool>
+      <ICD3PlatformTool>
+      </ICD3PlatformTool>
     </conf>
   </confs>
 </configurationDescriptor>
