@@ -88,122 +88,122 @@ ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 ${OBJECTDIR}/TCPIP\ Stack/ARP.o: TCPIP\ Stack/ARP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ARP.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ARP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ARP.o.d" -o "${OBJECTDIR}/TCPIP Stack/ARP.o" "TCPIP Stack/ARP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ARP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ARP.o.d" -o "${OBJECTDIR}/TCPIP Stack/ARP.o" "TCPIP Stack/ARP.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/DHCP.o: TCPIP\ Stack/DHCP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/DHCP.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/DHCP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/DHCP.o.d" -o "${OBJECTDIR}/TCPIP Stack/DHCP.o" "TCPIP Stack/DHCP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/DHCP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/DHCP.o.d" -o "${OBJECTDIR}/TCPIP Stack/DHCP.o" "TCPIP Stack/DHCP.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhy.o: TCPIP\ Stack/ETHPIC32ExtPhy.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhy.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o" "TCPIP Stack/ETHPIC32ExtPhy.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o" "TCPIP Stack/ETHPIC32ExtPhy.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhyDP83848.o: TCPIP\ Stack/ETHPIC32ExtPhyDP83848.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhyDP83848.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o" "TCPIP Stack/ETHPIC32ExtPhyDP83848.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o" "TCPIP Stack/ETHPIC32ExtPhyDP83848.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32IntMac.o: TCPIP\ Stack/ETHPIC32IntMac.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32IntMac.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o" "TCPIP Stack/ETHPIC32IntMac.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" -o "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o" "TCPIP Stack/ETHPIC32IntMac.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/Helpers.o: TCPIP\ Stack/Helpers.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/Helpers.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" -o "${OBJECTDIR}/TCPIP Stack/Helpers.o" "TCPIP Stack/Helpers.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" -o "${OBJECTDIR}/TCPIP Stack/Helpers.o" "TCPIP Stack/Helpers.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ICMP.o: TCPIP\ Stack/ICMP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ICMP.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" -o "${OBJECTDIR}/TCPIP Stack/ICMP.o" "TCPIP Stack/ICMP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" -o "${OBJECTDIR}/TCPIP Stack/ICMP.o" "TCPIP Stack/ICMP.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/IP.o: TCPIP\ Stack/IP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/IP.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/IP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/IP.o.d" -o "${OBJECTDIR}/TCPIP Stack/IP.o" "TCPIP Stack/IP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/IP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/IP.o.d" -o "${OBJECTDIR}/TCPIP Stack/IP.o" "TCPIP Stack/IP.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/NBNS.o: TCPIP\ Stack/NBNS.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/NBNS.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" -o "${OBJECTDIR}/TCPIP Stack/NBNS.o" "TCPIP Stack/NBNS.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" -o "${OBJECTDIR}/TCPIP Stack/NBNS.o" "TCPIP Stack/NBNS.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/StackTsk.o: TCPIP\ Stack/StackTsk.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/StackTsk.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" -o "${OBJECTDIR}/TCPIP Stack/StackTsk.o" "TCPIP Stack/StackTsk.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" -o "${OBJECTDIR}/TCPIP Stack/StackTsk.o" "TCPIP Stack/StackTsk.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/Tick.o: TCPIP\ Stack/Tick.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/Tick.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/Tick.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/Tick.o.d" -o "${OBJECTDIR}/TCPIP Stack/Tick.o" "TCPIP Stack/Tick.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/Tick.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/Tick.o.d" -o "${OBJECTDIR}/TCPIP Stack/Tick.o" "TCPIP Stack/Tick.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/UDP.o: TCPIP\ Stack/UDP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/UDP.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/UDP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/UDP.o.d" -o "${OBJECTDIR}/TCPIP Stack/UDP.o" "TCPIP Stack/UDP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/UDP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/UDP.o.d" -o "${OBJECTDIR}/TCPIP Stack/UDP.o" "TCPIP Stack/UDP.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ZeroconfHelper.o: TCPIP\ Stack/ZeroconfHelper.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ZeroconfHelper.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o" "TCPIP Stack/ZeroconfHelper.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o" "TCPIP Stack/ZeroconfHelper.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ZeroconfLinkLocal.o: TCPIP\ Stack/ZeroconfLinkLocal.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ZeroconfLinkLocal.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o" "TCPIP Stack/ZeroconfLinkLocal.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o" "TCPIP Stack/ZeroconfLinkLocal.c"   
 	
 ${OBJECTDIR}/TCPIP\ Stack/ZeroconfMulticastDNS.o: TCPIP\ Stack/ZeroconfMulticastDNS.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/TCPIP\ Stack 
 	@${RM} ${OBJECTDIR}/TCPIP\ Stack/ZeroconfMulticastDNS.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o" "TCPIP Stack/ZeroconfMulticastDNS.c"   
+	@${FIXDEPS} "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" -o "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o" "TCPIP Stack/ZeroconfMulticastDNS.c"   
 	
 ${OBJECTDIR}/USB/usb_host.o: USB/usb_host.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/USB 
 	@${RM} ${OBJECTDIR}/USB/usb_host.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/USB/usb_host.o.d" -o ${OBJECTDIR}/USB/usb_host.o USB/usb_host.c   
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/USB/usb_host.o.d" -o ${OBJECTDIR}/USB/usb_host.o USB/usb_host.c   
 	
 ${OBJECTDIR}/USB/usb_host_midi.o: USB/usb_host_midi.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/USB 
 	@${RM} ${OBJECTDIR}/USB/usb_host_midi.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/USB/usb_host_midi.o.d" -o ${OBJECTDIR}/USB/usb_host_midi.o USB/usb_host_midi.c   
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/USB/usb_host_midi.o.d" -o ${OBJECTDIR}/USB/usb_host_midi.o USB/usb_host_midi.c   
 	
 ${OBJECTDIR}/analog.o: analog.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/analog.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/analog.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/analog.o.d" -o ${OBJECTDIR}/analog.o analog.c   
+	@${FIXDEPS} "${OBJECTDIR}/analog.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/analog.o.d" -o ${OBJECTDIR}/analog.o analog.c   
 	
 ${OBJECTDIR}/button.o: button.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/button.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/button.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/button.o.d" -o ${OBJECTDIR}/button.o button.c   
+	@${FIXDEPS} "${OBJECTDIR}/button.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/button.o.d" -o ${OBJECTDIR}/button.o button.c   
 	
 ${OBJECTDIR}/encoder.o: encoder.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/encoder.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/encoder.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/encoder.o.d" -o ${OBJECTDIR}/encoder.o encoder.c   
+	@${FIXDEPS} "${OBJECTDIR}/encoder.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/encoder.o.d" -o ${OBJECTDIR}/encoder.o encoder.c   
 	
 ${OBJECTDIR}/myDelay.o: myDelay.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/myDelay.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/myDelay.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/myDelay.o.d" -o ${OBJECTDIR}/myDelay.o myDelay.c   
+	@${FIXDEPS} "${OBJECTDIR}/myDelay.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/myDelay.o.d" -o ${OBJECTDIR}/myDelay.o myDelay.c   
 	
 ${OBJECTDIR}/osc.o: osc.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/osc.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/osc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/osc.o.d" -o ${OBJECTDIR}/osc.o osc.c   
+	@${FIXDEPS} "${OBJECTDIR}/osc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/osc.o.d" -o ${OBJECTDIR}/osc.o osc.c   
 	
 ${OBJECTDIR}/usb_config.o: usb_config.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/usb_config.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/usb_config.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/usb_config.o.d" -o ${OBJECTDIR}/usb_config.o usb_config.c   
+	@${FIXDEPS} "${OBJECTDIR}/usb_config.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/usb_config.o.d" -o ${OBJECTDIR}/usb_config.o usb_config.c   
 	
 ${OBJECTDIR}/prb-mini.o: prb-mini.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/prb-mini.o.d 
-	@${FIXDEPS} "${OBJECTDIR}/prb-mini.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/prb-mini.o.d" -o ${OBJECTDIR}/prb-mini.o prb-mini.c   
+	@${FIXDEPS} "${OBJECTDIR}/prb-mini.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -I"./Inclube/USB" -I"./Include/TCPIP Stack" -MMD -MF "${OBJECTDIR}/prb-mini.o.d" -o ${OBJECTDIR}/prb-mini.o prb-mini.c   
 	
 else
 ${OBJECTDIR}/TCPIP\ Stack/ARP.o: TCPIP\ Stack/ARP.c  nbproject/Makefile-${CND_CONF}.mk
@@ -339,11 +339,12 @@ endif
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk    
 	@${MKDIR} dist/${CND_CONF}/${IMAGE_TYPE} 
-	${MP_CC} $(MP_EXTRA_LD_PRE)  -mdebugger -D__MPLAB_DEBUGGER_ICD3=1 -mprocessor=$(MP_PROCESSOR_OPTION)  -o dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}         -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__ICD2RAM=1,--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,--defsym=__MPLAB_DEBUGGER_ICD3=1,--defsym=_min_heap_size=16000,--defsym=_min_stack_size=2048,-L"./",-L"./Include",-L"./USB",--report-mem "-mperipheral-libs"
+	${MP_CC} $(MP_EXTRA_LD_PRE)  -mdebugger -D__MPLAB_DEBUGGER_ICD3=1 -mprocessor=$(MP_PROCESSOR_OPTION)  -o dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__ICD2RAM=1,--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,--defsym=__MPLAB_DEBUGGER_ICD3=1,--defsym=_min_heap_size=16000,--defsym=_min_stack_size=2048,-L"./",-L"./Include",-L"./USB",--report-mem "-mperipheral-libs"
+	
 else
 dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk   
 	@${MKDIR} dist/${CND_CONF}/${IMAGE_TYPE} 
-	${MP_CC} $(MP_EXTRA_LD_PRE)  -mprocessor=$(MP_PROCESSOR_OPTION)  -o dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}         -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=_min_heap_size=16000,--defsym=_min_stack_size=2048,-L"./",-L"./Include",-L"./USB",--report-mem "-mperipheral-libs"
+	${MP_CC} $(MP_EXTRA_LD_PRE)  -mprocessor=$(MP_PROCESSOR_OPTION)  -o dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=_min_heap_size=16000,--defsym=_min_stack_size=2048,-L"./",-L"./Include",-L"./USB",--report-mem "-mperipheral-libs"
 	${MP_CC_DIR}/xc32-bin2hex dist/${CND_CONF}/${IMAGE_TYPE}/PrB_Mini.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} 
 endif
 
