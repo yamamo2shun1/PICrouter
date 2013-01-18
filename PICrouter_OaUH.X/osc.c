@@ -16,49 +16,100 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.87 2012/11/30
+ * osc.c,v.0.92 2013/01/18
  */
 
 #include "osc.h"
 
-const char msgOnboardLed[]         = "/onboard/led";
-const char msgVolumeLed[]          = "/volume/led";
-const char msgLatticeLed[]         = "/lattice/led";
-const char msgLatticeLedColumn[]   = "/lattice/led_col";
-const char msgLatticeLedRow[]      = "/lattice/led_row";
+// Network
+APP_CONFIG AppConfig;
+UDP_SOCKET RxSocket;
+UDP_SOCKET TxSocket;
+BOOL initReceiveFlag = FALSE;
+BOOL initSendFlag = FALSE;
+char* hostName;
+char* prefix;
+
+// Remote IP Address Initialization
+BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
+
+// Port Number Initialization
+WORD remotePort = 8000;
+WORD localPort  = 8080;
+
+// MAC address Initialization
+static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
+                                           MY_DEFAULT_MAC_BYTE2,
+                                           MY_DEFAULT_MAC_BYTE3,
+                                           MY_DEFAULT_MAC_BYTE4,
+                                           MY_DEFAULT_MAC_BYTE5,
+                                           MY_DEFAULT_MAC_BYTE6};
+
+// for LED_PAD_16 or LED_PAD_64
+const char msgLatticePad[]       = "/lattice/pad";
+const char msgLatticeLed[]       = "/lattice/led";
+const char msgLatticeLedColumn[] = "/lattice/led/col";
+const char msgLatticeLedRow[]    = "/lattice/led/row";
+const char msgLatticeLedAll[]    = "/lattice/led/all";
+const char msgLatticeLedClear[]  = "/lattice/led/clear";
+
+// for LED_ENC_32 or LED_ENC_ABS_32
 const char msgRotaryLedStep[]      = "/rotary/led/step";
 const char msgRotaryLedBits[]      = "/rotary/led/bits";
 const char msgRotaryLedIntensity[] = "/rotary/led/intensity";
 const char msgRotaryLedAllInt[]    = "/rotary/led/allint";
 const char msgRotaryEnc[]          = "/rotary/enc";
 const char msgSetRotaryEncStep[]   = "/rotary/enc/step/set";
+// for ONLY LED_ENC_32
 const char msgRotaryEncSwitch[]    = "/rotary/enc/switch";
 
 //Standard OSC Messages
-const char stdPrefix[]      = "/std";
+const char stdPrefix[] = "/std";
+// for Onboard
+const char msgOnboardLed[] = "/onboard/led";
+const char msgOnboardSw1[] = "/onboard/sw1";
+// for A/D
+const char msgGetAdc[]       = "/adc/get";
+const char msgSetAdcEnable[] = "/adc/enable/set";
+const char msgGetAdcEnable[] = "/adc/enable/get";
+const char msgConfigAdc[]    = "/adc/config";
+const char msgSetAdcDO[]     = "/adc/dout/set";
+const char msgGetAdcDI[]     = "/adc/din/get";
+// for PWM
 const char msgSetPwmState[] = "/pwm/state/set";
 const char msgGetPwmState[] = "/pwm/state/get";
 const char msgSetPwmFreq[]  = "/pwm/freq/set";
 const char msgGetPwmFreq[]  = "/pwm/freq/get";
 const char msgSetPwmDuty[]  = "/pwm/duty/set";
 const char msgGetPwmDuty[]  = "/pwm/duty/get";
+const char msgConfigPwm[]   = "/pwm/config";
+const char msgSetPwmDO[]    = "/pwm/dout/set";
+const char msgGetPwmDI[]    = "/pwm/din/get";
+// for DIO
+const char msgConfigDIO[] = "/dio/config";
+const char msgSetDO[]     = "/dio/dout/set";
+const char msgGetDI[]     = "/dio/din/get";
+// for SPI
+const char msgConfigSpi[] = "/spi/config";
+const char msgSetSpiDO[]  = "/spi/dout/set";
+const char msgGetSpiDI[]  = "/spi/din/get";
 
 //OSC Messages converted from MIDI Message
 const char midiPrefix[] = "/midi";
-const char msgNote[]    = "/note";
-const char msgPp[]      = "/pp";
-const char msgCc[]      = "/cc";
-const char msgPc[]      = "/pc";
-const char msgKp[]      = "/kp";
-const char msgCp[]      = "/cp";
-const char msgPb[]      = "/pb";
-const char msgSetNote[]    = "/note/set";
-const char msgSetPp[]      = "/pp/set";
-const char msgSetCc[]      = "/cc/set";
-const char msgSetPc[]      = "/pc/set";
-const char msgSetKp[]      = "/kp/set";
-const char msgSetCp[]      = "/cp/set";
-const char msgSetPb[]      = "/pb/set";
+const char msgSetNote[] = "/note/set";
+const char msgGetNote[] = "/note/get";
+const char msgSetPp[]   = "/pp/set";
+const char msgGetPp[]   = "/pp/get";
+const char msgSetCc[]   = "/cc/set";
+const char msgGetCc[]   = "/cc/get";
+const char msgSetPc[]   = "/pc/set";
+const char msgGetPc[]   = "/pc/get";
+const char msgSetKp[]   = "/kp/set";
+const char msgGetKp[]   = "/kp/get";
+const char msgSetCp[]   = "/cp/set";
+const char msgGetCp[]   = "/cp/get";
+const char msgSetPb[]   = "/pb/set";
+const char msgGetPb[]   = "/pb/get";
 
 //System OSC Messages for Network Settings
 const char sysPrefix[]        = "/sys";
@@ -90,37 +141,79 @@ INT16 rcvArgumentsLength;
 char rcvArgsTypeArray[128] = {0};
 UINT16 rcvArgumentsStartIndex[128] = {0};
 
-BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIP, WORD remotePort)
+// Network Setting Initialization(IP Address, MAC Address and so on)
+//static void InitAppConfig(void)
+void InitAppConfig(void)
+{
+    AppConfig.Flags.bIsDHCPEnabled = TRUE;
+    AppConfig.Flags.bInConfigMode = TRUE;
+    memcpypgm2ram((void*)&AppConfig.MyMACAddr, (ROM void*)SerializedMACAddress, sizeof(AppConfig.MyMACAddr));
+    AppConfig.MyIPAddr.Val = MY_DEFAULT_IP_ADDR_BYTE1 | MY_DEFAULT_IP_ADDR_BYTE2<<8ul | MY_DEFAULT_IP_ADDR_BYTE3<<16ul | MY_DEFAULT_IP_ADDR_BYTE4<<24ul;
+    AppConfig.DefaultIPAddr.Val = AppConfig.MyIPAddr.Val;
+    AppConfig.MyMask.Val = MY_DEFAULT_MASK_BYTE1 | MY_DEFAULT_MASK_BYTE2<<8ul | MY_DEFAULT_MASK_BYTE3<<16ul | MY_DEFAULT_MASK_BYTE4<<24ul;
+    AppConfig.DefaultMask.Val = AppConfig.MyMask.Val;
+    AppConfig.MyGateway.Val = MY_DEFAULT_GATE_BYTE1 | MY_DEFAULT_GATE_BYTE2<<8ul | MY_DEFAULT_GATE_BYTE3<<16ul | MY_DEFAULT_GATE_BYTE4<<24ul;
+    AppConfig.PrimaryDNSServer.Val = MY_DEFAULT_PRIMARY_DNS_BYTE1 | MY_DEFAULT_PRIMARY_DNS_BYTE2<<8ul | MY_DEFAULT_PRIMARY_DNS_BYTE3<<16ul  | MY_DEFAULT_PRIMARY_DNS_BYTE4<<24ul;
+    AppConfig.SecondaryDNSServer.Val = MY_DEFAULT_SECONDARY_DNS_BYTE1 | MY_DEFAULT_SECONDARY_DNS_BYTE2<<8ul | MY_DEFAULT_SECONDARY_DNS_BYTE3<<16ul  | MY_DEFAULT_SECONDARY_DNS_BYTE4<<24ul;
+}
+
+void setOSCPrefix(char* prefix_string)
+{
+	prefix = (char *)calloc(strlen("/pic"), sizeof(char));
+    memcpy(prefix, "/pic", strlen("/pic"));
+}
+void setOSCHostName(char* host_name)
+{
+	hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
+    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+}
+
+BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 {
     BOOL flag = FALSE;
-    sndSocket = UDPOpenEx((remoteIP[0] | (remoteIP[1] << 8) | (remoteIP[2] << 16) | (remoteIP[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, remotePort);
-    if(sndSocket == INVALID_UDP_SOCKET)
-	flag = FALSE;
+    TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
+    if(TxSocket == INVALID_UDP_SOCKET)
+		flag = FALSE;
     else
         flag = TRUE;
     return flag;
 }
 
-BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort)
+BOOL openOSCReceivePort(WORD port_number)
 {
-    BOOL flag = FALSE;
-    rcvSocket = UDPOpen(localPort, NULL, 0);
-    if(rcvSocket != INVALID_UDP_SOCKET)
-        flag = TRUE;
+	BOOL flag = FALSE;
+  	RxSocket = UDPOpen(port_number, NULL, 0);
+   	if(RxSocket != INVALID_UDP_SOCKET)
+       	flag = TRUE;
     return flag;
 }
 
-void closeOSCSendPort(UDP_SOCKET sndSocket)
+void closeOSCSendPort(void)
 {
-    UDPClose(sndSocket);
+    UDPClose(TxSocket);
 }
 
-void closeOSCReceivePort(UDP_SOCKET rcvSocket)
+void closeOSCReceivePort(void)
 {
-    UDPClose(rcvSocket);
+    UDPClose(RxSocket);
 }
 
-void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* command, const char* type, ...)
+BOOL isOSCGetReady(void)
+{
+	BOOL flag = FALSE;
+	flag = UDPIsGetReady(RxSocket);
+	return flag;
+}
+
+WORD getOSCArray(BYTE* array, WORD length)
+{
+	WORD bufLength = 0;
+	bufLength = UDPGetArray(array, length);
+    UDPDiscard();
+    return bufLength;
+}
+
+void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
 {
 	INT16 i, j;
 	va_list list;
@@ -135,7 +228,7 @@ void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* comman
 	testSize = strSize;
 	zeroSize = 0;
 
-	if(UDPIsPutReady(sndSocket))
+	if(UDPIsPutReady(TxSocket))
 	{
 		do
 		{
