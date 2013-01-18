@@ -209,7 +209,7 @@ WORD getOSCArray(BYTE* array, WORD length)
 {
 	WORD bufLength = 0;
 	bufLength = UDPGetArray(array, length);
-    UDPDiscard();
+    //UDPDiscard();
     return bufLength;
 }
 
