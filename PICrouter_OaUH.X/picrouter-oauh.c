@@ -16,25 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.90 2012/12/30
+ * picrouter-oauh.c,v.0.93 2013/01/18
  */
 
 #include "picrouter-oauh.h"
-
-// IPアドレスその他の初期設定
-static void InitAppConfig(void)
-{
-    AppConfig.Flags.bIsDHCPEnabled = TRUE;
-    AppConfig.Flags.bInConfigMode = TRUE;
-    memcpypgm2ram((void*)&AppConfig.MyMACAddr, (ROM void*)SerializedMACAddress, sizeof(AppConfig.MyMACAddr));
-    AppConfig.MyIPAddr.Val = MY_DEFAULT_IP_ADDR_BYTE1 | MY_DEFAULT_IP_ADDR_BYTE2<<8ul | MY_DEFAULT_IP_ADDR_BYTE3<<16ul | MY_DEFAULT_IP_ADDR_BYTE4<<24ul;
-    AppConfig.DefaultIPAddr.Val = AppConfig.MyIPAddr.Val;
-    AppConfig.MyMask.Val = MY_DEFAULT_MASK_BYTE1 | MY_DEFAULT_MASK_BYTE2<<8ul | MY_DEFAULT_MASK_BYTE3<<16ul | MY_DEFAULT_MASK_BYTE4<<24ul;
-    AppConfig.DefaultMask.Val = AppConfig.MyMask.Val;
-    AppConfig.MyGateway.Val = MY_DEFAULT_GATE_BYTE1 | MY_DEFAULT_GATE_BYTE2<<8ul | MY_DEFAULT_GATE_BYTE3<<16ul | MY_DEFAULT_GATE_BYTE4<<24ul;
-    AppConfig.PrimaryDNSServer.Val = MY_DEFAULT_PRIMARY_DNS_BYTE1 | MY_DEFAULT_PRIMARY_DNS_BYTE2<<8ul | MY_DEFAULT_PRIMARY_DNS_BYTE3<<16ul  | MY_DEFAULT_PRIMARY_DNS_BYTE4<<24ul;
-    AppConfig.SecondaryDNSServer.Val = MY_DEFAULT_SECONDARY_DNS_BYTE1 | MY_DEFAULT_SECONDARY_DNS_BYTE2<<8ul | MY_DEFAULT_SECONDARY_DNS_BYTE3<<16ul  | MY_DEFAULT_SECONDARY_DNS_BYTE4<<24ul;
-}
 
 void _general_exception_handler(unsigned cause, unsigned status)
 {
@@ -42,28 +27,55 @@ void _general_exception_handler(unsigned cause, unsigned status)
     Nop();
 }
 
+void initIOPorts(void)
+{
+    BYTE i = 0;
+    for(i = 0; i < 14; i++)
+    {
+        configAnPort(i, IO_OUT);
+        outputAnPort(i, LOW);
+    }
+    for(i = 0; i < 4; i++)
+    {
+        configPwmPort(i, IO_OUT);
+        outputPwmPort(i, LOW);
+    }
+    for(i = 0; i < 4; i++)
+    {
+        configDPort(i, IO_OUT);
+        outputDPort(i, LOW);
+    }
+    configSpiPort("sck2", IO_OUT);
+    configSpiPort("sdi2", IO_OUT);
+    configSpiPort("sdo2", IO_OUT);
+    configSpiPort("sck4", IO_OUT);
+    configSpiPort("sdi4", IO_OUT);
+    configSpiPort("sdo4", IO_OUT);
+    outputSpiPort("sck2", LOW);
+    outputSpiPort("sdi2", LOW);
+    outputSpiPort("sdo2", LOW);
+    outputSpiPort("sck4", LOW);
+    outputSpiPort("sdi4", LOW);
+    outputSpiPort("sdo4", LOW);
+}
+
 int main(int argc, char** argv) {
-	int value, i;
+    int value, i;
     static DWORD t = 0;
 
-   mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
+    // Enable optimal performance
+    SYSTEMConfigPerformance(GetSystemClock());
+    mOSCSetPBDIV(OSC_PB_DIV_1);             // Use 1:1 CPU Core:Peripheral clocks
 
-  //Port Initialization
-  #ifdef USE_PITCH
-    setupPitch();
-  #endif
-  #ifdef USE_OPT_DRUM
-    setupOptDrum();
-  #endif
-  #ifdef USE_LED_PAD_16
-    setupLedPad16();
-  #endif
-  #ifdef USE_LED_PAD_64
-    setupLedPad64();
-  #endif
-  #ifdef USE_LED_ENC
-    setupLedEnc();
-  #endif
+    // Enable the cache for the best performance
+    CheKseg0CacheOn();
+
+    delayMs(100);
+    mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
+
+    //Port Initialization
+    initIOPorts();
+    initAnalogVariables();
 
     initSW();
     initLEDs();
@@ -81,54 +93,21 @@ int main(int argc, char** argv) {
         duty[i] = 50;
     }
 
-    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
-    memcpy(prefix, "/pic", strlen("/pic"));
-    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
-    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+    setOSCPrefix("/pic");
+    setOSCHostName(DEFAULT_HOST_NAME);
 
-    // Enable multi-vectored interrupts
-    //test INTEnableSystemMultiVectoredInt();
-
-    // Enable the cache for the best performance
-    //CheKseg0CacheOn();
-
-    // Enable optimal performance
-    SYSTEMConfigPerformance(GetSystemClock());
-    mOSCSetPBDIV(OSC_PB_DIV_1);             // Use 1:1 CPU Core:Peripheral clocks
-
-     //A/D Auto Scan 
-  #ifdef USE_PITCH
-    AD1PCFG = 0x0000FFFC;// 0000 0000 0000 0000 1111 1111 1111 1100
-    AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0001 1100
-    AD1CSSL = 0x00000003;// 0000 0000 0000 0000 0000 0000 0000 0011
-  #endif
-  #ifdef USE_OPT_DRUM
-    AD1PCFG = 0x0000FC00;// 0000 0000 0000 0000 1111 1100 0000 0000
-    AD1CON2 = 0x0000043C;// 0000 0000 0000 0000 0000 0100 0010 0100
-    AD1CSSL = 0x000003FF;// 0000 0000 0000 0000 0000 0011 1111 1111
-  #endif
-  #ifdef USE_LED_PAD_64
-    AD1PCFG = 0x0000FFF0;// 0000 0000 0000 0000 1111 1111 1111 1111
-    AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0010 0100
-    AD1CSSL = 0x0000000F;// 0000 0000 0000 0000 0000 0000 0000 0000
-  #endif
-  #ifdef USE_LED_ENC
-    AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
-    AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0010 0100
-    AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-  #endif
-    AD1CON1 = 0x000010E6;// 0000 0000 0000 0000 1000 0000 0110 0110
-    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
-    AD1CON1bits.ON = 1;
-
-  #if defined(USE_LED_PAD_16)
-    //SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
+#if 0
     SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 2);
-  #endif
-  #if defined(USE_LED_PAD_64) || defined(USE_LED_ENC)
     SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
-  #endif
+#endif
+
+#if 0
+    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_1);
+
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 200);
+    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_1);
+#endif
 
     TickInit();
     InitAppConfig();
@@ -136,56 +115,23 @@ int main(int argc, char** argv) {
     ZeroconfLLInitialize();
     mDNSInitialize(hostName);
     mDNSServiceRegister((const char *)hostName, // base name of the service
-                        "_oscit._udp.local",       // type of the service
-                        8080,                      // TCP or UDP port, at which this service is available
-                        ((const BYTE *)""),        // TXT info
-                        0,                         // auto rename the service when if needed
-                        NULL,                      // no callback function
-                        NULL                       // no application context
+                        "_oscit._udp.local",    // type of the service
+                        8080,                   // TCP or UDP port, at which this service is available
+                        ((const BYTE *)""),     // TXT info
+                        0,                      // auto rename the service when if needed
+                        NULL,                   // no callback function
+                        NULL                    // no application context
                         );
     mDNSMulticastFilterRegister();
 
+    // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
 
-    #ifdef USE_LED_ENC
-        OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
-        ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_1);
-
-        OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 200);
-        ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_1);
-    #endif
-
     //USB Initialization
-    #if defined(USE_USB_BUS_SENSE_IO)
-    	tris_usb_bus_sense = 1;
-    #endif
-
-    #if defined(USE_SELF_POWER_SENSE_IO)
-    	tris_self_power = 1;
-    #endif
-
-    USBHostInit(0);
+    bUsbHostInitialized = USBHostInit(0);
 
     LED_1_Off();
     LED_2_Off();
-
-#ifdef USE_LED_PAD_16
-    sendSpiOneWord(0x0000, 8);
-#endif
-
-#ifdef USE_LED_PAD_64
-    sendSpiFourWord(0x0000, 0x0000, 0x0000, 0x0000, 8);
-#endif
-
-#ifdef USE_LED_ENC
-    for(i = 0; i < 32; i++)
-        intensity[i] = ledIntensity;
-    sendSpiTwoWord(0x0000, 0x0000, 8);
-#endif
-
-    //test
-    D_PORT0_IO(0);
-    D_PORT1_IO(0);
 
     while(1)
     {
@@ -200,322 +146,100 @@ int main(int argc, char** argv) {
         ZeroconfLLProcess();
         mDNSProcess();
 
-        UDPControlTask();
-        UDPSendTask();
-#if 0
+        receiveOSCTask();
+        sendOSCTask();
 
-        //USBHostTasks();
-        //convertMidiToOsc();
-
-        currentState = SW_State();
-        if(prevState != currentState)
+        if(bUsbHostInitialized)
         {
-            stateFlag = TRUE;
-            prevState = currentState;
+            USBHostTasks();
+            convertMidiToOsc();
         }
-#endif
-        //test
-        //LED_1_Toggle();
-        //delayMs(500);
-        //LED_1_Off();
-        //delayMs(500);
-#if 1
-        D_PORT1_OUT(1);
-        //delayUs(1);
-
-        for(i = 0; i < 8; i++)
-        {
-            D_PORT0_OUT(1);
-            D_PORT1_OUT(0);
-            //delayMs(1);
-            D_PORT0_OUT(0);
-            //delayMs(1);
-            //delayUs(2);
-        }
-        delayUs(5);
-#endif
-#if 0
-#ifdef USE_LED_ENC
-        if(ledOn)
-        {
-            WORD msb, lsb;
-            msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
-            lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
-            sendSpiTwoWord(msb, lsb);
-            ledIntensityIndex++;
-            if(ledIntensityIndex == 100)
-                ledIntensityIndex = 0;
-        }
-#endif
-#endif
+        else
+            bUsbHostInitialized = USBHostInit(0);
     }
     return (EXIT_SUCCESS);
 }
 
-void sendSpiOneWord(WORD msb, DWORD usec)
-{
 #if 1
-    LD16_LOAD(0);
-    putcSPI4(msb);
-    //putcSPI2(msb);
+void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(msb);
+            break;
+    }
     delayUs(usec);
-    LD16_LOAD(1);
-#else
-    LD32_LOAD(0);
+    // Set LOAD_PIN to high
+    //
+}
+
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb);
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(lsb);
+            putcSPI4(msb);
+            break;
+    }
     delayUs(usec);
-    putcSPI2(msb);
+    // Set LOAD_PIN to low
+    //
+}
+
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb1);
+            putcSPI2(msb1);
+            putcSPI2(lsb0);
+            putcSPI2(msb0);
+            break;
+        case SPI_4:
+            putcSPI4(lsb1);
+            putcSPI4(msb1);
+            putcSPI4(lsb0);
+            putcSPI4(msb0);
+            break;
+    }
     delayUs(usec);
-    LD32_LOAD(1);
-#endif
-}
-#if defined(USE_LED_PAD_16) || defined(USE_LED_ENC)
-void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec)
-{
-    LD32_LOAD(0);
-    putcSPI2(lsb);
-    putcSPI2(msb);
-    delayUs(usec);
-    LD32_LOAD(1);
-}
-#endif
-#if defined(USE_LED_PAD_64)
-void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
-{
-    LD64_LOAD(0);
-    putcSPI2(lsb1);
-    putcSPI2(msb1);
-    putcSPI2(lsb0);
-    putcSPI2(msb0);
-    delayUs(usec);
-    LD64_LOAD(1);
-}
-#endif
-#ifdef USE_PITCH
-void setupPitch(void)
-{
-    AD_PORT0_IO(1);
-    AD_PORT1_IO(1);
-    AD_PORT2_IO(0);
-    AD_PORT3_IO(0);
-    AD_PORT4_IO(0);
-    AD_PORT5_IO(0);
-    AD_PORT6_IO(0);
-    AD_PORT7_IO(0);
-    AD_PORT8_IO(0);
-    AD_PORT9_IO(0);
-    AD_PORT10_IO(0);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-
-    AD_PORT2_OUT(0);
-    AD_PORT3_OUT(0);
-    AD_PORT4_OUT(0);
-    AD_PORT6_OUT(0);
-    AD_PORT7_OUT(0);
-    AD_PORT8_OUT(0);
-    AD_PORT9_OUT(0);
-    AD_PORT10_OUT(0);
-    AD_PORT11_OUT(0);
-    AD_PORT12_OUT(0);
-    AD_PORT13_OUT(0);
-
-    TRISFbits.TRISF5  = 1;
-    TRISGbits.TRISG7  = 1;
-    TRISFbits.TRISF0  = 1;
-    TRISBbits.TRISB14 = 1;
-
-    TRISGbits.TRISG6 = 0;
-    TRISGbits.TRISG8 = 0;
-    TRISFbits.TRISF1 = 0;
-    TRISFbits.TRISF4 = 0;
-
-    BTN_LED_00(0);
-    BTN_LED_01(0);
-    BTN_LED_10(0);
-    BTN_LED_11(0);
-}
-#endif
-
-#ifdef USE_OPT_DRUM
-void setupOptDrum(void)
-{
-    AD_PORT0_IO(1);
-    AD_PORT1_IO(1);
-    AD_PORT2_IO(1);
-    AD_PORT3_IO(1);
-    AD_PORT4_IO(1);
-    AD_PORT5_IO(1);
-    AD_PORT6_IO(1);
-    AD_PORT7_IO(1);
-    AD_PORT8_IO(1);
-    AD_PORT9_IO(1);
-    AD_PORT10_IO(0);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-
-    AD_PORT10_OUT(0);
-    AD_PORT11_OUT(0);
-    AD_PORT12_OUT(0);
-    AD_PORT13_OUT(0);
-}
-#endif
-
-#ifdef USE_LED_PAD_16
-void setupLedPad16(void)
-{
-    AD_PORT0_IO(0);
-    AD_PORT1_IO(0);
-    AD_PORT2_IO(0);
-    AD_PORT3_IO(0);
-    AD_PORT4_IO(0);
-    AD_PORT5_IO(0);
-    AD_PORT6_IO(0);
-    AD_PORT7_IO(0);
-    AD_PORT8_IO(0);
-    AD_PORT9_IO(0);
-    AD_PORT10_IO(0);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-
-    AD_PORT0_OUT(0);
-    AD_PORT1_OUT(0);
-    AD_PORT2_OUT(0);
-    AD_PORT3_OUT(0);
-    AD_PORT4_OUT(0);
-    AD_PORT5_OUT(0);
-    AD_PORT6_OUT(0);
-    AD_PORT7_OUT(0);
-    AD_PORT8_OUT(0);
-    AD_PORT9_OUT(0);
-    AD_PORT10_OUT(0);
-    AD_PORT11_OUT(0);
-    AD_PORT12_OUT(0);
-    AD_PORT13_OUT(0);
-
-    D_PORT0_IO(P_OUT);
-    D_PORT1_IO(P_OUT);
-    D_PORT2_IO(P_OUT);
-    D_PORT3_IO(P_IN);
-
-}
-#endif
-
-#ifdef USE_LED_PAD_64
-void setupLedPad64(void)
-{
-    AD_PORT0_IO(1);
-    AD_PORT1_IO(1);
-    AD_PORT2_IO(1);
-    AD_PORT3_IO(1);
-    AD_PORT4_IO(0);
-    AD_PORT5_IO(0);
-    AD_PORT6_IO(0);
-    AD_PORT7_IO(0);
-    AD_PORT8_IO(0);
-    AD_PORT9_IO(0);
-    AD_PORT10_IO(0);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-
-    AD_PORT0_OUT(0);
-    AD_PORT1_OUT(0);
-    AD_PORT2_OUT(0);
-    AD_PORT3_OUT(0);
-    AD_PORT4_OUT(0);
-    AD_PORT5_OUT(0);
-    AD_PORT6_OUT(0);
-    AD_PORT7_OUT(0);
-    AD_PORT8_OUT(0);
-    AD_PORT9_OUT(0);
-    AD_PORT10_OUT(0);
-    AD_PORT11_OUT(0);
-    AD_PORT12_OUT(0);
-    AD_PORT13_OUT(0);
-
-    D_PORT0_IO(0);
-    D_PORT1_IO(0);
-    D_PORT2_IO(0);
-    D_PORT3_IO(0);
-    TRISBbits.TRISB14 = 0;
-    TRISFbits.TRISF4  = 1;
-}
-#endif
-
-#ifdef USE_LED_ENC
-void setupLedEnc(void)
-{
-    AD_PORT0_IO(0);
-    AD_PORT1_IO(0);
-    AD_PORT2_IO(0);
-    AD_PORT3_IO(0);
-    AD_PORT4_IO(0);
-    AD_PORT5_IO(0);
-    AD_PORT6_IO(0);
-    AD_PORT7_IO(0);
-    AD_PORT8_IO(0);
-    AD_PORT9_IO(0);
-#ifdef USE_LED_PAD_16
-    AD_PORT10_IO(1);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-#else
-    AD_PORT10_IO(0);
-    AD_PORT11_IO(0);
-    AD_PORT12_IO(0);
-    AD_PORT13_IO(0);
-#endif
-
-    AD_PORT0_OUT(0);
-    AD_PORT1_OUT(0);
-    AD_PORT2_OUT(0);
-    AD_PORT3_OUT(0);
-    AD_PORT4_OUT(0);
-    AD_PORT5_OUT(0);
-    AD_PORT6_OUT(0);
-    AD_PORT7_OUT(0);
-    AD_PORT8_OUT(0);
-    AD_PORT9_OUT(0);
-#ifndef USE_LED_PAD_16
-    AD_PORT10_OUT(0);
-    AD_PORT11_OUT(0);
-    AD_PORT12_OUT(0);
-    AD_PORT13_OUT(0);
-#endif
-
-    D_PORT0_IO(0);
-    D_PORT1_IO(1);
-    D_PORT2_IO(1);
-    D_PORT3_IO(1);
+    // Set LOAD_PIN to low
+    //
 }
 #endif
 
 /**********************************************
-*  UDP Generic I/O Processing Part
+*  OSC Generic I/O Processing Part
 **********************************************/
-void UDPControlTask(void)
+void receiveOSCTask(void)
 {
-	unsigned int RcvLen;
+    WORD RcvLen;
 	static BYTE	buffer[1024];
     BYTE index, i, j, k;
 
-	if(!initReceiveFlag)
-	{
-        RxSocket = UDPOpen(localPort, NULL, 0);
-		if(RxSocket != INVALID_UDP_SOCKET)
-        {
-			initReceiveFlag = TRUE;
-        }
-	}
-    if(initReceiveFlag && UDPIsGetReady(RxSocket))
+    if(!initReceiveFlag)
+        initReceiveFlag = openOSCReceivePort(localPort);
+
+    if(initReceiveFlag && isOSCGetReady())
     {
-        RcvLen = UDPGetArray(buffer, sizeof(buffer));
-        UDPDiscard();
-        if(isEqualToAddress(buffer, prefix, msgOnboardLed))
+        RcvLen = getOSCArray(buffer, sizeof(buffer));
+        if(isEqualToAddress(buffer, stdPrefix, msgOnboardLed))
         {
             if(getIntArgumentAtIndex(buffer, prefix, msgOnboardLed, 0) == 0)
             {
@@ -540,389 +264,96 @@ void UDPControlTask(void)
                 }
             }
         }
-#ifdef USE_PITCH
-        else if(isEqualToAddress(buffer, prefix, msgVolumeLed))
+        // A/D
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetAdcEnable))
         {
-            BYTE type = getIntArgumentAtIndex(buffer, prefix, msgVolumeLed, 0);
-            BYTE val = getIntArgumentAtIndex(buffer, prefix, msgVolumeLed, 1);
-            if(type == 1)
-            {
-                //if(val < 1)
-                if(val < 2)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 0;
-                    LATBbits.LATB12 = 0;
-                }
-                //else if(val < 4)
-                else if(val < 8)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 0;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 16)
-                else if(val < 32)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 28)
-                else if(val < 56)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 40)
-                else if(val < 80)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 52)
-                else if(val < 104)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 64)
-                else if(val < 128)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 76)
-                else if(val < 152)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 88)
-                else if(val < 176)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 100)
-                else if(val < 200)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 112)
-                else if(val < 224)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 124)
-                else if(val < 248)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 1;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                //else if(val < 128)
-                else if(val < 256)
-                {
-                    LATBbits.LATB2  = 1;
-                    LATBbits.LATB3  = 1;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-            }
-        }
-#endif
-        else if(isEqualToAddress(buffer, prefix, msgLatticeLed))
-        {
-            BYTE x = getIntArgumentAtIndex(buffer, prefix, msgLatticeLed, 0);
-            BYTE y = getIntArgumentAtIndex(buffer, prefix, msgLatticeLed, 1);
-            BYTE state = getIntArgumentAtIndex(buffer, prefix, msgLatticeLed, 2);
+            AD1CON1bits.ON = 0;
 
-#ifdef USE_PITCH
-            if(x == 0 && y == 0)
-            {
-                BTN_LED_00((state > 0)?1:0);
-            }
-            else if(x == 1 && y == 0)
-            {
-                BTN_LED_01((state > 0)?1:0);
-            }
-            else if(x == 0 && y == 1)
-            {
-                BTN_LED_10((state > 0)?1:0);
-            }
-            else if(x == 1 && y == 1)
-            {
-                BTN_LED_11((state > 0)?1:0);
-            }
-#endif
+            BYTE i;
+            WORD anum = 0;
+            WORD id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcEnable, 0);
+            BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcEnable, 1);
 
-#ifdef USE_LED_PAD_16
-            if(state)
-                ledState |= (1 << y) << (x * 4);
-            else
-                ledState &= ~((1 << y) << (x * 4));
+            if(id > 13 || state > 1)
+                return;
 
-            sendSpiOneWord(0x0000, 8);
-            sendSpiOneWord(ledState, 8);
-            sendOSCMessage(TxSocket, stdPrefix, "/debug", "i", ledState);
-#endif
-#ifdef USE_LED_PAD_64
-            BYTE x1, y1;
-            if(x < 4 && y < 4)
-            {
-                y1 = (matrixLedData[y][x] & 0x0F);
-                x1 = ((matrixLedData[y][x] >> 4) & 0x0F);
-                if(state)
-                    matrixLed[0] |= (1 << y1) << (x1 * 4);
-                else
-                    matrixLed[0] &= ~((1 << y1) << (x1 * 4));
-            }
-            else if(x >= 4 && y < 4)
-            {
-                y1 = (matrixLedData[y][x - 4] & 0x0F);
-                x1 = ((matrixLedData[y][x - 4] >> 4) & 0x0F);
-                if(state)
-                    matrixLed[1] |= (1 << y1) << (x1 * 4);
-                else
-                    matrixLed[1] &= ~((1 << y1) << (x1 * 4));
-            }
-            else if(x < 4 && y >= 4)
-            {
-                y1 = (matrixLedData[y - 4][x] & 0x0F);
-                x1 = ((matrixLedData[y - 4][x] >> 4) & 0x0F);
-                if(state)
-                    matrixLed[2] |= (1 << y1) << (x1 * 4);
-                else
-                    matrixLed[2] &= ~((1 << y1) << (x1 * 4));
-            }
-            else if(x >= 4 && y >= 4)
-            {
-                y1 = (matrixLedData[y - 4][x - 4] & 0x0F);
-                x1 = ((matrixLedData[y - 4][x - 4] >> 4) & 0x0F);
-                if(state)
-                    matrixLed[3] |= (1 << y1) << (x1 * 4);
-                else
-                    matrixLed[3] &= ~((1 << y1) << (x1 * 4));
-            }
-            sendSpiFourWord(matrixLed[0], matrixLed[1], matrixLed[2], matrixLed[3], 8);
-#endif
-        }
-#ifdef USE_LED_ENC
-        else if(isEqualToAddress(buffer, prefix, msgRotaryLedStep))
-        {
-            BYTE pos = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedStep, 0);
-            BYTE len = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedStep, 1);
-            dwLedData = 0;
+            if(state == 1)
+                analogEnable[id] = TRUE;
+            else if(state == 0)
+                analogEnable[id] = FALSE;
 
-            for(i = 0; i < len; i++)
+            for(i = 0; i < USE_ADC_NUM; i++)
             {
-                if(pos >= len)
-                    dwLedData |= (1 << (pos - i));
-                else
-                    dwLedData |= (1 << (32 + pos - i));
+                if(analogEnable[i])
+                    anum++;
             }
 
-            for(j = 0; j < 100; j++)
-            {
-                dwLedSequence[j] = dwLedData;
+            configAnPort(id, IO_IN);
 
-                for(k = 0; k < 32; k++)
-                {
-                    if(j >= intensity[k])
-                        dwLedSequence[j] &= ~(1 << k);
-                }
-            }
-
-            if(dwLedData != 0)
+            if(state == 1)
             {
-                //ledIntensityIndex = 0;
-                ledOn = TRUE;
+                AD1PCFG &= ~(0x0001 << id);
+                AD1CSSL |= (0x0001 << id);
             }
             else
             {
-                ledOn = FALSE;
-                sendSpiTwoWord(0x0000, 0x0000, 8);
+                AD1PCFG |= (0x0001 << id);
+                AD1CSSL &= ~(0x0001 << id);
             }
-        }
-        else if(isEqualToAddress(buffer, prefix, msgRotaryLedBits))
-        {
-            dwLedData = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedBits, 0);
-            for(j = 0; j < 100; j++)
-            {
-                dwLedSequence[j] = dwLedData;
 
-                for(k = 0; k < 32; k++)
-                {
-                    if(j >= intensity[k])
-                        dwLedSequence[j] &= ~(1 << k);
-                }
-            }
-            if(dwLedData != 0)
+            if(anum > 0)
             {
-                //ledIntensityIndex = 0;
-                ledOn = TRUE;
+                AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON2 |= ((anum - 1) << 2);
+                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+                AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON1 = 0x000080E6;// 0000 0000 0000 0000 1000 0000 1110 0110
             }
             else
             {
-                ledOn = FALSE;
-                sendSpiTwoWord(0x0000, 0x0000, 8);
+                AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
+                AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
+                AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
             }
         }
-        else if(isEqualToAddress(buffer, prefix, msgRotaryLedIntensity))
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetAdcEnable))
         {
-            index = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedIntensity, 0);
-            intensity[index] = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedIntensity, 1);
-            if(intensity[index] > 90)
-                intensity[index] = 90;
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetAdcEnable, 0);
 
-            for(j = 0; j < 100; j++)
-            {
-                dwLedSequence[j] = dwLedData;
-                for(k = 0; k < 32; k++)
-                {
-                    if(j >= intensity[k])
-                        dwLedSequence[j] &= ~(1 << k);
-                }
-            }
-        }
-        else if(isEqualToAddress(buffer, prefix, msgRotaryLedAllInt))
-        {
-            DWORD dwld = getIntArgumentAtIndex(buffer, prefix, msgRotaryLedAllInt, 0);
-            if(dwld > 90)
-                dwld = 90;
+            if(id > 13)
+                return;
 
-            for(j = 0; j < 100; j++)
+            sendOSCMessage(stdPrefix, msgGetAdcEnable, "ii", id, analogEnable[id]);
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgConfigAdc))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 0);
+            char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 1);
+            if(!strcmp(type, "din"))
             {
-                intensity[j] = dwld;
-                dwLedSequence[j] = dwLedData;
-                for(k = 0; k < 32; k++)
-                {
-                    if(j >= intensity[k])
-                        dwLedSequence[j] &= ~(1 << k);
-                }
+                configAnPort(id, IO_IN);
+            }
+            else if(!strcmp(type, "dout"))
+            {
+                configAnPort(id, IO_OUT);
             }
         }
-#endif
-#ifdef USE_OPT_DRUM
-        else if(isEqualToAddress(buffer, prefix, "/opt"))
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetAdcDO))
         {
-            LATBbits.LATB10 = getIntArgumentAtIndex(buffer, prefix, "/opt", 0);
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcDO, 0);
+            BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcDO, 1);
+            outputAnPort(id, state);
         }
-#endif
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetAdcDI))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetAdcDI, 0);
+            BYTE state = inputAnPort(id);
+            sendOSCMessage(stdPrefix, msgGetAdcDI, "ii", id, state);
+        }
+        // PWM
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 0);
@@ -979,7 +410,7 @@ void UDPControlTask(void)
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmState, 0);
-            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
+            sendOSCMessage(stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmFreq))
         {
@@ -1003,7 +434,7 @@ void UDPControlTask(void)
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmFreq))
         {
-            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmFreq, "i", freq);
+            sendOSCMessage(stdPrefix, msgGetPwmFreq, "i", freq);
         }
         else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDuty))
         {
@@ -1047,8 +478,86 @@ void UDPControlTask(void)
         else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDuty))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDuty, 0);
-            sendOSCMessage(TxSocket, stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
+            sendOSCMessage(stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
         }
+        else if(isEqualToAddress(buffer, stdPrefix, msgConfigPwm))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigPwm, 0);
+            char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigPwm, 1);
+            if(!strcmp(type, "din"))
+            {
+                configPwmPort(id, IO_IN);
+            }
+            else if(!strcmp(type, "dout"))
+            {
+                configPwmPort(id, IO_OUT);
+            }
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDO))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDO, 0);
+            BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDO, 1);
+            outputPwmPort(id, state);
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDI))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDI, 0);
+            BYTE state = inputPwmPort(id);
+            sendOSCMessage(stdPrefix, msgGetPwmDI, "ii", id, state);
+        }
+        // D/IO
+        else if(isEqualToAddress(buffer, stdPrefix, msgConfigDIO))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 0);
+            char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 1);
+            if(!strcmp(type, "din"))
+            {
+                configDPort(id, IO_IN);
+            }
+            else if(!strcmp(type, "dout"))
+            {
+                configDPort(id, IO_OUT);
+            }
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetDO))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetDO, 0);
+            BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetDO, 1);
+            outputDPort(id, state);
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetDI))
+        {
+            BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetDI, 0);
+            BYTE state = inputDPort(id);
+            sendOSCMessage(stdPrefix, msgGetDI, "ii", id, state);
+        }
+        // SPI
+        else if(isEqualToAddress(buffer, stdPrefix, msgConfigSpi))
+        {
+            char* name = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigSpi, 0);
+            char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigSpi, 1);
+            if(!strcmp(type, "din"))
+            {
+                configSpiPort(name, IO_IN);
+            }
+            else if(!strcmp(type, "dout"))
+            {
+                configSpiPort(name, IO_OUT);
+            }
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgSetSpiDO))
+        {
+            char *name = getStringArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 0);
+            BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 1);
+            outputSpiPort(name, state);
+        }
+        else if(isEqualToAddress(buffer, stdPrefix, msgGetSpiDI))
+        {
+            char* name = getStringArgumentAtIndex(buffer, stdPrefix, msgGetSpiDI, 0);
+            BYTE state = inputSpiPort(name);
+            sendOSCMessage(stdPrefix, msgGetSpiDI, "si", name, state);
+        }
+        // USB_MIDI
         else if(isEqualToAddress(buffer, midiPrefix, msgSetNote)) // Note On/Off
         {
             BYTE currentEndpoint;
@@ -1207,6 +716,7 @@ void UDPControlTask(void)
                 break;
             }
         }
+        // System Setting
         else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
         {
             char* rip = getStringArgumentAtIndex(buffer, sysPrefix, msgSetRemoteIp, 0);
@@ -1215,25 +725,25 @@ void UDPControlTask(void)
             remoteIP[2] = atoi(strtok(NULL, "."));
             remoteIP[3] = atoi(strtok(NULL, "."));
             initSendFlag = FALSE;
-            UDPClose(TxSocket);
+            closeOSCSendPort();
             free(rip);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));;
             sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
-            sendOSCMessage(TxSocket, sysPrefix, msgRemoteIp, "s", rip);
+            sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
             free(rip);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetRemotePort))
         {
             remotePort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetRemotePort, 0);
-            UDPClose(TxSocket);
+            closeOSCSendPort();
             initSendFlag = FALSE;
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetRemotePort))
         {
-            sendOSCMessage(TxSocket, sysPrefix, msgRemotePort, "i", remotePort);
+            sendOSCMessage(sysPrefix, msgRemotePort, "i", remotePort);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetHostName))
         {
@@ -1250,11 +760,11 @@ void UDPControlTask(void)
                                 NULL                    // no application context
                                 );
             mDNSMulticastFilterRegister();
-            sendOSCMessage(TxSocket, sysPrefix, msgHostName, "s", hostName);
+            sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetHostName))
         {
-            sendOSCMessage(TxSocket, sysPrefix, msgHostName, "s", hostName);
+            sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetHostIp))
         {
@@ -1264,23 +774,23 @@ void UDPControlTask(void)
             BYTE hip2 = (AppConfig.MyIPAddr.Val >> 16) & 0xFF;
             BYTE hip3 = (AppConfig.MyIPAddr.Val >> 24) & 0xFF;
             sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
-            sendOSCMessage(TxSocket, sysPrefix, msgHostIp, "s", hip);
+            sendOSCMessage(sysPrefix, msgHostIp, "s", hip);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetHostMac))
         {
             char macaddr[17] = {0};
             sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
-            sendOSCMessage(TxSocket, sysPrefix, msgHostMac, "s", macaddr);
+            sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetHostPort))
         {
             localPort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetHostPort, 0);
-            UDPClose(RxSocket);
+            closeOSCReceivePort();
             initReceiveFlag = FALSE;
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetHostPort))
         {
-            sendOSCMessage(TxSocket, sysPrefix, msgHostPort, "i", localPort);
+            sendOSCMessage(sysPrefix, msgHostPort, "i", localPort);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSetPrefix))
         {
@@ -1289,373 +799,55 @@ void UDPControlTask(void)
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgGetPrefix))
         {
-            sendOSCMessage(TxSocket, sysPrefix, msgPrefix, "s", prefix);
+            sendOSCMessage(sysPrefix, msgPrefix, "s", prefix);
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgSoftReset))
         {
-            NVMErasePage((void*)NVM_DATA);
-            NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
-
+            BOOL chFlag = getIntArgumentAtIndex(buffer, sysPrefix, msgSoftReset, 0);
+            if(chFlag)
+            {
+                NVMErasePage((void*)NVM_DATA);
+                NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
+            }
             SoftReset();
         }
         else if(isEqualToAddress(buffer, sysPrefix, msgDebug))
         {
-            sendOSCMessage(TxSocket, stdPrefix, "/debug", "i", *(unsigned int *)(NVM_DATA));
+            sendOSCMessage(stdPrefix, "/debug", "i", *(unsigned int *)(NVM_DATA));
         }
         LED_2_Off();
     } 
 }
 
-void sendPad(void)
-{
-    BYTE i, j, k, l;
-#ifdef USE_LED_PAD_16
-    SR_SL(0);
-    delayUs(1);
-    SR_SL(1);
-
-    for(i = 0; i < MAX_BTN_ROW; i++)
-    {
-        btnLast[i] = btnCurrent[i];
-    }
-
-    for(i = 0; i < MAX_BTN_ROW; i++)
-    {
-        switch(i)
-        {
-            case 0:
-                l = 1;
-                break;
-            case 1:
-                l = 0;
-                break;
-            case 2:
-                l = 3;
-                break;
-            case 3:
-                l = 2;
-                break;
-        }
-        for(j = 0; j < MAX_BTN_COL; j++)
-        {
-            k = 3 - j;
-
-            if(SR_QH())
-            {
-                btnCurrent[l] &= ~(1 << k);
-            }
-            else
-            {
-                btnCurrent[l] |= (1 << k);
-            }
-            SR_CLK(1);
-            delayUs(1);
-            SR_CLK(0);
-
-            if(buttonCheck(l, k))
-            {
-                sendOSCMessage(TxSocket, prefix, msgPress, "iii", l, k, (btnCurrent[l] & (1 << k)) ? 1 : 0);
-            }
-            delayUs(5);
-        }
-    }
-#endif
-#ifdef USE_LED_PAD_64
-    static BYTE start_row = 0;
-    if(start_row == 0)
-    {
-        SR_A(0);
-        SR_CLK1(1);
-        SR_A(1);
-    }
-
-    for(i = start_row; i < start_row + 4; i++)
-    {
-        SR_CLK1(1);
-        //for(k = 0; k < 5; k++)
-        //    asm("NOP");
-        delayUs(1);
-        SR_CLK1(0);
-        delayUs(1);
-
-        btnLast[i] = btnCurrent[i];
-
-        SR_SHLD(0);
-        delayUs(1);
-        SR_SHLD(1);
-
-        for(j = 0; j < 8; j++)
-        {
-            if(SR_QH())
-                btnCurrent[i] &= ~(1 << j);
-            else
-                btnCurrent[i] |= (1 << j);
-
-            SR_CLK2(1);
-            delayUs(1);
-            SR_CLK2(0);
-
-            if(buttonCheck(i, j))
-            {
-                sendOSCMessage(TxSocket, prefix, msgPress, "iii", i, 7 - j, (btnCurrent[i] & (1 << j)) ? 1 : 0);
-            }
-        }
-    }
-    delayUs(2);
-
-    start_row += 4;
-    if(start_row >= 8)
-    {
-        start_row = 0;
-    }
-#endif
-#ifdef USE_PITCH
-    for(i = 0; i < MAX_BTN_ROW; i++)
-    {
-        btnLast[i] = btnCurrent[i];
-    }
-    btnCurrent[0] = BTN_PAD_00() | (BTN_PAD_01() << 1);
-    btnCurrent[1] = BTN_PAD_10() | (BTN_PAD_11() << 1);
-
-    for(i = 0; i < MAX_BTN_ROW; i++)
-    {
-        for(j = 0; j < MAX_BTN_COL; j++)
-        {
-            if(buttonCheck(i, j))
-            {
-                sendOSCMessage(TxSocket, prefix, msgPress, "iii", i, j, (btnCurrent[i] & (1 << j)) ? 1 : 0);
-            }
-            delayUs(5);
-        }
-    }
-#endif
-}
-
-void sendAdc(void)
-{
-    BYTE i;
-
-    for(i = 0; i < USE_ADC_NUM; i++)
-    {
-        if(getAnalogFlag(i))
-        {
-#ifdef USE_PITCH
-            //currentValue[i] = getAnalogByte(i, 1);
-            if(i == 0)
-            {
-                currentValue[i] = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
-            }
-            if(i == 1)
-            {
-                currentValue[i] = getAnalogByte(i, TYPE_MIDI_VOLUME);
-            }
-            //currentValue[i] = getAnalogWord(i, TYPE_LONG_ORIGINAL);
-#endif
-#ifdef USE_LED_PAD_64
-            //if(i == 0)
-            {
-                currentValue[i] = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
-            }
-#endif
-#ifdef USE_OPT_DRUM
-            currentValue[i] = getAnalogByte(i, TYPE_MIDI_ORIGINAL);
-#endif
-            //if(currentValue[i] != prevValue[0][i] && currentValue[i] != prevValue[1][i])
-            {
-                sendOSCMessage(TxSocket, prefix, msgAdc, "ii", i, currentValue[i]);
-                //sendOSCMessage(TxSocket, prefix, msgAdc, "iiiiiiiii", i, getAnalogWord(i, 3), getAnalogWord(i, 4), getAnalogWord(i, 5), getAnalogWord(i, 6), getAnalogWord(i, 7), getAnalogWord(i, 8), getAnalogWord(i, 9), getAnalogWord(i, 10));
-                //prevValue[1][i] = prevValue[0][i];
-                //prevValue[0][i] = currentValue[i];
-                resetAnalogFlag(i);
-                delayUs(20);
-            }
-        }
-    }
-}
-
-#ifdef USE_LED_ENC
-void sendEnc(void)
-{
-    currentSwitch = RE_SW();
-    if(prevSwitch != currentSwitch)
-    {
-        switchFlag = TRUE;
-        prevSwitch = currentSwitch;
-    }
-
-    if(initSendFlag && sendEncFlag)
-    {
-        if(reFlag[0])
-        {
-            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiff", direction, reStep, omega[0], alpha[0]);
-        }
-        else if(reFlag[1])
-        {
-            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiff", direction, reStep, omega[1], alpha[1]);
-        }
-        sendEncFlag = FALSE;
-    }
-
-    if(initSendFlag && switchFlag)
-    {
-        sendOSCMessage(TxSocket, prefix, msgRotaryEncSwitch, "i", currentSwitch);
-        switchFlag = FALSE;
-    }
-}
-
+#if 0
 void __ISR(_TIMER_4_VECTOR, ipl1) T4Handler(void)
 {
-    encoderCheck(RE_A(), RE_B());
     mT4ClearIntFlag();
 }
 void __ISR(_TIMER_5_VECTOR, ipl1) T5Handler(void)
 {
-    static BYTE test = 0;
-    if(ledOn)
-    {
-        WORD msb, lsb;
-        msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
-        lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
-        sendSpiTwoWord(msb, lsb, 8);
-        ledIntensityIndex++;
-        if(ledIntensityIndex == 100)
-            ledIntensityIndex = 0;
-    }
     mT5ClearIntFlag();
 }
 #endif
 
-#if 0
-void convertOscToMidi(BYTE buffer)
+void sendOSCTask(void)
 {
-    if(isEqualToAddress(buffer, midiPrefix, msgSetNote))
-    {
-        BYTE ch = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 0);
-        BYTE num = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 1);
-        BYTE vel = getIntArgumentAtIndex(buffer, midiPrefix, msgSetNote, 2);
-        endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 = 0x90 | ch;
-        endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_1 = num;       // argument 1
-        endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_2 = vel;       // argument 2
-    
-    }
-    USBHostMIDIWrite(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufReadLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET));
-}
-#endif
-
-void UDPSendTask()
-{
+    BYTE i;
     if(!initSendFlag)
-    {
-        TxSocket = UDPOpenEx((remoteIP[0] | (remoteIP[1] << 8) | (remoteIP[2] << 16) | (remoteIP[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, remotePort);
-        if(TxSocket == INVALID_UDP_SOCKET)
-        {
-			return;
-        }
-		initSendFlag = TRUE;
-    }
+        initSendFlag = openOSCSendPort(remoteIP, remotePort);
 
     if(initSendFlag)
-	{
-        if(stateFlag)
+    {
+        if(BusyADC10())
         {
-            stateFlag = FALSE;
-            //sendOSCMessage(TxSocket, prefix, msgSw, "i", (currentState ? 0 : 1));
-            if(!currentState)
-                sendOSCMessage(TxSocket, sysPrefix, msgPrefix, "is", -2, prefix);
+            for(i = 0; i < USE_ADC_NUM; i++)
+            {
+                if(analogEnable[i])
+                    analogInHandle(i, (LONG)ReadADC10(i));
+            }
         }
-
-        switch(usbState)
-        {
-            case 0:
-                USBHostTasks();
-                convertMidiToOsc();
-                usbState = 1;
-                break;
-            case 1:
-            #if defined(USE_PITCH) || defined(USE_LED_PAD_64)
-                //test ConvertADC10();
-                while(BusyADC10());
-                //test analogInHandle(0, (LONG)ReadADC10(1));
-                //test analogInHandle(1, (LONG)ReadADC10(0));
-                //pitch analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
-                //pitch analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
-                analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF4) / 2));
-                analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF5) / 2));
-                analogInHandle(2, (LONG)((ADC1BUF2 + ADC1BUF6) / 2));
-                analogInHandle(3, (LONG)((ADC1BUF3 + ADC1BUF7) / 2));
-            #endif
-                usbState = 2;
-                break;
-            case 2:
-                #if defined(USE_PITCH) || defined(USE_LED_PAD_64)
-                    sendAdc();
-                #endif
-                usbState = 3;
-                break;
-            case 3:
-                sendPad();
-                usbState = 4;
-                break;
-            case 4:
-                #ifdef USE_LED_ENC
-                    sendEnc();
-                #endif
-                usbState = 0;
-                break;
-#if 0
-            case 3:
-                convertOSCtoMIDI();
-                usbState = 0;
-                break;
-#endif
-#ifdef USE_OPT_DRUM
-            case 1:
-                analogInHandle(0, (LONG)(ADC1BUF0));
-                usbState = 2;
-                break;
-            case 2:
-                analogInHandle(1, (LONG)(ADC1BUF1));
-                usbState = 3;
-                break;
-            case 3:
-                analogInHandle(2, (LONG)(ADC1BUF2));
-                usbState = 4;
-                break;
-            case 4:
-                analogInHandle(3, (LONG)(ADC1BUF3));
-                usbState = 5;
-                break;
-            case 5:
-                analogInHandle(4, (LONG)(ADC1BUF4));
-                usbState = 6;
-                break;
-            case 6:
-                analogInHandle(5, (LONG)(ADC1BUF5));
-                usbState = 7;
-                break;
-            case 7:
-                analogInHandle(6, (LONG)(ADC1BUF6));
-                usbState = 8;
-                break;
-            case 8:
-                analogInHandle(7, (LONG)(ADC1BUF7));
-                usbState = 9;
-                break;
-            case 9:
-                analogInHandle(8, (LONG)(ADC1BUF8));
-                usbState = 10;
-                break;
-            case 10:
-                analogInHandle(9, (LONG)(ADC1BUF9));
-                usbState = 11;
-                break;
-            case 11:
-                sendAdc();
-                usbState = 0;
-                break;
-#endif
-        }
-	}
+        sendAdc(TxSocket);
+    }
 }
 
 void convertMidiToOsc(void)
@@ -1675,7 +867,6 @@ void convertMidiToOsc(void)
                 switch(endpointBuffers[currentEndpoint].TransferState)
                 {
                     case RX_DATA:
-                        //memset(endpointBuffers[currentEndpoint].pBufWriteLocation, 0x00, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET));
                         if(USBHostMIDIRead(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufWriteLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET)) == USB_SUCCESS)
                         {
                             endpointBuffers[currentEndpoint].TransferState = RX_DATA_WAIT;
@@ -1695,22 +886,22 @@ void convertMidiToOsc(void)
                                 {
                                     case 0x80:// Note off
                                     case 0x90:// Note on
-                                        sendOSCMessage(TxSocket, midiPrefix, msgNote, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgGetNote, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xA0:// Key Pressure
-                                        sendOSCMessage(TxSocket, midiPrefix, msgKp, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgGetKp, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xB0:// Control Change
-                                        sendOSCMessage(TxSocket, midiPrefix, msgCc, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgGetCc, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xC0:// Program Change
-                                        sendOSCMessage(TxSocket, midiPrefix, msgPc, "i", midiNum);
+                                        sendOSCMessage(midiPrefix, msgGetPc, "i", midiNum);
                                         break;
                                     case 0xD0:// Channel Pressure
-                                        sendOSCMessage(TxSocket, midiPrefix, msgCp, "ii", midiCh, midiNum);
+                                        sendOSCMessage(midiPrefix, msgGetCp, "ii", midiCh, midiNum);
                                         break;
                                     case 0xE0:// Pitch Bend
-                                        sendOSCMessage(TxSocket, midiPrefix, msgPb, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgGetPb, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     default:
                                         break;
