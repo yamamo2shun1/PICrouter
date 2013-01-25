@@ -30,7 +30,8 @@ Include/TCPIP\ Stack/UDP.h  \
  Include/TCPIP\ Stack/DHCP.h  \
 Include/TCPIP\ Stack/ICMP.h  \
  Include/TCPIP\ Stack/NBNS.h  \
+iosetting.h  \
 button.h  \
+osc.h  \
 analog.h  \
-encoder.h  \
-osc.h 
+ encoder.h 
