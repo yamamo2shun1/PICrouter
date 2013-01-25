@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.93 2013/01/26
+ * osc.c,v.0.94 2013/01/26
  */
 
 #include "osc.h"
@@ -473,6 +473,8 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
 BOOL compareOSCAddress(const char* prefix, const char* address)
 {
     char* str = rcvAddressStrings;
+    if(strlen(str) > strlen(prefix) + strlen(address))
+        return FALSE;
     while(*prefix != NULL)
     {
         if(*str++ != *prefix++)
