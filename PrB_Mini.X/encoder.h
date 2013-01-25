@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.1 2012/10/06
+ * encoder.h,v.0.5 2013/01/26
  */
 
 #ifndef ENCODER_H
@@ -24,10 +24,11 @@
 
 #include <math.h>
 #include <GenericTypeDefs.h>
+#include "osc.h"
 
 // Timer4 12.5nsec x 8(pre scaler) x TIMER_COUNT = 100nsec x TIMER_COUNT = timer interval
 // 100nsec x 100 = 10000nsec = 10usec
-#define TIMER_COUNT 150
+#define TIMER_COUNT 2000//150
 #define MA_COUNT    8
 #define DELTA       69.230769231
 
@@ -46,8 +47,37 @@ INT8 direction;
 DWORD encCount[2];
 DWORD dt;
 
-void encoderInit(void);
+DWORD dwLedData;
+volatile DWORD dwLedSequence[100];
+BYTE intensity[32];
+BOOL ledOn;
+WORD ledCount;
+BYTE ledIntensity;
+volatile BYTE ledIntensityIndex;
+
+// test for EMS22A50
+#define AVG_NUM 8
+BYTE reDataIndex;
+BYTE reAvgIndex;
+BYTE reVelAvgIndex;
+int reVelAvgIndex2;
+volatile BYTE reMatchCount;
+BYTE reState[16];
+WORD rePosData[AVG_NUM];
+float reAbsAnglePosLast;
+float reAbsAnglePos;
+int reDirection;
+DWORD reCounting;
+float reCounted;
+DWORD reAvgCounted[8];
+float reVelocity; 
+float reAvgVelocity[16];
+
+void initEncoderVariables(void);
 void encoderCheck(BYTE rea, BYTE reb);
+//void encoderHandle(void);
+void annularLedHandle(void);
+void sendEnc(void);
 
 #endif	/* ENCODER_H */
 
