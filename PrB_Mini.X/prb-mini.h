@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * prb-mini.h,v.0.60 2012/12/30
+ * prb-mini.h,v.0.70 2013/01/26
  */
 
 #include <plib.h>
@@ -33,9 +33,7 @@
 
 #include "TCPIP Stack/TCPIP.h"
 
-#define USE_LED_PAD_16
-#define USE_LED_ENC
- 
+#include "iosetting.h" 
 #include "button.h"
 #include "analog.h"
 #include "encoder.h"
@@ -123,9 +121,6 @@ BYTE usbState = 0;
 
 BOOL somethingToSend;
 
-WORD NumGets;
-WORD NumSends;
-
 BYTE midiType = 0;
 BYTE midiCh = 0;
 BYTE midiNum = 0;
@@ -138,121 +133,20 @@ LONG freq;
 LONG width;
 INT16 duty[PWM_NUM];
 
-//Custom OSC Messages
-char* prefix;
-char msgLed[]   = "/led";
-char msgPress[] = "/press";
-char msgSw[]    = "/sw";
-char msgAdc[]   = "/adc";
-char zero[40];
-
-APP_CONFIG AppConfig;
-//BYTE myDHCPBindCount = 0xFF;
-
-//#define DEFAULT_HOST_NAME "PICrouter-OaUH"
-#define DEFAULT_HOST_NAME "PrB-RE1"
-//#define DEFAULT_HOST_NAME "PrB-RE2"
-//#define DEFAULT_HOST_NAME "PICnome-ETH"
-
-UDP_SOCKET RxSocket;
-UDP_SOCKET TxSocket;
-BOOL initReceiveFlag = FALSE;
-BOOL initSendFlag = FALSE;
-char* hostName = NULL;
-BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
-
-WORD remotePort = 8000;
-WORD localPort  = 8080;
-
-DWORD dwLedData = 0;
-volatile DWORD dwLedSequence[100] = {0};
-BYTE intensity[32] = {0};
-BOOL ledOn = FALSE;
-WORD ledCount = 0;
-BYTE ledIntensity = 10;
-volatile BYTE ledIntensityIndex = 0;
-
-WORD ledState = 0;
-WORD matrixLed[4] = {0};
-const WORD matrixLedData[4][4] = {{0x01, 0x03, 0x10, 0x12},
-                                  {0x00, 0x02, 0x11, 0x13},
-                                  {0x33, 0x31, 0x22, 0x21},
-                                  {0x32, 0x30, 0x23, 0x20}};
-
-BYTE currentState;
-BYTE prevState = 1;
-BOOL stateFlag = FALSE;
-
-BYTE currentSwitch;
-BYTE prevSwitch = 1;
-BOOL switchFlag = FALSE;
-
 BYTE midiValue = 0;
 BYTE data0;
 BYTE data1;
 BYTE data2;
-BOOL sendMidiFlag = FALSE;
 
 BOOL initInterruptFlag = FALSE;
-
-//BYTE currentValue[USE_ADC_NUM];
-//BYTE prevValue[2][USE_ADC_NUM];
-int currentValue[USE_ADC_NUM] = {0};
-int prevValue[USE_ADC_NUM] = {0};
-int boundaryValue[USE_ADC_NUM] = {0};
-int currentDirectionValue[USE_ADC_NUM] = {0};
-int currentPosition = 0;
-int currentPosition1 = 0;
-int prevPosition = 0;
-//int boundaryPosition = 0;
-//int boundaryPosition0 = 0;
-int boundaryPosition[USE_ADC_NUM] = {0};
-int centerPosition = 0;
-int currentSection = 0;
-int prevSection = 0;
-int currentDirection = 0;
-int currentDirection1 = 0;
-int prevDirection = 0;
-//WORD prevValue[2][USE_ADC_NUM];
-
-// test for EMS22A50
-#define AVG_NUM 8
-BYTE reDataIndex = 0;
-BYTE reAvgIndex = 0;
-BYTE reVelAvgIndex = 0;
-int reVelAvgIndex2 = 0;
-BYTE reMatchCount = 0;
-volatile BYTE reState[16] = {0};
-WORD rePosData[AVG_NUM] = {0};
-float reAbsAnglePosLast = 0;
-volatile float reAbsAnglePos = 0;
-volatile int reDirection = 0;
-DWORD reCounting = 0;
-float reCounted = 0;
-DWORD reAvgCounted[8] = {0};
-volatile float reVelocity = 0; 
-float reAvgVelocity[16] = {0};
-
-// MAC address Initialization
-static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, 
-        MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
-
-#define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
 
 void sendSpiOneWord(WORD msb, DWORD usec);
 void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec);
 void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec);
 
-void setupLedEnc(void);
-
-void UDPControlTask(void);
-void UDPSendTask(void);
-
-void sendPad(void);
-void sendAdc(void);
-void sendEnc(void);
+void receiveOSCTask(void);
+void sendOSCTask(void);
 
 // USB Host
-//test void convertOscToMidi(BYTE buffer);
 void convertMidiToOsc(void);
 BOOL USB_ApplicationEventHandler(BYTE address, USB_EVENT event, void *data, DWORD size);
