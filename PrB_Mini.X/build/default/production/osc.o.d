@@ -19,4 +19,5 @@ Include/TCPIP\ Stack/SPIFlash.h  \
 Include/TCPIP\ Stack/UDP.h  \
  Include/TCPIP\ Stack/DHCP.h  \
 Include/TCPIP\ Stack/ICMP.h  \
- Include/TCPIP\ Stack/NBNS.h 
+ Include/TCPIP\ Stack/NBNS.h  \
+HardwareProfile.h 
