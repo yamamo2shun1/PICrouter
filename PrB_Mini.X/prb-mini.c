@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * prb-mini.c,v.0.70 2013/01/26
+ * prb-mini.c,v.0.71 2013/01/26
  */
 
 #include "prb-mini.h"
@@ -306,7 +306,7 @@ void receiveOSCTask(void)
 
             sendSpiOneWord(0x0000, 8);
             sendSpiOneWord(ledState, 8);
-            //sendOSCMessage(TxSocket, stdPrefix, "/debug", "i", ledState);
+            //sendOSCMessage(stdPrefix, "/debug", "i", ledState);
         }
         else if(compareOSCAddress(prefix, msgLatticeLedColumn))
         {
@@ -321,7 +321,7 @@ void receiveOSCTask(void)
 
             sendSpiOneWord(0x0000, 8);
             sendSpiOneWord(ledState, 8);
-            //sendOSCMessage(TxSocket, stdPrefix, "/debug", "i", ledState);
+            //sendOSCMessage(stdPrefix, "/debug", "i", ledState);
         }
         else if(compareOSCAddress(prefix, msgLatticeLedRow))
         {
@@ -343,6 +343,27 @@ void receiveOSCTask(void)
             sendSpiOneWord(0x0000, 8);
             sendSpiOneWord(ledState, 8);
             //sendOSCMessage(TxSocket, stdPrefix, "/debug", "i", ledState);
+        }
+        else if(compareOSCAddress(prefix, msgLatticeLedAll))
+        {
+            BYTE data;
+            for(i = 0; i < 4; i++)
+            {
+                data = getIntArgumentAtIndex(buffer, prefix, msgLatticeLedColumn, i);
+                if(data > 15)
+                    return;
+
+                WORD data1 = 0;
+                for(j = 0; j < 4; j++)
+                {
+                    if((data >> j) & 0x01)
+                        data1 |= (1 << (j * 4));
+                }
+                ledState &= ~(0x1111 << i);
+                ledState |= data1 << i;
+            }
+            sendSpiOneWord(0x0000, 8);
+            sendSpiOneWord(ledState, 8);
         }
         else if(compareOSCAddress(prefix, msgSetRotaryEncStep))
         {
