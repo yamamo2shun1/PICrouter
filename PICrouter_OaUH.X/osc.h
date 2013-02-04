@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.92 2013/01/18
+ * osc.h,v.0.94 2013/01/26
  */
 
 #ifndef OSC_H
@@ -27,8 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "TCPIP Stack/TCPIP.h"
+#include "HardwareProfile.h"
 
-#define DEFAULT_HOST_NAME "PICrouter-OaUH"
+#define DEFAULT_HOST_NAME "PICrouter"
 
 // Network
 extern APP_CONFIG AppConfig;
@@ -45,7 +46,6 @@ extern BYTE remoteIP[];
 // Port Number Initialization
 extern WORD remotePort;
 extern WORD localPort;
-extern char* prefix;
 
 // for LED_PAD_16 or LED_PAD_64
 extern const char msgLatticePad[];
@@ -137,22 +137,27 @@ extern const char msgGetHostPort[];
 extern const char msgSoftReset[];
 extern const char msgDebug[];
 
+extern char rcvAddressStrings[128];
 extern UINT16 rcvAddressLength;
 extern UINT16 rcvTypesStartIndex;
 extern INT16 rcvArgumentsLength;
+extern char rcvArgsTypeArray[128];
+extern UINT16 rcvArgumentsStartIndex[128];
 
 void InitAppConfig(void);
 void setOSCPrefix(char* prefix_string);
 void setOSCHostName(char* host_name);
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number);
 BOOL openOSCReceivePort(WORD localPort);
+BOOL isOSCSendPortOpened(void);
+BOOL isOSCReceivePortOpened(void);
 void closeOSCSendPort(void);
 void closeOSCReceivePort(void);
-BOOL isOSCGetReady(void);
-WORD getOSCArray(BYTE* array, WORD length);
+BOOL isOSCGetReady(WORD len);
+BOOL isOSCPutReady(void);
+void getOSCArray(char* str, WORD size);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
-
-BOOL isEqualToAddress(const char* str, const char* prefix, const char* address);
+BOOL compareOSCAddress(const char* prefix, const char* address);
 INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);

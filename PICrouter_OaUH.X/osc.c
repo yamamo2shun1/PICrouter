@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.92 2013/01/18
+ * osc.c,v.0.94 2013/01/26
  */
 
 #include "osc.h"
@@ -135,6 +135,7 @@ const char msgGetHostPort[]   = "/host/port/get";
 const char msgSoftReset[]     = "/soft/reset";
 const char msgDebug[]         = "/debug";
 
+char rcvAddressStrings[128] = {0};
 UINT16 rcvAddressLength;
 UINT16 rcvTypesStartIndex;
 INT16 rcvArgumentsLength;
@@ -159,12 +160,12 @@ void InitAppConfig(void)
 
 void setOSCPrefix(char* prefix_string)
 {
-	prefix = (char *)calloc(strlen("/pic"), sizeof(char));
+    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
     memcpy(prefix, "/pic", strlen("/pic"));
 }
 void setOSCHostName(char* host_name)
 {
-	hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
+    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
     memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
 }
 
@@ -172,503 +173,481 @@ BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 {
     BOOL flag = FALSE;
     TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
-    if(TxSocket == INVALID_UDP_SOCKET)
-		flag = FALSE;
-    else
+    if(TxSocket != INVALID_UDP_SOCKET)
         flag = TRUE;
     return flag;
 }
 
 BOOL openOSCReceivePort(WORD port_number)
 {
-	BOOL flag = FALSE;
-  	RxSocket = UDPOpen(port_number, NULL, 0);
-   	if(RxSocket != INVALID_UDP_SOCKET)
-       	flag = TRUE;
+    BOOL flag = FALSE;
+    RxSocket = UDPOpen(port_number, NULL, 0);
+    if(RxSocket != INVALID_UDP_SOCKET)
+        flag = TRUE;
     return flag;
+}
+
+BOOL isOSCSendPortOpened(void)
+{
+	return UDPIsOpened(TxSocket);
+}
+
+BOOL isOSCReceivePortOpened(void)
+{
+	return UDPIsOpened(RxSocket);
 }
 
 void closeOSCSendPort(void)
 {
+	initSendFlag = FALSE;
     UDPClose(TxSocket);
+    TxSocket = NULL;
 }
 
 void closeOSCReceivePort(void)
 {
+	initReceiveFlag = FALSE;
     UDPClose(RxSocket);
+    RxSocket = NULL;
 }
 
-BOOL isOSCGetReady(void)
+BOOL isOSCGetReady(WORD len)
 {
-	BOOL flag = FALSE;
-	flag = UDPIsGetReady(RxSocket);
-	return flag;
+    BOOL isReadyFlag = FALSE;
+    len = UDPIsGetReady(RxSocket);
+    if(len > 0)
+        isReadyFlag = TRUE;
+    return isReadyFlag;
 }
 
-WORD getOSCArray(BYTE* array, WORD length)
+BOOL isOSCPutReady(void)
 {
-	WORD bufLength = 0;
-	bufLength = UDPGetArray(array, length);
-    //UDPDiscard();
-    return bufLength;
+    BOOL isReadyFlag = FALSE;
+    WORD puttablePacketSize = 0;
+    puttablePacketSize = UDPIsPutReady(TxSocket);
+    if(puttablePacketSize > 0)
+        isReadyFlag = TRUE;
+    return isReadyFlag;
+}
+
+void getOSCArray(char* str, WORD size)
+{
+    INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
+
+    UDPGetArray(str, size);
+    memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
+
+    while(*(str + i) != NULL)
+    {
+        *(rcvAddressStrings + i) = *(str + i);
+        i++;
+        if(i > strlen(str))
+            return;
+        if(*(str + i) == NULL)
+            break;
+    }
+    rcvAddressLength = i;
+
+    while(*(str + i) != ',')
+        i++;
+    j = i;
+    rcvTypesStartIndex = j;
+
+    while(*(str + i) != NULL)
+        i++;
+    for(k = 0; k < i - j - 1; k++)
+        *(rcvArgsTypeArray + k) = *(str + (k + j + 1));
+    rcvArgumentsLength = i - j;
+    n = ((rcvArgumentsLength / 4) + 1) * 4;
+
+    for(k = 0; k < rcvArgumentsLength - 1; k++)
+    {
+        *(rcvArgumentsStartIndex + k) = rcvTypesStartIndex + length + n;
+        switch(*(rcvArgsTypeArray + k))
+        {
+            case 'i':
+            case 'f':
+                length += 4;
+                break;
+            case 's':
+                u = 0;
+                while(*(str + (rcvTypesStartIndex + n + length + u)) != '\0')
+                    u++;
+                v = 0;
+                do
+                {
+                    if(u < 8)
+                    {
+                        u = 0;
+                        v += 8;
+                    }
+                    else
+                    {
+                        u -= 8;
+                        v += 8;
+                    }
+                } while(u > 0);
+                length += v;
+                break;
+        }
+    }
+    UDPDiscard();
 }
 
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
 {
-	INT16 i, j;
-	va_list list;
-	char* str;
-	const char *p;
-	INT32 strSize, testSize, zeroSize, testSize1, zeroSize1, totalSize;
-	INT32 prefixSize = strchr(prefix, 0) - prefix;
-	INT32 commandSize = strchr(command, 0) - command;
-	INT32 typeSize = strchr(type, 0) - type;
+    INT16 i, j;
+    va_list list;
+    char* str;
+    const char *p;
+    INT32 strSize, testSize, zeroSize, testSize1, zeroSize1, totalSize;
+    INT32 prefixSize = strchr(prefix, 0) - prefix;
+    INT32 commandSize = strchr(command, 0) - command;
+    INT32 typeSize = strchr(type, 0) - type;
 
-	strSize = prefixSize + commandSize;
-	testSize = strSize;
-	zeroSize = 0;
+    strSize = prefixSize + commandSize;
+    testSize = strSize;
+    zeroSize = 0;
 
-	if(UDPIsPutReady(TxSocket))
-	{
-		do
-		{
-			if(testSize <= 8)
-			{
-				zeroSize = (8 - testSize);
-				testSize -= 8;
-			}
-			else
-				testSize -= 8;
-		} while(testSize > 0);
+    if(isOSCPutReady())
+    {
+        LED_1_On();
+        do
+        {
+            if(testSize <= 8)
+            {
+                zeroSize = (8 - testSize);
+                testSize -= 8;
+            }
+            else
+                testSize -= 8;
+        } while(testSize > 0);
 
-		if(zeroSize == 0)
-			zeroSize = 4;
-		else if(zeroSize > 4 && zeroSize < 8)
-			zeroSize -= 4;
+        if(zeroSize == 0)
+            zeroSize = 4;
+        else if(zeroSize > 4 && zeroSize < 8)
+            zeroSize -= 4;
 
-		testSize1 = typeSize + 1;
-		zeroSize1 = 0;
-		do
-		{
-			if(testSize1 <= 4)
-			{
-				zeroSize1 = (4 - testSize1);
-				testSize1 -= 4;
-			}
-			else
-				testSize1 -= 4;
-		} while(testSize1 > 0);
+        testSize1 = typeSize + 1;
+        zeroSize1 = 0;
+        do
+        {
+            if(testSize1 <= 4)
+            {
+                zeroSize1 = (4 - testSize1);
+                testSize1 -= 4;
+            }
+            else
+                testSize1 -= 4;
+        } while(testSize1 > 0);
 
-		if(zeroSize1 == 0)
-			zeroSize1 = 4;
+        if(zeroSize1 == 0)
+            zeroSize1 = 4;
 
-		totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
-		p = type;
+        totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
+        p = type;
 
-		va_start(list, type);
+        va_start(list, type);
 
-		int ivalue;
-		float fvalue;
-		char* fchar;
-		char* cstr;
-		while(*p != '\0')
-		{
-			if(*p == 'i')
-			{
-				ivalue = va_arg(list, int);
-				totalSize += 4;
-			}
-			else if(*p == 'f')
-			{
-				fvalue = va_arg(list, double);
-				totalSize += 4;
-			}
-			else if(*p == 's')
-			{
-				cstr = va_arg(list, char*);
-				i = 0;
-				while(cstr[i] != '\0')
-					i++;
-				j = 0;
-				do
-				{
-					if(i < 4)
-					{
-						i = 0;
-						j += 4;
-					}
-					else if(i == 4)
-					{
-						i -= 4;
-						j += 8;
-					}
-					else
-					{
-						i -= 4;
-						j += 4;
-					}
-				} while(i > 0);
-				totalSize += j;
-			}
-			p++;
-		}
-		va_end(list);
+        int ivalue;
+        float fvalue;
+        char* fchar;
+        char* cstr;
+        while(*p != '\0')
+        {
+            if(*p == 'i')
+            {
+                ivalue = va_arg(list, int);
+                totalSize += 4;
+            }
+            else if(*p == 'f')
+            {
+                fvalue = va_arg(list, double);
+                totalSize += 4;
+            }
+            else if(*p == 's')
+            {
+                cstr = va_arg(list, char*);
+                i = 0;
+                while(cstr[i] != '\0')
+                    i++;
+                j = 0;
+                do
+                {
+                    if(i < 4)
+                    {
+                        i = 0;
+                        j += 4;
+                    }
+                    else if(i == 4)
+                    {
+                        i -= 4;
+                        j += 8;
+                    }
+                    else
+                    {
+                        i -= 4;
+                        j += 4;
+                    }
+                } while(i > 0);
+                totalSize += j;
+            }
+            p++;
+        }
+        va_end(list);
 
-		str = (char *)calloc(totalSize, sizeof(char));
-		sprintf(str, "%s%s", prefix, command);
+        str = (char *)calloc(totalSize, sizeof(char));
+        sprintf(str, "%s%s", prefix, command);
 
-		va_start(list, type);
+        va_start(list, type);
 
-		sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
+        sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
 
-		int index = 0;
-		while(*type != '\0')
-		{
-			switch(*type)
-			{
-				case 'i':
-					ivalue = va_arg(list, int);
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
-					index += 4;
-					break;
-				case 'f':
-					fvalue = (float)va_arg(list, double);
-					fchar = (char *)&fvalue;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
-					*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
-					index += 4;
-					break;
-				case 's':
-					cstr = va_arg(list, char*);
-					i = 0;
-					while(cstr[i] != '\0')
-						i++;
-					j = 0;
-					do
-					{
-						if(i < 4)
-						{
-							i = 0;
-							j += 4;
-						}
-						else if(i == 4)
-						{
-							i -= 4;
-							j += 8;
-						}
-						else
-						{
-							i -= 4;
-							j += 4;
-						}
-					} while(i > 0);
-					i = 0;
-					while(cstr[i] != '\0')
-					{
-						*(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + i)) = cstr[i] & 0xFF;
-						i++;
-					}
-					index += j;
-					break;
-			}
-			type++;
-		}
+        int index = 0;
+        while(*type != '\0')
+        {
+            switch(*type)
+            {
+                case 'i':
+                    ivalue = va_arg(list, int);
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
+                    index += 4;
+                    break;
+                case 'f':
+                    fvalue = (float)va_arg(list, double);
+                    fchar = (char *)&fvalue;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
+                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
+                    index += 4;
+                    break;
+                case 's':
+                    cstr = va_arg(list, char*);
+                    i = 0;
+                    while(cstr[i] != '\0')
+                        i++;
+                    j = 0;
+                    do
+                    {
+                        if(i < 4)
+                        {
+                            i = 0;
+                            j += 4;
+                        }
+                        else if(i == 4)
+                        {
+                            i -= 4;
+                            j += 8;
+                        }
+                        else
+                        {
+                            i -= 4;
+                            j += 4;
+                        }
+                    } while(i > 0);
+                    i = 0;
+                    while(cstr[i] != '\0')
+                    {
+                        *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + i)) = cstr[i] & 0xFF;
+                        i++;
+                    }
+                    index += j;
+                    break;
+            }
+            type++;
+        }
 
         UDPPutArray((BYTE *)str, totalSize);
         UDPFlush();
 
         free(str);
-		str = NULL;
-		va_end(list);
+        str = NULL;
+        va_end(list);
+
+        LED_1_Off();
     }
 }
 
-BOOL isEqualToAddress(const char* str, const char* prefix, const char* address)
+BOOL compareOSCAddress(const char* prefix, const char* address)
 {
-	INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
-	INT16 m = 0;
-	char* msg;
-    BOOL flag = TRUE;
-    BOOL mflag = FALSE;
-
-	while(str[i] != 0x00)
-	{
-		i++;
-		if(i > strlen(str))
-		{
-			flag = FALSE;
-		}
-		if(str[i] == 0x00)
-		{
-			msg = (char *)calloc(i, sizeof(char));
-			memcpy(msg, str, i);
-			mflag = TRUE;
-		}
-	}
-
-    if(!flag)
+    char* str = rcvAddressStrings;
+    if(strlen(str) > strlen(prefix) + strlen(address))
+        return FALSE;
+    while(*prefix != NULL)
     {
-    	if(mflag)
-    	{
-    		free(msg);
-    		msg = NULL;
-    	}
-    	return FALSE;
+        if(*str++ != *prefix++)
+            return FALSE;
     }
-
-	rcvAddressLength = i;
-
-	for(j = 0; j < rcvAddressLength; j++)
+    while(*address != NULL)
     {
-        if(j < strlen(prefix))
-        {
-        	if(msg[j] == prefix[j])
-            	flag = TRUE;
-        	else
-        	{
-            	flag = FALSE;
-            	break;
-        	}
-        }
-        else if(j >= strlen(prefix))
-        {
-        	if(msg[j] == address[j - strlen(prefix)])
-            	flag = TRUE;
-        	else
-        	{
-            	flag = FALSE;
-            	break;
-        	}
-        }
-        else if(j >= strlen(prefix) + strlen(address))
-        {
-        	flag = FALSE;
-        	break;
-        }
+        if(*str++ != *address++)
+            return FALSE;
     }
-    if(mflag)
-    {
-    	free(msg);
-    	msg = NULL;
-    }
-    if(!flag)
-    	return FALSE;
-
-	while(str[i] != 0x2C)
-		i++;
-	j = i;
-	rcvTypesStartIndex = j;
-
-	while(str[i] != 0x00)
-		i++;
-	for(k = 0; k < i - j - 1; k++)
-		rcvArgsTypeArray[k] = str[k + j + 1];
-	rcvArgumentsLength = i - j;
-
-	m = rcvArgumentsLength;
-	do
-	{
-		n += 4;
-		m -= 4;
-	} while(m >= 0);
-
-	for(k = 0; k < rcvArgumentsLength - 1; k++)
-	{
-		rcvArgumentsStartIndex[k] = rcvTypesStartIndex + length + n;
-		switch(rcvArgsTypeArray[k])
-		{
-			case 'i':
-			case 'f':
-				length += 4;
-				break;
-			case 's':
-				u = 0;
-				while(str[rcvTypesStartIndex + n + length + u] != '\0')
-					u++;
-				v = 0;
-				do
-				{
-					if(u < 8)
-					{
-						u = 0;
-						v += 8;
-					}
-					else
-					{
-						u -= 8;
-						v += 8;
-					}
-				} while(u > 0);
-				length += v;
-				break;
-		}
-	}
     return TRUE;
 }
 
 INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	INT16 s = 0;
+    INT16 s = 0;
     INT16 m = rcvArgumentsLength;
-	INT32 sign, exponent, mantissa;
-	INT64 lvalue;
-	float fvalue;
-	float sum;
+    INT32 sign, exponent, mantissa;
+    INT64 lvalue;
+    float fvalue;
+    float sum;
 
-	if(index >= rcvArgumentsLength - 1)
-		return 0;
+    if(index >= rcvArgumentsLength - 1)
+        return 0;
 
-	switch(rcvArgsTypeArray[index])
-	{
-		case 'i':
-			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
-				     ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
-				     ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
-				      (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
-			break;
-		case 'f':
-			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
-					 ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
-					 ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
-					 (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
-			lvalue &= 0xffffffff;
+    switch(*(rcvArgsTypeArray + index))
+    {
+        case 'i':
+            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            break;
+        case 'f':
+            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue &= 0xffffffff;
 
-			sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
-			exponent = ((lvalue >> 23) & 0xFF) - 127;
-			mantissa = lvalue & 0x7FFFFF;
+            sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
+            exponent = ((lvalue >> 23) & 0xFF) - 127;
+            mantissa = lvalue & 0x7FFFFF;
 
-			sum = 0.0;
-			for(s = 0; s < 23; s++)
-			{
-				int onebit = (mantissa >> (22 - s)) & 0x1;
-				sum += (float)onebit * (1.0 / (float)(1 << (s + 1)));
-			}
-			sum += 1.0;
+            sum = 0.0;
+            for(s = 0; s < 23; s++)
+            {
+                int onebit = (mantissa >> (22 - s)) & 0x1;
+                sum += (float)onebit * (1.0 / (float)(1 << (s + 1)));
+            }
+            sum += 1.0;
 
-			if(exponent >= 0)
-				fvalue = sign * sum * (1 << exponent);
-			else
-				fvalue = sign * sum * (1.0 / (float)(1 << abs(exponent)));
-			lvalue = (int)fvalue;
-			break;
-	}
-	return lvalue;
+            if(exponent >= 0)
+                fvalue = sign * sum * (1 << exponent);
+            else
+                fvalue = sign * sum * (1.0 / (float)(1 << abs(exponent)));
+            lvalue = (int)fvalue;
+            break;
+    }
+    return lvalue;
 }
 
 float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	INT16 s = 0;
+    INT16 s = 0;
     INT16 m = rcvArgumentsLength;
-	INT32 sign, exponent, mantissa;
-	INT64 lvalue;
-	float fvalue;
-	float sum;
+    INT32 sign, exponent, mantissa;
+    INT64 lvalue;
+    float fvalue;
+    float sum;
 
-	if(index >= rcvArgumentsLength - 1)
-		return 0.0;
+    if(index >= rcvArgumentsLength - 1)
+        return 0.0;
 
-	switch(rcvArgsTypeArray[index])
-	{
-		case 'i':
-			lvalue = (str[rcvArgumentsStartIndex[index] + 0] << 24) |
-					 (str[rcvArgumentsStartIndex[index] + 1] << 16) |
-					 (str[rcvArgumentsStartIndex[index] + 2] << 8) |
-					 str[rcvArgumentsStartIndex[index] + 3];
-			fvalue = (float)lvalue;
-			break;
-		case 'f':
-			lvalue = ((str[rcvArgumentsStartIndex[index] + 0] & 0xFF) << 24) |
-					 ((str[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
-					 ((str[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
-					 (str[rcvArgumentsStartIndex[index] + 3] & 0xFF);
-			lvalue &= 0xffffffff;
+    switch(*(rcvArgsTypeArray + index))
+    {
+        case 'i':
+            lvalue = (*(str + *(rcvArgumentsStartIndex + index) + 0) << 24) |
+                     (*(str + *(rcvArgumentsStartIndex + index) + 1) << 16) |
+                     (*(str + *(rcvArgumentsStartIndex + index) + 2) << 8) |
+                      *(str + *(rcvArgumentsStartIndex + index) + 3);
+            fvalue = (float)lvalue;
+            break;
+        case 'f':
+            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue &= 0xffffffff;
 
-			sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
-			exponent = ((lvalue >> 23) & 0xFF) - 127;
-			mantissa = lvalue & 0x7FFFFF;
+            sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
+            exponent = ((lvalue >> 23) & 0xFF) - 127;
+            mantissa = lvalue & 0x7FFFFF;
 
-			sum = 0.0;
-			for(s = 0; s < 23; s++)
-			{
-				int onebit = (mantissa >> (22 - s)) & 0x1;
-				sum += (float)onebit * (1.0 / (float)(1 << (s + 1)));
-			}
-			sum += 1.0;
+            sum = 0.0;
+            for(s = 0; s < 23; s++)
+            {
+                int onebit = (mantissa >> (22 - s)) & 0x1;
+                sum += (float)onebit * (1.0 / (float)(1 << (s + 1)));
+            }
+            sum += 1.0;
 
-			if(exponent >= 0)
-				fvalue = sign * sum * (1 << exponent);
-			else
-				fvalue = sign * sum * (1.0 / (float)(1 << abs(exponent)));
-			break;
-	}
-	return fvalue;
+            if(exponent >= 0)
+                fvalue = sign * sum * (1 << exponent);
+            else
+                fvalue = sign * sum * (1.0 / (float)(1 << abs(exponent)));
+            break;
+    }
+    return fvalue;
 }
 
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
 {
-	INT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
+    INT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
     INT16 m = rcvArgumentsLength;
-	char* cstr;
+    char* cstr;
 
-	do
-	{
-		n += 4;
-		m -= 4;
-	} while(m >= 0);
+    do
+    {
+        n += 4;
+        m -= 4;
+    } while(m >= 0);
 
-	if(index >= rcvArgumentsLength - 1)
-		return 0;
+    if(index >= rcvArgumentsLength - 1)
+        return 0;
 
-	length = 0;
-	for(k = 0; k <= index; k++)
-	{
-		switch(rcvArgsTypeArray[k])
-		{
-			case 'i':
-			case 'f':
-				if(k != index)
-					length += 4;
-				break;
-			case 's':
-				u = 0;
-				while(str[rcvTypesStartIndex + n + length + u] != '\0')
-					u++;
-				v = 0;
-				do
-				{
-					if(u < 8)
-					{
-						u = 0;
-						v += 8;
-					}
-					else
-					{
-						u -= 8;
-						v += 8;
-					}
-				} while(u > 0);
-				if(k != index)
-					length += v;
-				break;
-		}
-	}
+    length = 0;
+    for(k = 0; k <= index; k++)
+    {
+        switch(rcvArgsTypeArray[k])
+        {
+            case 'i':
+            case 'f':
+                if(k != index)
+                    length += 4;
+                break;
+            case 's':
+                u = 0;
+                while(str[rcvTypesStartIndex + n + length + u] != '\0')
+                    u++;
+                v = 0;
+                do
+                {
+                    if(u < 8)
+                    {
+                        u = 0;
+                        v += 8;
+                    }
+                    else
+                    {
+                        u -= 8;
+                        v += 8;
+                    }
+                } while(u > 0);
+                if(k != index)
+                    length += v;
+                break;
+        }
+    }
 
-	switch(rcvArgsTypeArray[index])
-	{
-		case 'i':
-		case 'f':
-			cstr = (char *)calloc(4, sizeof(char));
-			memcpy(cstr, str + rcvTypesStartIndex + n + length, 4);
-			break;
-		case 's':
-			cstr = (char *)calloc(v, sizeof(char));
-			memcpy(cstr, str + rcvTypesStartIndex + n + length, v);
-			break;
-	}
-	return cstr;
+    switch(rcvArgsTypeArray[index])
+    {
+        case 'i':
+        case 'f':
+            cstr = (char *)calloc(4, sizeof(char));
+            memcpy(cstr, str + rcvTypesStartIndex + n + length, 4);
+            break;
+        case 's':
+            cstr = (char *)calloc(v, sizeof(char));
+            memcpy(cstr, str + rcvTypesStartIndex + n + length, v);
+            break;
+    }
+    return cstr;
 }
