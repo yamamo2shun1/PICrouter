@@ -16,17 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.1 2012/07/08
+ * button.h,v.0.5 2013/01/23
  */
 
 #ifndef BUTTON_H
 #define	BUTTON_H
 
+#include <plib.h>
 #include <GenericTypeDefs.h>
+#include "HardwareProfile.h"
+#include "osc.h"
 
+#define MAX_BTN_ROW 4//1 // 2
+#define MAX_BTN_COL 4//16 // 2
 
-#define MAX_BTN_ROW 8//4//1 // 2
-#define MAX_BTN_COL 8//4//16 // 2
+extern WORD ledState;
+extern WORD matrixLed[4];
+extern const WORD matrixLedData[4][4];
 
 WORD btnCurrent[MAX_BTN_ROW];
 WORD btnLast[MAX_BTN_ROW];
@@ -35,5 +41,6 @@ WORD btnDebounceCount[MAX_BTN_ROW][MAX_BTN_COL];
 
 void buttonInit(void);
 BOOL buttonCheck(BYTE row, BYTE index);
+void sendPad(void);
 
 #endif	/* BUTTON_H */
