@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.0.94 2013/01/18
+ * picrouter-oauh.c,v.1.00 2013/02/07
  */
 
 #include "picrouter-oauh.h"
@@ -76,11 +76,11 @@ int main(int argc, char** argv) {
     //Port Initialization
     initIOPorts();
     initAnalogVariables();
+    initEncoderVariables();
 
     initSW();
     initLEDs();
     buttonInit();
-    encoderInit();
 
     LED_1_On();
     LED_2_On();
@@ -99,14 +99,6 @@ int main(int argc, char** argv) {
 #if 0
     SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 2);
     SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
-#endif
-
-#if 0
-    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_1);
-
-    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 200);
-    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_1);
 #endif
 
     TickInit();
@@ -143,7 +135,7 @@ int main(int argc, char** argv) {
 
         StackTask();
         NBNSTask();
-        ZeroconfLLProcess();
+        //ZeroconfLLProcess();
         mDNSProcess();
 
         receiveOSCTask();
@@ -229,17 +221,17 @@ void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYT
 **********************************************/
 void receiveOSCTask(void)
 {
-    WORD RcvLen;
+    WORD rcvLen;
 	static BYTE	buffer[1024];
     BYTE index, i, j, k;
 
     if(!initReceiveFlag)
         initReceiveFlag = openOSCReceivePort(localPort);
 
-    if(initReceiveFlag && isOSCGetReady())
+    if(initReceiveFlag && isOSCGetReady(rcvLen))
     {
-        RcvLen = getOSCArray(buffer, sizeof(buffer));
-        if(isEqualToAddress(buffer, stdPrefix, msgOnboardLed))
+        getOSCArray(buffer, sizeof(buffer));
+        if(compareOSCAddress(stdPrefix, msgOnboardLed))
         {
             if(getIntArgumentAtIndex(buffer, prefix, msgOnboardLed, 0) == 0)
             {
@@ -265,7 +257,7 @@ void receiveOSCTask(void)
             }
         }
         // A/D
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetAdcEnable))
+        else if(compareOSCAddress(stdPrefix, msgSetAdcEnable))
         {
             AD1CON1bits.ON = 0;
 
@@ -319,7 +311,7 @@ void receiveOSCTask(void)
                 AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetAdcEnable))
+        else if(compareOSCAddress(stdPrefix, msgGetAdcEnable))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetAdcEnable, 0);
 
@@ -328,7 +320,7 @@ void receiveOSCTask(void)
 
             sendOSCMessage(stdPrefix, msgGetAdcEnable, "ii", id, analogEnable[id]);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgConfigAdc))
+        else if(compareOSCAddress(stdPrefix, msgConfigAdc))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 1);
@@ -341,20 +333,20 @@ void receiveOSCTask(void)
                 configAnPort(id, IO_OUT);
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetAdcDO))
+        else if(compareOSCAddress(stdPrefix, msgSetAdcDO))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcDO, 0);
             BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetAdcDO, 1);
             outputAnPort(id, state);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetAdcDI))
+        else if(compareOSCAddress(stdPrefix, msgGetAdcDI))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetAdcDI, 0);
             BYTE state = inputAnPort(id);
             sendOSCMessage(stdPrefix, msgGetAdcDI, "ii", id, state);
         }
         // PWM
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmState))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmState))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmState, 0);
             if(index > 4)
@@ -410,12 +402,12 @@ void receiveOSCTask(void)
                 }
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmState))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmState))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmState, 0);
             sendOSCMessage(stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmFreq))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmFreq))
         {
             freq = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmFreq, 0);
             if(freq < 20)
@@ -435,11 +427,11 @@ void receiveOSCTask(void)
             OC1CONbits.OCM = 0b110;
             T2CONbits.TON = 1;
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmFreq))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmFreq))
         {
             sendOSCMessage(stdPrefix, msgGetPwmFreq, "i", freq);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDuty))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmDuty))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDuty, 0);
             duty[index] = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDuty, 1);
@@ -478,12 +470,12 @@ void receiveOSCTask(void)
             }
             T2CONbits.TON = 1;
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDuty))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmDuty))
         {
             index = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDuty, 0);
             sendOSCMessage(stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgConfigPwm))
+        else if(compareOSCAddress(stdPrefix, msgConfigPwm))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigPwm, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigPwm, 1);
@@ -496,20 +488,20 @@ void receiveOSCTask(void)
                 configPwmPort(id, IO_OUT);
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetPwmDO))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmDO))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDO, 0);
             BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetPwmDO, 1);
             outputPwmPort(id, state);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetPwmDI))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmDI))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetPwmDI, 0);
             BYTE state = inputPwmPort(id);
             sendOSCMessage(stdPrefix, msgGetPwmDI, "ii", id, state);
         }
         // D/IO
-        else if(isEqualToAddress(buffer, stdPrefix, msgConfigDIO))
+        else if(compareOSCAddress(stdPrefix, msgConfigDIO))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 1);
@@ -522,20 +514,20 @@ void receiveOSCTask(void)
                 configDPort(id, IO_OUT);
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetDO))
+        else if(compareOSCAddress(stdPrefix, msgSetDO))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgSetDO, 0);
             BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetDO, 1);
             outputDPort(id, state);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetDI))
+        else if(compareOSCAddress(stdPrefix, msgGetDI))
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgGetDI, 0);
             BYTE state = inputDPort(id);
             sendOSCMessage(stdPrefix, msgGetDI, "ii", id, state);
         }
         // SPI
-        else if(isEqualToAddress(buffer, stdPrefix, msgConfigSpi))
+        else if(compareOSCAddress(stdPrefix, msgConfigSpi))
         {
             char* name = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigSpi, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigSpi, 1);
@@ -548,20 +540,20 @@ void receiveOSCTask(void)
                 configSpiPort(name, IO_OUT);
             }
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgSetSpiDO))
+        else if(compareOSCAddress(stdPrefix, msgSetSpiDO))
         {
             char *name = getStringArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 0);
             BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 1);
             outputSpiPort(name, state);
         }
-        else if(isEqualToAddress(buffer, stdPrefix, msgGetSpiDI))
+        else if(compareOSCAddress(stdPrefix, msgGetSpiDI))
         {
             char* name = getStringArgumentAtIndex(buffer, stdPrefix, msgGetSpiDI, 0);
             BYTE state = inputSpiPort(name);
             sendOSCMessage(stdPrefix, msgGetSpiDI, "si", name, state);
         }
         // USB_MIDI
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetNote)) // Note On/Off
+        else if(compareOSCAddress(midiPrefix, msgSetNote)) // Note On/Off
         {
             BYTE currentEndpoint;
             
@@ -588,7 +580,7 @@ void receiveOSCTask(void)
                 break;
             }
         }
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetCc)) // Control Change
+        else if(compareOSCAddress(midiPrefix, msgSetCc)) // Control Change
         {
             BYTE currentEndpoint;
             
@@ -615,7 +607,7 @@ void receiveOSCTask(void)
                 break;
             }
         }
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetKp)) // Polyphonic Key Pressure
+        else if(compareOSCAddress(midiPrefix, msgSetKp)) // Polyphonic Key Pressure
         {
             BYTE currentEndpoint;
             
@@ -642,7 +634,7 @@ void receiveOSCTask(void)
                 break;
             }
         }
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetPc)) // Program Change
+        else if(compareOSCAddress(midiPrefix, msgSetPc)) // Program Change
         {
             BYTE currentEndpoint;
             
@@ -667,7 +659,7 @@ void receiveOSCTask(void)
                 break;
             }
         }
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetCp)) // Channel Pressure
+        else if(compareOSCAddress(midiPrefix, msgSetCp)) // Channel Pressure
         {
             BYTE currentEndpoint;
             
@@ -692,7 +684,7 @@ void receiveOSCTask(void)
                 break;
             }
         }
-        else if(isEqualToAddress(buffer, midiPrefix, msgSetPb)) // Pitch Bend
+        else if(compareOSCAddress(midiPrefix, msgSetPb)) // Pitch Bend
         {
             BYTE currentEndpoint;
             
@@ -720,7 +712,7 @@ void receiveOSCTask(void)
             }
         }
         // System Setting
-        else if(isEqualToAddress(buffer, sysPrefix, msgSetRemoteIp))
+        else if(compareOSCAddress(sysPrefix, msgSetRemoteIp))
         {
             char* rip = getStringArgumentAtIndex(buffer, sysPrefix, msgSetRemoteIp, 0);
             remoteIP[0] = atoi(strtok(rip, "."));
@@ -731,24 +723,24 @@ void receiveOSCTask(void)
             closeOSCSendPort();
             free(rip);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetRemoteIp))
+        else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));;
             sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
             sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
             free(rip);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgSetRemotePort))
+        else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
         {
             remotePort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetRemotePort, 0);
             closeOSCSendPort();
             initSendFlag = FALSE;
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetRemotePort))
+        else if(compareOSCAddress(sysPrefix, msgGetRemotePort))
         {
             sendOSCMessage(sysPrefix, msgRemotePort, "i", remotePort);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgSetHostName))
+        else if(compareOSCAddress(sysPrefix, msgSetHostName))
         {
             mDNSServiceDeRegister();
             free(hostName);
@@ -765,11 +757,11 @@ void receiveOSCTask(void)
             mDNSMulticastFilterRegister();
             sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostName))
+        else if(compareOSCAddress(sysPrefix, msgGetHostName))
         {
             sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostIp))
+        else if(compareOSCAddress(sysPrefix, msgGetHostIp))
         {
             char hip[15] = {0};
             BYTE hip0 = AppConfig.MyIPAddr.Val & 0xFF;
@@ -779,32 +771,32 @@ void receiveOSCTask(void)
             sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
             sendOSCMessage(sysPrefix, msgHostIp, "s", hip);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostMac))
+        else if(compareOSCAddress(sysPrefix, msgGetHostMac))
         {
             char macaddr[17] = {0};
             sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
             sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgSetHostPort))
+        else if(compareOSCAddress(sysPrefix, msgSetHostPort))
         {
             localPort = getIntArgumentAtIndex(buffer, sysPrefix, msgSetHostPort, 0);
             closeOSCReceivePort();
             initReceiveFlag = FALSE;
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetHostPort))
+        else if(compareOSCAddress(sysPrefix, msgGetHostPort))
         {
             sendOSCMessage(sysPrefix, msgHostPort, "i", localPort);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgSetPrefix))
+        else if(compareOSCAddress(sysPrefix, msgSetPrefix))
         {
             free(prefix);
             prefix = getStringArgumentAtIndex(buffer, sysPrefix, msgSetPrefix, 0);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgGetPrefix))
+        else if(compareOSCAddress(sysPrefix, msgGetPrefix))
         {
             sendOSCMessage(sysPrefix, msgPrefix, "s", prefix);
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgSoftReset))
+        else if(compareOSCAddress(sysPrefix, msgSoftReset))
         {
             BOOL chFlag = getIntArgumentAtIndex(buffer, sysPrefix, msgSoftReset, 0);
             if(chFlag)
@@ -814,24 +806,13 @@ void receiveOSCTask(void)
             }
             SoftReset();
         }
-        else if(isEqualToAddress(buffer, sysPrefix, msgDebug))
+        else if(compareOSCAddress(sysPrefix, msgDebug))
         {
             sendOSCMessage(stdPrefix, "/debug", "i", *(unsigned int *)(NVM_DATA));
         }
         LED_2_Off();
     } 
 }
-
-#if 0
-void __ISR(_TIMER_4_VECTOR, ipl1) T4Handler(void)
-{
-    mT4ClearIntFlag();
-}
-void __ISR(_TIMER_5_VECTOR, ipl1) T5Handler(void)
-{
-    mT5ClearIntFlag();
-}
-#endif
 
 void sendOSCTask(void)
 {

@@ -635,7 +635,7 @@ void ZeroconfLLProcess(void)
 	static unsigned char defended; // Flag to indicate, whether or not defended earlier
 	static TICK random_delay;
 
-	if(!MACIsLinked())
+        if(!MACIsLinked())
 	{
 		zcll_state = SM_INTF_NOT_CONNECTED;
 	}
