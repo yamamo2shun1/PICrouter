@@ -50,6 +50,8 @@
       <itemPath>button.h</itemPath>
       <itemPath>analog.h</itemPath>
       <itemPath>osc.h</itemPath>
+      <itemPath>iosetting.h</itemPath>
+      <itemPath>encoder.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -86,6 +88,8 @@
       <itemPath>button.c</itemPath>
       <itemPath>analog.c</itemPath>
       <itemPath>osc.c</itemPath>
+      <itemPath>iosetting.c</itemPath>
+      <itemPath>encoder.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
