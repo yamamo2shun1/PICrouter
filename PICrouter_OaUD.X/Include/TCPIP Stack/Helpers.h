@@ -103,7 +103,12 @@ size_t  strncpy_m(char* destStr, size_t destSize, int nStrings, ...);
 
 
 WORD    swaps(WORD v);
+
+#if defined(__C32__)
+DWORD   __attribute__((nomips16)) swapl(DWORD v);
+#else
 DWORD   swapl(DWORD v);
+#endif
 
 WORD    CalcIPChecksum(BYTE* buffer, WORD len);
 

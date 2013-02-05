@@ -1113,7 +1113,11 @@ WORD swaps(WORD v)
   Returns:
 	The swapped version of v.
   ***************************************************************************/
+#if defined(__C32__)
+DWORD   __attribute__((nomips16)) swapl(DWORD v)
+#else
 DWORD swapl(DWORD v)
+#endif
 {
 	// Swap bytes 0 and 3
 	((DWORD_VAL*)&v)->v[0] ^= ((DWORD_VAL*)&v)->v[3];

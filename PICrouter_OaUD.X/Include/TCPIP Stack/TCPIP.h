@@ -154,7 +154,8 @@
 	#if defined(STACK_USE_GENERIC_TCP_CLIENT_EXAMPLE) || \
 		defined(STACK_USE_SNTP_CLIENT) || \
 		defined(STACK_USE_DYNAMICDNS_CLIENT) || \
-		defined(STACK_USE_SMTP_CLIENT)
+		defined(STACK_USE_SMTP_CLIENT) || \
+		defined(STACK_USE_AUTOUPDATE_TCPCLIENT)
 	    #if !defined(STACK_USE_DNS)
 	        #define STACK_USE_DNS
 	    #endif

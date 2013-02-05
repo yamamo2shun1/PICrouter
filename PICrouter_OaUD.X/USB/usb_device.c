@@ -154,6 +154,9 @@
    2.9d  Added build option for disabling DTS checking
    
    2.9f  Adding pragma for PIC18F97J94 Family BDT location.
+
+   2.9h   Updated to be able to support optional Microsoft OS Descriptors
+   
 ********************************************************************/
 
 /*----------------------------------------------------------------------------------
@@ -1379,7 +1382,7 @@ void USBCancelIO(BYTE endpoint)
         USBDeviceDetach() and USBDeviceAttach() functions are not available.  
         In this mode, the USB stack relies on the "#define USE_USB_BUS_SENSE_IO" 
         and "#define USB_BUS_SENSE" options in the 
-        HardwareProfile � [platform name].h file. 
+        HardwareProfile – [platform name].h file. 
 
         When using the USB_POLLING mode option, and the 
         "#define USE_USB_BUS_SENSE_IO" definition has been commented out, then 
@@ -1396,10 +1399,10 @@ void USBCancelIO(BYTE endpoint)
 
         In a self powered application, the USB stack is designed with the 
         intention that the user will enable the "#define USE_USB_BUS_SENSE_IO" 
-        option in the HardwareProfile � [platform name].h file.  When this 
+        option in the HardwareProfile – [platform name].h file.  When this 
         option is defined, then the USBDeviceTasks() function will automatically 
         check the I/O pin port value of the designated pin (based on the 
-        #define USB_BUS_SENSE option in the HardwareProfile � [platform name].h 
+        #define USB_BUS_SENSE option in the HardwareProfile – [platform name].h 
         file), every time the application calls USBDeviceTasks().  If the 
         USBDeviceTasks() function is executed and finds that the pin defined by 
         the #define USB_BUS_SENSE is in a logic low state, then it will 
@@ -2228,6 +2231,15 @@ static void USBStdGetDscHandler(void)
                     // Set data count
                     inPipes[0].wCount.Val = *inPipes[0].pSrc.bRom;                    
                 }
+                #if defined(IMPLEMENT_MICROSOFT_OS_DESCRIPTOR)
+                else if(SetupPkt.bDscIndex == MICROSOFT_OS_DESCRIPTOR_INDEX)
+                {
+                    //Get a pointer to the special MS OS string descriptor requested
+                    inPipes[0].pSrc.bRom = (ROM BYTE*)&MSOSDescriptor;
+                    // Set data count
+                    inPipes[0].wCount.Val = *inPipes[0].pSrc.bRom;                    
+                }    
+                #endif
                 else
                 {
                     inPipes[0].info.Val = 0;
@@ -2399,10 +2411,10 @@ static void USBSuspend(void)
     USBActivityIE = 1;                     // Enable bus activity interrupt
     USBClearInterruptFlag(USBIdleIFReg,USBIdleIFBitNum);
 
-#if defined(__18CXX)
-    U1CONbits.SUSPND = 1;                   // Put USB module in power conserve
-                                            // mode, SIE clock inactive
-#endif
+    #if defined(__18CXX)
+        U1CONbits.SUSPND = 1;                   // Put USB module in power conserve
+                                                // mode, SIE clock inactive
+    #endif
     USBBusIsSuspended = TRUE;
  
     /*
