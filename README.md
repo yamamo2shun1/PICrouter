@@ -101,7 +101,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter_OaUD (current ver. is 0.2)  
+#### PICrouter_OaUD (current ver. is 0.5)  
   PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
   PICrouter_OaUD.X is this project folder.  
   
