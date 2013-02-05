@@ -86,12 +86,10 @@ int main(int argc, char** argv) {
     LED_2_On();
 
     //PWM
+    freq = 10000; // 10kHz
+    width = GetSystemClock() / freq;
     for(i = 0; i < PWM_NUM; i++)
-    {
-        freq = 10000; // 10kHz
-        width = GetSystemClock() / freq;
         duty[i] = 50;
-    }
 
     setOSCPrefix("/pic");
     setOSCHostName(DEFAULT_HOST_NAME);
