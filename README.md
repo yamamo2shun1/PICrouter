@@ -33,6 +33,11 @@ PICrouter will be an useful with the following purpose.
 Photographed by Kiyasu/TechnikLAB*
 </div>
 
+How to buy
+------
+We sell the PICrouter on tkrworks <a href="http://atelier.tkrworks.net/shop/index.php?main_page=product_info&cPath=2&products_id=29&language=en">online store</a>.  
+The price of product is 7350JPY.
+
 Licenses
 ------
 PICrouter is **Free Hardware** and **Free Software**.
