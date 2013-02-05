@@ -47,18 +47,12 @@ BYTE getAnalogByte(BYTE port, BYTE type)
        	vol = (BYTE)fader;
     	break;
     case TYPE_MIDI_VOLUME:
-#if 0
-      vol = (BYTE)(127 - (currentAnalog[port] >> 2));
+      vol = (BYTE)(127 - (currentAnalog[port] >> 3));
       if(vol > 60 && vol < 66)
         vol = 63;
-#else
-      vol = (BYTE)(255 - (currentAnalog[port] >> 2));
-      if(vol > 124 && vol < 130)
-        vol = 127;
-#endif
     	break;
     case TYPE_MIDI_ORIGINAL:
-      vol = (BYTE)(currentAnalog[port] >> 2);
+      vol = (BYTE)(currentAnalog[port] >> 3);
       break;
     default:
       vol = 0;

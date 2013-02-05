@@ -33,6 +33,8 @@
 
 #include "TCPIP Stack/TCPIP.h"
 
+#define PITCH
+
 #include "button.h"
 #include "analog.h"
 #include "osc.h"
@@ -65,9 +67,22 @@
 #define NVM_PROGRAM_PAGE 0xbd006000
 #define NVM_PAGE_SIZE    4096
 
+// PWM
+#define PWM_NUM 2
+
+//#define ONLY_USB_MIDI
+// Network
+#ifdef PITCH
+  #define DEFAULT_HOST_NAME "PITCH"
+#else
+  #define DEFAULT_HOST_NAME "PICrouter-OaUD"
+#endif
+
+
 /** VARIABLES ******************************************************/
 unsigned int pagebuff[1024];
 
+BYTE usbState = 0;
 BOOL usbAttachFlag = FALSE;
 
 //for USB_MIDI
@@ -85,15 +100,17 @@ USB_AUDIO_MIDI_EVENT_PACKET midiData;
 
 USB_VOLATILE BYTE msCounter;
 
-//osc messages
-char prefix[] = "/pic";
-char msgLed[] = "/led";
-char msgSw[]  = "/sw";
-char msgAdc[] = "/adc";
-char msgPwm[] = "/pwm";
-char zero[40];
+//ROT_ENC
+BYTE reA[2] = {0};
+BYTE reB[2] = {0};
+BYTE reD[4] = {0};
 
-APP_CONFIG AppConfig;
+//PWM
+BOOL onTimer23 = FALSE;
+BOOL onSquare[PWM_NUM];
+LONG freq[PWM_NUM];
+LONG width[PWM_NUM];
+INT16 duty[PWM_NUM];
 
 BYTE currentState;
 BYTE prevState;
@@ -102,10 +119,23 @@ BYTE stateReleaseCount = 0;
 BOOL stateFlag = FALSE;
 BOOL stateFlag2 = FALSE;//midi
 
+WORD currentValue[USE_ADC_NUM];
+
+//Custom OSC Messages
+char* prefix;
+char msgLed[]   = "/led";
+char msgPress[] = "/press";
+char msgSw[]    = "/sw";
+char msgAdc[]   = "/adc";
+char msgEnc[]   = "/enc";
+char msgPwm[]   = "/pwm";
+char zero[40];
+
+APP_CONFIG AppConfig;
+
+char* hostName;
 UDP_SOCKET RxSocket;
 UDP_SOCKET TxSocket;
-//test UDP_SOCKET rcvOscSocket;
-//test UDP_SOCKET sndOscSocket;
 BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
 BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
@@ -122,6 +152,8 @@ WORD currentAnalogValue[13];
 WORD prevAnalogValue[13];
 
 void setupPitch(void);
+void sendPad();
+void sendAdc();
 
 WORD getAnalogInput(BYTE port);
 void UDPControlTask(void);

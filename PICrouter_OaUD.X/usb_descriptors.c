@@ -27,6 +27,8 @@
 #include "./USB/usb_function_hid.h"
 #include "./USB/usb_function_midi.h"
 
+#define PITCH
+
 /** CONSTANTS ******************************************************/
 
 /* Device Descriptor */
@@ -40,7 +42,11 @@ ROM USB_DEVICE_DESCRIPTOR device_dsc=
     0x01,                   // Protocol code
     USB_EP0_BUFF_SIZE,      // Max packet size for EP0, see usb_config.h
     0x04D8,                 // Vendor ID
+#ifdef PITCH
+    0xF81F,                 // Product ID: PItCh
+#else
     0xF81C,                 // Product ID: PICrouter
+#endif
     0x0002,                 // Device release number in BCD format
     0x01,                   // Manufacturer string index
     0x02,                   // Product string index
@@ -260,11 +266,19 @@ ROM struct{BYTE bLength;BYTE bDscType;WORD string[8];}sd001={
 };
 
 //Product string descriptor
+#ifdef PITCH
+ROM struct{BYTE bLength;BYTE bDscType;WORD string[5];}sd002={
+    sizeof(sd002),
+    USB_DESCRIPTOR_STRING,
+    {'P','I','t','C','h'}
+};
+#else
 ROM struct{BYTE bLength;BYTE bDscType;WORD string[9];}sd002={
     sizeof(sd002),
     USB_DESCRIPTOR_STRING,
     {'P','I','C','r','o','u','t','e','r'}
 };
+#endif
 
 //Array of configuration descriptors
 ROM BYTE *ROM USB_CD_Ptr[]=
