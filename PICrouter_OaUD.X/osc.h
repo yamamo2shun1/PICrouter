@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.87 2012/11/30
+ * osc.h,v.0.94 2013/01/26
  */
 
 #ifndef OSC_H
@@ -27,47 +27,93 @@
 #include <stdlib.h>
 #include <string.h>
 #include "TCPIP Stack/TCPIP.h"
+#include "HardwareProfile.h"
 
-extern const char msgOnboardLed[];
-extern const char msgVolumeLed[];
+#define DEFAULT_HOST_NAME "PICrouter"
+
+// Network
+extern APP_CONFIG AppConfig;
+extern UDP_SOCKET RxSocket;
+extern UDP_SOCKET TxSocket;
+extern BOOL initReceiveFlag;
+extern BOOL initSendFlag;
+extern char* hostName;
+extern char* prefix;
+
+// Remote IP Address Initialization
+extern BYTE remoteIP[];
+
+// Port Number Initialization
+extern WORD remotePort;
+extern WORD localPort;
+
+// for LED_PAD_16 or LED_PAD_64
+extern const char msgLatticePad[];
 extern const char msgLatticeLed[];
 extern const char msgLatticeLedColumn[];
 extern const char msgLatticeLedRow[];
+extern const char msgLatticeLedAll[];
+extern const char msgLatticeLedClear[];
+
+// for LED_ENC_32 or LED_ENC_ABS_32
 extern const char msgRotaryLedStep[];
 extern const char msgRotaryLedBits[];
 extern const char msgRotaryLedIntensity[];
 extern const char msgRotaryLedAllInt[];
 extern const char msgRotaryEnc[];
 extern const char msgSetRotaryEncStep[];
+// for ONLY LED_ENC_32
 extern const char msgRotaryEncSwitch[];
 
-//Standard OSC Messages
+// Standard OSC Messages
 extern const char stdPrefix[];
+// for Onboard
+extern const char msgOnboardLed[];
+extern const char msgOnboardSw1[];
+// for A/D 
+extern const char msgGetAdc[];
+extern const char msgSetAdcEnable[];
+extern const char msgGetAdcEnable[];
+extern const char msgConfigAdc[];
+extern const char msgSetAdcDO[];
+extern const char msgGetAdcDI[];
+// for PWM
 extern const char msgSetPwmState[];
 extern const char msgGetPwmState[];
 extern const char msgSetPwmFreq[];
 extern const char msgGetPwmFreq[];
 extern const char msgSetPwmDuty[];
 extern const char msgGetPwmDuty[];
+extern const char msgConfigPwm[];
+extern const char msgSetPwmDO[];
+extern const char msgGetPwmDI[];
+// for DIO
+extern const char msgConfigDIO[];
+extern const char msgSetDO[];
+extern const char msgGetDI[];
+// for SPI
+extern const char msgConfigSpi[];
+extern const char msgSetSpiDO[];
+extern const char msgGetSpiDI[];
 
-//OSC Messages converted from MIDI Message
+// OSC Messages converted from MIDI Message
 extern const char midiPrefix[];
-extern const char msgNote[];
-extern const char msgPp[];
-extern const char msgCc[];
-extern const char msgPc[];
-extern const char msgKp[];
-extern const char msgCp[];
-extern const char msgPb[];
 extern const char msgSetNote[];
+extern const char msgGetNote[];
 extern const char msgSetPp[];
+extern const char msgGetPp[];
 extern const char msgSetCc[];
+extern const char msgGetCc[];
 extern const char msgSetPc[];
+extern const char msgGetPc[];
 extern const char msgSetKp[];
+extern const char msgGetKp[];
 extern const char msgSetCp[];
+extern const char msgGetCp[];
+extern const char msgGetPb[];
 extern const char msgSetPb[];
 
-//System OSC Messages for Network Settings
+// System OSC Messages for Network Settings
 extern const char sysPrefix[];
 extern const char msgPrefix[];
 extern const char msgSetPrefix[];
@@ -88,18 +134,30 @@ extern const char msgGetHostMac[];
 extern const char msgHostPort[];
 extern const char msgSetHostPort[];
 extern const char msgGetHostPort[];
+extern const char msgSoftReset[];
+extern const char msgDebug[];
 
+extern char rcvAddressStrings[128];
 extern UINT16 rcvAddressLength;
 extern UINT16 rcvTypesStartIndex;
 extern INT16 rcvArgumentsLength;
+extern char rcvArgsTypeArray[128];
+extern UINT16 rcvArgumentsStartIndex[128];
 
-BOOL openOSCSendPort(UDP_SOCKET sndSocket, BYTE* remoteIp, WORD remotePort);
-BOOL openOSCReceivePort(UDP_SOCKET rcvSocket, WORD localPort);
-void closeOSCSendPort(UDP_SOCKET sndSocket);
-void closeOSCReceivePort(UDP_SOCKET rcvSocket);
-void sendOSCMessage(UDP_SOCKET sndSocket, const char* prefix, const char* command, const char* type, ...);
-
-BOOL isEqualToAddress(const char* str, const char* prefix, const char* address);
+void InitAppConfig(void);
+void setOSCPrefix(char* prefix_string);
+void setOSCHostName(char* host_name);
+BOOL openOSCSendPort(BYTE* ip_address, WORD port_number);
+BOOL openOSCReceivePort(WORD localPort);
+BOOL isOSCSendPortOpened(void);
+BOOL isOSCReceivePortOpened(void);
+void closeOSCSendPort(void);
+void closeOSCReceivePort(void);
+BOOL isOSCGetReady(WORD len);
+BOOL isOSCPutReady(void);
+void getOSCArray(char* str, WORD size);
+void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
+BOOL compareOSCAddress(const char* prefix, const char* address);
 INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
 char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);

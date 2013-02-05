@@ -16,10 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.c,v.0.1 2012/07/08
+ * button.c,v.0.5 2013/01/23
  */
 
 #include "button.h"
+
+WORD ledState = 0;
+WORD matrixLed[4] = {0};
+const WORD matrixLedData[4][4] = {{0x01, 0x03, 0x10, 0x12},
+                                  {0x00, 0x02, 0x11, 0x13},
+                                  {0x33, 0x31, 0x22, 0x21},
+                                  {0x32, 0x30, 0x23, 0x20}};
 
 void buttonInit(void)
 {
@@ -35,7 +42,7 @@ void buttonInit(void)
   }
 }
 
-BOOL buttonCheck(int row, int index)
+BOOL buttonCheck(BYTE row, BYTE index)
 {
   BOOL flag = FALSE;
 
@@ -54,3 +61,59 @@ BOOL buttonCheck(int row, int index)
   }
   return flag;
 }
+
+// for LED_PAD_16
+#if 0
+void sendPad(void)
+{
+    BYTE i, j, k, l;
+
+    SR_SL(0);
+    delayUs(1);
+    SR_SL(1);
+
+    for(i = 0; i < MAX_BTN_ROW; i++)
+    {
+        btnLast[i] = btnCurrent[i];
+    }
+
+    for(i = 0; i < MAX_BTN_ROW; i++)
+    {
+        switch(i)
+        {
+            case 0:
+                l = 1;
+                break;
+            case 1:
+                l = 0;
+                break;
+            case 2:
+                l = 3;
+                break;
+            case 3:
+                l = 2;
+                break;
+        }
+        for(j = 0; j < MAX_BTN_COL; j++)
+        {
+            k = 3 - j;
+
+            if(SR_QH())
+            {
+                btnCurrent[l] &= ~(1 << k);
+            }
+            else
+            {
+                btnCurrent[l] |= (1 << k);
+            }
+            SR_CLK(1);
+            SR_CLK(0);
+
+            if(buttonCheck(l, k))
+            {
+                sendOSCMessage(prefix, msgLatticePad, "iii", l, k, (btnCurrent[l] & (1 << k)) ? 1 : 0);
+            }
+        }
+    }
+}
+#endif
