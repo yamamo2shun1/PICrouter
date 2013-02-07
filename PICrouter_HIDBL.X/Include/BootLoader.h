@@ -29,7 +29,7 @@
 
 //-------User configurable macros begin---------
 #define MAJOR_VERSION 1
-#define MINOR_VERSION 0
+#define MINOR_VERSION 1
 
 #define NVM_DATA 0x9D07F000
 
@@ -47,7 +47,7 @@
 /* Address of  the Flash from where the application starts executing */
 /* Rule: Set APP_FLASH_BASE_ADDRESS to _RESET_ADDR value of application linker script*/
     // For PIC32MX3xx to PIC32MX7xx Controllers only
-    #define USER_APP_RESET_ADDRESS 	(0x9D003000 + 0x1000 + 0x970)
+    #define USER_APP_RESET_ADDRESS 	(0x9D003000 + 0x1000)
 
 //-------User configurable macros end-----------
 
