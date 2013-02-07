@@ -95,7 +95,7 @@ Rundog assisted us with this board's production.
 
 Application Projects
 ------
-#### PICrouter_HIDBL  
+#### PICrouter_HIDBL (current ver. is v1.1)  
   PICrouter_HIDBL.X is the USB HID Bootloader project files.  
   Look at [AN1388][] for details.  
 
