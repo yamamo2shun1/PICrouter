@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.1.01 2013/02/06
+ * picrouter-oauh.c,v.1.02 2013/02/07
  */
 
 #include "picrouter-oauh.h"
@@ -219,7 +219,7 @@ void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYT
 void receiveOSCTask(void)
 {
     WORD rcvLen;
-	static BYTE	buffer[1024];
+	BYTE buffer[1024] = {0};
     BYTE index, i, j, k;
 
     if(!initReceiveFlag)
@@ -718,14 +718,12 @@ void receiveOSCTask(void)
             remoteIP[3] = atoi(strtok(NULL, "."));
             initSendFlag = FALSE;
             closeOSCSendPort();
-            free(rip);
         }
         else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));;
             sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
             sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
-            free(rip);
         }
         else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
         {
@@ -741,6 +739,7 @@ void receiveOSCTask(void)
         {
             mDNSServiceDeRegister();
             free(hostName);
+            hostName = NULL;
             hostName = getStringArgumentAtIndex(buffer, sysPrefix, msgSetHostName, 0);
             mDNSInitialize(hostName);
             mDNSServiceRegister((const char *)hostName, // base name of the service
@@ -787,6 +786,7 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSetPrefix))
         {
             free(prefix);
+            prefix = NULL;
             prefix = getStringArgumentAtIndex(buffer, sysPrefix, msgSetPrefix, 0);
         }
         else if(compareOSCAddress(sysPrefix, msgGetPrefix))
@@ -827,7 +827,7 @@ void sendOSCTask(void)
                     analogInHandle(i, (LONG)ReadADC10(i));
             }
         }
-        sendAdc(TxSocket);
+        sendAdc();
     }
 }
 
