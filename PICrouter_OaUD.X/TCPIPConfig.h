@@ -48,8 +48,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Howard Schlunder		09/21/2010	Converted to a stub
  ********************************************************************/
-#ifndef TCPIPCONFIG_H
-#define TCPIPCONFIG_H
+#ifndef TCPIPCONFIG_STUB_H
+#define TCPIPCONFIG_STUB_H
 
 #include "GenericTypeDefs.h"
 #include "Compiler.h"
@@ -92,7 +92,7 @@
 //#define STACK_USE_TCP_PERFORMANCE_TEST	// Module for testing TCP TX performance characteristics
 //#define STACK_USE_DYNAMICDNS_CLIENT		// Dynamic DNS client updater module
 //#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
-#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
+//#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
 #define STACK_USE_ZEROCONF_MDNS_SD		// Zeroconf mDNS and mDNS service discovery
 
 
@@ -146,34 +146,34 @@
 // =======================================================================
 
 /* Default Network Configuration */
-//#define MY_DEFAULT_HOST_NAME			"PICROUTER-OAUD"
+//#define MY_DEFAULT_HOST_NAME			"PICROUTER-OAUH"
 
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of 00-04-A3-00-00-00
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// if using an ENCX24J600, MRF24WB0M, or
-#define MY_DEFAULT_MAC_BYTE3            (0xA3)	// PIC32MX6XX/7XX internal Ethernet 
-#define MY_DEFAULT_MAC_BYTE4            (0x00)	// controller and wish to use the 
+#define MY_DEFAULT_MAC_BYTE3            (0xA3)	// PIC32MX6XX/7XX internal Ethernet
+#define MY_DEFAULT_MAC_BYTE4            (0x00)	// controller and wish to use the
 #define MY_DEFAULT_MAC_BYTE5            (0x00)	// internal factory programmed MAC
 #define MY_DEFAULT_MAC_BYTE6            (0x00)	// address instead.
 
-    #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE3		(1ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)//test (169ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)//test (254ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)//test (1ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)//test (1ul)
 
     #define MY_DEFAULT_MASK_BYTE1           (255ul)
     #define MY_DEFAULT_MASK_BYTE2           (255ul)
-    #define MY_DEFAULT_MASK_BYTE3           (255ul)
+    #define MY_DEFAULT_MASK_BYTE3           (255ul)//test (0ul)
     #define MY_DEFAULT_MASK_BYTE4           (0ul)
 
-    #define MY_DEFAULT_GATE_BYTE1           (192ul)
-    #define MY_DEFAULT_GATE_BYTE2           (168ul)
- 	#define MY_DEFAULT_GATE_BYTE3           (1ul)
-    #define MY_DEFAULT_GATE_BYTE4           (1ul)
+    #define MY_DEFAULT_GATE_BYTE1           (192ul)//test (169ul)
+    #define MY_DEFAULT_GATE_BYTE2           (168ul)//test (254ul)
+    #define MY_DEFAULT_GATE_BYTE3           (1ul)//test (1ul)
+    #define MY_DEFAULT_GATE_BYTE4           (1ul)//test (1ul)
 
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(0ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(0ul)
- 	#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(0ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(0ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(192ul)//test (169ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(168ul)//test (254ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)//test (1ul)
+    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)//test (1ul)
 
     #define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
     #define MY_DEFAULT_SECONDARY_DNS_BYTE2	(0ul)
@@ -327,12 +327,12 @@
 	#define MAX_HTTP_CONNECTIONS	(2u)
 
 	// Optional setting to use PIC RAM instead of Ethernet/Wi-Fi RAM for
-	// storing HTTP Connection Context variables (HTTP_CONN structure for each 
-	// HTTP connection).  Undefining this macro results in the Ethernet/Wi-Fi 
-	// RAM being used (minimum PIC RAM usage, lower performance).  Defining 
-	// this macro results in PIC RAM getting used (higher performance, but uses 
-	// PIC RAM).  This option should not be enabled on PIC18 devices.  The 
-	// performance increase of having this option defined is only apparent when 
+	// storing HTTP Connection Context variables (HTTP_CONN structure for each
+	// HTTP connection).  Undefining this macro results in the Ethernet/Wi-Fi
+	// RAM being used (minimum PIC RAM usage, lower performance).  Defining
+	// this macro results in PIC RAM getting used (higher performance, but uses
+	// PIC RAM).  This option should not be enabled on PIC18 devices.  The
+	// performance increase of having this option defined is only apparent when
 	// the HTTP server is servicing multiple connections simultaneously.
 	//#define HTTP_SAVE_CONTEXT_IN_PIC_RAM
 
@@ -359,13 +359,13 @@
 
     // Define the listening port for the HTTP server
   	#define HTTP_PORT               (80u)
-	
+
     // Define the listening port for the HTTPS server (if STACK_USE_SSL_SERVER is enabled)
 	#define HTTPS_PORT				(443u)
-	
+
     // Define the maximum data length for reading cookie and GET/POST arguments (bytes)
 	#define HTTP_MAX_DATA_LEN		(100u)
-	
+
     // Define the minimum number of bytes free in the TX FIFO before executing callbacks
 	#define HTTP_MIN_CALLBACK_FREE	(16u)
 
