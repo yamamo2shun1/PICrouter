@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter-oauh.c,v.1.00 2013/02/07
+ * picrouter-oauh.c,v.1.01 2013/02/06
  */
 
 #include "picrouter-oauh.h"
@@ -102,7 +102,6 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
-    ZeroconfLLInitialize();
     mDNSInitialize(hostName);
     mDNSServiceRegister((const char *)hostName, // base name of the service
                         "_oscit._udp.local",    // type of the service
