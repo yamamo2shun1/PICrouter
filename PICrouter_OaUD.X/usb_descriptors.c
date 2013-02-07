@@ -27,7 +27,7 @@
 #include "./USB/usb_function_hid.h"
 #include "./USB/usb_function_midi.h"
 
-#define PITCH
+//#define PITCH
 
 /** CONSTANTS ******************************************************/
 
