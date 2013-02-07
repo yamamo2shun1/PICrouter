@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.0.5 2013/02/06
+ * picrouter.h,v.0.6 2013/02/07
  */
 
 #include <plib.h>
@@ -26,8 +26,9 @@
 
 #include "myDelay.h"
 
-#include "USB/usb.h"
 #include "HardwareProfile.h"
+#include "usb_config.h"
+#include "USB/usb.h"
 #include "USB/usb_function_hid.h"
 #include "USB/usb_function_midi.h"
 
@@ -40,47 +41,40 @@
 #include "osc.h"
 
 /** CONFIGURATION **************************************************/
-#pragma config UPLLEN   = ON        // USB PLL Enabled
-#pragma config FPLLMUL  = MUL_20    // PLL Multiplier
-#pragma config UPLLIDIV = DIV_5     // USB PLL Input Divider
-#pragma config FPLLIDIV = DIV_5     // PLL Input Divider
-#pragma config FPLLODIV = DIV_1     // PLL Output Divider
-#pragma config FPBDIV   = DIV_1     // Peripheral Clock divisor
-#pragma config FWDTEN   = OFF       // Watchdog Timer
-#pragma config POSCMOD  = HS        // Primary Oscillator
-#pragma config FSOSCEN  = OFF       // Secondary Oscillator Enable (KLO was off)
-#pragma config FNOSC    = PRIPLL    // Oscillator Selection
+#pragma config UPLLEN    = ON       // USB PLL Enabled
+#pragma config FPLLMUL   = MUL_20   // PLL Multiplier
+#pragma config UPLLIDIV  = DIV_5    // USB PLL Input Divider
+#pragma config FPLLIDIV  = DIV_5    // PLL Input Divider
+#pragma config FPLLODIV  = DIV_1    // PLL Output Divider
+#pragma config FPBDIV    = DIV_1    // Peripheral Clock divisor
+#pragma config FWDTEN    = OFF      // Watchdog Timer
+#pragma config POSCMOD   = HS       // Primary Oscillator
+#pragma config FSOSCEN   = OFF      // Secondary Oscillator Enable (KLO was off)
+#pragma config FNOSC     = PRIPLL   // Oscillator Selection
 #pragma config FVBUSONIO = OFF
-#pragma config ICESEL   = ICS_PGx1  // ICE/ICD Comm Channel Select
-#pragma config FMIIEN = OFF // external PHY in RMII/default configuration
-#pragma config FETHIO = ON
+#pragma config ICESEL    = ICS_PGx1 // ICE/ICD Comm Channel Select
+#pragma config FMIIEN    = OFF      // external PHY in RMII/default configuration
+#pragma config FETHIO    = ON
 
 /** DEFINITIONS ****************************************************/
-#define NVM_PROGRAM_PAGE 0xbd006000
+//#define NVM_PROGRAM_PAGE 0xbd006000
 #define NVM_DATA 0x9D07F000
 #define NVM_PAGE_SIZE    4096
 
 // PWM
 #define PWM_NUM 4
 
-//#define ONLY_USB_MIDI
-
-
 /** VARIABLES ******************************************************/
-unsigned int pagebuff[1024];
-
-BYTE usbState = 0;
-BOOL usbAttachFlag = FALSE;
 
 //for USB_MIDI
-USB_HANDLE MIDITxHandle = 0;
-USB_HANDLE MIDIRxHandle  = 0;
+USB_HANDLE MIDITxHandle = NULL;
+USB_HANDLE MIDIRxHandle  = NULL;
 unsigned char ReceivedHidDataBuffer[64];
 unsigned char ToSendHidDataBuffer[64];
 
 //for USB_HID
-USB_HANDLE HIDTxHandle = 0;
-USB_HANDLE HIDRxHandle = 0;
+USB_HANDLE HIDTxHandle = NULL;
+USB_HANDLE HIDRxHandle = NULL;
 unsigned char ReceivedMidiDataBuffer[64];
 unsigned char ToSendMidiDataBuffer[64];
 USB_AUDIO_MIDI_EVENT_PACKET midiData;
@@ -96,17 +90,18 @@ INT16 duty[PWM_NUM];
 
 BYTE currentState;
 BYTE prevState;
-BYTE statePressCount = 0;
-BYTE stateReleaseCount = 0;
 BOOL stateFlag = FALSE;
 BOOL stateFlag2 = FALSE;//midi
+
+void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id);
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id);
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id);
 
 void receiveOSCTask(void);
 void sendOSCTask(void);
 
 void USBControlTask(void);
 void HIDControlTask(void);
-//void MIDIControlTask(void);
 void sendNote(void);
 void sendControlChange(void);
 void receiveMIDIDatas(void);

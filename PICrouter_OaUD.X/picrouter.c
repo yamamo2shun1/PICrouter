@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.5 2013/02/06
+ * picrouter.c,v.0.6 2013/02/07
  */
 
 #include "picrouter.h"
@@ -60,52 +60,27 @@ void initIOPorts(void)
 }
 
 int main(int argc, char** argv) {
-    int i, value;
+    int i;
     static DWORD t = 0;
-    WORD pCount = 0;
-    WORD rCount = 0;
 
-    BOOL b = TRUE;
-    Nop();
-    Nop();
+    // Enable optimal performance
+    SYSTEMConfigPerformance(GetSystemClock());
+    mOSCSetPBDIV(OSC_PB_DIV_1); // Use 1:1 CPU Core:Peripheral clocks
 
-	mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
+    // Enable the cache for the best performance
+    CheKseg0CacheOn();
 
-#if 1 //A/D Auto Scan 
-#ifdef PITCH
-    AD1PCFG = 0x0000FFFC;// 0000 0000 0000 0000 1111 1111 1111 1100
-    AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0001 1100
-    AD1CSSL = 0x00000003;// 0000 0000 0000 0000 0000 0000 0000 0011
-#endif
-#ifdef OPT_DRUM
-    AD1PCFG = 0x0000FC00;// 0000 0000 0000 0000 1111 1100 0000 0000
-    AD1CON2 = 0x0000043C;// 0000 0000 0000 0000 0000 0100 0010 0100
-    AD1CSSL = 0x000003FF;// 0000 0000 0000 0000 0000 0011 1111 1111
-#endif
-    AD1CON1 = 0x000010E6;// 0000 0000 0000 0000 1000 0000 0110 0110
-    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-#if 0
-    AD1CON3 = 0x00001FFF;// 0000 0000 0000 0000 0000 1111 0000 1000
-#else
-    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
-#endif
-    AD1CON1bits.ON = 1;
-#else // Manual A/D Conv.
-    #define CONFIG_1    ADC_MODULE_OFF | ADC_FORMAT_INTG16 | ADC_CLK_MANUAL | ADC_AUTO_SAMPLING_ON | ADC_SAMP_ON
-    #define CONFIG_2    ADC_VREF_AVDD_AVSS | ADC_OFFSET_CAL_DISABLE | ADC_SCAN_OFF | ADC_SAMPLES_PER_INT_2 | ADC_ALT_BUF_OFF | ADC_ALT_INPUT_ON
-    #define CONFIG_3    ADC_SAMPLE_TIME_31 | ADC_CONV_CLK_SYSTEM | ADC_CONV_CLK_32Tcy
-    #define CONFIG_PORT ENABLE_AN0_ANA | ENABLE_AN1_ANA
-    #define CONFIG_SKIP SKIP_SCAN_ALL
-    #define CONFIG_MULT ADC_CH0_POS_SAMPLEA_AN0 | ADC_CH0_NEG_SAMPLEA_NVREF | ADC_CH0_POS_SAMPLEA_AN1 | ADC_CH0_NEG_SAMPLEA_NVREF
-    OpenADC10(CONFIG_1, CONFIG_2, CONFIG_3, CONFIG_PORT, CONFIG_SKIP);
-    SetChanADC10(CONFIG_MULT);
-    EnableADC10();
-#endif
+    delayMs(100);
+    mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
+    // Port Initialization
+    initIOPorts();
+    initAnalogVariables();
+    initEncoderVariables();
+    
     initSW();
     initLEDs();
     buttonInit();
-    //setupPitch();
 
     stateFlag = FALSE;
     prevState = 1;
@@ -114,23 +89,28 @@ int main(int argc, char** argv) {
     LED_1_On();
     LED_2_On();
 
-    // Enable the cache for the best performance
-    CheKseg0CacheOn();
+    // PWM
+    freq = 10000; // 10kHz
+    width = GetSystemClock() / freq;
+    for(i = 0; i < PWM_NUM; i++)
+        duty[i] = 50;
 
-    // Enable optimal performance
-    SYSTEMConfigPerformance(GetSystemClock());
-    mOSCSetPBDIV(OSC_PB_DIV_1);				// Use 1:1 CPU Core:Peripheral clocks
+    setOSCPrefix("/pic");
+    setOSCHostName(DEFAULT_HOST_NAME);
 
-#ifndef ONLY_USB_MIDI
-    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
-    memcpy(prefix, "/pic", strlen("/pic"));
-    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
-    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+    // USB Initialization
+    #if defined(USE_USB_BUS_SENSE_IO)
+        tris_usb_bus_sense = 1;
+    #endif
 
-    InitAppConfig();
+    #if defined(USE_SELF_POWER_SENSE_IO)
+        tris_self_power = 1;
+    #endif
+    USBDeviceInit();
+
     TickInit();
+    InitAppConfig();
     StackInit();
-    ZeroconfLLInitialize();
     mDNSInitialize(hostName);
     mDNSServiceRegister((const char *)hostName, // base name of the service
                         "_oscit._udp.local",       // type of the service
@@ -141,56 +121,23 @@ int main(int argc, char** argv) {
                         NULL                       // no application context
                         );
     mDNSMulticastFilterRegister();
-#endif
-
-    //PWM
-    freq = 10000; // 10kHz
-    width = GetSystemClock() / freq;
-    for(i = 0; i < PWM_NUM; i++)
-        duty[i] = 50;
 
     // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
-
-    //USB Initialization
-    #if defined(USE_USB_BUS_SENSE_IO)
-    	tris_usb_bus_sense = 1;
-    #endif
-
-    #if defined(USE_SELF_POWER_SENSE_IO)
-    	tris_self_power = 1;
-    #endif
-
-    USBDeviceInit();
-
-    //for USB_MIDI
-    MIDITxHandle = NULL;
-    MIDIRxHandle = NULL;
-
-    //for USB_HID
-    HIDTxHandle = NULL;
-    HIDRxHandle = NULL;
-
-    #if defined(USB_INTERRUPT)
-    	USBDeviceAttach();
-    #endif
-    usbAttachFlag = TRUE;
 
     LED_1_Off();
     LED_2_Off();
 
     while(1)
     {
-#if 0//test
+#if 0
         if(TickGet() - t >= TICK_SECOND / 2ul)
         {
             t = TickGet();
-            //LED_1_Toggle();
             LED_2_Toggle();
         }
-#endif//test
-
-		currentState = SW_State();
+#endif
+        currentState = SW_State();
 
         if(prevState != currentState)
         {
@@ -202,18 +149,13 @@ int main(int argc, char** argv) {
         NBNSTask();
         mDNSProcess();
 
-        //if(initialCount > 32768)
-            USBControlTask();
-        //else
-        //    initialCount++;
-
         receiveOSCTask();
         sendOSCTask();
 
-        #if defined(USB_POLLING)
-        	USBDeviceTasks();
-        #endif
-
+        USBDeviceTasks();
+        USBControlTask();
+        
+#if 0
     	if(stateFlag2)
         {
 
@@ -232,9 +174,74 @@ int main(int argc, char** argv) {
           	}
         }
         prevState = currentState;
+#endif
     }
     return (EXIT_SUCCESS);
 }
+
+#if 1
+void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(msb);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to high
+    //
+}
+
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb);
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(lsb);
+            putcSPI4(msb);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to low
+    //
+}
+
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb1);
+            putcSPI2(msb1);
+            putcSPI2(lsb0);
+            putcSPI2(msb0);
+            break;
+        case SPI_4:
+            putcSPI4(lsb1);
+            putcSPI4(msb1);
+            putcSPI4(lsb0);
+            putcSPI4(msb0);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to low
+    //
+}
+#endif
 
 /**********************************************
 *  OSC Generic I/O Processing Part
@@ -691,7 +698,7 @@ void sendOSCTask(void)
                     analogInHandle(i, (LONG)ReadADC10(i));
             }
         }
-        sendAdc(TxSocket);
+        sendAdc();
     }
 }
 
@@ -705,26 +712,15 @@ void USBControlTask()
             usbState = 1;
             break;
         case 1:
-            while(BusyADC10());
-            analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
-            analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
+            //while(BusyADC10());
+            //analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
+            //analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
             usbState = 2;
             break;
-#if 0
         case 2:
-            analogInHandle(0, (DWORD)((ADC1BUF0 + ADC1BUF2) / 2));
-            usbState++;
-            break;
-        case 3:
-            analogInHandle(1, (DWORD)((ADC1BUF1 + ADC1BUF3) / 2));
-            usbState++;
-            break;
-#endif
-        //test case 4:
-        case 2:
-            sendNote();
-            sendControlChange();
-            receiveMIDIDatas();
+            //sendNote();
+            //sendControlChange();
+            //receiveMIDIDatas();
             usbState = 0;
             break;
     }
@@ -793,8 +789,7 @@ void HIDControlTask(void)
                     remoteIP[2] = ReceivedHidDataBuffer[4];
                     remoteIP[3] = ReceivedHidDataBuffer[5];
                     initSendFlag = FALSE;
-                    UDPClose(TxSocket);
-                    //test closeOSCSendPort(sndOscSocket);
+                    closeOSCSendPort();
                 }
                 break;
             case 0xF3:// Local Port
@@ -814,8 +809,7 @@ void HIDControlTask(void)
                 {
                     localPort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
                     initReceiveFlag = FALSE;
-                    UDPClose(RxSocket);
-                    //test closeOSCReceivePort(rcvOscSocket);
+                    closeOSCReceivePort();
                 }
                 break;
             case 0xF4:// Remote Port
@@ -835,8 +829,7 @@ void HIDControlTask(void)
                 {
                     remotePort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
                     initSendFlag = FALSE;
-                    UDPClose(TxSocket);
-                    //test closeOSCSendPort(sndOscSocket);
+                    closeOSCSendPort();
                 }
                 break;
             case 0xF5:// Mac Address
@@ -853,11 +846,11 @@ void HIDControlTask(void)
                     u8Data[6] = (BYTE)((remotePort >> 0) & 0x00FF);
                     u8Data[7] = (BYTE)((remotePort >> 8) & 0x00FF);
 
-                    NVMWriteRow((void *)NVM_PROGRAM_PAGE, (void *)u8Data);
+                    //NVMWriteRow((void *)NVM_PROGRAM_PAGE, (void *)u8Data);
                 }
                 else
                 {
-                    memcpy(u8Data, (void *)NVM_PROGRAM_PAGE, 8);
+                    //memcpy(u8Data, (void *)NVM_PROGRAM_PAGE, 8);
 
                     remoteIP[0] = u8Data[0];
                     remoteIP[1] = u8Data[1];
@@ -973,17 +966,6 @@ void receiveMIDIDatas(void)
             num = ReceivedMidiDataBuffer[i + 1];
             val = ReceivedMidiDataBuffer[i + 2];
 
-            switch(num)
-            {
-                case 0:
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-            }
             ReceivedMidiDataBuffer[i] &= 0x00;
             i += 4;
             continue;
@@ -997,191 +979,6 @@ void receiveMIDIDatas(void)
             num = ReceivedMidiDataBuffer[i + 1];
             val = ReceivedMidiDataBuffer[i + 2];
 
-            if(num == 1)
-            {
-                if(val < 1)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 0;
-                    LATBbits.LATB12 = 0;
-                }
-                else if(val < 4)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 0;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 16)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 0;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 28)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 0;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 40)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 0;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 52)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 0;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 64)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 0;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 76)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 88)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 0;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 100)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 0;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 112)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 0;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 124)
-                {
-                    LATBbits.LATB2  = 0;
-                    LATBbits.LATB3  = 1;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-                else if(val < 128)
-                {
-                    LATBbits.LATB2  = 1;
-                    LATBbits.LATB3  = 1;
-                    LATBbits.LATB4  = 1;
-                    LATBbits.LATB5  = 1;
-                    LATBbits.LATB6  = 1;
-                    LATBbits.LATB7  = 1;
-                    LATBbits.LATB8  = 1;
-                    LATBbits.LATB9  = 1;
-                    LATBbits.LATB10 = 1;
-                    LATBbits.LATB11 = 1;
-                    LATBbits.LATB12 = 1;
-                }
-            }
             ReceivedMidiDataBuffer[i] &= 0x00;
             i += 4;
             continue;
