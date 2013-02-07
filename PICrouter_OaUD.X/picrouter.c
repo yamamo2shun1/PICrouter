@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.6 2013/02/07
+ * picrouter.c,v.0.7 2013/02/07
  */
 
 #include "picrouter.h"
@@ -249,7 +249,7 @@ void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYT
 void receiveOSCTask(void)
 {
     WORD rcvLen;
-	static BYTE	buffer[1024];
+	static BYTE buffer[1024] = {0};
     BYTE index, i, j, k;
 
     if(!initReceiveFlag)
@@ -257,6 +257,7 @@ void receiveOSCTask(void)
 
     if(initReceiveFlag && isOSCGetReady(rcvLen))
     {
+        LED_2_On();
         getOSCArray(buffer, sizeof(buffer));
         if(compareOSCAddress(stdPrefix, msgOnboardLed))
         {
@@ -569,7 +570,7 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(stdPrefix, msgSetSpiDO))
         {
-            char *name = getStringArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 0);
+            char* name = getStringArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 0);
             BYTE state = getIntArgumentAtIndex(buffer, stdPrefix, msgSetSpiDO, 1);
             outputSpiPort(name, state);
         }
@@ -589,14 +590,16 @@ void receiveOSCTask(void)
             remoteIP[3] = atoi(strtok(NULL, "."));
             initSendFlag = FALSE;
             closeOSCSendPort();
-            free(rip);
+            //free(rip);
+            //rip = NULL;
         }
         else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
         {
             char* rip = (char *)calloc(15, sizeof(char));;
             sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
             sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
-            free(rip);
+            //free(rip);
+            //rip = NULL;
         }
         else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
         {
@@ -612,6 +615,7 @@ void receiveOSCTask(void)
         {
             mDNSServiceDeRegister();
             free(hostName);
+            hostName = NULL;
             hostName = getStringArgumentAtIndex(buffer, sysPrefix, msgSetHostName, 0);
             mDNSInitialize(hostName);
             mDNSServiceRegister((const char *)hostName, // base name of the service
@@ -658,6 +662,7 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSetPrefix))
         {
             free(prefix);
+            prefix = NULL;
             prefix = getStringArgumentAtIndex(buffer, sysPrefix, msgSetPrefix, 0);
         }
         else if(compareOSCAddress(sysPrefix, msgGetPrefix))
