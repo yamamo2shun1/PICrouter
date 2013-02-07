@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.94 2013/01/26
+ * osc.c,v.0.95 2013/02/07
  */
 
 #include "osc.h"
@@ -27,8 +27,8 @@ UDP_SOCKET RxSocket;
 UDP_SOCKET TxSocket;
 BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
-char* hostName;
-char* prefix;
+char* hostName = NULL;
+char* prefix = NULL;
 
 // Remote IP Address Initialization
 BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
@@ -160,13 +160,13 @@ void InitAppConfig(void)
 
 void setOSCPrefix(char* prefix_string)
 {
-    prefix = (char *)calloc(strlen("/pic"), sizeof(char));
-    memcpy(prefix, "/pic", strlen("/pic"));
+    prefix = (char *)calloc(strlen(prefix_string), sizeof(char));
+    memcpy(prefix, prefix_string, strlen(prefix_string));
 }
 void setOSCHostName(char* host_name)
 {
-    hostName = (char *)calloc(strlen(DEFAULT_HOST_NAME), sizeof(char));
-    memcpy(hostName, DEFAULT_HOST_NAME, strlen(DEFAULT_HOST_NAME));
+    hostName = (char *)calloc(strlen(host_name), sizeof(char));
+    memcpy(hostName, host_name, strlen(host_name));
 }
 
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
