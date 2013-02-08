@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.7 2013/02/07
+ * picrouter.c,v.0.8 2013/02/08
  */
 
 #include "picrouter.h"
@@ -749,12 +749,312 @@ void HIDControlTask(void)
         }
         switch(ReceivedHidDataBuffer[0])
         {
-            case 0xF0:// DHCP Enable
+            case 0x80:// ADC Enable
+                if(ReceivedHidDataBuffer[1])
+                {
+                    AD1CON1bits.ON = 0;
+
+                    BYTE i;
+                    WORD anum = 0;
+                    WORD id = ReceivedHidDataBuffer[2];
+                    BYTE state = ReceivedHidDataBuffer[3];
+
+                    if(id > 13 || state > 1)
+                        return;
+
+                    if(state == 1)
+                        analogEnable[id] = TRUE;
+                    else if(state == 0)
+                        analogEnable[id] = FALSE;
+
+                    for(i = 0; i < USE_ADC_NUM; i++)
+                    {
+                        if(analogEnable[i])
+                            anum++;
+                    }
+                    configAnPort(id, IO_IN);
+
+                    if(state == 1)
+                    {
+                        AD1PCFG &= ~(0x0001 << id);
+                        AD1CSSL |= (0x0001 << id);
+                    }
+                    else
+                    {
+                        AD1PCFG |= (0x0001 << id);
+                        AD1CSSL &= ~(0x0001 << id);
+                    }
+
+                    if(anum > 0)
+                    {
+                        AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0000 0000
+                        AD1CON2 |= ((anum - 1) << 2);
+                        AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+                        AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                        AD1CON1 = 0x000080E6;// 0000 0000 0000 0000 1000 0000 1110 0110
+                    }
+                    else
+                    {
+                        AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
+                        AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                        AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                        AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
+                        AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                        AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+                    }
+                }
+                else
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+
+                    if(id > 13)
+                        return;
+
+                    ToSendHidDataBuffer[0] = 0x80;
+                    ToSendHidDataBuffer[1] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[2] = analogEnable[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[3] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
                 break;
-            case 0xF1:// Local IP
+            case 0x81:
+                if(ReceivedHidDataBuffer[1])
+                {
+                    if(ReceivedHidDataBuffer[3] == 0)
+                    {
+                        configAnPort(ReceivedHidDataBuffer[2], IO_IN);
+                    }
+                    else if(ReceivedHidDataBuffer[3] == 1)
+                    {
+                        configAnPort(ReceivedHidDataBuffer[2], IO_OUT);
+                    }
+                }
+                break;
+            case 0x82:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    outputAnPort(ReceivedHidDataBuffer[2], ReceivedHidDataBuffer[3]);
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    ToSendHidDataBuffer[0] = 0x82;
+                    ToSendHidDataBuffer[1] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[2] = inputAnPort(ReceivedHidDataBuffer[2]);
+                    ToSendHidDataBuffer[3] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x83:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE index = ReceivedHidDataBuffer[2];
+                    if(index > 4)
+                        return;
+
+                    if(ReceivedHidDataBuffer[3] == 1)
+                    {
+                        LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        if(!onTimer23)
+                        {
+                            OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                            onTimer23 = TRUE;
+                        }
+                        switch(index)
+                        {
+                            case 0:
+                                OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                break;
+                            case 1:
+                                OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                break;
+                            case 2:
+                                OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                break;
+                            case 3:
+                                OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                break;
+                        }
+                        onSquare[index] = TRUE;
+                    }
+                    else if(ReceivedHidDataBuffer[3] == 0)
+                    {
+                        onSquare[index] = FALSE;
+                        if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                        {
+                            CloseTimer23();
+                            onTimer23 = FALSE;
+                        }
+                        switch(index)
+                        {
+                            case 0:
+                                CloseOC1();
+                                break;
+                            case 1:
+                                CloseOC3();
+                                break;
+                            case 2:
+                                CloseOC4();
+                                break;
+                            case 3:
+                                CloseOC5();
+                                break;
+                        }
+                    }
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    BYTE index = ReceivedHidDataBuffer[2];
+                    
+                    ToSendHidDataBuffer[0] = 0x83;
+                    ToSendHidDataBuffer[1] = index;
+                    ToSendHidDataBuffer[2] = onSquare[index];
+                    ToSendHidDataBuffer[3] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x84:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    freq = (ReceivedHidDataBuffer[2] << 8) | ReceivedHidDataBuffer[3];
+                    if(freq < 20)
+                    {
+                        freq = 20;
+                    }
+                    else if(freq > 44100)
+                    {
+                        freq = 44100;
+                    }
+                    T2CONbits.TON = 0;
+                    TMR2 = 0;
+                    OC1CONbits.OCM = 0b000;
+                    width = GetSystemClock() / freq;
+                    PR2 = width;
+                    OC1RS = width / 2;
+                    OC1CONbits.OCM = 0b110;
+                    T2CONbits.TON = 1;
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    ToSendHidDataBuffer[0] = 0x84;
+                    ToSendHidDataBuffer[1] = (BYTE)(freq >> 8);
+                    ToSendHidDataBuffer[2] = (BYTE)freq;
+                    ToSendHidDataBuffer[3] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x85:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE index = ReceivedHidDataBuffer[2];
+                    duty[index] = ReceivedHidDataBuffer[3];
+                    if(duty[index] < 0)
+                    {
+                        duty[index] = 0;
+                    }
+                    else if(duty[index] > 100)
+                    {
+                        duty[index] = 100;
+                    }
+                    T2CONbits.TON = 0;
+                    TMR2 = 0;
+                    switch(index)
+                    {
+                        case 0:
+                            OC1CONbits.OCM = 0b000;
+                            OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                            OC1CONbits.OCM = 0b110;
+                            break;
+                        case 1:
+                            OC3CONbits.OCM = 0b000;
+                            OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                            OC3CONbits.OCM = 0b110;
+                            break;
+                        case 2:
+                            OC4CONbits.OCM = 0b000;
+                            OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                            OC4CONbits.OCM = 0b110;
+                            break;
+                        case 3:
+                            OC5CONbits.OCM = 0b000;
+                            OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                            OC5CONbits.OCM = 0b110;
+                            break;
+                    }
+                    T2CONbits.TON = 1;
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    BYTE index = ReceivedHidDataBuffer[2];
+
+                    ToSendHidDataBuffer[0] = 0x85;
+                    ToSendHidDataBuffer[1] = index;
+                    ToSendHidDataBuffer[2] = duty[index];
+                    ToSendHidDataBuffer[3] = 0x00;
+                    
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x86:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE type = ReceivedHidDataBuffer[3];
+                    if(type == 0)
+                    {
+                        configPwmPort(id, IO_IN);
+                    }
+                    else if(type == 1)
+                    {
+                        configPwmPort(id, IO_OUT);
+                    }
+                }
+                break;
+            case 0x87:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = ReceivedHidDataBuffer[3];
+                    outputPwmPort(id, state);
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = inputPwmPort(id);
+
+                    ToSendHidDataBuffer[0] = 0x87;
+                    ToSendHidDataBuffer[1] = id;
+                    ToSendHidDataBuffer[2] = state;
+                    ToSendHidDataBuffer[5] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0xF0:// Host IP
                 if(!ReceivedHidDataBuffer[1])
                 {
-                    ToSendHidDataBuffer[0] = 0xF1;
+                    ToSendHidDataBuffer[0] = 0xF0;
                     ToSendHidDataBuffer[1] = (BYTE)((AppConfig.MyIPAddr.Val >> 0) & 0x000000FF);
                     ToSendHidDataBuffer[2] = (BYTE)((AppConfig.MyIPAddr.Val >> 8) & 0x000000FF);
                     ToSendHidDataBuffer[3] = (BYTE)((AppConfig.MyIPAddr.Val >> 16) & 0x000000FF);
@@ -766,16 +1066,11 @@ void HIDControlTask(void)
                         HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
                     }
                 }
-                else
-                {
-                    if(!AppConfig.Flags.bIsDHCPEnabled)
-                        AppConfig.MyIPAddr.Val = (ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8) | (ReceivedHidDataBuffer[4] << 16) | (ReceivedHidDataBuffer[5] << 24));
-                }
                 break;
-            case 0xF2:// Remote IP
+            case 0xF1:// Remote IP
                 if(!ReceivedHidDataBuffer[1])
                 {
-                    ToSendHidDataBuffer[0] = 0xF2;
+                    ToSendHidDataBuffer[0] = 0xF1;
                     ToSendHidDataBuffer[1] = remoteIP[0];
                     ToSendHidDataBuffer[2] = remoteIP[1];
                     ToSendHidDataBuffer[3] = remoteIP[2];
@@ -797,10 +1092,10 @@ void HIDControlTask(void)
                     closeOSCSendPort();
                 }
                 break;
-            case 0xF3:// Local Port
+            case 0xF2:// Local Port
                 if(!ReceivedHidDataBuffer[1])
                 {
-                    ToSendHidDataBuffer[0] = 0xF3;
+                    ToSendHidDataBuffer[0] = 0xF2;
                     ToSendHidDataBuffer[1] = (BYTE)((localPort >> 0) & 0x00FF);
                     ToSendHidDataBuffer[2] = (BYTE)((localPort >> 8) & 0x00FF);
                     ToSendHidDataBuffer[3] = 0x00;
@@ -817,10 +1112,10 @@ void HIDControlTask(void)
                     closeOSCReceivePort();
                 }
                 break;
-            case 0xF4:// Remote Port
+            case 0xF3:// Remote Port
                 if(!ReceivedHidDataBuffer[1])
                 {
-                    ToSendHidDataBuffer[0] = 0xF4;
+                    ToSendHidDataBuffer[0] = 0xF3;
                     ToSendHidDataBuffer[1] = (BYTE)((remotePort >> 0) & 0x00FF);
                     ToSendHidDataBuffer[2] = (BYTE)((remotePort >> 8) & 0x00FF);
                     ToSendHidDataBuffer[3] = 0x00;
@@ -837,7 +1132,31 @@ void HIDControlTask(void)
                     closeOSCSendPort();
                 }
                 break;
-            case 0xF5:// Mac Address
+            case 0xF4:// Mac Address
+                if(!ReceivedHidDataBuffer[1])
+                {
+                    ToSendHidDataBuffer[0] = 0xF4;
+                    ToSendHidDataBuffer[1] = AppConfig.MyMACAddr.v[0];
+                    ToSendHidDataBuffer[2] = AppConfig.MyMACAddr.v[1];
+                    ToSendHidDataBuffer[3] = AppConfig.MyMACAddr.v[2];
+                    ToSendHidDataBuffer[4] = AppConfig.MyMACAddr.v[3];
+                    ToSendHidDataBuffer[5] = AppConfig.MyMACAddr.v[4];
+                    ToSendHidDataBuffer[6] = AppConfig.MyMACAddr.v[5];
+                    ToSendHidDataBuffer[7] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0xF5:// Soft Reset
+                if(ReceivedHidDataBuffer[1])
+                {
+                    NVMErasePage((void*)NVM_DATA);
+                    NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
+                }
+                SoftReset();
                 break;
             case 0xF6:// Save Current Settings
                 if(ReceivedHidDataBuffer[1])
