@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * hid.java,v.0.9 2012/09/14
+ * hid.java,v.1.0 2013/02/09
  */
 
 import java.io.*;
@@ -252,13 +252,14 @@ public class hid extends MaxObject implements Runnable
                                 l = 0;
                             }
                         }
-                        if(ch == 0x0a)
+                        else if(ch == 0x0a)
                             totalRecords--;
                         if(totalRecords == 0)
                         {
                             char crc = calculateCrc(buff, bufflen);
                             buff[bufflen++] = (byte)crc;
                             buff[bufflen++] = (byte)(crc >> 8);
+
                             hexLength0 -= bufflen;
                             int percentage = (int)(100.0 - (((double)hexLength0 / (double)hexLength) * 100.0));
                             if(percentage > 100)
@@ -284,6 +285,36 @@ public class hid extends MaxObject implements Runnable
                             totalRecords = 10;
                             break;
                         }
+                    }
+                    if(totalRecords != 0)
+                    {
+                        char crc = calculateCrc(buff, bufflen);
+                        buff[bufflen++] = (byte)crc;
+                        buff[bufflen++] = (byte)(crc >> 8);
+
+                        hexLength0 -= bufflen;
+                        int percentage = (int)(100.0 - (((double)hexLength0 / (double)hexLength) * 100.0));
+                        if(percentage > 100)
+                            percentage = 100;
+                        if(percentage != percentage0)
+                            outlet(2,  percentage);
+                        percentage0 = percentage;
+
+                        txpacketlen = 0;
+                        txpacket[txpacketlen++] = SOH;
+                        for(int i = 0; i < bufflen; i++)
+                        {
+                            if((buff[i] == EOT) || (buff[i] == SOH) || buff[i] == DLE)
+                            {
+                                txpacket[txpacketlen++] = DLE;
+                            }
+                            txpacket[txpacketlen++] = buff[i];
+                        }
+                        txpacket[txpacketlen++] = EOT;
+                        dev.write(txpacket);
+
+                            bufflen = 0;
+                            totalRecords = 10;
                     }
                     if(ch == -1)
                     {
