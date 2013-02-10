@@ -48,7 +48,7 @@ PICrouter is **Free Hardware** and **Free Software**.
 
 Specifications
 ------
-0. Supported Zeroconf(Bonjour on Mac OS X), DHCP and NBNS
+0. Supported mDNS(Bonjour on Mac OS X), DHCP and NBNS
 1. Supported Open Sound Control
 2. Supported USB device(MIDI and HID composite) and host(only MIDI) function.
 3. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
