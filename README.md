@@ -63,7 +63,7 @@ Specifications
 Pin Assign
 ------
 <div align="center">
-<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_7a317dd2ee_z.jpg" width="464" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
+	<a href="http://www.flickr.com/photos/yamamo2/8371181045/" title="PICrouter v1.0 PIN ASSIGN by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8499/8371181045_ebda98c326_z.jpg" width="465" height="640" alt="PICrouter v1.0 PIN ASSIGN"></a>
 </div>
 
 Development
