@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.8 2013/02/08
+ * picrouter.c,v.0.9 2013/02/15
  */
 
 #include "picrouter.h"
@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
-    mDNSInitialize(hostName);
-    mDNSServiceRegister((const char *)hostName, // base name of the service
+    mDNSInitialize(DEFAULT_HOST_NAME);
+    mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
                         "_oscit._udp.local",       // type of the service
                         8080,                      // TCP or UDP port, at which this service is available
                         ((const BYTE *)""),        // TXT info
@@ -733,7 +733,7 @@ void USBControlTask()
 
 void HIDControlTask(void)
 {
-    BYTE u8Data[128];
+    BYTE u8Data[128] = {0};
 
     // User Application USB tasks
     if(USBDeviceState < CONFIGURED_STATE || USBSuspendControl == 1)
@@ -914,9 +914,10 @@ void HIDControlTask(void)
                     BYTE index = ReceivedHidDataBuffer[2];
                     
                     ToSendHidDataBuffer[0] = 0x83;
-                    ToSendHidDataBuffer[1] = index;
-                    ToSendHidDataBuffer[2] = onSquare[index];
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = index;
+                    ToSendHidDataBuffer[3] = onSquare[index];
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -948,9 +949,10 @@ void HIDControlTask(void)
                 else if(ReceivedHidDataBuffer[1] == 0)
                 {
                     ToSendHidDataBuffer[0] = 0x84;
-                    ToSendHidDataBuffer[1] = (BYTE)(freq >> 8);
-                    ToSendHidDataBuffer[2] = (BYTE)freq;
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = (BYTE)(freq >> 8);
+                    ToSendHidDataBuffer[3] = (BYTE)freq;
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1003,9 +1005,10 @@ void HIDControlTask(void)
                     BYTE index = ReceivedHidDataBuffer[2];
 
                     ToSendHidDataBuffer[0] = 0x85;
-                    ToSendHidDataBuffer[1] = index;
-                    ToSendHidDataBuffer[2] = duty[index];
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = index;
+                    ToSendHidDataBuffer[3] = duty[index];
+                    ToSendHidDataBuffer[4] = 0x00;
                     
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1041,9 +1044,161 @@ void HIDControlTask(void)
                     BYTE state = inputPwmPort(id);
 
                     ToSendHidDataBuffer[0] = 0x87;
-                    ToSendHidDataBuffer[1] = id;
-                    ToSendHidDataBuffer[2] = state;
-                    ToSendHidDataBuffer[5] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = id;
+                    ToSendHidDataBuffer[3] = state;
+                    ToSendHidDataBuffer[4] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x88:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE type = ReceivedHidDataBuffer[3];
+                    if(type == 0)
+                    {
+                        configDPort(id, IO_IN);
+                    }
+                    else if(type == 1)
+                    {
+                        configDPort(id, IO_OUT);
+                    }
+                }
+                break;
+            case 0x89:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = ReceivedHidDataBuffer[3];
+                    outputDPort(id, state);
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = inputDPort(id);
+
+                    ToSendHidDataBuffer[0] = 0x87;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = id;
+                    ToSendHidDataBuffer[3] = state;
+                    ToSendHidDataBuffer[4] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                    }
+                }
+                break;
+            case 0x8A:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE type = ReceivedHidDataBuffer[3];
+
+                    switch(id)
+                    {
+                        case 0:
+                            if(type == 0)
+                                configSpiPort("sck4", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sck4", IO_OUT);
+                            break;
+                        case 1:
+                            if(type == 0)
+                                configSpiPort("sdi4", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sdi4", IO_OUT);
+                            break;
+                        case 2:
+                            if(type == 0)
+                                configSpiPort("sdo4", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sdo4", IO_OUT);
+                            break;
+                        case 3:
+                            if(type == 0)
+                                configSpiPort("sck2", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sck2", IO_OUT);
+                            break;
+                        case 4:
+                            if(type == 0)
+                                configSpiPort("sdi2", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sdi2", IO_OUT);
+                            break;
+                        case 5:
+                            if(type == 0)
+                                configSpiPort("sdo2", IO_IN);
+                            else if(type == 1)
+                                configSpiPort("sdo2", IO_OUT);
+                            break;
+                    }
+                }
+                break;
+            case 0x8B:
+                if(ReceivedHidDataBuffer[1] == 1)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = ReceivedHidDataBuffer[3];
+                    switch(id)
+                    {
+                        case 0:
+                            outputSpiPort("sck4", state);
+                            break;
+                        case 1:
+                            outputSpiPort("sdi4", state);
+                            break;
+                        case 2:
+                            outputSpiPort("sdo4", state);
+                            break;
+                        case 3:
+                            outputSpiPort("sck2", state);
+                            break;
+                        case 4:
+                            outputSpiPort("sdi2", state);
+                            break;
+                        case 5:
+                            outputSpiPort("sdo2", state);
+                            break;
+                    }
+                }
+                else if(ReceivedHidDataBuffer[1] == 0)
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE state = 0;
+                    switch(id)
+                    {
+                        case 0:
+                            inputSpiPort("sck4");
+                            break;
+                        case 1:
+                            inputSpiPort("sdi4");
+                            break;
+                        case 2:
+                            inputSpiPort("sdo4");
+                            break;
+                        case 3:
+                            inputSpiPort("sck2");
+                            break;
+                        case 4:
+                            inputSpiPort("sdi2");
+                            break;
+                        case 5:
+                            inputSpiPort("sdo2");
+                            break;
+                    }
+
+                    ToSendHidDataBuffer[0] = 0x87;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = id;
+                    ToSendHidDataBuffer[3] = state;
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1055,11 +1210,12 @@ void HIDControlTask(void)
                 if(!ReceivedHidDataBuffer[1])
                 {
                     ToSendHidDataBuffer[0] = 0xF0;
-                    ToSendHidDataBuffer[1] = (BYTE)((AppConfig.MyIPAddr.Val >> 0) & 0x000000FF);
-                    ToSendHidDataBuffer[2] = (BYTE)((AppConfig.MyIPAddr.Val >> 8) & 0x000000FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((AppConfig.MyIPAddr.Val >> 16) & 0x000000FF);
-                    ToSendHidDataBuffer[4] = (BYTE)((AppConfig.MyIPAddr.Val >> 24) & 0x000000FF);
-                    ToSendHidDataBuffer[5] = 0x00;
+                    ToSendHidDataBuffer[1] = 4;
+                    ToSendHidDataBuffer[2] = (BYTE)((AppConfig.MyIPAddr.Val >> 0) & 0x000000FF);
+                    ToSendHidDataBuffer[3] = (BYTE)((AppConfig.MyIPAddr.Val >> 8) & 0x000000FF);
+                    ToSendHidDataBuffer[4] = (BYTE)((AppConfig.MyIPAddr.Val >> 16) & 0x000000FF);
+                    ToSendHidDataBuffer[5] = (BYTE)((AppConfig.MyIPAddr.Val >> 24) & 0x000000FF);
+                    ToSendHidDataBuffer[6] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1071,11 +1227,12 @@ void HIDControlTask(void)
                 if(!ReceivedHidDataBuffer[1])
                 {
                     ToSendHidDataBuffer[0] = 0xF1;
-                    ToSendHidDataBuffer[1] = remoteIP[0];
-                    ToSendHidDataBuffer[2] = remoteIP[1];
-                    ToSendHidDataBuffer[3] = remoteIP[2];
-                    ToSendHidDataBuffer[4] = remoteIP[3];
-                    ToSendHidDataBuffer[5] = 0x00;
+                    ToSendHidDataBuffer[1] = 4;
+                    ToSendHidDataBuffer[2] = remoteIP[0];
+                    ToSendHidDataBuffer[3] = remoteIP[1];
+                    ToSendHidDataBuffer[4] = remoteIP[2];
+                    ToSendHidDataBuffer[5] = remoteIP[3];
+                    ToSendHidDataBuffer[6] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1096,9 +1253,10 @@ void HIDControlTask(void)
                 if(!ReceivedHidDataBuffer[1])
                 {
                     ToSendHidDataBuffer[0] = 0xF2;
-                    ToSendHidDataBuffer[1] = (BYTE)((localPort >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[2] = (BYTE)((localPort >> 8) & 0x00FF);
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = (BYTE)((localPort >> 0) & 0x00FF);
+                    ToSendHidDataBuffer[3] = (BYTE)((localPort >> 8) & 0x00FF);
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1116,9 +1274,10 @@ void HIDControlTask(void)
                 if(!ReceivedHidDataBuffer[1])
                 {
                     ToSendHidDataBuffer[0] = 0xF3;
-                    ToSendHidDataBuffer[1] = (BYTE)((remotePort >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[2] = (BYTE)((remotePort >> 8) & 0x00FF);
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = (BYTE)((remotePort >> 0) & 0x00FF);
+                    ToSendHidDataBuffer[3] = (BYTE)((remotePort >> 8) & 0x00FF);
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1136,13 +1295,14 @@ void HIDControlTask(void)
                 if(!ReceivedHidDataBuffer[1])
                 {
                     ToSendHidDataBuffer[0] = 0xF4;
-                    ToSendHidDataBuffer[1] = AppConfig.MyMACAddr.v[0];
-                    ToSendHidDataBuffer[2] = AppConfig.MyMACAddr.v[1];
-                    ToSendHidDataBuffer[3] = AppConfig.MyMACAddr.v[2];
-                    ToSendHidDataBuffer[4] = AppConfig.MyMACAddr.v[3];
-                    ToSendHidDataBuffer[5] = AppConfig.MyMACAddr.v[4];
-                    ToSendHidDataBuffer[6] = AppConfig.MyMACAddr.v[5];
-                    ToSendHidDataBuffer[7] = 0x00;
+                    ToSendHidDataBuffer[1] = 6;
+                    ToSendHidDataBuffer[2] = AppConfig.MyMACAddr.v[0];
+                    ToSendHidDataBuffer[3] = AppConfig.MyMACAddr.v[1];
+                    ToSendHidDataBuffer[4] = AppConfig.MyMACAddr.v[2];
+                    ToSendHidDataBuffer[5] = AppConfig.MyMACAddr.v[3];
+                    ToSendHidDataBuffer[6] = AppConfig.MyMACAddr.v[4];
+                    ToSendHidDataBuffer[7] = AppConfig.MyMACAddr.v[5];
+                    ToSendHidDataBuffer[8] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
