@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * HardwareProfile.h,v.0.5 2013/01/17
+ * HardwareProfile.h,v.0.6 2013/02/15
  */
 
 #ifndef HARDWARE_PROFILE_H
@@ -126,20 +126,20 @@
 	#define ADC_AN13_IN() PORTBbits.RB13
 
     // PWM
-    #define PWM_OC1_IO(state) TRISDbits.TRISD4 = state;
-    #define PWM_OC3_IO(state) TRISDbits.TRISD3 = state;
-    #define PWM_OC4_IO(state) TRISDbits.TRISD2 = state;
-    #define PWM_OC5_IO(state) TRISDbits.TRISD0 = state;
+    #define PWM_OC1_IO(state) TRISDbits.TRISD0 = state;
+    #define PWM_OC3_IO(state) TRISDbits.TRISD2 = state;
+    #define PWM_OC4_IO(state) TRISDbits.TRISD3 = state;
+    #define PWM_OC5_IO(state) TRISDbits.TRISD4 = state;
 
-    #define PWM_OC1_OUT(state) LATDbits.LATD4 = state;
-    #define PWM_OC3_OUT(state) LATDbits.LATD3 = state;
-    #define PWM_OC4_OUT(state) LATDbits.LATD2 = state;
-    #define PWM_OC5_OUT(state) LATDbits.LATD0 = state;
+    #define PWM_OC1_OUT(state) LATDbits.LATD0 = state;
+    #define PWM_OC3_OUT(state) LATDbits.LATD2 = state;
+    #define PWM_OC4_OUT(state) LATDbits.LATD3 = state;
+    #define PWM_OC5_OUT(state) LATDbits.LATD4 = state;
 
-    #define PWM_OC1_IN() PORTDbits.RD4
-    #define PWM_OC3_IN() PORTDbits.RD3
-    #define PWM_OC4_IN() PORTDbits.RD2
-    #define PWM_OC5_IN() PORTDbits.RD0
+    #define PWM_OC1_IN() PORTDbits.RD0
+    #define PWM_OC3_IN() PORTDbits.RD2
+    #define PWM_OC4_IN() PORTDbits.RD3
+    #define PWM_OC5_IN() PORTDbits.RD4
 
     // DIO
     #define D_PORT0_IO(state) TRISCbits.TRISC13 = state;
