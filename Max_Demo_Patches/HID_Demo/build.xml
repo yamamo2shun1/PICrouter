@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="hidapi">
+    <property environment="env"/>
+    <property name="ANT_HOME" value="../../../java/apache-ant-1.7.1"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="hidapi.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="${ANT_HOME}"/>
+        <pathelement location="/Applications/Max6/Cycling '74/java/lib/max.jar"/>
+    </path>
+
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac includeantruntime="true" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="hidapi.classpath"/>
+        </javac>
+    </target>
+
+    <target name="run" depends="build-project">
+        <java classname="HIDAPITest" failonerror="true" fork="yes">
+            <classpath refid="hidapi.classpath"/>
+            <jvmarg value="-Djava.library.path=${basedir}/mac"/>
+        </java>
+    </target>
+
+    <target name="jar" depends="build-project">
+      <jar destfile="bin/hidapi.jar"
+           basedir="bin"
+           includes="**"
+           excludes="**/HIDAPITest.class"
+           />
+    </target>
+</project>
