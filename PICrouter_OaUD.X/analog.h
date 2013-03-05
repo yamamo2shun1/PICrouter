@@ -36,7 +36,7 @@ typedef enum {
 	LONG_ORIGINAL
 } TYPE_AN_VAL;
 
-#define USE_ADC_NUM  6
+#define USE_ADC_NUM  14
 #define FLTR_ADC_CNT 8
 
 BOOL analogEnable[USE_ADC_NUM];
