@@ -22,7 +22,7 @@
 #ifndef HARDWARE_PROFILE_H
 #define HARDWARE_PROFILE_H
 
-	/*******************************************************************/
+    /*******************************************************************/
     /******** USB stack hardware selection options *********************/
     /*******************************************************************/
     //This section is the set of definitions required by the MCHPFSUSB
