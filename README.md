@@ -101,13 +101,15 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter_OaUD (current ver. is 0.9)  
+#### PICrouter_OaUD (current ver. is 1.0)  
   PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
   PICrouter_OaUD.X is this project folder.  
+  The Max6 demo patch is Max_Demo_Patchexs/HID_Demo/PICrouter_HID.maxpat  
   
 #### PICrouter_OaUH (current ver. is 1.02)  
   PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
   PICrouter_OaUH.X is this project folder.  
+  The Max6 demo patch is Max_Demo_Patchexs/OSC_USB(Host)_Demo/PICrouter_PICrouter-OaUH_Demo.maxpat  
 
 Supported OSC Messages
 --------------------------------
