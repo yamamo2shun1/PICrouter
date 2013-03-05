@@ -285,7 +285,7 @@ BYTE inputDPort(BYTE id)
 
 void configSpiPort(char* name, BYTE io)
 {
-	if(!strcmp(name, "sck4"))
+    if(!strcmp(name, "sck4"))
     {
     	SPI_SCK4_IO(io);
     }
