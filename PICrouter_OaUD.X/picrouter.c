@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.9 2013/02/15
+ * picrouter.c,v.1.0 2013/03/05
  */
 
 #include "picrouter.h"
@@ -30,21 +30,25 @@ void _general_exception_handler(unsigned cause, unsigned status)
 void initIOPorts(void)
 {
     BYTE i = 0;
+
     for(i = 0; i < 14; i++)
     {
         configAnPort(i, IO_OUT);
         outputAnPort(i, LOW);
     }
+
     for(i = 0; i < 4; i++)
     {
         configPwmPort(i, IO_OUT);
         outputPwmPort(i, LOW);
     }
+
     for(i = 0; i < 4; i++)
     {
         configDPort(i, IO_OUT);
         outputDPort(i, LOW);
     }
+
     configSpiPort("sck2", IO_OUT);
     configSpiPort("sdi2", IO_OUT);
     configSpiPort("sdo2", IO_OUT);
@@ -709,26 +713,10 @@ void sendOSCTask(void)
 
 void USBControlTask()
 {
-    static BYTE usbState = 0;
-    switch(usbState)
-    {
-        case 0:
-            HIDControlTask();
-            usbState = 1;
-            break;
-        case 1:
-            //while(BusyADC10());
-            //analogInHandle(0, (LONG)((ADC1BUF0 + ADC1BUF2 + ADC1BUF4 + ADC1BUF6) / 4));
-            //analogInHandle(1, (LONG)((ADC1BUF1 + ADC1BUF3 + ADC1BUF5 + ADC1BUF7) / 4));
-            usbState = 2;
-            break;
-        case 2:
-            //sendNote();
-            //sendControlChange();
-            //receiveMIDIDatas();
-            usbState = 0;
-            break;
-    }
+    HIDControlTask();
+    //sendNote();
+    sendControlChange();
+    //receiveMIDIDatas();
 }
 
 void HIDControlTask(void)
@@ -811,9 +799,11 @@ void HIDControlTask(void)
                         return;
 
                     ToSendHidDataBuffer[0] = 0x80;
-                    ToSendHidDataBuffer[1] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[2] = analogEnable[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 3;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = analogEnable[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[4] = getAnalogByte(ReceivedHidDataBuffer[2], MIDI_ORIGINAL);
+                    ToSendHidDataBuffer[5] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -842,9 +832,10 @@ void HIDControlTask(void)
                 else if(ReceivedHidDataBuffer[1] == 0)
                 {
                     ToSendHidDataBuffer[0] = 0x82;
-                    ToSendHidDataBuffer[1] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[2] = inputAnPort(ReceivedHidDataBuffer[2]);
-                    ToSendHidDataBuffer[3] = 0x00;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = inputAnPort(ReceivedHidDataBuffer[2]);
+                    ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
@@ -1082,7 +1073,7 @@ void HIDControlTask(void)
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE state = inputDPort(id);
 
-                    ToSendHidDataBuffer[0] = 0x87;
+                    ToSendHidDataBuffer[0] = 0x89;
                     ToSendHidDataBuffer[1] = 2;
                     ToSendHidDataBuffer[2] = id;
                     ToSendHidDataBuffer[3] = state;
@@ -1175,26 +1166,26 @@ void HIDControlTask(void)
                     switch(id)
                     {
                         case 0:
-                            inputSpiPort("sck4");
+                            state = inputSpiPort("sck4");
                             break;
                         case 1:
-                            inputSpiPort("sdi4");
+                            state = inputSpiPort("sdi4");
                             break;
                         case 2:
-                            inputSpiPort("sdo4");
+                            state = inputSpiPort("sdo4");
                             break;
                         case 3:
-                            inputSpiPort("sck2");
+                            state = inputSpiPort("sck2");
                             break;
                         case 4:
-                            inputSpiPort("sdi2");
+                            state = inputSpiPort("sdi2");
                             break;
                         case 5:
-                            inputSpiPort("sdo2");
+                            state = inputSpiPort("sdo2");
                             break;
                     }
 
-                    ToSendHidDataBuffer[0] = 0x87;
+                    ToSendHidDataBuffer[0] = 0x8B;
                     ToSendHidDataBuffer[1] = 2;
                     ToSendHidDataBuffer[2] = id;
                     ToSendHidDataBuffer[3] = state;
@@ -1382,12 +1373,8 @@ void sendNote(void)
                 midiData.CableNumber = 0;
                 midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
                 midiData.DATA_0 = 0x90;
-                midiData.DATA_1 = i + 2 * j;
-
-                if(btnCurrent[i] & (1 << j))
-                    midiData.DATA_2 = 127;
-                else
-                    midiData.DATA_2 = 0;
+                midiData.DATA_1 = i * MAX_BTN_COL + j;
+                midiData.DATA_2 = btnCurrent[i] >> j & 0x01;
 
                 if(!USBHandleBusy(MIDITxHandle))
                     MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
@@ -1401,32 +1388,31 @@ void sendControlChange(void)
 {
     BYTE i, value;
 
-    for(i = 0; i < 2; i++)
+    for(i = 0; i < USE_ADC_NUM; i++)
     {
-        if(getAnalogFlag(i))
+        if(analogEnable[i])
         {
-            midiData.Val = 0;
-            midiData.CableNumber = 0;
-            midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
-            midiData.DATA_0 = 0xB0;
+            analogInHandle(i, (LONG)ReadADC10(i));
 
-            if(i == 0)
+            if(getAnalogFlag(i))
             {
+                midiData.Val = 0;
+                midiData.CableNumber = 0;
+                midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+                midiData.DATA_0 = 0xB0;
+
                 value = getAnalogByte(i, MIDI_ORIGINAL);
-            }
-            else if(i == 1)
-            {
-                value = getAnalogByte(i, MIDI_VOLUME);
-            }
-            midiData.DATA_1 = i;
-            midiData.DATA_2 = value;
+                
+                midiData.DATA_1 = i;
+                midiData.DATA_2 = value;
            
-            if(!USBHandleBusy(MIDITxHandle))
-            {
-                MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
-                resetAnalogFlag(i);
+                if(!USBHandleBusy(MIDITxHandle))
+                {
+                    MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
+                    resetAnalogFlag(i);
+                }
+                //delayUs(20);
             }
-            //delayUs(20);
         }
     }
 }
