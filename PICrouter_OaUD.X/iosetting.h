@@ -16,13 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.1 2013/01/17
- */
-/* 
- * File:   iosetting.h
- * Author: shun
- *
- * Created on 2013/01/17, 9:25
+ * iosetting.h,v.0.2 2013/03/06
  */
 
 #ifndef IOSETTING_H
@@ -35,6 +29,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HardwareProfile.h"
+
+extern BYTE ioAnPort[14];
+extern BYTE ioPwmPort[4];
+extern BYTE ioDPort[4];
+extern BYTE ioSpiPort[6];
 
 void setupIOPorts(void);
 
