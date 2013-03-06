@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.0 2013/03/05
+ * picrouter.c,v.1.01 2013/03/06
  */
 
 #include "picrouter.h"
@@ -814,6 +814,7 @@ void HIDControlTask(void)
             case 0x81:
                 if(ReceivedHidDataBuffer[1])
                 {
+                    ioAnPort[ReceivedHidDataBuffer[2]] = ReceivedHidDataBuffer[3];
                     if(ReceivedHidDataBuffer[3] == 0)
                     {
                         configAnPort(ReceivedHidDataBuffer[2], IO_IN);
@@ -821,6 +822,24 @@ void HIDControlTask(void)
                     else if(ReceivedHidDataBuffer[3] == 1)
                     {
                         configAnPort(ReceivedHidDataBuffer[2], IO_OUT);
+                    }
+                }
+                else
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+
+                    if(id > 13)
+                        return;
+
+                    ToSendHidDataBuffer[0] = 0x81;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = ioAnPort[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[5] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
                     }
                 }
                 break;
@@ -1012,6 +1031,7 @@ void HIDControlTask(void)
                 {
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
+                    ioPwmPort[id] = type;
                     if(type == 0)
                     {
                         configPwmPort(id, IO_IN);
@@ -1019,6 +1039,24 @@ void HIDControlTask(void)
                     else if(type == 1)
                     {
                         configPwmPort(id, IO_OUT);
+                    }
+                }
+                else
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+
+                    if(id > 3)
+                        return;
+
+                    ToSendHidDataBuffer[0] = 0x86;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = ioPwmPort[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[5] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
                     }
                 }
                 break;
@@ -1051,6 +1089,8 @@ void HIDControlTask(void)
                 {
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
+
+                    ioDPort[id] = type;
                     if(type == 0)
                     {
                         configDPort(id, IO_IN);
@@ -1058,6 +1098,24 @@ void HIDControlTask(void)
                     else if(type == 1)
                     {
                         configDPort(id, IO_OUT);
+                    }
+                }
+                else
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+
+                    if(id > 3)
+                        return;
+
+                    ToSendHidDataBuffer[0] = 0x88;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = ioDPort[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[5] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
                     }
                 }
                 break;
@@ -1091,6 +1149,7 @@ void HIDControlTask(void)
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
 
+                    ioSpiPort[id] = type;
                     switch(id)
                     {
                         case 0:
@@ -1129,6 +1188,24 @@ void HIDControlTask(void)
                             else if(type == 1)
                                 configSpiPort("sdo2", IO_OUT);
                             break;
+                    }
+                }
+                else
+                {
+                    BYTE id = ReceivedHidDataBuffer[2];
+
+                    if(id > 5)
+                        return;
+
+                    ToSendHidDataBuffer[0] = 0x8A;
+                    ToSendHidDataBuffer[1] = 2;
+                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
+                    ToSendHidDataBuffer[3] = ioSpiPort[ReceivedHidDataBuffer[2]];
+                    ToSendHidDataBuffer[5] = 0x00;
+
+                    if(!USBHandleBusy(HIDTxHandle))
+                    {
+                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
                     }
                 }
                 break;
