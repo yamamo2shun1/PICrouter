@@ -4,10 +4,22 @@
 <th colspan="4" align="center">INDEX</th>
 </tr>
 <tr align="center">
-<td><a href="#licenses">Licenses</a></td><td><a href="#specifications">Specifications</a></td><td><a href="#pin-assign">Pin Assign</a></td><td><a href="#development">Development</a></td>
+    <td><a href="#licenses">Licenses</a></td>
+    <td><a href="#specifications">Specifications</a></td>
+    <td><a href="#pin-assign">Pin Assign</a></td>
+    <td><a href="#development">Development</a></td>
 </tr>
 <tr align="center">
-<td><a href="#bootloader-application">Bootloader App.</a></td><td><a href="#schematic-and-board-current-ver-is-100">Sch & Brd Data</a></td><td><a href="#application-projects">App. Projects</a></td><td><a href="#supported-osc-messages">Supported OSC Msgs</a></td>
+    <td><a href="#bootloader-application">Bootloader App.</a></td>
+    <td><a href="#schematic-and-board-current-ver-is-100">Sch & Brd Data</a></td>
+    <td><a href="#application-projects">App. Projects</a></td>
+    <td><a href="#supported-osc-messages">Supported OSC Msgs</a></td>
+</tr>
+<tr align="center">
+    <td><a href="#supported-hid-commands">Supported HID Cmds</a></td>
+    <td></td>
+    <td></td>
+    <td></td>
 </tr>
 </table>
 </div>
@@ -116,3 +128,9 @@ Supported OSC Messages
 See [osc pages][].
 
 [osc pages]: https://github.com/tkrworks/PICrouter/wiki/Supported-OSC-Messages
+
+Supported HID Commands
+--------------------------------
+See [hid pages][].
+
+[hid pages]: https://github.com/tkrworks/PICrouter/wiki/Supported-HID-Commands
