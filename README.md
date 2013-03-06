@@ -68,7 +68,7 @@ Pin Assign
 
 Development
 ------
-* Microchip [MPLABX] v1.60
+* Microchip [MPLABX] v1.70
 * Microchip [MPLAB XC32 Compiler] v1.20  
   *To develop application, you can use free version.*
 
