@@ -20,7 +20,6 @@
     <td><a href="#supported-hid-commands">Supported HID Cmds</a></td>
     <td></td>
     <td></td>
-    <td></td>
 </tr>
 </table>
 </div>
