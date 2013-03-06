@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.2 2013/03/06
+  * iosetting.c,v.0.3 2013/03/06
  */
 
 #include "iosetting.h"
@@ -28,6 +28,7 @@ BYTE ioSpiPort[6] = {0};
 
 void configAnPort(BYTE id, BYTE io)
 {
+    ioAnPort[id] = io;
     switch(id)
     {
         case 0:
@@ -176,6 +177,7 @@ BYTE inputAnPort(BYTE id)
 
 void configPwmPort(BYTE id, BYTE io)
 {
+    ioPwmPort[id] = io;
     switch(id)
     {
         case 0:
@@ -234,6 +236,7 @@ BYTE inputPwmPort(BYTE id)
 
 void configDPort(BYTE id, BYTE io)
 {
+    ioDPort[id] = io;
     switch(id)
     {
         case 0:
@@ -293,26 +296,32 @@ void configSpiPort(char* name, BYTE io)
 {
     if(!strcmp(name, "sck4"))
     {
+        ioSpiPort[0] = io;
     	SPI_SCK4_IO(io);
     }
     else if(!strcmp(name, "sdi4"))
     {
+        ioSpiPort[1] = io;
     	SPI_SDI4_IO(io);
     }
     else if(!strcmp(name, "sdo4"))
     {
+        ioSpiPort[2] = io;
     	SPI_SDO4_IO(io);
     }
     else if(!strcmp(name, "sck2"))
     {
+        ioSpiPort[3] = io;
     	SPI_SCK2_IO(io);
     }
     else if(!strcmp(name, "sdi2"))
     {
+        ioSpiPort[4] = io;
     	SPI_SDI2_IO(io);
     }
     else if(!strcmp(name, "sdo2"))
     {
+        ioSpiPort[5] = io;
     	SPI_SDO2_IO(io);
     }
 }

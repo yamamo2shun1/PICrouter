@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.2 2013/03/06
+ * iosetting.h,v.0.3 2013/03/06
  */
 
 #ifndef IOSETTING_H
