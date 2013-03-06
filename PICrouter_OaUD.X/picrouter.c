@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.01 2013/03/06
+ * picrouter.c,v.1.02 2013/03/06
  */
 
 #include "picrouter.h"
@@ -356,6 +356,7 @@ void receiveOSCTask(void)
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigAdc, 1);
+ 
             if(!strcmp(type, "din"))
             {
                 configAnPort(id, IO_IN);
@@ -537,6 +538,7 @@ void receiveOSCTask(void)
         {
             BYTE id = getIntArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 0);
             char* type = getStringArgumentAtIndex(buffer, stdPrefix, msgConfigDIO, 1);
+
             if(!strcmp(type, "din"))
             {
                 configDPort(id, IO_IN);
@@ -814,7 +816,6 @@ void HIDControlTask(void)
             case 0x81:
                 if(ReceivedHidDataBuffer[1])
                 {
-                    ioAnPort[ReceivedHidDataBuffer[2]] = ReceivedHidDataBuffer[3];
                     if(ReceivedHidDataBuffer[3] == 0)
                     {
                         configAnPort(ReceivedHidDataBuffer[2], IO_IN);
@@ -1031,7 +1032,7 @@ void HIDControlTask(void)
                 {
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
-                    ioPwmPort[id] = type;
+
                     if(type == 0)
                     {
                         configPwmPort(id, IO_IN);
@@ -1090,7 +1091,6 @@ void HIDControlTask(void)
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
 
-                    ioDPort[id] = type;
                     if(type == 0)
                     {
                         configDPort(id, IO_IN);
@@ -1149,7 +1149,6 @@ void HIDControlTask(void)
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE type = ReceivedHidDataBuffer[3];
 
-                    ioSpiPort[id] = type;
                     switch(id)
                     {
                         case 0:
