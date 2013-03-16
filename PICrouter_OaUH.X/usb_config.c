@@ -3,7 +3,7 @@
                                                                                 
 Software License Agreement                                                      
                                                                                 
-Copyright © 2007-2008 Microchip Technology Inc. and its licensors.  All         
+Copyright ï¿½ 2007-2008 Microchip Technology Inc. and its licensors.  All         
 rights reserved.                                                                
                                                                                 
 Microchip licenses to you the right to: (1) install Software on a single        
@@ -39,6 +39,7 @@ DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
 #include "HardwareProfile.h"
 #include "USB/usb.h"
 #include "USB/usb_host_midi.h"
+#include "USB/usb_host_hid.h"
 
 // *****************************************************************************
 // Client Driver Function Pointer Table for the USB Embedded Host foundation
@@ -51,6 +52,12 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
         USBHostMIDIEventHandler,
         0
     }
+    ,
+    {
+        USBHostHIDInitialize,
+        USBHostHIDEventHandler,
+        0
+    }
 };
 
 // *****************************************************************************
@@ -59,6 +66,7 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 
 USB_TPL usbTPL[] =
 {
-    { INIT_CL_SC_P( 01ul, 3ul, 0ul ), 0, 0, {TPL_CLASS_DRV} } // MIDI Audio Subclass
+    { INIT_CL_SC_P( 0x01ul, 0x3ul, 0x0ul ), 0, 0, {TPL_CLASS_DRV} },// MIDI Audio Subclass
+    { INIT_CL_SC_P( 0x03ul, 0x0ul, 0x0ul ), 0, 1, {TPL_CLASS_DRV} } // HID Class
 };
 
