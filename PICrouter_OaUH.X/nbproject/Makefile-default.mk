@@ -45,11 +45,11 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED="${OBJECTDIR}/TCPIP Stack/DHCP.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o" "${OBJECTDIR}/TCPIP Stack/Helpers.o" "${OBJECTDIR}/TCPIP Stack/ICMP.o" "${OBJECTDIR}/TCPIP Stack/IP.o" "${OBJECTDIR}/TCPIP Stack/StackTsk.o" "${OBJECTDIR}/TCPIP Stack/Tick.o" "${OBJECTDIR}/TCPIP Stack/UDP.o" "${OBJECTDIR}/TCPIP Stack/ARP.o" "${OBJECTDIR}/TCPIP Stack/NBNS.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o" ${OBJECTDIR}/USB/usb_host.o ${OBJECTDIR}/USB/usb_host_midi.o ${OBJECTDIR}/myDelay.o ${OBJECTDIR}/usb_config.o ${OBJECTDIR}/analog.o ${OBJECTDIR}/button.o ${OBJECTDIR}/osc.o ${OBJECTDIR}/picrouter-oauh.o ${OBJECTDIR}/encoder.o ${OBJECTDIR}/iosetting.o
-POSSIBLE_DEPFILES="${OBJECTDIR}/TCPIP Stack/DHCP.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" "${OBJECTDIR}/TCPIP Stack/IP.o.d" "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" "${OBJECTDIR}/TCPIP Stack/Tick.o.d" "${OBJECTDIR}/TCPIP Stack/UDP.o.d" "${OBJECTDIR}/TCPIP Stack/ARP.o.d" "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" ${OBJECTDIR}/USB/usb_host.o.d ${OBJECTDIR}/USB/usb_host_midi.o.d ${OBJECTDIR}/myDelay.o.d ${OBJECTDIR}/usb_config.o.d ${OBJECTDIR}/analog.o.d ${OBJECTDIR}/button.o.d ${OBJECTDIR}/osc.o.d ${OBJECTDIR}/picrouter-oauh.o.d ${OBJECTDIR}/encoder.o.d ${OBJECTDIR}/iosetting.o.d
+OBJECTFILES_QUOTED_IF_SPACED="${OBJECTDIR}/TCPIP Stack/DHCP.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o" "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o" "${OBJECTDIR}/TCPIP Stack/Helpers.o" "${OBJECTDIR}/TCPIP Stack/ICMP.o" "${OBJECTDIR}/TCPIP Stack/IP.o" "${OBJECTDIR}/TCPIP Stack/StackTsk.o" "${OBJECTDIR}/TCPIP Stack/Tick.o" "${OBJECTDIR}/TCPIP Stack/UDP.o" "${OBJECTDIR}/TCPIP Stack/ARP.o" "${OBJECTDIR}/TCPIP Stack/NBNS.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o" "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o" ${OBJECTDIR}/USB/usb_host.o ${OBJECTDIR}/USB/usb_host_midi.o ${OBJECTDIR}/USB/usb_host_hid.o ${OBJECTDIR}/USB/usb_host_hid_parser.o ${OBJECTDIR}/myDelay.o ${OBJECTDIR}/usb_config.o ${OBJECTDIR}/analog.o ${OBJECTDIR}/button.o ${OBJECTDIR}/osc.o ${OBJECTDIR}/picrouter-oauh.o ${OBJECTDIR}/encoder.o ${OBJECTDIR}/iosetting.o
+POSSIBLE_DEPFILES="${OBJECTDIR}/TCPIP Stack/DHCP.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhy.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32ExtPhyDP83848.o.d" "${OBJECTDIR}/TCPIP Stack/ETHPIC32IntMac.o.d" "${OBJECTDIR}/TCPIP Stack/Helpers.o.d" "${OBJECTDIR}/TCPIP Stack/ICMP.o.d" "${OBJECTDIR}/TCPIP Stack/IP.o.d" "${OBJECTDIR}/TCPIP Stack/StackTsk.o.d" "${OBJECTDIR}/TCPIP Stack/Tick.o.d" "${OBJECTDIR}/TCPIP Stack/UDP.o.d" "${OBJECTDIR}/TCPIP Stack/ARP.o.d" "${OBJECTDIR}/TCPIP Stack/NBNS.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfHelper.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfLinkLocal.o.d" "${OBJECTDIR}/TCPIP Stack/ZeroconfMulticastDNS.o.d" ${OBJECTDIR}/USB/usb_host.o.d ${OBJECTDIR}/USB/usb_host_midi.o.d ${OBJECTDIR}/USB/usb_host_hid.o.d ${OBJECTDIR}/USB/usb_host_hid_parser.o.d ${OBJECTDIR}/myDelay.o.d ${OBJECTDIR}/usb_config.o.d ${OBJECTDIR}/analog.o.d ${OBJECTDIR}/button.o.d ${OBJECTDIR}/osc.o.d ${OBJECTDIR}/picrouter-oauh.o.d ${OBJECTDIR}/encoder.o.d ${OBJECTDIR}/iosetting.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/TCPIP\ Stack/DHCP.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhy.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhyDP83848.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32IntMac.o ${OBJECTDIR}/TCPIP\ Stack/Helpers.o ${OBJECTDIR}/TCPIP\ Stack/ICMP.o ${OBJECTDIR}/TCPIP\ Stack/IP.o ${OBJECTDIR}/TCPIP\ Stack/StackTsk.o ${OBJECTDIR}/TCPIP\ Stack/Tick.o ${OBJECTDIR}/TCPIP\ Stack/UDP.o ${OBJECTDIR}/TCPIP\ Stack/ARP.o ${OBJECTDIR}/TCPIP\ Stack/NBNS.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfHelper.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfLinkLocal.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfMulticastDNS.o ${OBJECTDIR}/USB/usb_host.o ${OBJECTDIR}/USB/usb_host_midi.o ${OBJECTDIR}/myDelay.o ${OBJECTDIR}/usb_config.o ${OBJECTDIR}/analog.o ${OBJECTDIR}/button.o ${OBJECTDIR}/osc.o ${OBJECTDIR}/picrouter-oauh.o ${OBJECTDIR}/encoder.o ${OBJECTDIR}/iosetting.o
+OBJECTFILES=${OBJECTDIR}/TCPIP\ Stack/DHCP.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhy.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32ExtPhyDP83848.o ${OBJECTDIR}/TCPIP\ Stack/ETHPIC32IntMac.o ${OBJECTDIR}/TCPIP\ Stack/Helpers.o ${OBJECTDIR}/TCPIP\ Stack/ICMP.o ${OBJECTDIR}/TCPIP\ Stack/IP.o ${OBJECTDIR}/TCPIP\ Stack/StackTsk.o ${OBJECTDIR}/TCPIP\ Stack/Tick.o ${OBJECTDIR}/TCPIP\ Stack/UDP.o ${OBJECTDIR}/TCPIP\ Stack/ARP.o ${OBJECTDIR}/TCPIP\ Stack/NBNS.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfHelper.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfLinkLocal.o ${OBJECTDIR}/TCPIP\ Stack/ZeroconfMulticastDNS.o ${OBJECTDIR}/USB/usb_host.o ${OBJECTDIR}/USB/usb_host_midi.o ${OBJECTDIR}/USB/usb_host_hid.o ${OBJECTDIR}/USB/usb_host_hid_parser.o ${OBJECTDIR}/myDelay.o ${OBJECTDIR}/usb_config.o ${OBJECTDIR}/analog.o ${OBJECTDIR}/button.o ${OBJECTDIR}/osc.o ${OBJECTDIR}/picrouter-oauh.o ${OBJECTDIR}/encoder.o ${OBJECTDIR}/iosetting.o
 
 
 CFLAGS=
@@ -169,6 +169,16 @@ ${OBJECTDIR}/USB/usb_host_midi.o: USB/usb_host_midi.c  nbproject/Makefile-${CND_
 	@${MKDIR} ${OBJECTDIR}/USB 
 	@${RM} ${OBJECTDIR}/USB/usb_host_midi.o.d 
 	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_midi.o.d" -o ${OBJECTDIR}/USB/usb_host_midi.o USB/usb_host_midi.c   
+	
+${OBJECTDIR}/USB/usb_host_hid.o: USB/usb_host_hid.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/USB 
+	@${RM} ${OBJECTDIR}/USB/usb_host_hid.o.d 
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_hid.o.d" -o ${OBJECTDIR}/USB/usb_host_hid.o USB/usb_host_hid.c   
+	
+${OBJECTDIR}/USB/usb_host_hid_parser.o: USB/usb_host_hid_parser.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/USB 
+	@${RM} ${OBJECTDIR}/USB/usb_host_hid_parser.o.d 
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_hid_parser.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_hid_parser.o.d" -o ${OBJECTDIR}/USB/usb_host_hid_parser.o USB/usb_host_hid_parser.c   
 	
 ${OBJECTDIR}/myDelay.o: myDelay.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
@@ -295,6 +305,16 @@ ${OBJECTDIR}/USB/usb_host_midi.o: USB/usb_host_midi.c  nbproject/Makefile-${CND_
 	@${MKDIR} ${OBJECTDIR}/USB 
 	@${RM} ${OBJECTDIR}/USB/usb_host_midi.o.d 
 	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_midi.o.d" -o ${OBJECTDIR}/USB/usb_host_midi.o USB/usb_host_midi.c   
+	
+${OBJECTDIR}/USB/usb_host_hid.o: USB/usb_host_hid.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/USB 
+	@${RM} ${OBJECTDIR}/USB/usb_host_hid.o.d 
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_hid.o.d" -o ${OBJECTDIR}/USB/usb_host_hid.o USB/usb_host_hid.c   
+	
+${OBJECTDIR}/USB/usb_host_hid_parser.o: USB/usb_host_hid_parser.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/USB 
+	@${RM} ${OBJECTDIR}/USB/usb_host_hid_parser.o.d 
+	@${FIXDEPS} "${OBJECTDIR}/USB/usb_host_hid_parser.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -I"./" -I"./Include" -I"./USB" -MMD -MF "${OBJECTDIR}/USB/usb_host_hid_parser.o.d" -o ${OBJECTDIR}/USB/usb_host_hid_parser.o USB/usb_host_hid_parser.c   
 	
 ${OBJECTDIR}/myDelay.o: myDelay.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
