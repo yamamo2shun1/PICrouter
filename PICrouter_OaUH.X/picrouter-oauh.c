@@ -142,6 +142,9 @@ int main(int argc, char** argv) {
         {
             USBHostTasks();
             convertMidiToOsc();
+
+            USBHostHIDTasks();
+            convertHidToOsc();
         }
         else
             bUsbHostInitialized = USBHostInit(0);
@@ -814,11 +817,21 @@ void receiveOSCTask(void)
 void sendOSCTask(void)
 {
     BYTE i;
+    static BYTE swState0 = 0;
+    static BYTE swState1 = 0;
+
     if(!initSendFlag)
         initSendFlag = openOSCSendPort(remoteIP, remotePort);
 
     if(initSendFlag)
     {
+        swState1 = SW_State();
+        if(swState1 != swState0)
+        {
+            sendOSCMessage(stdPrefix, msgOnboardSw1, "i", swState1);
+        }
+        swState0 = swState1;
+
         if(BusyADC10())
         {
             for(i = 0; i < USE_ADC_NUM; i++)
@@ -931,11 +944,261 @@ void convertMidiToOsc(void)
     }
 }
 
+void convertHidToOsc(void)
+{
+    App_Detect_Device();
+    switch(App_State_Mouse)
+    {
+        case DEVICE_NOT_CONNECTED:
+            USBTasks();
+            if(USBHostHID_ApiDeviceDetect()) /* True if report descriptor is parsed with no error */
+            {
+                App_State_Mouse = DEVICE_CONNECTED;
+            }
+            break;
+        case DEVICE_CONNECTED:
+            App_State_Mouse = READY_TO_TX_RX_REPORT;
+            break;
+        case READY_TO_TX_RX_REPORT:
+            if(!USBHostHID_ApiDeviceDetect())
+            {
+                App_State_Mouse = DEVICE_NOT_CONNECTED;
+            }
+            else
+            {
+                App_State_Mouse = GET_INPUT_REPORT;
+            }
+            break;
+        case GET_INPUT_REPORT:
+            if(USBHostHID_ApiGetReport(Appl_raw_report_buffer.Report_ID,0,
+                                       Appl_raw_report_buffer.ReportSize, Appl_raw_report_buffer.ReportData))
+            {
+                /* Host may be busy/error -- keep trying */
+            }
+            else
+            {
+                App_State_Mouse = INPUT_REPORT_PENDING;
+            }
+            USBTasks();
+            break;
+        case INPUT_REPORT_PENDING:
+            if(USBHostHID_ApiTransferIsComplete(&ErrorDriver,&NumOfBytesRcvd))
+            {
+                if(ErrorDriver ||(NumOfBytesRcvd != Appl_raw_report_buffer.ReportSize ))
+                {
+                    ErrorCounter++ ; 
+                    if(MAX_ERROR_COUNTER <= ErrorDriver)
+                        App_State_Mouse = ERROR_REPORTED;
+                    else
+                        App_State_Mouse = READY_TO_TX_RX_REPORT;
+                }
+                else
+                {
+                    ErrorCounter = 0; 
+                    ReportBufferUpdated = TRUE;
+                    App_State_Mouse = READY_TO_TX_RX_REPORT;
+                    
+                    {
+                        BYTE i;
+                        for(i=0;i<Appl_raw_report_buffer.ReportSize;i++)
+                        {
+                            if(Appl_raw_report_buffer.ReportData[i] != 0)
+                            {
+                            }
+                        }
+                    }
+                    App_ProcessInputReport();
+                }
+            }
+            break;
+        case ERROR_REPORTED:
+            break;
+        default:
+            break;       
+    }
+}
+
 //******************************************************************************
 //******************************************************************************
 // USB Support Functions
 //******************************************************************************
 //******************************************************************************
+
+/****************************************************************************
+  Function:
+    void App_Detect_Device(void)
+
+  Description:
+    This function monitors the status of device connected/disconnected
+
+  Precondition:
+    None
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+***************************************************************************/
+void App_Detect_Device(void)
+{
+  if(!USBHostHID_ApiDeviceDetect())
+  {
+     App_State_Mouse = DEVICE_NOT_CONNECTED;
+  }
+}
+
+/****************************************************************************
+  Function:
+    void App_ProcessInputReport(void)
+
+  Description:
+    This function processes input report received from HID device.
+
+  Precondition:
+    None
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+***************************************************************************/
+void App_ProcessInputReport(void)
+{
+    BYTE  data;
+   /* process input report received from device */
+    USBHostHID_ApiImportData(Appl_raw_report_buffer.ReportData, Appl_raw_report_buffer.ReportSize
+                          ,Appl_Button_report_buffer, &Appl_Mouse_Buttons_Details);
+    USBHostHID_ApiImportData(Appl_raw_report_buffer.ReportData, Appl_raw_report_buffer.ReportSize
+                          ,Appl_XY_report_buffer, &Appl_XY_Axis_Details);
+
+ // X-axis
+    data = (Appl_XY_report_buffer[0] & 0xF0) >> 4;
+    data = (Appl_XY_report_buffer[0] & 0x0F);
+
+ // Y-axis
+    data = (Appl_XY_report_buffer[1] & 0xF0) >> 4;
+    data = (Appl_XY_report_buffer[1] & 0x0F);
+    
+    sendOSCMessage("/hid", "/get", "iiii", Appl_XY_report_buffer[0], Appl_XY_report_buffer[1], Appl_Button_report_buffer[0], Appl_Button_report_buffer[1]);
+    
+    if(Appl_Button_report_buffer[0] == 1)
+    {
+    }
+    if(Appl_Button_report_buffer[1] == 1)
+    {
+    }
+
+}
+
+/****************************************************************************
+  Function:
+    BOOL USB_HID_DataCollectionHandler(void)
+  Description:
+    This function is invoked by HID client , purpose is to collect the 
+    details extracted from the report descriptor. HID client will store
+    information extracted from the report descriptor in data structures.
+    Application needs to create object for each report type it needs to 
+    extract.
+    For ex: HID_DATA_DETAILS Appl_ModifierKeysDetails;
+    HID_DATA_DETAILS is defined in file usb_host_hid_appl_interface.h
+    Each member of the structure must be initialized inside this function.
+    Application interface layer provides functions :
+    USBHostHID_ApiFindBit()
+    USBHostHID_ApiFindValue()
+    These functions can be used to fill in the details as shown in the demo
+    code.
+
+  Precondition:
+    None
+
+  Parameters:
+    None
+
+  Return Values:
+    TRUE    - If the report details are collected successfully.
+    FALSE   - If the application does not find the the supported format.
+
+  Remarks:
+    This Function name should be entered in the USB configuration tool
+    in the field "Parsed Data Collection handler".
+    If the application does not define this function , then HID cient 
+    assumes that Application is aware of report format of the attached
+    device.
+***************************************************************************/
+BOOL USB_HID_DataCollectionHandler(void)
+{
+  BYTE NumOfReportItem = 0;
+  BYTE i;
+  USB_HID_ITEM_LIST* pitemListPtrs;
+  USB_HID_DEVICE_RPT_INFO* pDeviceRptinfo;
+  HID_REPORTITEM *reportItem;
+  HID_USAGEITEM *hidUsageItem;
+  BYTE usageIndex;
+  BYTE reportIndex;
+
+  pDeviceRptinfo = USBHostHID_GetCurrentReportInfo(); // Get current Report Info pointer
+  pitemListPtrs = USBHostHID_GetItemListPointers();   // Get pointer to list of item pointers
+
+  BOOL status = FALSE;
+   /* Find Report Item Index for Modifier Keys */
+   /* Once report Item is located , extract information from data structures provided by the parser */
+   NumOfReportItem = pDeviceRptinfo->reportItems;
+   for(i=0;i<NumOfReportItem;i++)
+    {
+       reportItem = &pitemListPtrs->reportItemList[i];
+       if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == (HIDData_Variable|HIDData_Relative))&&
+           (reportItem->globals.usagePage==USAGE_PAGE_GEN_DESKTOP))
+        {
+           /* We now know report item points to modifier keys */
+           /* Now make sure usage Min & Max are as per application */
+            usageIndex = reportItem->firstUsageItem;
+            hidUsageItem = &pitemListPtrs->usageItemList[usageIndex];
+
+            reportIndex = reportItem->globals.reportIndex;
+            Appl_XY_Axis_Details.reportLength = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+            Appl_XY_Axis_Details.reportID = (BYTE)reportItem->globals.reportID;
+            Appl_XY_Axis_Details.bitOffset = (BYTE)reportItem->startBit;
+            Appl_XY_Axis_Details.bitLength = (BYTE)reportItem->globals.reportsize;
+            Appl_XY_Axis_Details.count=(BYTE)reportItem->globals.reportCount;
+            Appl_XY_Axis_Details.interfaceNum= USBHostHID_ApiGetCurrentInterfaceNum();
+        }
+        else if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == HIDData_Variable)&&
+           (reportItem->globals.usagePage==USAGE_PAGE_BUTTONS))
+        {
+           /* We now know report item points to modifier keys */
+           /* Now make sure usage Min & Max are as per application */
+            usageIndex = reportItem->firstUsageItem;
+            hidUsageItem = &pitemListPtrs->usageItemList[usageIndex];
+
+            reportIndex = reportItem->globals.reportIndex;
+            Appl_Mouse_Buttons_Details.reportLength = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+            Appl_Mouse_Buttons_Details.reportID = (BYTE)reportItem->globals.reportID;
+            Appl_Mouse_Buttons_Details.bitOffset = (BYTE)reportItem->startBit;
+            Appl_Mouse_Buttons_Details.bitLength = (BYTE)reportItem->globals.reportsize;
+            Appl_Mouse_Buttons_Details.count=(BYTE)reportItem->globals.reportCount;
+            Appl_Mouse_Buttons_Details.interfaceNum= USBHostHID_ApiGetCurrentInterfaceNum();
+        }
+    }
+
+   if(pDeviceRptinfo->reports == 1)
+    {
+        Appl_raw_report_buffer.Report_ID = 0;
+        Appl_raw_report_buffer.ReportSize = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+//        Appl_raw_report_buffer.ReportData = (BYTE*)malloc(Appl_raw_report_buffer.ReportSize);
+        Appl_raw_report_buffer.ReportPollRate = pDeviceRptinfo->reportPollingRate;
+        status = TRUE;
+    }
+
+    return(status);
+}
 
 /*************************************************************************
  * Function:        USB_ApplicationEventHandler
@@ -1030,6 +1293,13 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
             deviceHandle = NULL;
             ProcState = STATE_INITIALIZE;
         	return TRUE;
+        case EVENT_HID_RPT_DESC_PARSED:
+             #ifdef APPL_COLLECT_PARSED_DATA
+                 return(APPL_COLLECT_PARSED_DATA());
+             #else
+                 return TRUE;
+             #endif
+            break;
         case EVENT_MIDI_TRANSFER_DONE:  // The main state machine will poll the driver.
         case EVENT_VBUS_REQUEST_POWER:
         case EVENT_VBUS_RELEASE_POWER:

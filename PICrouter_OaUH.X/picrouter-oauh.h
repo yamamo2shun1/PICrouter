@@ -30,6 +30,8 @@
 #include "usb_config.h"
 #include "USB/usb.h"
 #include "USB/usb_host_midi.h"
+#include "USB/usb_host_hid_parser.h"
+#include "USB/usb_host_hid.h"
 
 #include "TCPIP Stack/TCPIP.h"
 
@@ -99,6 +101,45 @@ typedef struct
     USB_AUDIO_MIDI_PACKET*  pBufWriteLocation;  // Pointer to USB packet that is being written to
 } ENDPOINT_BUFFER;
 
+//HID
+#define USAGE_PAGE_BUTTONS              (0x09)
+#define USAGE_PAGE_GEN_DESKTOP          (0x01)
+#define MAX_ERROR_COUNTER               (10)
+
+typedef enum _APP_STATE
+{
+    DEVICE_NOT_CONNECTED,
+    DEVICE_CONNECTED, /* Device Enumerated  - Report Descriptor Parsed */
+    READY_TO_TX_RX_REPORT,
+    GET_INPUT_REPORT, /* perform operation on received report */
+    INPUT_REPORT_PENDING,
+    ERROR_REPORTED 
+} APP_STATE;
+
+typedef struct _HID_REPORT_BUFFER
+{
+    WORD  Report_ID;
+    WORD  ReportSize;
+//    BYTE* ReportData;
+    BYTE  ReportData[4];
+    WORD  ReportPollRate;
+}   HID_REPORT_BUFFER;
+
+APP_STATE App_State_Mouse = DEVICE_NOT_CONNECTED;
+
+HID_DATA_DETAILS Appl_Mouse_Buttons_Details;
+HID_DATA_DETAILS Appl_XY_Axis_Details;
+
+HID_REPORT_BUFFER  Appl_raw_report_buffer;
+
+HID_USER_DATA_SIZE Appl_Button_report_buffer[3];
+HID_USER_DATA_SIZE Appl_XY_report_buffer[3];
+
+BYTE ErrorDriver;
+BYTE ErrorCounter;
+BYTE NumOfBytesRcvd;
+
+BOOL ReportBufferUpdated;
 
 // *****************************************************************************
 // Global Variables
@@ -135,4 +176,10 @@ void sendOSCTask(void);
 
 // USB Host
 void convertMidiToOsc(void);
+
+void convertHidToOsc(void);
+void App_Detect_Device(void);
+void App_ProcessInputReport(void);
+BOOL USB_HID_DataCollectionHandler(void);
+
 BOOL USB_ApplicationEventHandler(BYTE address, USB_EVENT event, void *data, DWORD size);
