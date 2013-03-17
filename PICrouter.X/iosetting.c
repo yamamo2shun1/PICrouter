@@ -124,6 +124,7 @@ void outputAnPort(BYTE id, BYTE state)
             break;
     }
 }
+
 BYTE inputAnPort(BYTE id)
 {
     BYTE state = LOW;
@@ -194,6 +195,7 @@ void configPwmPort(BYTE id, BYTE io)
             break;
     }
 }
+
 void outputPwmPort(BYTE id, BYTE state)
 {
     switch(id)
@@ -212,6 +214,7 @@ void outputPwmPort(BYTE id, BYTE state)
             break;
     }
 }
+
 BYTE inputPwmPort(BYTE id)
 {
     BYTE state = LOW;
@@ -253,6 +256,7 @@ void configDPort(BYTE id, BYTE io)
             break;
     }
 }
+
 void outputDPort(BYTE id, BYTE state)
 {
     switch(id)
@@ -271,6 +275,7 @@ void outputDPort(BYTE id, BYTE state)
             break;
     }
 }
+
 BYTE inputDPort(BYTE id)
 {
     BYTE state = LOW;
@@ -325,6 +330,7 @@ void configSpiPort(char* name, BYTE io)
     	SPI_SDO2_IO(io);
     }
 }
+
 void outputSpiPort(char* name, BYTE state)
 {
     if(!strcmp(name, "sck4"))
@@ -352,6 +358,7 @@ void outputSpiPort(char* name, BYTE state)
     	SPI_SDO2_OUT(state);
     }
 }
+
 BYTE inputSpiPort(char* name)
 {
     BYTE state = LOW;
