@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.10 2013/03/17
+ * picrouter.c,v.1.1.1 2013/03/17
  */
 
 #include "picrouter.h"
@@ -740,6 +740,10 @@ void receiveOSCTask(void)
             if(dm == MODE_HOST && device_mode == MODE_DEVICE)
                 USBSoftDetach();
             device_mode = dm;
+        }
+        else if(compareOSCAddress(sysPrefix, msgGetUsbMode))
+        {
+            sendOSCMessage(sysPrefix, msgGetUsbMode, "i", device_mode);
         }
         else if(compareOSCAddress(sysPrefix, msgSoftReset))
         {
