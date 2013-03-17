@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.97 2013/03/17
+ * osc.c,v.0.98 2013/03/17
  */
 
 #include "osc.h"
@@ -90,6 +90,7 @@ const char msgConfigDIO[] = "/dio/config";
 const char msgSetDO[]     = "/dio/dout/set";
 const char msgGetDI[]     = "/dio/din/get";
 // for SPI
+const char msgEnableSpi[] = "/spi/enable";
 const char msgConfigSpi[] = "/spi/config";
 const char msgSetSpiDO[]  = "/spi/dout/set";
 const char msgGetSpiDI[]  = "/spi/din/get";
@@ -509,6 +510,11 @@ BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
         return TRUE;
     else
         return FALSE;
+}
+
+WORD getArgumentsLength(void)
+{
+    return rcvArgumentsLength;
 }
 
 INT32 getIntArgumentAtIndex(const UINT16 index)

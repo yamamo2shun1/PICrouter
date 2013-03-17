@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.97 2013/03/17
+ * osc.h,v.0.98 2013/03/17
  */
 
 #ifndef OSC_H
@@ -92,6 +92,7 @@ extern const char msgConfigDIO[];
 extern const char msgSetDO[];
 extern const char msgGetDI[];
 // for SPI
+extern const char msgEnableSpi[];
 extern const char msgConfigSpi[];
 extern const char msgSetSpiDO[];
 extern const char msgGetSpiDI[];
@@ -163,6 +164,7 @@ void getOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
 BOOL compareOSCAddress(const char* prefix, const char* address);
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag);
+WORD getArgumentsLength(void);
 INT32 getIntArgumentAtIndex(const UINT16 index);
 float getFloatArgumentAtIndex(const UINT16 index);
 char* getStringArgumentAtIndex(const UINT16 index);
