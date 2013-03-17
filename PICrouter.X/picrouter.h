@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.1.1 2013/03/17
+ * picrouter.h,v.1.2.0 2013/03/17
  */
 
 #include <plib.h>
@@ -61,9 +61,6 @@
 //#define NVM_PROGRAM_PAGE 0xbd006000
 #define NVM_DATA 0x9D07F000
 #define NVM_PAGE_SIZE    4096
-
-// PWM
-#define PWM_NUM 4
 
 /** VARIABLES ******************************************************/
 
