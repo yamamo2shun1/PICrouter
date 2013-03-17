@@ -121,7 +121,7 @@ Application Projects
   
 #### PICrouter_OaUH (current ver. is 1.02)  
   PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
-  PICrouter_OaUH.X is this project folder. 
+  PICrouter_OaUH.X is this project folder.  
   The Max6 demo patch is Max_Demo_Patchexs/OSC_USB(Host)_Demo/PICrouter_PICrouter-OaUH_Demo.maxpat.   
   * This project is test version for the HID host function. In the future,
     this will be merged into PICrouter.X.  
