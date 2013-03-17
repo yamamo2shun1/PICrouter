@@ -219,6 +219,12 @@ void ARPProcessRxPkt(ARP_PACKET* packet)
     if(AppConfig.MyIPAddr.Val == 0x00)
     {
         pass_on = 1; // Pass to Registered-Application for further processing        
+		// putsUART("ARPProcessRxPkt: MyIPAddr=0  -> pass_on = 1 \r\n"); 
+	}
+    else if ((AppConfig.MyIPAddr.Val != 0x00) && (AppConfig.networkType == WF_SOFT_AP)) // SOFTAP_ZEROCONF_SUPPORT
+    {
+		//putsUART("ARPProcessRxPkt: MyIPAddr!=0 & SoftAP  -> pass_on = 1 \r\n"); 
+        pass_on = 1; // Pass to Registered-Application for further processing        
     }
     else if(AppConfig.MyIPAddr.Val)
     {
@@ -226,15 +232,17 @@ void ARPProcessRxPkt(ARP_PACKET* packet)
         if(packet->SenderIPAddr.Val == AppConfig.MyIPAddr.Val)
         {
             pass_on = 1;
+			// putsUART("ARPProcessRxPkt: SenderIPAddr = MyIPAddr \r\n");
         }
     }
+	
     if(pass_on)
-    {
-    
+    {    
         for(i =0; i< MAX_REG_APPS; i++)
         {
             if(reg_apps[i].used)
             {
+                 //putsUART("ARPProcessRxPkt: pass_on \r\n");
                 reg_apps[i].ARPPkt_notify(packet->SenderIPAddr.Val,
                                       packet->TargetIPAddr.Val,
                                       &packet->SenderMACAddr,
@@ -476,6 +484,8 @@ BOOL ARPProcess(void)
                 #endif*/
 				Cache.MACAddr = packet.SenderMACAddr;
 				Cache.IPAddr = packet.SenderIPAddr;
+				
+				//putsUART("ARPProcess: SM_ARP_IDLE: ARP_OPERATION_RESP  \r\n"); 
 				return TRUE;
 			}
 #endif
@@ -495,7 +505,7 @@ BOOL ARPProcess(void)
                                 * was leading to flooding of ARP-answeres */
                                 if(!memcmp (&packet.SenderMACAddr, &AppConfig.MyMACAddr, 6))
                                 {
-                                     //test putsUART("Loopback answer suppressed \r\n");
+                                     putsUART("Loopback answer suppressed \r\n");
                                      return TRUE;
                                 }
 #endif
@@ -509,6 +519,8 @@ BOOL ARPProcess(void)
                 #endif
 				Target.IPAddr = packet.SenderIPAddr;
 				Target.MACAddr = packet.SenderMACAddr;
+
+				//putsUART("ARPProcess: SM_ARP_IDLE: ARP_OPERATION_REQ  \r\n"); 
 
 				smARP = SM_ARP_REPLY;
 			}
@@ -533,6 +545,7 @@ BOOL ARPProcess(void)
 #ifdef STACK_USE_ZEROCONF_LINK_LOCAL
             packet.SenderIPAddr		= AppConfig.MyIPAddr;
 #endif
+			//putsUART("ARPProcess: SM_ARP_REPLY  \r\n"); 
 
 			// Send an ARP response to a previously received request
 			if(!ARPPut(&packet))
@@ -610,6 +623,7 @@ void ARPResolve(IP_ADDR* IPAddr)
 	packet.TargetMACAddr.v[4]   = 0xff;
 	packet.TargetMACAddr.v[5]   = 0xff;
 
+	//putsUART("ARPResolve() \r\n"); 
 
     // ARP query either the IP address directly (on our subnet), or do an ARP query for our Gateway if off of our subnet
 	packet.TargetIPAddr			= ((AppConfig.MyIPAddr.Val ^ IPAddr->Val) & AppConfig.MyMask.Val) ? AppConfig.MyGateway : *IPAddr;
@@ -665,9 +679,13 @@ BOOL ARPIsResolved(IP_ADDR* IPAddr, MAC_ADDR* MACAddr)
     if((Cache.IPAddr.Val == IPAddr->Val) || 
 	  ((Cache.IPAddr.Val == AppConfig.MyGateway.Val) && ((AppConfig.MyIPAddr.Val ^ IPAddr->Val) & AppConfig.MyMask.Val)))
     {
-        *MACAddr = Cache.MACAddr;
+        *MACAddr = Cache.MACAddr;		
+		//putsUART("ARPIsResolved  \r\n"); 
         return TRUE;
     }
+
+	//putsUART("ARPIs  NOT Resolved  \r\n"); 
+
     return FALSE;
 }
 #endif
