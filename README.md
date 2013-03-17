@@ -60,9 +60,9 @@ PICrouter is **Free Hardware** and **Free Software**.
 
 Specifications
 ------
-0. Supported mDNS(Bonjour on Mac OS X), DHCP and NBNS
-1. Supported Open Sound Control
-2. Supported USB device(MIDI and HID composite) and host(only MIDI) function.
+0. Supported mDNS(Bonjour on Mac OS X), DHCP and NBNS.
+1. Supported Open Sound Control.
+2. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI).
 3. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
 4. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)
 5. A/D port x14
@@ -113,14 +113,17 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter_OaUD (current ver. is 1.02)  
-  PICrouter_OaUD is for Open Sound Control and USB Device Function(MIDI and HID).  
-  PICrouter_OaUD.X is this project folder.  
+#### PICrouter (current ver. is 1.10) Updated 2013/03/17  
+  PICrouter is for Open Sound Control and USB Dual Role.  
+  PICrouter.X is this project folder.  
   The Max6 demo patch is Max_Demo_Patchexs/HID_Demo/PICrouter_HID.maxpat  
+  and Max_Demo_Patchexs/OSC_USB(Host)_Demo/PICrouter_PICrouter-OaUH_Demo.maxpat.
   
 #### PICrouter_OaUH (current ver. is 1.02)  
   PICrouter_OaUH is for Open Sound Control and USB Host Function(MIDI only).  
   PICrouter_OaUH.X is this project folder.  
+  * This project is test version for the HID host function. In the future,
+    this will be merged into PICrouter.X.
   The Max6 demo patch is Max_Demo_Patchexs/OSC_USB(Host)_Demo/PICrouter_PICrouter-OaUH_Demo.maxpat  
 
 Supported OSC Messages
