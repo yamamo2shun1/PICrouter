@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.2.0 2013/03/17
+ * picrouter.c,v.1.2.1 2013/03/17
  */
 
 #include "picrouter.h"
@@ -741,6 +741,81 @@ void receiveOSCTask(void)
             sendOSCMessage(stdPrefix, msgGetDI, "ii", id, state);
         }
         // SPI
+        else if(compareOSCAddress(stdPrefix, msgEnableSpi))
+        {
+            BYTE id;
+            DWORD bitrate0 = 0;
+            WORD bitrate = 0;
+            DWORD spiFlags = 0;
+
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                bitrate0 = getIntArgumentAtIndex(1);
+                if(bitrate >= 2 && bitrate <= 1024)
+                {
+                    if((bitrate0 % 2) == 0)
+                        bitrate = (WORD)bitrate0;
+                    else
+                        return;
+                }
+                else
+                    return;
+
+                if(getArgumentsLength() < 3)
+                    return;
+
+                for(i = 2; i < getArgumentsLength(); i++)
+                {
+                    char* flag;
+                    if(compareTypeTagAtIndex(i, 's'))
+                        flag = getStringArgumentAtIndex(i);
+
+                    if(!strcmp(flag, "msten"))
+                        spiFlags |= SPICON_MSTEN;
+                    else if(!strcmp(flag, "ckp"))
+                        spiFlags |= SPICON_CKP;
+                    else if(!strcmp(flag, "ssen"))
+                        spiFlags |= SPICON_SSEN;
+                    else if(!strcmp(flag, "cke"))
+                        spiFlags |= SPICON_CKE;
+                    else if(!strcmp(flag, "smp"))
+                        spiFlags |= SPICON_SMP;
+                    else if(!strcmp(flag, "mode16"))
+                        spiFlags |= SPICON_MODE16;
+                    else if(!strcmp(flag, "mode32"))
+                        spiFlags |= SPICON_MODE32;
+                    else if(!strcmp(flag, "dissdo"))
+                        spiFlags |= SPICON_DISSDO;
+                    else if(!strcmp(flag, "sidl"))
+                        spiFlags |= SPICON_SIDL;
+                    else if(!strcmp(flag, "frz"))
+                        spiFlags |= SPICON_FRZ;
+                    else if(!strcmp(flag, "on"))
+                        spiFlags |= SPICON_ON;
+                    else if(!strcmp(flag, "spife"))
+                        spiFlags |= SPICON_SPIFE;
+                    else if(!strcmp(flag, "frmpol"))
+                        spiFlags |= SPICON_FRMPOL;
+                    else if(!strcmp(flag, "frmsync"))
+                        spiFlags |= SPICON_FRMSYNC;
+                    else if(!strcmp(flag, "frmen"))
+                        spiFlags |= SPICON_FRMEN;
+                }
+
+                switch(id)
+                {
+                    case 2:
+                        SpiChnOpen(SPI_CHANNEL2, spiFlags, bitrate);
+                        break;
+                    case 4:
+                        SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
         else if(compareOSCAddress(stdPrefix, msgConfigSpi))
         {
             char* name;
