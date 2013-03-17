@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.95 2013/02/07
+ * osc.c,v.0.96 2013/03/17
  */
 
 #include "osc.h"
@@ -133,6 +133,7 @@ const char msgHostPort[]      = "/host/port";
 const char msgSetHostPort[]   = "/host/port/set";
 const char msgGetHostPort[]   = "/host/port/get";
 const char msgSwitchUsbMode[] = "/usb/mode/switch";
+const char msgGetUsbMode[]    = "/usb/mode/get";
 const char msgSoftReset[]     = "/soft/reset";
 const char msgDebug[]         = "/debug";
 
