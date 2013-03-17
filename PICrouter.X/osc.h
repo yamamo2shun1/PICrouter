@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.96 2013/03/17
+ * osc.h,v.0.97 2013/03/17
  */
 
 #ifndef OSC_H
@@ -139,12 +139,14 @@ extern const char msgGetUsbMode[];
 extern const char msgSoftReset[];
 extern const char msgDebug[];
 
+extern BYTE oscPacket[1024];
 extern char rcvAddressStrings[128];
 extern UINT16 rcvAddressLength;
 extern UINT16 rcvTypesStartIndex;
 extern INT16 rcvArgumentsLength;
 extern char rcvArgsTypeArray[128];
 extern UINT16 rcvArgumentsStartIndex[128];
+extern UINT16 rcvArgumentsIndexLength[128];
 
 void InitAppConfig(void);
 void setOSCPrefix(char* prefix_string);
@@ -157,11 +159,12 @@ void closeOSCSendPort(void);
 void closeOSCReceivePort(void);
 BOOL isOSCGetReady(WORD len);
 BOOL isOSCPutReady(void);
-void getOSCArray(char* str, WORD size);
+void getOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
 BOOL compareOSCAddress(const char* prefix, const char* address);
-INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
-float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
-char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index);
+BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag);
+INT32 getIntArgumentAtIndex(const UINT16 index);
+float getFloatArgumentAtIndex(const UINT16 index);
+char* getStringArgumentAtIndex(const UINT16 index);
 
 #endif	/* OSC_H */

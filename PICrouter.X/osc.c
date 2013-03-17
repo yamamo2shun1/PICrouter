@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.96 2013/03/17
+ * osc.c,v.0.97 2013/03/17
  */
 
 #include "osc.h"
@@ -137,12 +137,14 @@ const char msgGetUsbMode[]    = "/usb/mode/get";
 const char msgSoftReset[]     = "/soft/reset";
 const char msgDebug[]         = "/debug";
 
+BYTE oscPacket[1024] = {0};
 char rcvAddressStrings[128] = {0};
 UINT16 rcvAddressLength;
 UINT16 rcvTypesStartIndex;
 INT16 rcvArgumentsLength;
 char rcvArgsTypeArray[128] = {0};
 UINT16 rcvArgumentsStartIndex[128] = {0};
+UINT16 rcvArgumentsIndexLength[128] = {0};
 
 // Network Setting Initialization(IP Address, MAC Address and so on)
 //static void InitAppConfig(void)
@@ -232,33 +234,34 @@ BOOL isOSCPutReady(void)
     return isReadyFlag;
 }
 
-void getOSCArray(char* str, WORD size)
+void getOSCPacket(void)
 {
     INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
+    WORD size = sizeof(oscPacket);
 
-    UDPGetArray(str, size);
+    UDPGetArray(oscPacket, size);
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
-    while(*(str + i) != NULL)
+    while(*(oscPacket + i) != NULL)
     {
-        *(rcvAddressStrings + i) = *(str + i);
+        *(rcvAddressStrings + i) = *(oscPacket + i);
         i++;
-        if(i > strlen(str))
+        if(i > strlen(oscPacket))
             return;
-        if(*(str + i) == NULL)
+        if(*(oscPacket + i) == NULL)
             break;
     }
     rcvAddressLength = i;
 
-    while(*(str + i) != ',')
+    while(*(oscPacket + i) != ',')
         i++;
     j = i;
     rcvTypesStartIndex = j;
 
-    while(*(str + i) != NULL)
+    while(*(oscPacket + i) != NULL)
         i++;
     for(k = 0; k < i - j - 1; k++)
-        *(rcvArgsTypeArray + k) = *(str + (k + j + 1));
+        *(rcvArgsTypeArray + k) = *(oscPacket + (k + j + 1));
     rcvArgumentsLength = i - j;
     n = ((rcvArgumentsLength / 4) + 1) * 4;
 
@@ -270,10 +273,11 @@ void getOSCArray(char* str, WORD size)
             case 'i':
             case 'f':
                 length += 4;
+                *(rcvArgumentsIndexLength + k) = 4;
                 break;
             case 's':
                 u = 0;
-                while(*(str + (rcvTypesStartIndex + n + length + u)) != '\0')
+                while(*(oscPacket + (rcvTypesStartIndex + n + length + u)) != '\0')
                     u++;
                 v = 0;
                 do
@@ -290,6 +294,7 @@ void getOSCArray(char* str, WORD size)
                     }
                 } while(u > 0);
                 length += v;
+                *(rcvArgumentsIndexLength + k) = v;
                 break;
         }
     }
@@ -492,7 +497,21 @@ BOOL compareOSCAddress(const char* prefix, const char* address)
     return TRUE;
 }
 
-INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
+BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
+{
+    if(index >= rcvArgumentsLength - 1)
+        return FALSE;
+
+    if(*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's')
+        return FALSE;
+
+    if(*(rcvArgsTypeArray + index) == typetag)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+INT32 getIntArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
     INT16 m = rcvArgumentsLength;
@@ -507,16 +526,16 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
     switch(*(rcvArgsTypeArray + index))
     {
         case 'i':
-            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             break;
         case 'f':
-            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             lvalue &= 0xffffffff;
 
             sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
@@ -541,7 +560,7 @@ INT32 getIntArgumentAtIndex(const char* str, const char* prefix, const char* add
     return lvalue;
 }
 
-float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
+float getFloatArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
     INT16 m = rcvArgumentsLength;
@@ -556,17 +575,17 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
     switch(*(rcvArgsTypeArray + index))
     {
         case 'i':
-            lvalue = (*(str + *(rcvArgumentsStartIndex + index) + 0) << 24) |
-                     (*(str + *(rcvArgumentsStartIndex + index) + 1) << 16) |
-                     (*(str + *(rcvArgumentsStartIndex + index) + 2) << 8) |
-                      *(str + *(rcvArgumentsStartIndex + index) + 3);
+            lvalue = (*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) << 24) |
+                     (*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) << 16) |
+                     (*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) << 8) |
+                      *(oscPacket + *(rcvArgumentsStartIndex + index) + 3);
             fvalue = (float)lvalue;
             break;
         case 'f':
-            lvalue = ((*(str + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(str + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(str + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
+                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
+                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             lvalue &= 0xffffffff;
 
             sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
@@ -590,65 +609,22 @@ float getFloatArgumentAtIndex(const char* str, const char* prefix, const char* a
     return fvalue;
 }
 
-char* getStringArgumentAtIndex(const char* str, const char* prefix, const char* address, const UINT16 index)
+char* getStringArgumentAtIndex(const UINT16 index)
 {
-    INT16 k = 0, n = 0, s = 0, u = 0, v = 0, length = 0;
-    INT16 m = rcvArgumentsLength;
     char* cstr;
 
-    do
-    {
-        n += 4;
-        m -= 4;
-    } while(m >= 0);
-
     if(index >= rcvArgumentsLength - 1)
-        return 0;
+        return "error";
 
-    length = 0;
-    for(k = 0; k <= index; k++)
-    {
-        switch(rcvArgsTypeArray[k])
-        {
-            case 'i':
-            case 'f':
-                if(k != index)
-                    length += 4;
-                break;
-            case 's':
-                u = 0;
-                while(str[rcvTypesStartIndex + n + length + u] != '\0')
-                    u++;
-                v = 0;
-                do
-                {
-                    if(u < 8)
-                    {
-                        u = 0;
-                        v += 8;
-                    }
-                    else
-                    {
-                        u -= 8;
-                        v += 8;
-                    }
-                } while(u > 0);
-                if(k != index)
-                    length += v;
-                break;
-        }
-    }
-
-    switch(rcvArgsTypeArray[index])
+    switch(*(rcvArgsTypeArray + index))
     {
         case 'i':
         case 'f':
-            cstr = (char *)calloc(4, sizeof(char));
-            memcpy(cstr, str + rcvTypesStartIndex + n + length, 4);
+            return "error";
             break;
         case 's':
-            cstr = (char *)calloc(v, sizeof(char));
-            memcpy(cstr, str + rcvTypesStartIndex + n + length, v);
+            cstr = (char *)calloc(*(rcvArgumentsIndexLength + index), sizeof(char));
+            memcpy(cstr, oscPacket + *(rcvArgumentsStartIndex + index), *(rcvArgumentsIndexLength + index));
             break;
     }
     return cstr;
