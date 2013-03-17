@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.3 2013/03/06
+ * iosetting.h,v.0.4 2013/03/17
  */
 
 #ifndef IOSETTING_H
@@ -29,6 +29,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HardwareProfile.h"
+
+// PWM
+#define AN_NUM  14
+#define PWM_NUM 4
+#define D_NUM   4
+#define SPI_NUM 6
 
 extern BYTE ioAnPort[14];
 extern BYTE ioPwmPort[4];
