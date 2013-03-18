@@ -54,7 +54,7 @@ void initAnalogVariables(void)
     prevDirection = 0;
 
     // A/D Manual Scan 
-#if 1 // for PICrouter_OaUH
+#if 1 // for PICrouter
     AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
     AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
     AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
@@ -171,7 +171,7 @@ void analogInHandle(BYTE port, LONG value)
         for(i = 0; i < FLTR_ADC_CNT; i++)
             *(currentAnalog + port) += *(*(analog + port) + i);
         *(currentAnalog + port) /= (LONG)FLTR_ADC_CNT;
-        if(labs(*(currentAnalog + port) - *(prevAnalog + port)) > 4)
+        if(labs(*(currentAnalog + port) - *(prevAnalog + port)) > 0)
         {
             *(prevAnalog + port) = *(currentAnalog + port);
             *(analogSendFlag + port) = TRUE;
