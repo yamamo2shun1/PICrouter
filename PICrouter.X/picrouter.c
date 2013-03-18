@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.2.1 2013/03/17
+ * picrouter.c,v.1.2.2 2013/03/18
  */
 
 #include "picrouter.h"
@@ -33,8 +33,9 @@ void initIOPorts(void)
 
     for(i = 0; i < 14; i++)
     {
-        configAnPort(i, IO_OUT);
-        outputAnPort(i, LOW);
+        //configAnPort(i, IO_OUT);
+        //outputAnPort(i, LOW);
+        setAnPortDIOType(i, IO_IN);
     }
 
     for(i = 0; i < 4; i++)
@@ -348,62 +349,62 @@ void receiveOSCTask(void)
         {
             AD1CON1bits.ON = 0;
 
-            BYTE i;
-            WORD anum = 0;
-            WORD id;
-            BYTE state;
+            BYTE i, id, anum;
+            char* state;
 
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
-                state = getIntArgumentAtIndex(1);
+                if(id > 13)
+                    return;
+                state = getStringArgumentAtIndex(1);
             }
             else
                 return;
 
-            if(id > 13 || state > 1)
+            if(!strcmp(state, "on"))
+            {
+                analogEnable[id] = TRUE;
+                setAnPortDIOType(id, IO_IN);
+
+                AD1PCFG &= ~(0x0001 << id);
+                AD1CSSL |= (0x0001 << id);
+            }
+            else if(!strcmp(state, "off"))
+            {
+                analogEnable[id] = FALSE;
+                setAnPortDIOType(id, IO_IN);
+
+                AD1PCFG |= (0x0001 << id);
+                AD1CSSL &= ~(0x0001 << id);
+            }
+            else
                 return;
 
-            if(state == 1)
-                analogEnable[id] = TRUE;
-            else if(state == 0)
-                analogEnable[id] = FALSE;
-
+            anum = 0;
             for(i = 0; i < USE_ADC_NUM; i++)
             {
                 if(analogEnable[i])
                     anum++;
             }
 
-            configAnPort(id, IO_IN);
-
-            if(state == 1)
-            {
-                AD1PCFG &= ~(0x0001 << id);
-                AD1CSSL |= (0x0001 << id);
-            }
-            else
-            {
-                AD1PCFG |= (0x0001 << id);
-                AD1CSSL &= ~(0x0001 << id);
-            }
-
             if(anum > 0)
             {
-                AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0100 0000
                 AD1CON2 |= ((anum - 1) << 2);
-                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
                 AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
                 AD1CON1 = 0x000080E6;// 0000 0000 0000 0000 1000 0000 1110 0110
             }
             else
             {
                 AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
-                AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
                 AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-                AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
+
+                AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
                 AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-                AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+                AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
             }
         }
         else if(compareOSCAddress(stdPrefix, msgGetAdcEnable))
@@ -411,16 +412,20 @@ void receiveOSCTask(void)
             BYTE id;
 
             if(compareTypeTagAtIndex(0, 'i'))
+            {
                 id = getIntArgumentAtIndex(0);
+                if(id > 13)
+                    return;
+            }
             else
                 return;
 
-            if(id > 13)
-                return;
-
-            sendOSCMessage(stdPrefix, msgGetAdcEnable, "ii", id, analogEnable[id]);
+            if(analogEnable[id])
+                sendOSCMessage(stdPrefix, msgGetAdcEnable, "is", id, "on");
+            else
+                sendOSCMessage(stdPrefix, msgGetAdcEnable, "is", id, "off");
         }
-        else if(compareOSCAddress(stdPrefix, msgConfigAdc))
+        else if(compareOSCAddress(stdPrefix, msgSetAdcDio))
         {
             BYTE id;
             char* type;
@@ -428,34 +433,61 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
+                if(id > 13)
+                    return;
                 type = getStringArgumentAtIndex(1);
             }
             else
                 return;
 
-            if(!strcmp(type, "din"))
+            if(!strcmp(type, "in"))
             {
-                configAnPort(id, IO_IN);
+                setAnPortDIOType(id, IO_IN);
             }
-            else if(!strcmp(type, "dout"))
+            else if(!strcmp(type, "out"))
             {
-                configAnPort(id, IO_OUT);
+                setAnPortDIOType(id, IO_OUT);
+                outputAnPort(id, 0);
             }
         }
-        else if(compareOSCAddress(stdPrefix, msgSetAdcDO))
+        else if(compareOSCAddress(stdPrefix, msgGetAdcDio))
         {
             BYTE id;
-            BYTE state;
-
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
-                state = getIntArgumentAtIndex(1);
+                if(id > 13)
+                    return;
             }
             else
                 return;
 
-            outputAnPort(id, state);
+            if(getAnPortDIOType(id))
+                sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "in");
+            else
+                sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "out");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetAdcDO))
+        {
+            BYTE id;
+            char* state;
+
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id > 13)
+                    return;
+                state = getStringArgumentAtIndex(1);
+                if(strcmp(state, "high") && strcmp(state, "low"))
+                    return;
+            }
+            else
+                return;
+
+            if(!strcmp(state, "high"))
+                outputAnPort(id, HIGH);
+            else if(!strcmp(state, "low"))
+                outputAnPort(id, LOW);
         }
         else if(compareOSCAddress(stdPrefix, msgGetAdcDI))
         {
@@ -468,7 +500,10 @@ void receiveOSCTask(void)
 
             BYTE state = inputAnPort(id);
 
-            sendOSCMessage(stdPrefix, msgGetAdcDI, "ii", id, state);
+            if(state)
+                sendOSCMessage(stdPrefix, msgGetAdcDI, "is", id, "high");
+            else
+                sendOSCMessage(stdPrefix, msgGetAdcDI, "is", id, "low");
         }
         // PWM
         else if(compareOSCAddress(stdPrefix, msgSetPwmState))
@@ -905,7 +940,7 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
         {
-            if(compareTypeTagAtIndex(index, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
                 remotePort = getIntArgumentAtIndex(0);
             else
                 return;
@@ -963,7 +998,7 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSetHostPort))
         {
-            if(compareTypeTagAtIndex(index, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
                 localPort = getIntArgumentAtIndex(0);
             else
                 return;
@@ -978,7 +1013,7 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSetPrefix))
         {
             free(prefix);
-            if(compareTypeTagAtIndex(index, 's'))
+            if(compareTypeTagAtIndex(0, 's'))
             {
                 prefix = NULL;
                 prefix = getStringArgumentAtIndex(0);
@@ -993,7 +1028,7 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSwitchUsbMode))
         {
             BYTE dm;
-            if(compareTypeTagAtIndex(index, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
                 dm = getIntArgumentAtIndex(0);
             else
                 return;
@@ -1012,7 +1047,7 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSoftReset))
         {
             BOOL chFlag;
-            if(compareTypeTagAtIndex(index, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
                 chFlag = getIntArgumentAtIndex(0);
             else
                 return;
@@ -1034,7 +1069,7 @@ void receiveOSCTask(void)
 
 void sendOSCTask(void)
 {
-    BYTE i;
+    BYTE i, j;
     static BYTE swState0 = 0;
     static BYTE swState1 = 0;
 
@@ -1050,12 +1085,13 @@ void sendOSCTask(void)
         }
         swState0 = swState1;
 
-        if(BusyADC10())
+        j = 0;
+        for(i = 0; i < USE_ADC_NUM; i++)
         {
-            for(i = 0; i < USE_ADC_NUM; i++)
+            if(analogEnable[i])
             {
-                if(analogEnable[i])
-                    analogInHandle(i, (LONG)ReadADC10(i));
+                analogInHandle(i, (LONG)ReadADC10(j));
+                j++;
             }
         }
         sendAdc();
@@ -1066,7 +1102,7 @@ void USBControlTask()
 {
     HIDControlTask();
     //sendNote();
-    sendControlChange();
+    //sendControlChange();
     //receiveMIDIDatas();
 }
 
@@ -1111,7 +1147,7 @@ void HIDControlTask(void)
                         if(analogEnable[i])
                             anum++;
                     }
-                    configAnPort(id, IO_IN);
+                    setAnPortDIOType(id, IO_IN);
 
                     if(state == 1)
                     {
@@ -1135,8 +1171,9 @@ void HIDControlTask(void)
                     else
                     {
                         AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
-                        AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
                         AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+
+                        AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
                         AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
                         AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
                         AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
@@ -1167,11 +1204,11 @@ void HIDControlTask(void)
                 {
                     if(ReceivedHidDataBuffer[3] == 0)
                     {
-                        configAnPort(ReceivedHidDataBuffer[2], IO_IN);
+                        setAnPortDIOType(ReceivedHidDataBuffer[2], IO_IN);
                     }
                     else if(ReceivedHidDataBuffer[3] == 1)
                     {
-                        configAnPort(ReceivedHidDataBuffer[2], IO_OUT);
+                        setAnPortDIOType(ReceivedHidDataBuffer[2], IO_OUT);
                     }
                 }
                 else
