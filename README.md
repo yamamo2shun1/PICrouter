@@ -16,10 +16,10 @@
     <td><a href="#application-projects">App. Projects</a></td>
 </tr>
 <tr align="center">
+    <td><a href="#tutorial-jp">Tutorial (JP)</a></td>
+    <td><a href="#tutorial-en">Tutorial (EN)</a></td>
     <td><a href="#supported-osc-messages">Supported OSC Msgs</a></td>
     <td><a href="#supported-hid-commands">Supported HID Cmds</a></td>
-    <td></td>
-    <td></td>
 </tr>
 </table>
 </div>
@@ -125,6 +125,16 @@ Application Projects
   The Max6 demo patch is Max_Demo_Patchexs/OSC_USB(Host)_Demo/PICrouter_PICrouter-OaUH_Demo.maxpat.   
   * This project is test version for the HID host function. In the future,
     this will be merged into PICrouter.X.  
+
+Tutorial (JP)
+--------------------------------
+Tutorial 1 : [OSCを使ったアナログ・ポートの制御]
+[OSCを使ったアナログ・ポートの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ・ポートの制御
+
+Tutorial (EN)
+--------------------------------
+Tutorial 1 : [How to Control Analog Ports with OSC]
+[How to Control Analog Ports with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Ports-with-OSC
 
 Supported OSC Messages
 --------------------------------
