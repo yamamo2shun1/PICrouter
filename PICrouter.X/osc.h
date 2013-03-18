@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.98 2013/03/17
+ * osc.h,v.0.9.9 2013/03/18
  */
 
 #ifndef OSC_H
@@ -74,7 +74,8 @@ extern const char msgOnboardSw1[];
 extern const char msgGetAdc[];
 extern const char msgSetAdcEnable[];
 extern const char msgGetAdcEnable[];
-extern const char msgConfigAdc[];
+extern const char msgSetAdcDio[];
+extern const char msgGetAdcDio[];
 extern const char msgSetAdcDO[];
 extern const char msgGetAdcDI[];
 // for PWM
