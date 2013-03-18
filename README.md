@@ -113,7 +113,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.2.1) Updated 2013/03/17  
+#### PICrouter (current ver. is 1.2.2) Updated 2013/03/18  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patch is Max_Demo_Patchexs/HID_Demo/PICrouter_HID.maxpat  
@@ -128,13 +128,21 @@ Application Projects
 
 Tutorial (JP)
 --------------------------------
-Tutorial 1 : [OSCを使ったアナログ・ポートの制御]
-[OSCを使ったアナログ・ポートの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ・ポートの制御
+Tutorial 0 : [まずはじめに]
+Tutorial 1 : [OSCを使ったデジタル入出力の制御]
+Tutorial 2 : [OSCを使ったアナログ入力の制御]
+Tutorial 3 : [OSCを使ったPWMの制御]
+Tutorial 4 : [OSCを使ったSPIの制御]
+[OSCを使ったアナログ・ポートの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ入力の制御
 
 Tutorial (EN)
 --------------------------------
-Tutorial 1 : [How to Control Analog Ports with OSC]
-[How to Control Analog Ports with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Ports-with-OSC
+Tutorial 0 : [Quick Start Guide]
+Tutorial 1 : [How to Control Digital I/O with OSC]
+Tutorial 2 : [How to Control Analog Inputs with OSC]
+Tutorial 3 : [How to Control PWM with OSC]
+Tutorial 4 : [How to Control SPI with OSC]
+[How to Control Analog Ports with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Inputs-with-OSC
 
 Supported OSC Messages
 --------------------------------
