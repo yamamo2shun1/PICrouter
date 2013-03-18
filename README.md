@@ -130,19 +130,19 @@ Tutorial (JP)
 --------------------------------
 Tutorial 0 : [まずはじめに]  
 Tutorial 1 : [OSCを使ったデジタル入出力の制御]  
-Tutorial 2 : [OSCを使ったアナログ入力の制御]  
+Tutorial 2 : [OSCを使ったアナログ入力の制御][]  
 Tutorial 3 : [OSCを使ったPWMの制御]  
 Tutorial 4 : [OSCを使ったSPIの制御]  
-[OSCを使ったアナログ・ポートの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ入力の制御
+[OSCを使ったアナログ入力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ入力の制御
 
 Tutorial (EN)
 --------------------------------
 Tutorial 0 : [Quick Start Guide]  
 Tutorial 1 : [How to Control Digital I/O with OSC]  
-Tutorial 2 : [How to Control Analog Inputs with OSC]  
+Tutorial 2 : [How to Control Analog Inputs with OSC][]  
 Tutorial 3 : [How to Control PWM with OSC]  
 Tutorial 4 : [How to Control SPI with OSC]  
-[How to Control Analog Ports with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Inputs-with-OSC
+[How to Control Analog Inputs with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Inputs-with-OSC
 
 Supported OSC Messages
 --------------------------------
