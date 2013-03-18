@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.4 2013/03/17
+  * iosetting.c,v.0.5 2013/03/18
  */
 
 #include "iosetting.h"
@@ -26,7 +26,7 @@ BYTE ioPwmPort[4] = {0};
 BYTE ioDPort[4] = {0};
 BYTE ioSpiPort[6] = {0};
 
-void configAnPort(BYTE id, BYTE io)
+void setAnPortDIOType(BYTE id, BYTE io)
 {
     ioAnPort[id] = io;
     switch(id)
@@ -74,6 +74,11 @@ void configAnPort(BYTE id, BYTE io)
             ADC_AN13_IO(io);
             break;
     }
+}
+
+BYTE getAnPortDIOType(BYTE id)
+{
+    return ioAnPort[id];
 }
 
 void outputAnPort(BYTE id, BYTE state)
