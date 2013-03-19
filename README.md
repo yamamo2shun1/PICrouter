@@ -113,7 +113,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.2.2) Updated 2013/03/18  
+#### PICrouter (current ver. is 1.3.0) Updated 2013/03/19  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patch is Max_Demo_Patchexs/HID_Demo/PICrouter_HID.maxpat  
