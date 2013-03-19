@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.5 2013/03/18
+  * iosetting.c,v.0.6 2013/03/19
  */
 
 #include "iosetting.h"
@@ -26,7 +26,7 @@ BYTE ioPwmPort[4] = {0};
 BYTE ioDPort[4] = {0};
 BYTE ioSpiPort[6] = {0};
 
-void setAnPortDIOType(BYTE id, BYTE io)
+void setAnPortDioType(BYTE id, BYTE io)
 {
     ioAnPort[id] = io;
     switch(id)
@@ -76,7 +76,7 @@ void setAnPortDIOType(BYTE id, BYTE io)
     }
 }
 
-BYTE getAnPortDIOType(BYTE id)
+BYTE getAnPortDioType(BYTE id)
 {
     return ioAnPort[id];
 }
@@ -181,7 +181,7 @@ BYTE inputAnPort(BYTE id)
     return state;
 }
 
-void configPwmPort(BYTE id, BYTE io)
+void setPwmPortDioType(BYTE id, BYTE io)
 {
     ioPwmPort[id] = io;
     switch(id)
@@ -199,6 +199,11 @@ void configPwmPort(BYTE id, BYTE io)
             PWM_OC5_IO(io);
             break;
     }
+}
+
+BYTE getPwmPortDioType(BYTE id)
+{
+    return ioPwmPort[id];
 }
 
 void outputPwmPort(BYTE id, BYTE state)
@@ -242,7 +247,7 @@ BYTE inputPwmPort(BYTE id)
     return state;
 }
 
-void configDPort(BYTE id, BYTE io)
+void setDigitalPortDioType(BYTE id, BYTE io)
 {
     ioDPort[id] = io;
     switch(id)
@@ -262,7 +267,12 @@ void configDPort(BYTE id, BYTE io)
     }
 }
 
-void outputDPort(BYTE id, BYTE state)
+BYTE getDigitalPortDioType(BYTE id)
+{
+    return ioDPort[id];
+}
+
+void outputDigitalPort(BYTE id, BYTE state)
 {
     switch(id)
     {
@@ -281,7 +291,7 @@ void outputDPort(BYTE id, BYTE state)
     }
 }
 
-BYTE inputDPort(BYTE id)
+BYTE inputDigitalPort(BYTE id)
 {
     BYTE state = LOW;
     switch(id)
@@ -302,7 +312,7 @@ BYTE inputDPort(BYTE id)
     return state;
 }
 
-void configSpiPort(char* name, BYTE io)
+void setSpiPortDioType(char* name, BYTE io)
 {
     if(!strcmp(name, "sck4"))
     {
@@ -334,6 +344,22 @@ void configSpiPort(char* name, BYTE io)
         ioSpiPort[5] = io;
     	SPI_SDO2_IO(io);
     }
+}
+
+BYTE getSpiPortDioType(char* name)
+{
+    if(!strcmp(name, "sck4"))
+        return ioSpiPort[0];
+    else if(!strcmp(name, "sdi4"))
+        return ioSpiPort[1];
+    else if(!strcmp(name, "sdo4"))
+        return ioSpiPort[2];
+    else if(!strcmp(name, "sck2"))
+        return ioSpiPort[3];
+    else if(!strcmp(name, "sdi2"))
+        return ioSpiPort[4];
+    else if(!strcmp(name, "sdo2"))
+        return ioSpiPort[5];
 }
 
 void outputSpiPort(char* name, BYTE state)

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.5 2013/03/18
+ * iosetting.h,v.0.6 2013/03/19
  */
 
 #ifndef IOSETTING_H
@@ -30,7 +30,6 @@
 #include <string.h>
 #include "HardwareProfile.h"
 
-// PWM
 #define AN_NUM  14
 #define PWM_NUM 4
 #define D_NUM   4
@@ -43,20 +42,23 @@ extern BYTE ioSpiPort[6];
 
 void setupIOPorts(void);
 
-void setAnPortDIOType(BYTE id, BYTE io);
-BYTE getAnPortDIOType(BYTE id);
+void setAnPortDioType(BYTE id, BYTE io);
+BYTE getAnPortDioType(BYTE id);
 void outputAnPort(BYTE id, BYTE state);
 BYTE inputAnPort(BYTE id);
 
-void configPwmPort(BYTE id, BYTE io);
+void setPwmPortDioType(BYTE id, BYTE io);
+BYTE getPwmPortDioType(BYTE id);
 void outputPwmPort(BYTE id, BYTE state);
 BYTE inputPwmPort(BYTE id);
 
-void configDPort(BYTE id, BYTE io);
-void outputDPort(BYTE id, BYTE state);
-BYTE inputDPort(BYTE id);
+void setDigitalPortDioType(BYTE id, BYTE io);
+BYTE getDigitalPortDioType(BYTE id);
+void outputDigitalPort(BYTE id, BYTE state);
+BYTE inputDigitalPort(BYTE id);
 
-void configSpiPort(char* name, BYTE io);
+void setSpiPortDioType(char* name, BYTE io);
+BYTE getSpiPortDioType(char* name);
 void outputSpiPort(char* name, BYTE state);
 BYTE inputSpiPort(char* name);
 
