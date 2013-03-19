@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.9 2013/03/18
+ * osc.h,v.0.9.10 2013/03/19
  */
 
 #ifndef OSC_H
@@ -76,8 +76,8 @@ extern const char msgSetAdcEnable[];
 extern const char msgGetAdcEnable[];
 extern const char msgSetAdcDio[];
 extern const char msgGetAdcDio[];
-extern const char msgSetAdcDO[];
-extern const char msgGetAdcDI[];
+extern const char msgSetAdcDo[];
+extern const char msgGetAdcDi[];
 // for PWM
 extern const char msgSetPwmState[];
 extern const char msgGetPwmState[];
@@ -85,18 +85,21 @@ extern const char msgSetPwmFreq[];
 extern const char msgGetPwmFreq[];
 extern const char msgSetPwmDuty[];
 extern const char msgGetPwmDuty[];
-extern const char msgConfigPwm[];
-extern const char msgSetPwmDO[];
-extern const char msgGetPwmDI[];
+extern const char msgSetPwmDio[];
+extern const char msgGetPwmDio[];
+extern const char msgSetPwmDo[];
+extern const char msgGetPwmDi[];
 // for DIO
-extern const char msgConfigDIO[];
-extern const char msgSetDO[];
-extern const char msgGetDI[];
+extern const char msgSetDigitalDio[];
+extern const char msgGetDigitalDio[];
+extern const char msgSetDigitalDo[];
+extern const char msgGetDigitalDi[];
 // for SPI
-extern const char msgEnableSpi[];
-extern const char msgConfigSpi[];
-extern const char msgSetSpiDO[];
-extern const char msgGetSpiDI[];
+extern const char msgSetSpiEnable[];
+extern const char msgSetSpiDio[];
+extern const char msgGetSpiDio[];
+extern const char msgSetSpiDo[];
+extern const char msgGetSpiDi[];
 
 // OSC Messages converted from MIDI Message
 extern const char midiPrefix[];
@@ -139,7 +142,9 @@ extern const char msgGetHostPort[];
 extern const char msgSwitchUsbMode[];
 extern const char msgGetUsbMode[];
 extern const char msgSoftReset[];
+extern const char msgConfiguration[];
 extern const char msgDebug[];
+extern const char msgError[];
 
 extern BYTE oscPacket[1024];
 extern char rcvAddressStrings[128];

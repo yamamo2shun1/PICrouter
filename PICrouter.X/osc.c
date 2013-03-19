@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.9 2013/03/18
+ * osc.c,v.0.9.10 2013/03/19
  */
 
 #include "osc.h"
@@ -74,8 +74,8 @@ const char msgSetAdcEnable[] = "/adc/enable/set";
 const char msgGetAdcEnable[] = "/adc/enable/get";
 const char msgSetAdcDio[]    = "/adc/dio/set";
 const char msgGetAdcDio[]    = "/adc/dio/get";
-const char msgSetAdcDO[]     = "/adc/dout/set";
-const char msgGetAdcDI[]     = "/adc/din/get";
+const char msgSetAdcDo[]     = "/adc/dout/set";
+const char msgGetAdcDi[]     = "/adc/din/get";
 // for PWM
 const char msgSetPwmState[] = "/pwm/state/set";
 const char msgGetPwmState[] = "/pwm/state/get";
@@ -83,18 +83,21 @@ const char msgSetPwmFreq[]  = "/pwm/freq/set";
 const char msgGetPwmFreq[]  = "/pwm/freq/get";
 const char msgSetPwmDuty[]  = "/pwm/duty/set";
 const char msgGetPwmDuty[]  = "/pwm/duty/get";
-const char msgConfigPwm[]   = "/pwm/config";
-const char msgSetPwmDO[]    = "/pwm/dout/set";
-const char msgGetPwmDI[]    = "/pwm/din/get";
+const char msgSetPwmDio[]   = "/pwm/dio/set";
+const char msgGetPwmDio[]   = "/pwm/dio/get";
+const char msgSetPwmDo[]    = "/pwm/dout/set";
+const char msgGetPwmDi[]    = "/pwm/din/get";
 // for DIO
-const char msgConfigDIO[] = "/dio/config";
-const char msgSetDO[]     = "/dio/dout/set";
-const char msgGetDI[]     = "/dio/din/get";
+const char msgSetDigitalDio[] = "/digital/dio/set";
+const char msgGetDigitalDio[] = "/digital/dio/get";
+const char msgSetDigitalDo[]  = "/digital/dout/set";
+const char msgGetDigitalDi[]  = "/digital/din/get";
 // for SPI
-const char msgEnableSpi[] = "/spi/enable";
-const char msgConfigSpi[] = "/spi/config";
-const char msgSetSpiDO[]  = "/spi/dout/set";
-const char msgGetSpiDI[]  = "/spi/din/get";
+const char msgSetSpiEnable[] = "/spi/enable/set";
+const char msgSetSpiDio[]    = "/spi/dio/set";
+const char msgGetSpiDio[]    = "/spi/dio/get";
+const char msgSetSpiDo[]     = "/spi/dout/set";
+const char msgGetSpiDi[]     = "/spi/din/get";
 
 //OSC Messages converted from MIDI Message
 const char midiPrefix[] = "/midi";
@@ -137,7 +140,9 @@ const char msgGetHostPort[]   = "/host/port/get";
 const char msgSwitchUsbMode[] = "/usb/mode/switch";
 const char msgGetUsbMode[]    = "/usb/mode/get";
 const char msgSoftReset[]     = "/soft/reset";
+const char msgConfiguration[] = "/configuration";
 const char msgDebug[]         = "/debug";
+const char msgError[]         = "/error";
 
 BYTE oscPacket[1024] = {0};
 char rcvAddressStrings[128] = {0};
@@ -320,7 +325,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
 
     if(isOSCPutReady())
     {
-        LED_1_On();
+        //debug LED_1_On();
         do
         {
             if(testSize <= 8)
@@ -477,7 +482,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
         str = NULL;
         va_end(list);
 
-        LED_1_Off();
+        //debug LED_1_Off();
     }
 }
 
