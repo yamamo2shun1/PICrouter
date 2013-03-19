@@ -46,7 +46,7 @@ static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
                                            MY_DEFAULT_MAC_BYTE5,
                                            MY_DEFAULT_MAC_BYTE6};
 
-// for LED_PAD_16 or LED_PAD_64
+// for LED_PAD_16 or LED_PAD_64 (6)
 const char msgLatticePad[]       = "/lattice/pad";
 const char msgLatticeLed[]       = "/lattice/led";
 const char msgLatticeLedColumn[] = "/lattice/led/col";
@@ -54,22 +54,22 @@ const char msgLatticeLedRow[]    = "/lattice/led/row";
 const char msgLatticeLedAll[]    = "/lattice/led/all";
 const char msgLatticeLedClear[]  = "/lattice/led/clear";
 
-// for LED_ENC_32 or LED_ENC_ABS_32
+// for LED_ENC_32 or LED_ENC_ABS_32 (6)
 const char msgRotaryLedStep[]      = "/rotary/led/step";
 const char msgRotaryLedBits[]      = "/rotary/led/bits";
 const char msgRotaryLedIntensity[] = "/rotary/led/intensity";
 const char msgRotaryLedAllInt[]    = "/rotary/led/allint";
 const char msgRotaryEnc[]          = "/rotary/enc";
 const char msgSetRotaryEncStep[]   = "/rotary/enc/step/set";
-// for ONLY LED_ENC_32
+// for ONLY LED_ENC_32 (1)
 const char msgRotaryEncSwitch[]    = "/rotary/enc/switch";
 
 //Standard OSC Messages
 const char stdPrefix[] = "/std";
-// for Onboard
+// for Onboard (2)
 const char msgOnboardLed[] = "/onboard/led";
 const char msgOnboardSw1[] = "/onboard/sw1";
-// for A/D
+// for A/D (7)
 const char msgGetAdc[]       = "/adc/get";
 const char msgSetAdcEnable[] = "/adc/enable/set";
 const char msgGetAdcEnable[] = "/adc/enable/get";
@@ -77,7 +77,7 @@ const char msgSetAdcDio[]    = "/adc/dio/set";
 const char msgGetAdcDio[]    = "/adc/dio/get";
 const char msgSetAdcDo[]     = "/adc/dout/set";
 const char msgGetAdcDi[]     = "/adc/din/get";
-// for PWM
+// for PWM (10)
 const char msgSetPwmState[] = "/pwm/state/set";
 const char msgGetPwmState[] = "/pwm/state/get";
 const char msgSetPwmFreq[]  = "/pwm/freq/set";
@@ -88,19 +88,19 @@ const char msgSetPwmDio[]   = "/pwm/dio/set";
 const char msgGetPwmDio[]   = "/pwm/dio/get";
 const char msgSetPwmDo[]    = "/pwm/dout/set";
 const char msgGetPwmDi[]    = "/pwm/din/get";
-// for DIO
+// for DIO (4)
 const char msgSetDigitalDio[] = "/digital/dio/set";
 const char msgGetDigitalDio[] = "/digital/dio/get";
 const char msgSetDigitalDo[]  = "/digital/dout/set";
 const char msgGetDigitalDi[]  = "/digital/din/get";
-// for SPI
+// for SPI (5)
 const char msgSetSpiEnable[] = "/spi/enable/set";
 const char msgSetSpiDio[]    = "/spi/dio/set";
 const char msgGetSpiDio[]    = "/spi/dio/get";
 const char msgSetSpiDo[]     = "/spi/dout/set";
 const char msgGetSpiDi[]     = "/spi/din/get";
 
-//OSC Messages converted from MIDI Message
+//OSC Messages converted from MIDI Message (15)
 const char midiPrefix[] = "/midi";
 const char msgSetNote[] = "/note/set";
 const char msgGetNote[] = "/note/get";
@@ -117,7 +117,7 @@ const char msgGetCp[]   = "/cp/get";
 const char msgSetPb[]   = "/pb/set";
 const char msgGetPb[]   = "/pb/get";
 
-//System OSC Messages for Network Settings
+//System OSC Messages for Network Settings (25)
 const char sysPrefix[]        = "/sys";
 const char msgPrefix[]        = "/prefix";
 const char msgSetPrefix[]     = "/prefix/set";
