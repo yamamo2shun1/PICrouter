@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * analog.h,v.0.60 2013/01/26
+ * analog.h,v.0.7.0 2013/03/19
  */
 
 #ifndef ANALOG_H
@@ -26,6 +26,7 @@
 #include <math.h>
 #include <GenericTypeDefs.h>
 #include "osc.h"
+#include "iosetting.h"
 
 typedef enum {
 	MIDI_FADER     =  0,
@@ -36,25 +37,24 @@ typedef enum {
 	LONG_ORIGINAL
 } TYPE_AN_VAL;
 
-#define USE_ADC_NUM  14
 #define FLTR_ADC_CNT 8
 
-BOOL analogEnable[USE_ADC_NUM];
-BOOL analogSendFlag[USE_ADC_NUM];
-BYTE count[USE_ADC_NUM];
-LONG analog[USE_ADC_NUM][FLTR_ADC_CNT];
-LONG currentAnalog[USE_ADC_NUM];
-LONG prevAnalog[USE_ADC_NUM];
+BOOL analogEnable[AN_NUM];
+BOOL analogSendFlag[AN_NUM];
+BYTE count[AN_NUM];
+LONG analog[AN_NUM][FLTR_ADC_CNT];
+LONG currentAnalog[AN_NUM];
+LONG prevAnalog[AN_NUM];
 
 // for Infinium or CF-X2
-int currentValue[USE_ADC_NUM];// = {0};
-int prevValue[USE_ADC_NUM];// = {0};
-int boundaryValue[USE_ADC_NUM];// = {0};
-int currentDirectionValue[USE_ADC_NUM];// = {0};
+int currentValue[AN_NUM];// = {0};
+int prevValue[AN_NUM];// = {0};
+int boundaryValue[AN_NUM];// = {0};
+int currentDirectionValue[AN_NUM];// = {0};
 int currentPosition;// = 0;
 int currentPosition1;// = 0;
 int prevPosition;// = 0;
-int boundaryPosition[USE_ADC_NUM];// = {0};
+int boundaryPosition[AN_NUM];// = {0};
 int centerPosition;// = 0;
 int currentSection;// = 0;
 int prevSection;// = 0;

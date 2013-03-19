@@ -25,7 +25,7 @@ void initAnalogVariables(void)
 {
     BYTE i, j;
 
-    for(i = 0; i < USE_ADC_NUM; i++)
+    for(i = 0; i < AN_NUM; i++)
     {
         analogEnable[i] = FALSE;
         analogSendFlag[i] = FALSE;
@@ -184,7 +184,7 @@ void sendAdc()
 {
     BYTE i;
 
-    for(i = 0; i < USE_ADC_NUM; i++)
+    for(i = 0; i < AN_NUM; i++)
     {
         if(getAnalogFlag(i))
         {
@@ -200,7 +200,7 @@ void sendInfinium(void)
     BYTE i;
     BOOL flag = FALSE;
     
-    for(i = 0; i < USE_ADC_NUM; i++)
+    for(i = 0; i < 2; i++)
     {
         if(getAnalogFlag(i))
         {
@@ -239,7 +239,7 @@ void sendCFX2(void)
     int b_min = 120;
     int b_max = 132;
 
-    for(i = 0; i < USE_ADC_NUM; i++)
+    for(i = 0; i < 6; i++)
     {
         if(getAnalogFlag(i))
         {
