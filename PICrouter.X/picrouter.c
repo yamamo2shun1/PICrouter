@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.2.2 2013/03/18
+ * picrouter.c,v.1.3.0 2013/03/19
  */
 
 #include "picrouter.h"
@@ -35,27 +35,27 @@ void initIOPorts(void)
     {
         //configAnPort(i, IO_OUT);
         //outputAnPort(i, LOW);
-        setAnPortDIOType(i, IO_IN);
+        setAnPortDioType(i, IO_IN);
     }
 
     for(i = 0; i < 4; i++)
     {
-        configPwmPort(i, IO_OUT);
+        setPwmPortDioType(i, IO_OUT);
         outputPwmPort(i, LOW);
     }
 
     for(i = 0; i < 4; i++)
     {
-        configDPort(i, IO_OUT);
-        outputDPort(i, LOW);
+        setDigitalPortDioType(i, IO_OUT);
+        outputDigitalPort(i, LOW);
     }
 
-    configSpiPort("sck2", IO_OUT);
-    configSpiPort("sdi2", IO_OUT);
-    configSpiPort("sdo2", IO_OUT);
-    configSpiPort("sck4", IO_OUT);
-    configSpiPort("sdi4", IO_OUT);
-    configSpiPort("sdo4", IO_OUT);
+    setSpiPortDioType("sck2", IO_OUT);
+    setSpiPortDioType("sdi2", IO_OUT);
+    setSpiPortDioType("sdo2", IO_OUT);
+    setSpiPortDioType("sck4", IO_OUT);
+    setSpiPortDioType("sdi4", IO_OUT);
+    setSpiPortDioType("sdo4", IO_OUT);
     outputSpiPort("sck2", LOW);
     outputSpiPort("sdi2", LOW);
     outputSpiPort("sdo2", LOW);
@@ -317,32 +317,44 @@ void receiveOSCTask(void)
 
     if(initReceiveFlag && isOSCGetReady(rcvLen))
     {
-        LED_2_On();
+        //debug LED_2_On();
         getOSCPacket();
         if(compareOSCAddress(stdPrefix, msgOnboardLed))
         {
-            if(compareTypeTagAtIndex(0, 'i') && getIntArgumentAtIndex(0) == 0)
+            if(!compareTypeTagAtIndex(0, 'i') || !compareTypeTagAtIndex(1, 's'))
             {
-                if(compareTypeTagAtIndex(1, 'i') && getIntArgumentAtIndex(1) == 1)
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(getIntArgumentAtIndex(0) == 0)
+            {
+                if(!strcmp(getStringArgumentAtIndex(1), "on"))
                 {
                     LED_1_On();
                 }
-                else if(compareTypeTagAtIndex(1, 'i') && getIntArgumentAtIndex(1) == 0)
+                else if(!strcmp(getStringArgumentAtIndex(1), "off"))
                 {
                     LED_1_Off();
                 }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
             }
-            else if(compareTypeTagAtIndex(0, 'i') && getIntArgumentAtIndex(0) == 1)
+            else if(getIntArgumentAtIndex(0) == 1)
             {
-                if(compareTypeTagAtIndex(1, 'i') && getIntArgumentAtIndex(1) == 1)
+                if(!strcmp(getStringArgumentAtIndex(1), "on"))
                 {
                     LED_2_On();
                 }
-                else if(compareTypeTagAtIndex(1, 'i') && getIntArgumentAtIndex(1) == 0)
+                else if(!strcmp(getStringArgumentAtIndex(1), "off"))
                 {
                     LED_2_Off();
                 }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
             }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_value");
         }
         // A/D
         else if(compareOSCAddress(stdPrefix, msgSetAdcEnable))
@@ -355,17 +367,23 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id > 13)
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
                 state = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(!strcmp(state, "on"))
             {
                 analogEnable[id] = TRUE;
-                setAnPortDIOType(id, IO_IN);
+                setAnPortDioType(id, IO_IN);
 
                 AD1PCFG &= ~(0x0001 << id);
                 AD1CSSL |= (0x0001 << id);
@@ -373,16 +391,19 @@ void receiveOSCTask(void)
             else if(!strcmp(state, "off"))
             {
                 analogEnable[id] = FALSE;
-                setAnPortDIOType(id, IO_IN);
+                setAnPortDioType(id, IO_IN);
 
                 AD1PCFG |= (0x0001 << id);
                 AD1CSSL &= ~(0x0001 << id);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
+            }
 
             anum = 0;
-            for(i = 0; i < USE_ADC_NUM; i++)
+            for(i = 0; i < AN_NUM; i++)
             {
                 if(analogEnable[i])
                     anum++;
@@ -414,11 +435,17 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id > 13)
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(analogEnable[id])
                 sendOSCMessage(stdPrefix, msgGetAdcEnable, "is", id, "on");
@@ -433,20 +460,26 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id > 13)
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
                 type = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(!strcmp(type, "in"))
             {
-                setAnPortDIOType(id, IO_IN);
+                setAnPortDioType(id, IO_IN);
             }
             else if(!strcmp(type, "out"))
             {
-                setAnPortDIOType(id, IO_OUT);
+                setAnPortDioType(id, IO_OUT);
                 outputAnPort(id, 0);
             }
         }
@@ -456,18 +489,24 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id > 13)
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            if(getAnPortDIOType(id))
+            if(getAnPortDioType(id))
                 sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "in");
             else
                 sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "out");
         }
-        else if(compareOSCAddress(stdPrefix, msgSetAdcDO))
+        else if(compareOSCAddress(stdPrefix, msgSetAdcDo))
         {
             BYTE id;
             char* state;
@@ -475,35 +514,54 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id > 13)
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
                 state = getStringArgumentAtIndex(1);
                 if(strcmp(state, "high") && strcmp(state, "low"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                     return;
+                }
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(!strcmp(state, "high"))
                 outputAnPort(id, HIGH);
             else if(!strcmp(state, "low"))
                 outputAnPort(id, LOW);
         }
-        else if(compareOSCAddress(stdPrefix, msgGetAdcDI))
+        else if(compareOSCAddress(stdPrefix, msgGetAdcDi))
         {
             BYTE id;
 
             if(compareTypeTagAtIndex(0, 'i'))
+            {
                 id = getIntArgumentAtIndex(0);
+                if(id > AN_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             BYTE state = inputAnPort(id);
 
             if(state)
-                sendOSCMessage(stdPrefix, msgGetAdcDI, "is", id, "high");
+                sendOSCMessage(stdPrefix, msgGetAdcDi, "is", id, "high");
             else
-                sendOSCMessage(stdPrefix, msgGetAdcDI, "is", id, "low");
+                sendOSCMessage(stdPrefix, msgGetAdcDi, "is", id, "low");
         }
         // PWM
         else if(compareOSCAddress(stdPrefix, msgSetPwmState))
@@ -512,13 +570,18 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 index = getIntArgumentAtIndex(0);
+                if(index > 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
                 state = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
-
-            if(index > 4)
-                return;
+            }
 
             if(strcmp(state, "on") == 0)
             {
@@ -569,13 +632,25 @@ void receiveOSCTask(void)
                         break;
                 }
             }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
         else if(compareOSCAddress(stdPrefix, msgGetPwmState))
         {
             if(compareTypeTagAtIndex(0, 'i'))
+            {
                 index = getIntArgumentAtIndex(0);
+                if(index > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             sendOSCMessage(stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
         }
@@ -584,7 +659,10 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i'))
                 freq = getIntArgumentAtIndex(0);
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(freq < 20)
             {
@@ -612,13 +690,19 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
             {
                 index = getIntArgumentAtIndex(0);
-                if(index >= PWM_NUM)
+                if(index > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
 
                 duty[index] = getIntArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             if(duty[index] < 0)
             {
@@ -658,13 +742,23 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(stdPrefix, msgGetPwmDuty))
         {
             if(compareTypeTagAtIndex(0, 'i'))
+            {
                 index = getIntArgumentAtIndex(0);
+                if(index > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             sendOSCMessage(stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
         }
-        else if(compareOSCAddress(stdPrefix, msgConfigPwm))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmDio))
         {
             BYTE id;
             char* type;
@@ -672,36 +766,81 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
+                if(id > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
                 type = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
-
-            if(!strcmp(type, "din"))
-            {
-                configPwmPort(id, IO_IN);
             }
-            else if(!strcmp(type, "dout"))
-            {
-                configPwmPort(id, IO_OUT);
-            }
-        }
-        else if(compareOSCAddress(stdPrefix, msgSetPwmDO))
-        {
-            BYTE id;
-            BYTE state;
 
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(!strcmp(type, "in"))
+                setPwmPortDioType(id, IO_IN);
+            else if(!strcmp(type, "out"))
             {
-                id = getIntArgumentAtIndex(0);
-                state = getIntArgumentAtIndex(1);
+                setPwmPortDioType(id, IO_OUT);
+                outputPwmPort(id, LOW);
             }
             else
-                return;
-
-            outputPwmPort(id, state);
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgGetPwmDI))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmDio))
+        {
+            BYTE id;
+            if(compareTypeTagAtIndex(0, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(getPwmPortDioType(id))
+                sendOSCMessage(stdPrefix, msgGetPwmDio, "is", id, "in");
+            else
+                sendOSCMessage(stdPrefix, msgGetPwmDio, "is", id, "out");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetPwmDo))
+        {
+            BYTE id;
+            char* state;
+
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+                state = getStringArgumentAtIndex(1);
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(!strcmp(state, "high"))
+                outputPwmPort(id, HIGH);
+            else if(!strcmp(state, "low"))
+                outputPwmPort(id, LOW);
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+        }
+        else if(compareOSCAddress(stdPrefix, msgGetPwmDi))
         {
             BYTE id;
             BYTE state;
@@ -709,18 +848,27 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
-                if(id >= PWM_NUM)
+                if(id > PWM_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
 
                 state = inputPwmPort(id);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            sendOSCMessage(stdPrefix, msgGetPwmDI, "ii", id, state);
+            if(state)
+                sendOSCMessage(stdPrefix, msgGetPwmDi, "is", id, "high");
+            else
+                sendOSCMessage(stdPrefix, msgGetPwmDi, "is", id, "low");
         }
         // D/IO
-        else if(compareOSCAddress(stdPrefix, msgConfigDIO))
+        else if(compareOSCAddress(stdPrefix, msgSetDigitalDio))
         {
             BYTE id;
             char* type;
@@ -728,36 +876,77 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
+                if(id > D_NUM - 1)
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+
                 type = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            if(!strcmp(type, "din"))
+            if(!strcmp(type, "in"))
+                setDigitalPortDioType(id, IO_IN);
+            else if(!strcmp(type, "out"))
             {
-                configDPort(id, IO_IN);
+                setDigitalPortDioType(id, IO_OUT);
+                outputDigitalPort(id, LOW);
             }
-            else if(!strcmp(type, "dout"))
-            {
-                configDPort(id, IO_OUT);
-            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgSetDO))
+        else if(compareOSCAddress(stdPrefix, msgGetDigitalDio))
         {
             BYTE id;
-            BYTE state;
+            if(compareTypeTagAtIndex(0, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id > D_NUM - 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(getDigitalPortDioType(id))
+                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", id, "in");
+            else
+                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", id, "out");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetDigitalDo))
+        {
+            BYTE id;
+            char* state;
 
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
-                state = getIntArgumentAtIndex(1);
+                if(id > D_NUM - 1)
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+
+                state = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            outputDPort(id, state);
+            if(!strcmp(state, "high"))
+                outputDigitalPort(id, HIGH);
+            else if(!strcmp(state, "low"))
+                outputDigitalPort(id, LOW);
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgGetDI))
+        else if(compareOSCAddress(stdPrefix, msgGetDigitalDi))
         {
             BYTE id;
             BYTE state;
@@ -768,15 +957,18 @@ void receiveOSCTask(void)
                 if(id >= D_NUM)
                     return;
 
-                state = inputDPort(id);
+                state = inputDigitalPort(id);
             }
             else
                 return;
 
-            sendOSCMessage(stdPrefix, msgGetDI, "ii", id, state);
+            if(state)
+                sendOSCMessage(stdPrefix, msgGetDigitalDi, "is", id, "high");
+            else
+                sendOSCMessage(stdPrefix, msgGetDigitalDi, "is", id, "low");
         }
         // SPI
-        else if(compareOSCAddress(stdPrefix, msgEnableSpi))
+        else if(compareOSCAddress(stdPrefix, msgSetSpiEnable))
         {
             BYTE id;
             DWORD bitrate0 = 0;
@@ -792,13 +984,22 @@ void receiveOSCTask(void)
                     if((bitrate0 % 2) == 0)
                         bitrate = (WORD)bitrate0;
                     else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "s", "not_even_number");
                         return;
+                    }
                 }
                 else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
+                }
 
                 if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "need_3_arguments_at_leaset");
                     return;
+                }
 
                 for(i = 2; i < getArgumentsLength(); i++)
                 {
@@ -847,11 +1048,14 @@ void receiveOSCTask(void)
                         SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
                         break;
                     default:
+                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                         return;
                 }
             }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
         }
-        else if(compareOSCAddress(stdPrefix, msgConfigSpi))
+        else if(compareOSCAddress(stdPrefix, msgSetSpiDio))
         {
             char* name;
             char* type;
@@ -859,40 +1063,86 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
             {
                 name = getStringArgumentAtIndex(0);
+                if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
+                   strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    return;
+                }
                 type = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            if(!strcmp(type, "din"))
+            if(!strcmp(type, "in"))
+                setSpiPortDioType(name, IO_IN);
+            else if(!strcmp(type, "out"))
             {
-                configSpiPort(name, IO_IN);
+                setSpiPortDioType(name, IO_OUT);
+                outputSpiPort(name, LOW);
             }
-            else if(!strcmp(type, "dout"))
-            {
-                configSpiPort(name, IO_OUT);
-            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgSetSpiDO))
+        else if(compareOSCAddress(stdPrefix, msgGetSpiDio))
         {
             char* name;
-            BYTE state;
+
+            if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+            {
+                name = getStringArgumentAtIndex(0);
+                if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
+                   strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(getSpiPortDioType(name))
+                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", name, "in");
+            else
+                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", name, "out");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetSpiDo))
+        {
+            char* name;
+            char* state;
 
             if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 'i'))
             {
                 name = getStringArgumentAtIndex(0);
                 if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
                    strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                     return;
+                }
 
-                state = getIntArgumentAtIndex(1);
+                state = getStringArgumentAtIndex(1);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            outputSpiPort(name, state);
+            if(!strcmp(state, "high"))
+                outputSpiPort(name, HIGH);
+            else if(!strcmp(state, "low"))
+                outputSpiPort(name, LOW);
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgGetSpiDI))
+        else if(compareOSCAddress(stdPrefix, msgGetSpiDi))
         {
             char* name;
             BYTE state;
@@ -902,33 +1152,87 @@ void receiveOSCTask(void)
                 name = getStringArgumentAtIndex(0);
                 if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
                    strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                     return;
+                }
 
                 state = inputSpiPort(name);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            sendOSCMessage(stdPrefix, msgGetSpiDI, "si", name, state);
+            if(state)
+                sendOSCMessage(stdPrefix, msgGetSpiDi, "ss", name, "high");
+            else
+                sendOSCMessage(stdPrefix, msgGetSpiDi, "ss", name, "low");
         }
         // System Setting
         else if(compareOSCAddress(sysPrefix, msgSetRemoteIp))
         {
             char* rip;
+            WORD ip[4] = {0};
 
             if(compareTypeTagAtIndex(0, 's'))
                 rip = getStringArgumentAtIndex(0);
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
-            remoteIP[0] = atoi(strtok(rip, "."));
-            remoteIP[1] = atoi(strtok(NULL, "."));
-            remoteIP[2] = atoi(strtok(NULL, "."));
-            remoteIP[3] = atoi(strtok(NULL, "."));
+            ip[0] = atoi(strtok(rip, "."));
+            if(rip == NULL)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+            if(ip[0] > 255)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+
+            ip[1] = atoi(strtok(NULL, "."));
+            if(rip == NULL)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+            if(ip[1] > 255)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+
+            ip[2] = atoi(strtok(NULL, "."));
+            if(rip == NULL)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+            if(ip[2] > 255)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+
+            ip[3] = atoi(strtok(NULL, "."));
+            if(ip[3] > 255)
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                return;
+            }
+
+            remoteIP[0] = (BYTE)ip[0];
+            remoteIP[1] = (BYTE)ip[1];
+            remoteIP[2] = (BYTE)ip[2];
+            remoteIP[3] = (BYTE)ip[3];
             initSendFlag = FALSE;
             closeOSCSendPort();
-            //free(rip);
-            //rip = NULL;
         }
         else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
         {
@@ -941,9 +1245,19 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
         {
             if(compareTypeTagAtIndex(0, 'i'))
+            {
+                if(getIntArgumentAtIndex(0) < 0)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
                 remotePort = getIntArgumentAtIndex(0);
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             closeOSCSendPort();
             initSendFlag = FALSE;
@@ -954,15 +1268,18 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSetHostName))
         {
-            mDNSServiceDeRegister();
-            free(hostName);
             if(compareTypeTagAtIndex(index, 's'))
             {
+                mDNSServiceDeRegister();
+                free(hostName);
                 hostName = NULL;
                 hostName = getStringArgumentAtIndex(0);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             mDNSInitialize(hostName);
             mDNSServiceRegister((const char *)hostName, // base name of the service
@@ -999,9 +1316,19 @@ void receiveOSCTask(void)
         else if(compareOSCAddress(sysPrefix, msgSetHostPort))
         {
             if(compareTypeTagAtIndex(0, 'i'))
+            {
+                if(getIntArgumentAtIndex(0) < 0)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
                 localPort = getIntArgumentAtIndex(0);
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
 
             closeOSCReceivePort();
             initReceiveFlag = FALSE;
@@ -1012,14 +1339,23 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSetPrefix))
         {
-            free(prefix);
             if(compareTypeTagAtIndex(0, 's'))
             {
+                char* str = getStringArgumentAtIndex(0);
+                if(str[0] != '/')
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "must_begin_slash");
+                    return;
+                }
+                free(prefix);
                 prefix = NULL;
                 prefix = getStringArgumentAtIndex(0);
             }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
         }
         else if(compareOSCAddress(sysPrefix, msgGetPrefix))
         {
@@ -1031,13 +1367,20 @@ void receiveOSCTask(void)
             if(compareTypeTagAtIndex(0, 'i'))
                 dm = getIntArgumentAtIndex(0);
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
-
-            if(dm > 1)
-                return;
+            }
 
             if(dm == MODE_HOST && device_mode == MODE_DEVICE)
+            {
                 USBSoftDetach();
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                return;
+            }
             device_mode = dm;
         }
         else if(compareOSCAddress(sysPrefix, msgGetUsbMode))
@@ -1046,11 +1389,21 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSoftReset))
         {
-            BOOL chFlag;
+            BYTE chFlag;
             if(compareTypeTagAtIndex(0, 'i'))
+            {
                 chFlag = getIntArgumentAtIndex(0);
+                if(chFlag > 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
+            }
             else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
+            }
             
             if(chFlag)
             {
@@ -1063,7 +1416,7 @@ void receiveOSCTask(void)
         {
             sendOSCMessage(stdPrefix, "/debug", "i", *(unsigned int *)(NVM_DATA));
         }
-        LED_2_Off();
+        //debug LED_2_Off();
     }
 }
 
@@ -1081,12 +1434,15 @@ void sendOSCTask(void)
         swState1 = SW_State();
         if(swState1 != swState0)
         {
-            sendOSCMessage(stdPrefix, msgOnboardSw1, "i", swState1);
+            if(swState1)
+                sendOSCMessage(stdPrefix, msgOnboardSw1, "s", "off");
+            else
+                sendOSCMessage(stdPrefix, msgOnboardSw1, "s", "on");
         }
         swState0 = swState1;
 
         j = 0;
-        for(i = 0; i < USE_ADC_NUM; i++)
+        for(i = 0; i < AN_NUM; i++)
         {
             if(analogEnable[i])
             {
@@ -1142,12 +1498,12 @@ void HIDControlTask(void)
                     else if(state == 0)
                         analogEnable[id] = FALSE;
 
-                    for(i = 0; i < USE_ADC_NUM; i++)
+                    for(i = 0; i < AN_NUM; i++)
                     {
                         if(analogEnable[i])
                             anum++;
                     }
-                    setAnPortDIOType(id, IO_IN);
+                    setAnPortDioType(id, IO_IN);
 
                     if(state == 1)
                     {
@@ -1204,11 +1560,11 @@ void HIDControlTask(void)
                 {
                     if(ReceivedHidDataBuffer[3] == 0)
                     {
-                        setAnPortDIOType(ReceivedHidDataBuffer[2], IO_IN);
+                        setAnPortDioType(ReceivedHidDataBuffer[2], IO_IN);
                     }
                     else if(ReceivedHidDataBuffer[3] == 1)
                     {
-                        setAnPortDIOType(ReceivedHidDataBuffer[2], IO_OUT);
+                        setAnPortDioType(ReceivedHidDataBuffer[2], IO_OUT);
                     }
                 }
                 else
@@ -1421,11 +1777,11 @@ void HIDControlTask(void)
 
                     if(type == 0)
                     {
-                        configPwmPort(id, IO_IN);
+                        setPwmPortDioType(id, IO_IN);
                     }
                     else if(type == 1)
                     {
-                        configPwmPort(id, IO_OUT);
+                        setPwmPortDioType(id, IO_OUT);
                     }
                 }
                 else
@@ -1479,11 +1835,11 @@ void HIDControlTask(void)
 
                     if(type == 0)
                     {
-                        configDPort(id, IO_IN);
+                        setDigitalPortDioType(id, IO_IN);
                     }
                     else if(type == 1)
                     {
-                        configDPort(id, IO_OUT);
+                        setDigitalPortDioType(id, IO_OUT);
                     }
                 }
                 else
@@ -1510,12 +1866,12 @@ void HIDControlTask(void)
                 {
                     BYTE id = ReceivedHidDataBuffer[2];
                     BYTE state = ReceivedHidDataBuffer[3];
-                    outputDPort(id, state);
+                    outputDigitalPort(id, state);
                 }
                 else if(ReceivedHidDataBuffer[1] == 0)
                 {
                     BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE state = inputDPort(id);
+                    BYTE state = inputDigitalPort(id);
 
                     ToSendHidDataBuffer[0] = 0x89;
                     ToSendHidDataBuffer[1] = 2;
@@ -1539,39 +1895,39 @@ void HIDControlTask(void)
                     {
                         case 0:
                             if(type == 0)
-                                configSpiPort("sck4", IO_IN);
+                                setSpiPortDioType("sck4", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sck4", IO_OUT);
+                                setSpiPortDioType("sck4", IO_OUT);
                             break;
                         case 1:
                             if(type == 0)
-                                configSpiPort("sdi4", IO_IN);
+                                setSpiPortDioType("sdi4", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sdi4", IO_OUT);
+                                setSpiPortDioType("sdi4", IO_OUT);
                             break;
                         case 2:
                             if(type == 0)
-                                configSpiPort("sdo4", IO_IN);
+                                setSpiPortDioType("sdo4", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sdo4", IO_OUT);
+                                setSpiPortDioType("sdo4", IO_OUT);
                             break;
                         case 3:
                             if(type == 0)
-                                configSpiPort("sck2", IO_IN);
+                                setSpiPortDioType("sck2", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sck2", IO_OUT);
+                                setSpiPortDioType("sck2", IO_OUT);
                             break;
                         case 4:
                             if(type == 0)
-                                configSpiPort("sdi2", IO_IN);
+                                setSpiPortDioType("sdi2", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sdi2", IO_OUT);
+                                setSpiPortDioType("sdi2", IO_OUT);
                             break;
                         case 5:
                             if(type == 0)
-                                configSpiPort("sdo2", IO_IN);
+                                setSpiPortDioType("sdo2", IO_IN);
                             else if(type == 1)
-                                configSpiPort("sdo2", IO_OUT);
+                                setSpiPortDioType("sdo2", IO_OUT);
                             break;
                     }
                 }
@@ -1850,7 +2206,7 @@ void sendControlChange(void)
 {
     BYTE i, value;
 
-    for(i = 0; i < USE_ADC_NUM; i++)
+    for(i = 0; i < AN_NUM; i++)
     {
         if(analogEnable[i])
         {
