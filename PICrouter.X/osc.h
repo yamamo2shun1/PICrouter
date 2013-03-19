@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.10 2013/03/19
+ * osc.h,v.0.9.11 2013/03/19
  */
 
 #ifndef OSC_H
@@ -37,6 +37,7 @@ extern UDP_SOCKET RxSocket;
 extern UDP_SOCKET TxSocket;
 extern BOOL initReceiveFlag;
 extern BOOL initSendFlag;
+extern BOOL chCompletedFlag;
 extern char* hostName;
 extern char* prefix;
 
