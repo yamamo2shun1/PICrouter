@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.3.0 2013/03/19
+ * picrouter.c,v.1.3.1 2013/03/19
  */
 
 #include "picrouter.h"
@@ -1232,6 +1232,7 @@ void receiveOSCTask(void)
             remoteIP[2] = (BYTE)ip[2];
             remoteIP[3] = (BYTE)ip[3];
             initSendFlag = FALSE;
+            chCompletedFlag = TRUE;
             closeOSCSendPort();
         }
         else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
@@ -1261,6 +1262,7 @@ void receiveOSCTask(void)
 
             closeOSCSendPort();
             initSendFlag = FALSE;
+            chCompletedFlag = TRUE;
         }
         else if(compareOSCAddress(sysPrefix, msgGetRemotePort))
         {
@@ -1291,7 +1293,7 @@ void receiveOSCTask(void)
                                 NULL                    // no application context
                                 );
             mDNSMulticastFilterRegister();
-            sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
+            sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
         }
         else if(compareOSCAddress(sysPrefix, msgGetHostName))
         {
@@ -1332,6 +1334,7 @@ void receiveOSCTask(void)
 
             closeOSCReceivePort();
             initReceiveFlag = FALSE;
+            chCompletedFlag = TRUE;
         }
         else if(compareOSCAddress(sysPrefix, msgGetHostPort))
         {
@@ -1356,6 +1359,7 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
             }
+            sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
         }
         else if(compareOSCAddress(sysPrefix, msgGetPrefix))
         {
@@ -1382,6 +1386,7 @@ void receiveOSCTask(void)
                 return;
             }
             device_mode = dm;
+            sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
         }
         else if(compareOSCAddress(sysPrefix, msgGetUsbMode))
         {
@@ -1427,7 +1432,14 @@ void sendOSCTask(void)
     static BYTE swState1 = 0;
 
     if(!initSendFlag)
+    {
         initSendFlag = openOSCSendPort(remoteIP, remotePort);
+        if(chCompletedFlag)
+        {
+            sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
+            chCompletedFlag = FALSE;
+        }
+    }
 
     if(initSendFlag)
     {
