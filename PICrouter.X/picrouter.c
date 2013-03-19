@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.3.1 2013/03/19
+ * picrouter.c,v.1.4.0 2013/03/19
  */
 
 #include "picrouter.h"
@@ -168,6 +168,8 @@ int main(int argc, char** argv) {
                     StackTask();
                     NBNSTask();
                     mDNSProcess();
+
+                    DHCPServerTask();
 
                     receiveOSCTask();
                     sendOSCTask();

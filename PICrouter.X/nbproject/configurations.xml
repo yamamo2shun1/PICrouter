@@ -80,6 +80,7 @@
         <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
+        <itemPath>TCPIP Stack/DHCPs.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
