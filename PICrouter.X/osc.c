@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.11 2013/03/19
+ * osc.c,v.0.9.12 2013/03/20
  */
 
 #include "osc.h"
@@ -32,7 +32,8 @@ char* hostName = NULL;
 char* prefix = NULL;
 
 // Remote IP Address Initialization
-BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
+//BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
+BYTE remoteIP[] = {192ul, 168ul, 0ul, 255ul};
 
 // Port Number Initialization
 WORD remotePort = 8000;
