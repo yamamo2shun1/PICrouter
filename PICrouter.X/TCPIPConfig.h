@@ -71,7 +71,7 @@
 //#define STACK_USE_HTTP2_SERVER			// New HTTP server with POST, Cookies, Authentication, etc.
 //#define STACK_USE_SSL_SERVER			// SSL server socket support (Requires SW300052)
 //#define STACK_USE_SSL_CLIENT			// SSL client socket support (Requires SW300052)
-//#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
+#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
 #define STACK_USE_DHCP_CLIENT			// Dynamic Host Configuration Protocol client for obtaining IP address and other parameters
 #define STACK_USE_DHCP_SERVER			// Single host DHCP server
 //#define STACK_USE_FTP_SERVER			// File Transfer Protocol (old)
@@ -157,7 +157,7 @@
 
     #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)//test (169ul)
     #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)//test (254ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE3        (0ul)//test (1ul)
+    #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)//test (1ul)
     #define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)//test (1ul)
 
     #define MY_DEFAULT_MASK_BYTE1           (255ul)
