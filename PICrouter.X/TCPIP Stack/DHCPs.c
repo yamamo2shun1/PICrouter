@@ -615,7 +615,7 @@ static void DHCPServerInit(void)
                         DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
 		}     
 		#endif
-		DhcpIpPool[i].Client_Addr.v[2] = 0;
+		DhcpIpPool[i].Client_Addr.v[2] = 1;//syama 0;
 		DhcpIpPool[i].Client_Addr.v[3] = 100+i;
 		DhcpIpPool[i].ClientMAC.v[0]=0;
 		DhcpIpPool[i].ClientMAC.v[1]=0;
