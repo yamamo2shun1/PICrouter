@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.12 2013/03/20
+ * osc.h,v.0.9.13 2013/03/24
  */
 
 #ifndef OSC_H

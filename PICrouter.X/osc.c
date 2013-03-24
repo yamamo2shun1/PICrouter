@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.12 2013/03/20
+ * osc.c,v.0.9.13 2013/03/24
  */
 
 #include "osc.h"
@@ -33,7 +33,7 @@ char* prefix = NULL;
 
 // Remote IP Address Initialization
 //BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
-BYTE remoteIP[] = {192ul, 168ul, 0ul, 255ul};
+BYTE remoteIP[] = {224ul, 0ul, 0ul, 1ul};
 
 // Port Number Initialization
 WORD remotePort = 8000;
@@ -185,7 +185,32 @@ void setOSCHostName(char* host_name)
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 {
     BOOL flag = FALSE;
+#if 0
     TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
+#else
+    if(ip_address[0] == 224 && ip_address[1] == 0 && ip_address[2] == 0)
+    {
+        NODE_INFO mcRemote;
+
+        mcRemote.IPAddr.v[0] = ip_address[0];
+        mcRemote.IPAddr.v[1] = ip_address[1];
+        mcRemote.IPAddr.v[2] = ip_address[2];
+        mcRemote.IPAddr.v[3] = ip_address[3];
+
+        mcRemote.MACAddr.v[0] = 0x01;
+        mcRemote.MACAddr.v[1] = 0x00;
+        mcRemote.MACAddr.v[2] = 0x5E;
+        mcRemote.MACAddr.v[3] = ip_address[1] & 0x7F;
+        mcRemote.MACAddr.v[4] = ip_address[2];
+        mcRemote.MACAddr.v[5] = ip_address[3];
+
+        TxSocket = UDPOpenEx((DWORD)(PTR_BASE)&mcRemote, UDP_OPEN_NODE_INFO, 0, port_number);
+    }
+    else
+    {
+        TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
+    }
+#endif
     if(TxSocket != INVALID_UDP_SOCKET)
         flag = TRUE;
     return flag;
@@ -194,7 +219,26 @@ BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 BOOL openOSCReceivePort(WORD port_number)
 {
     BOOL flag = FALSE;
+    
     RxSocket = UDPOpen(port_number, NULL, 0);
+#if 0
+    NODE_INFO mcRemote;
+
+    mcRemote.IPAddr.v[0] = 224;
+    mcRemote.IPAddr.v[1] = 0;
+    mcRemote.IPAddr.v[2] = 0;
+    mcRemote.IPAddr.v[3] = 1;
+
+    mcRemote.MACAddr.v[0] = 0x01;
+    mcRemote.MACAddr.v[1] = 0x00;
+    mcRemote.MACAddr.v[2] = 0x5E;
+    mcRemote.MACAddr.v[3] = 0x00;
+    mcRemote.MACAddr.v[4] = 0x00;
+    mcRemote.MACAddr.v[5] = 0x01;
+
+    RxSocket = UDPOpen(port_number, (PTR_BASE)&mcRemote , 0);
+#endif
+
     if(RxSocket != INVALID_UDP_SOCKET)
         flag = TRUE;
     return flag;
@@ -305,6 +349,11 @@ void getOSCPacket(void)
                 length += v;
                 *(rcvArgumentsIndexLength + k) = v;
                 break;
+            case 'T':
+            case 'F':
+                break;
+            default:
+                break;
         }
     }
     UDPDiscard();
@@ -408,6 +457,12 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                 } while(i > 0);
                 totalSize += j;
             }
+            else if(*p == 'T')
+            {
+            }
+            else if(*p == 'F')
+            {
+            }
             p++;
         }
         va_end(list);
@@ -473,6 +528,13 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                     }
                     index += j;
                     break;
+                case 'T':
+                case 'F':
+                case 'N':
+                case 'I'
+                    break;
+                default:
+                    break;
             }
             type++;
         }
@@ -511,7 +573,9 @@ BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
     if(index >= rcvArgumentsLength - 1)
         return FALSE;
 
-    if(*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's')
+    if(*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
+       *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
+       *(rcvArgsTypeArray + index) != 'I')
         return FALSE;
 
     if(*(rcvArgsTypeArray + index) == typetag)
@@ -552,7 +616,7 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
                       (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             lvalue &= 0xffffffff;
 
-            sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
+            sign = ((lvalue >> 31) & 0x01) ? -1 : 1;
             exponent = ((lvalue >> 23) & 0xFF) - 127;
             mantissa = lvalue & 0x7FFFFF;
 
@@ -602,7 +666,8 @@ float getFloatArgumentAtIndex(const UINT16 index)
                       (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             lvalue &= 0xffffffff;
 
-            sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
+            //sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
+            sign = ((lvalue >> 31) & 0x01) ? -1 : 1;
             exponent = ((lvalue >> 23) & 0xFF) - 127;
             mantissa = lvalue & 0x7FFFFF;
 
@@ -642,4 +707,23 @@ char* getStringArgumentAtIndex(const UINT16 index)
             break;
     }
     return cstr;
+}
+
+BOOL getBooleanArgumentAtIndex(const UINT16 index)
+{
+    BOOL flag = FALSE;
+
+    if(index >= rcvArgumentsLength - 1)
+        return flag;
+
+    switch(*(rcvArgsTypeArray + index))
+    {
+        case 'T':
+            flag = TRUE;
+            break;
+        case 'F':
+            flag = FALSE;
+            break;
+    }
+    return flag;
 }
