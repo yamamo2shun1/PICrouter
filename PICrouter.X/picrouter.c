@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.1 2013/03/24
+ * picrouter.c,v.1.4.2 2013/03/26
  */
 
 #include "picrouter.h"
@@ -820,7 +820,7 @@ void receiveOSCTask(void)
             BYTE id;
             char* state;
 
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
                 if(id > PWM_NUM - 1)
@@ -848,7 +848,7 @@ void receiveOSCTask(void)
             BYTE id;
             BYTE state;
 
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 'i'))
             {
                 id = getIntArgumentAtIndex(0);
                 if(id > PWM_NUM - 1)
@@ -928,7 +928,7 @@ void receiveOSCTask(void)
             BYTE id;
             char* state;
 
-            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
             {
                 id = getIntArgumentAtIndex(0);
                 if(id > D_NUM - 1)
