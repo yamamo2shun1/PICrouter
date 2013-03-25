@@ -241,7 +241,7 @@
 									"maxclass" : "inlet",
 									"numinlets" : 0,
 									"numoutlets" : 1,
-									"outlettype" : [ "" ],
+									"outlettype" : [ "int" ],
 									"patching_rect" : [ 100.0, 22.0, 25.0, 25.0 ]
 								}
 
@@ -660,7 +660,7 @@
 									"maxclass" : "inlet",
 									"numinlets" : 0,
 									"numoutlets" : 1,
-									"outlettype" : [ "" ],
+									"outlettype" : [ "int" ],
 									"patching_rect" : [ 100.0, 22.0, 25.0, 25.0 ]
 								}
 
@@ -1916,13 +1916,14 @@
 					"fontsize" : 12.0,
 					"frgb" : 0.0,
 					"id" : "obj-76",
+					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 388.895386, 30.0, 80.375, 20.0 ],
+					"patching_rect" : [ 388.895386, 30.0, 80.375, 33.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 50.798462, 168.0, 80.375, 20.0 ],
-					"text" : "PWM Duty :"
+					"presentation_rect" : [ 17.798462, 168.0, 111.625, 20.0 ],
+					"text" : "PWM Duty Cycle :"
 				}
 
 			}
