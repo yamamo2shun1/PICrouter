@@ -655,7 +655,7 @@ void receiveOSCTask(void)
                 return;
             }
 
-            sendOSCMessage(stdPrefix, msgGetPwmState, "is", index, onSquare[index] ? "on" : "off");
+            sendOSCMessage(stdPrefix, msgGetPwmEnable, "is", index, onSquare[index] ? "on" : "off");
         }
         else if(compareOSCAddress(stdPrefix, msgSetPwmFreq))
         {
