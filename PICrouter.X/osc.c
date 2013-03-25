@@ -531,7 +531,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                 case 'T':
                 case 'F':
                 case 'N':
-                case 'I'
+                case 'I':
                     break;
                 default:
                     break;
