@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.0 2013/03/19
+ * picrouter.c,v.1.4.1 2013/03/24
  */
 
 #include "picrouter.h"
@@ -115,6 +115,7 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
+
     mDNSInitialize(DEFAULT_HOST_NAME);
     mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
                         "_oscit._udp.local",       // type of the service
@@ -1187,6 +1188,7 @@ void receiveOSCTask(void)
             }
 
             ip[0] = atoi(strtok(rip, "."));
+#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1197,8 +1199,9 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-
+#endif
             ip[1] = atoi(strtok(NULL, "."));
+#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1209,8 +1212,9 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-
+#endif
             ip[2] = atoi(strtok(NULL, "."));
+#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1221,14 +1225,15 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-
+#endif
             ip[3] = atoi(strtok(NULL, "."));
+#if 0
             if(ip[3] > 255)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-
+#endif
             remoteIP[0] = (BYTE)ip[0];
             remoteIP[1] = (BYTE)ip[1];
             remoteIP[2] = (BYTE)ip[2];
@@ -1421,7 +1426,24 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgDebug))
         {
-            sendOSCMessage(stdPrefix, "/debug", "i", *(unsigned int *)(NVM_DATA));
+            for(i = 0; i < getArgumentsLength(); i++)
+            {
+                if(compareTypeTagAtIndex(i, 'i'))
+                    sendOSCMessage(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
+                else if(compareTypeTagAtIndex(i, 'f'))
+                    sendOSCMessage(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
+                else if(compareTypeTagAtIndex(i, 's'))
+                    sendOSCMessage(sysPrefix, msgDebug, "is", i, getStringArgumentAtIndex(i));
+                else if(compareTypeTagAtIndex(i, 'T'))
+                    sendOSCMessage(sysPrefix, msgDebug, "iT", i);
+                else if(compareTypeTagAtIndex(i, 'F'))
+                    sendOSCMessage(sysPrefix, msgDebug, "iF", i);
+                else if(compareTypeTagAtIndex(i, 'N'))
+                    sendOSCMessage(sysPrefix, msgDebug, "iN", i);
+                else if(compareTypeTagAtIndex(i, 'I'))
+                    sendOSCMessage(sysPrefix, msgDebug, "iI", i);
+            }
+            
         }
         //debug LED_2_Off();
     }

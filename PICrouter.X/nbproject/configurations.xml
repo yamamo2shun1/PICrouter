@@ -23,6 +23,7 @@
           <itemPath>Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
+          <itemPath>Include/TCPIP Stack/AutoIP.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
           <itemPath>Include/USB/usb.h</itemPath>
@@ -81,6 +82,7 @@
         <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
         <itemPath>TCPIP Stack/DHCPs.c</itemPath>
+        <itemPath>TCPIP Stack/AutoIP.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
