@@ -567,7 +567,7 @@ void receiveOSCTask(void)
                 sendOSCMessage(stdPrefix, msgGetAdcDi, "is", id, "low");
         }
         // PWM
-        else if(compareOSCAddress(stdPrefix, msgSetPwmState))
+        else if(compareOSCAddress(stdPrefix, msgSetPwmEnable))
         {
             char* state;
             if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
@@ -638,7 +638,7 @@ void receiveOSCTask(void)
             else
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
         }
-        else if(compareOSCAddress(stdPrefix, msgGetPwmState))
+        else if(compareOSCAddress(stdPrefix, msgGetPwmEnable))
         {
             if(compareTypeTagAtIndex(0, 'i'))
             {
