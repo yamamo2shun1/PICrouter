@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * HardwareProfile.h,v.0.6 2013/02/15
+ * HardwareProfile.h,v.0.7 2013/03/26
  */
 
 #ifndef HARDWARE_PROFILE_H
@@ -183,8 +183,8 @@
 #define SPI_SDI2_IN() PORTGbits.RG7
 #define SPI_SDO2_IN() PORTGbits.RG8
 
-#define SPI_2 0
-#define SPI_4 1
+#define SPI_2 2
+#define SPI_4 4
 #define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
 
 #endif  //HARDWARE_PROFILE_H
