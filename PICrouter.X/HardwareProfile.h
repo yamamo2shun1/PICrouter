@@ -183,8 +183,4 @@
 #define SPI_SDI2_IN() PORTGbits.RG7
 #define SPI_SDO2_IN() PORTGbits.RG8
 
-#define SPI_2 2
-#define SPI_4 4
-#define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
-
 #endif  //HARDWARE_PROFILE_H
