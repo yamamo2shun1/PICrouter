@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.14 2013/03/25
+ * osc.h,v.0.9.15 2013/03/26
  */
 
 #ifndef OSC_H
@@ -97,6 +97,8 @@ extern const char msgSetDigitalDo[];
 extern const char msgGetDigitalDi[];
 // for SPI
 extern const char msgSetSpiEnable[];
+extern const char msgSetSpiData[];
+extern const char msgGetSpiData[];
 extern const char msgSetSpiDio[];
 extern const char msgGetSpiDio[];
 extern const char msgSetSpiDo[];

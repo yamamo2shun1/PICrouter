@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.14 2013/03/25
+ * osc.c,v.0.9.15 2013/03/26
  */
 
 #include "osc.h"
@@ -94,8 +94,10 @@ const char msgSetDigitalDio[] = "/digital/dio/set";
 const char msgGetDigitalDio[] = "/digital/dio/get";
 const char msgSetDigitalDo[]  = "/digital/dout/set";
 const char msgGetDigitalDi[]  = "/digital/din/get";
-// for SPI (5)
+// for SPI (7)
 const char msgSetSpiEnable[] = "/spi/enable/set";
+const char msgSetSpiData[]   = "/spi/data/set";
+const char msgGetSpiData[]   = "/spi/data/get";
 const char msgSetSpiDio[]    = "/spi/dio/set";
 const char msgGetSpiDio[]    = "/spi/dio/get";
 const char msgSetSpiDo[]     = "/spi/dout/set";
@@ -335,15 +337,15 @@ void getOSCPacket(void)
                 v = 0;
                 do
                 {
-                    if(u < 8)
+                    if(u < 4)
                     {
                         u = 0;
-                        v += 8;
+                        v += 4;
                     }
                     else
                     {
-                        u -= 8;
-                        v += 8;
+                        u -= 4;
+                        v += 4;
                     }
                 } while(u > 0);
                 length += v;
@@ -586,13 +588,12 @@ BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
 
 WORD getArgumentsLength(void)
 {
-    return rcvArgumentsLength;
+    return rcvArgumentsLength - 1;
 }
 
 INT32 getIntArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
-    INT16 m = rcvArgumentsLength;
     INT32 sign, exponent, mantissa;
     INT64 lvalue;
     float fvalue;
