@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.6 2013/03/19
+  * iosetting.c,v.0.7 2013/03/26
  */
 
 #include "iosetting.h"
@@ -25,6 +25,128 @@ BYTE ioAnPort[14] = {0};
 BYTE ioPwmPort[4] = {0};
 BYTE ioDPort[4] = {0};
 BYTE ioSpiPort[6] = {0};
+
+void outputPort(char* port_name, BYTE state)
+{
+    if(!strcmp(port_name, "b0"))
+        outputAnPort(0, state);
+    else if(!strcmp(port_name, "b1"))
+        outputAnPort(1, state);
+    else if(!strcmp(port_name, "b2"))
+        outputAnPort(2, state);
+    else if(!strcmp(port_name, "b3"))
+        outputAnPort(3, state);
+    else if(!strcmp(port_name, "b4"))
+        outputAnPort(4, state);
+    else if(!strcmp(port_name, "b5"))
+        outputAnPort(5, state);
+    else if(!strcmp(port_name, "b6"))
+        outputAnPort(6, state);
+    else if(!strcmp(port_name, "b7"))
+        outputAnPort(7, state);
+    else if(!strcmp(port_name, "b8"))
+        outputAnPort(8, state);
+    else if(!strcmp(port_name, "b9"))
+        outputAnPort(9, state);
+    else if(!strcmp(port_name, "b10"))
+        outputAnPort(10, state);
+    else if(!strcmp(port_name, "b11"))
+        outputAnPort(11, state);
+    else if(!strcmp(port_name, "b12"))
+        outputAnPort(12, state);
+    else if(!strcmp(port_name, "b13"))
+        outputAnPort(13, state);
+    else if(!strcmp(port_name, "d0"))
+        outputPwmPort(0, state);
+    else if(!strcmp(port_name, "d2"))
+        outputPwmPort(1, state);
+    else if(!strcmp(port_name, "d3"))
+        outputPwmPort(2, state);
+    else if(!strcmp(port_name, "d4"))
+        outputPwmPort(3, state);
+    else if(!strcmp(port_name, "c13"))
+        outputDigitalPort(0, state);
+    else if(!strcmp(port_name, "c14"))
+        outputDigitalPort(1, state);
+    else if(!strcmp(port_name, "f0"))
+        outputDigitalPort(2, state);
+    else if(!strcmp(port_name, "f1"))
+        outputDigitalPort(3, state);
+    else if(!strcmp(port_name, "b14"))
+        outputSpiPort("sck4", state);
+    else if(!strcmp(port_name, "f4"))
+        outputSpiPort("sdi4", state);
+    else if(!strcmp(port_name, "f5"))
+        outputSpiPort("sdo4", state);
+    else if(!strcmp(port_name, "g6"))
+        outputSpiPort("sck2", state);
+    else if(!strcmp(port_name, "g7"))
+        outputSpiPort("sdi2", state);
+    else if(!strcmp(port_name, "g8"))
+        outputSpiPort("sdo2", state);
+}
+
+BOOL comparePortNameAtIndex(char* port_name)
+{
+    if(!strcmp(port_name, "b0"))
+        return TRUE;
+    else if(!strcmp(port_name, "b1"))
+        return TRUE;
+    else if(!strcmp(port_name, "b2"))
+        return TRUE;
+    else if(!strcmp(port_name, "b3"))
+        return TRUE;
+    else if(!strcmp(port_name, "b4"))
+        return TRUE;
+    else if(!strcmp(port_name, "b5"))
+        return TRUE;
+    else if(!strcmp(port_name, "b6"))
+        return TRUE;
+    else if(!strcmp(port_name, "b7"))
+        return TRUE;
+    else if(!strcmp(port_name, "b8"))
+        return TRUE;
+    else if(!strcmp(port_name, "b9"))
+        return TRUE;
+    else if(!strcmp(port_name, "b10"))
+        return TRUE;
+    else if(!strcmp(port_name, "b11"))
+        return TRUE;
+    else if(!strcmp(port_name, "b12"))
+        return TRUE;
+    else if(!strcmp(port_name, "b13"))
+        return TRUE;
+    else if(!strcmp(port_name, "d0"))
+        return TRUE;
+    else if(!strcmp(port_name, "d2"))
+        return TRUE;
+    else if(!strcmp(port_name, "d3"))
+        return TRUE;
+    else if(!strcmp(port_name, "d4"))
+        return TRUE;
+    else if(!strcmp(port_name, "c13"))
+        return TRUE;
+    else if(!strcmp(port_name, "c14"))
+        return TRUE;
+    else if(!strcmp(port_name, "f0"))
+        return TRUE;
+    else if(!strcmp(port_name, "f1"))
+        return TRUE;
+    else if(!strcmp(port_name, "b14"))
+        return TRUE;
+    else if(!strcmp(port_name, "f4"))
+        return TRUE;
+    else if(!strcmp(port_name, "f5"))
+        return TRUE;
+    else if(!strcmp(port_name, "g6"))
+        return TRUE;
+    else if(!strcmp(port_name, "g7"))
+        return TRUE;
+    else if(!strcmp(port_name, "g8"))
+        return TRUE;
+    else
+        return FALSE;
+}
 
 void setAnPortDioType(BYTE id, BYTE io)
 {
@@ -418,4 +540,66 @@ BYTE inputSpiPort(char* name)
     	state = SPI_SDO2_IN();
     }
     return state;
+}
+
+void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(msb);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to high
+    //
+}
+
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb);
+            putcSPI2(msb);
+            break;
+        case SPI_4:
+            putcSPI4(lsb);
+            putcSPI4(msb);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to low
+    //
+}
+
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id)
+{
+    // Set LOAD_PIN to low
+    //
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(lsb1);
+            putcSPI2(msb1);
+            putcSPI2(lsb0);
+            putcSPI2(msb0);
+            break;
+        case SPI_4:
+            putcSPI4(lsb1);
+            putcSPI4(msb1);
+            putcSPI4(lsb0);
+            putcSPI4(msb0);
+            break;
+    }
+    delayUs(usec);
+    // Set LOAD_PIN to low
+    //
 }

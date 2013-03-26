@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.6 2013/03/19
+ * iosetting.h,v.0.7 2013/03/26
  */
 
 #ifndef IOSETTING_H
@@ -42,6 +42,9 @@ extern BYTE ioSpiPort[6];
 
 void setupIOPorts(void);
 
+void outputPort(char* port_name, BYTE state);
+BOOL comparePortNameAtIndex(char* port_name);
+
 void setAnPortDioType(BYTE id, BYTE io);
 BYTE getAnPortDioType(BYTE id);
 void outputAnPort(BYTE id, BYTE state);
@@ -61,6 +64,10 @@ void setSpiPortDioType(char* name, BYTE io);
 BYTE getSpiPortDioType(char* name);
 void outputSpiPort(char* name, BYTE state);
 BYTE inputSpiPort(char* name);
+
+void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id);
+void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id);
+void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id);
 
 #endif	/* IOSETTING_H */
 
