@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.2 2013/03/26
+ * picrouter.c,v.1.4.3 2013/03/26
  */
 
 #include "picrouter.h"
@@ -47,6 +47,9 @@ void initIOPorts(void)
     for(i = 0; i < 4; i++)
     {
         setDigitalPortDioType(i, IO_OUT);
+        if(i == 1)
+            outputDigitalPort(i, HIGH);
+        else
         outputDigitalPort(i, LOW);
     }
 
@@ -242,70 +245,6 @@ int main(int argc, char** argv) {
     }
     return (EXIT_SUCCESS);
 }
-
-#if 1
-void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
-{
-    // Set LOAD_PIN to low
-    //
-    switch(spi_id)
-    {
-        case SPI_2:
-            putcSPI2(msb);
-            break;
-        case SPI_4:
-            putcSPI4(msb);
-            break;
-    }
-    delayUs(usec);
-    // Set LOAD_PIN to high
-    //
-}
-
-void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
-{
-    // Set LOAD_PIN to low
-    //
-    switch(spi_id)
-    {
-        case SPI_2:
-            putcSPI2(lsb);
-            putcSPI2(msb);
-            break;
-        case SPI_4:
-            putcSPI4(lsb);
-            putcSPI4(msb);
-            break;
-    }
-    delayUs(usec);
-    // Set LOAD_PIN to low
-    //
-}
-
-void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id)
-{
-    // Set LOAD_PIN to low
-    //
-    switch(spi_id)
-    {
-        case SPI_2:
-            putcSPI2(lsb1);
-            putcSPI2(msb1);
-            putcSPI2(lsb0);
-            putcSPI2(msb0);
-            break;
-        case SPI_4:
-            putcSPI4(lsb1);
-            putcSPI4(msb1);
-            putcSPI4(lsb0);
-            putcSPI4(msb0);
-            break;
-    }
-    delayUs(usec);
-    // Set LOAD_PIN to low
-    //
-}
-#endif
 
 /**********************************************
 *  OSC Generic I/O Processing Part
@@ -982,19 +921,19 @@ void receiveOSCTask(void)
             {
                 id = getIntArgumentAtIndex(0);
                 bitrate0 = getIntArgumentAtIndex(1);
-                if(bitrate >= 2 && bitrate <= 1024)
+                if(bitrate0 >= 2 && bitrate0 <= 1024)
                 {
                     if((bitrate0 % 2) == 0)
                         bitrate = (WORD)bitrate0;
                     else
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "not_even_number");
+                        sendOSCMessage(sysPrefix, msgError, "s", "1:not_even_number");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    sendOSCMessage(sysPrefix, msgError, "s", "1:out_of_value_range");
                     return;
                 }
 
@@ -1045,15 +984,184 @@ void receiveOSCTask(void)
                 switch(id)
                 {
                     case 2:
+                        SpiChnClose(2);
                         SpiChnOpen(SPI_CHANNEL2, spiFlags, bitrate);
                         break;
                     case 4:
+                        SpiChnClose(4);
                         SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
                         break;
                     default:
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "s", "0:out_of_value_range");
                         return;
                 }
+            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetSpiData))
+        {
+            BYTE id = 0;
+            char* load_port;
+            char* active_state;
+            BYTE byte_num = 0;
+            WORD data[4] = {0};
+            //DWORD usec = 0;
+
+            if(getArgumentsLength() < 5)
+            {
+                sendOSCMessage(sysPrefix, msgError, "si", "need_4_arguments_at_leaset", getArgumentsLength());
+                return;
+            }
+
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id != 2 && id != 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "0:wrong_argument_value");
+                    return;
+                }
+
+                load_port = getStringArgumentAtIndex(1);
+                if(!comparePortNameAtIndex(load_port))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "1:wrong_argument_string");
+                    return;
+                }
+
+                active_state = getStringArgumentAtIndex(2);
+                if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "2:wrong_argument_string");
+                    return;
+                }
+
+                byte_num = getIntArgumentAtIndex(3);
+                if(byte_num != 1 && byte_num != 2 && byte_num != 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "3:wrong_argument_value");
+                    return;
+                }
+
+                if(getArgumentsLength() < byte_num + 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "too_few_arguments");
+                    return;
+                }
+
+                for(i = 0; i < byte_num; i++)
+                {
+                    if(!compareTypeTagAtIndex(i + 4, 'i'))
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "s", "4:wrong_argument_type");
+                        return;
+                    }
+
+                    data[i] = getIntArgumentAtIndex(i + 4);
+                }
+
+                if(!strcmp(active_state, "HL"))
+                    outputPort(load_port, HIGH);
+                else if(!strcmp(active_state, "LH"))
+                    outputPort(load_port, LOW);
+                switch(byte_num)
+                {
+                    case 1:
+                        sendSpiOneWord(id, data[0], 8);
+                        break;
+                    case 2:
+                        sendSpiTwoWord(id, data[0], data[1], 8);
+                        break;
+                    case 4:
+                        sendSpiFourWord(id, data[0], data[1], data[2], data[3], 8);
+                        break;
+                }
+                if(!strcmp(active_state, "HL"))
+                    outputPort(load_port, LOW);
+                else if(!strcmp(active_state, "LH"))
+                    outputPort(load_port, HIGH);
+            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+        }
+        else if(compareOSCAddress(stdPrefix, msgGetSpiData))
+        {
+            BYTE id = 0;
+            char* load_port;
+            char* active_state;
+            BYTE byte_num = 0;
+            WORD data[4] = {0};
+            //DWORD usec = 0;
+
+            if(getArgumentsLength() < 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "si", "need_4_arguments_at_leaset", getArgumentsLength());
+                return;
+            }
+
+            if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 'i'))
+            {
+                id = getIntArgumentAtIndex(0);
+                if(id != 2 && id != 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "0:wrong_argument_value");
+                    return;
+                }
+
+                load_port = getStringArgumentAtIndex(1);
+                if(!comparePortNameAtIndex(load_port))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "1:wrong_argument_string");
+                    return;
+                }
+
+                active_state = getStringArgumentAtIndex(2);
+                if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "2:wrong_argument_string");
+                    return;
+                }
+
+                byte_num = getIntArgumentAtIndex(3);
+                if(byte_num != 1 && byte_num != 2 && byte_num != 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "3:wrong_argument_value");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(4, 'i'))
+                {
+                    data[0] = getIntArgumentAtIndex(4);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "4:wrong_argument_type");
+                    return;
+                }
+
+                if(!strcmp(active_state, "HL"))
+                    outputPort(load_port, HIGH);
+                else if(!strcmp(active_state, "LH"))
+                    outputPort(load_port, LOW);
+                switch(byte_num)
+                {
+                    case 1:
+                        sendSpiOneWord(id, data[0], 8);
+                        data[0] = receiveSpiOneWord(id, 8);
+                        sendOSCMessage(stdPrefix, msgGetSpiData, "ii", id, data[0]);
+                        break;
+                    case 2:
+                        //data = receiveSpiTwoWord(id, 8);
+                        break;
+                    case 4:
+                        //data = receiveSpiFourWord(id, 8);
+                        break;
+                }
+                if(!strcmp(active_state, "HL"))
+                    outputPort(load_port, LOW);
+                else if(!strcmp(active_state, "LH"))
+                    outputPort(load_port, HIGH);
             }
             else
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
@@ -1120,7 +1228,7 @@ void receiveOSCTask(void)
             char* name;
             char* state;
 
-            if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 'i'))
+            if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
             {
                 name = getStringArgumentAtIndex(0);
                 if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&

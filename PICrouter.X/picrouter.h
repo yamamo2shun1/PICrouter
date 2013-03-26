@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.4.2 2013/03/26
+ * picrouter.h,v.1.4.3 2013/03/26
  */
 
 #include <plib.h>
@@ -151,10 +151,6 @@ BYTE currentState;
 BYTE prevState;
 BOOL stateFlag = FALSE;
 BOOL stateFlag2 = FALSE;//midi
-
-void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id);
-void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id);
-void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id);
 
 void receiveOSCTask(void);
 void sendOSCTask(void);
