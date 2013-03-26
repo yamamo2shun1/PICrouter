@@ -132,12 +132,13 @@ Tutorial 0 : [まずはじめに][]
 Tutorial 1 : [OSCを使ったデジタル入出力の制御][]  
 Tutorial 2 : [OSCを使ったアナログ入力の制御][]  
 Tutorial 3 : [OSCを使ったPWMの制御][]  
-Tutorial 4 : [OSCを使ったSPIの制御]  
+Tutorial 4 : [OSCを使ったSPIの制御][]  
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
 [OSCを使ったアナログ入力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ入力の制御
 [OSCを使ったPWMの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったPWM出力の制御
+[OSCを使ったSPIの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったSPIの制御
 
 Tutorial (EN)
 --------------------------------
