@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.7 2013/03/26
+  * iosetting.c,v.0.7.1 2013/03/26
  */
 
 #include "iosetting.h"
@@ -542,7 +542,7 @@ BYTE inputSpiPort(char* name)
     return state;
 }
 
-void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
+void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
 {
     // Set LOAD_PIN to low
     //
@@ -560,7 +560,7 @@ void sendSpiOneWord(WORD msb, DWORD usec, BYTE spi_id)
     //
 }
 
-void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
+void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
 {
     // Set LOAD_PIN to low
     //
@@ -580,7 +580,7 @@ void sendSpiTwoWord(WORD msb, WORD lsb, DWORD usec, BYTE spi_id)
     //
 }
 
-void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYTE spi_id)
+void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
 {
     // Set LOAD_PIN to low
     //
@@ -602,4 +602,27 @@ void sendSpiFourWord(WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec, BYT
     delayUs(usec);
     // Set LOAD_PIN to low
     //
+}
+
+WORD receiveSpiOneWord(BYTE spi_id, DWORD usec)
+{
+    WORD data = 0;
+
+    switch(spi_id)
+    {
+        case SPI_2:
+            data = getcSPI2();
+            break;
+        case SPI_4:
+            data = getcSPI4();
+            break;
+    }
+
+    return data;
+}
+
+unsigned int getcSPI4(void)
+{
+    while(!DataRdySPI4());
+    return ReadSPI4();
 }
