@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.15 2013/03/26
+ * osc.c,v.0.9.16 2013/03/26
  */
 
 #include "osc.h"
@@ -341,6 +341,11 @@ void getOSCPacket(void)
                     {
                         u = 0;
                         v += 4;
+                    }
+                    else if(u == 4)
+                    {
+                        u -= 4;
+                        v += 8;
                     }
                     else
                     {
