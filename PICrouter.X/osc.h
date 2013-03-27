@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.18 2013/03/27
+ * osc.h,v.0.9.19 2013/03/27
  */
 
 #ifndef OSC_H
@@ -70,6 +70,14 @@ extern const char msgRotaryEncSwitch[];
 // for Onboard
 extern const char msgOnboardLed[];
 extern const char msgOnboardSw1[];
+
+extern const char msgPortIO[];
+extern const char msgSetPortIO[];
+extern const char msgGetPortIO[];
+extern const char msgSetPortOut[];
+extern const char msgPortIn[];
+extern const char msgGetPortIn[];
+
 // for A/D 
 extern const char msgAdc[];
 extern const char msgAdcEnable[];
