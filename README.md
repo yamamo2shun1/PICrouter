@@ -113,7 +113,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.4.3) Updated 2013/03/26  
+#### PICrouter (current ver. is 1.4.4) Updated 2013/03/27  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
@@ -131,13 +131,14 @@ Tutorial 1 : [OSCを使ったデジタル入出力の制御][]
 Tutorial 2 : [OSCを使ったアナログ入力の制御][]  
 Tutorial 3 : [OSCを使ったPWMの制御][]  
 Tutorial 4 : [OSCを使ったSPIの制御][]  
-Tutorial 5 : [システム設定の変更]
+Tutorial 5 : [システム設定の変更][]
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
 [OSCを使ったアナログ入力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったアナログ入力の制御
 [OSCを使ったPWMの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったPWM出力の制御
 [OSCを使ったSPIの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったSPIの制御
+[システム設定の変更]: https://github.com/tkrworks/PICrouter/wiki/システム設定の変更
 
 Tutorial (EN)
 --------------------------------
