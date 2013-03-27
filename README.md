@@ -132,6 +132,7 @@ Tutorial 2 : [OSCを使ったアナログ入力の制御][]
 Tutorial 3 : [OSCを使ったPWMの制御][]  
 Tutorial 4 : [OSCを使ったSPIの制御][]  
 Tutorial 5 : [システム設定の変更][]
+Tutorial 6 : [MIDIをOSCに変換する][]
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
@@ -139,6 +140,7 @@ Tutorial 5 : [システム設定の変更][]
 [OSCを使ったPWMの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったPWM出力の制御
 [OSCを使ったSPIの制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったSPIの制御
 [システム設定の変更]: https://github.com/tkrworks/PICrouter/wiki/システム設定の変更
+[MIDIをOSCに変換する]: https://github.com/tkrworks/PICrouter/wiki/MIDIをOSCに変換する
 
 Tutorial (EN)
 --------------------------------
