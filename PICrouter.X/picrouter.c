@@ -1487,38 +1487,47 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgSwitchUsbMode))
         {
-            BYTE dm;
-            if(compareTypeTagAtIndex(0, 'i'))
-                dm = getIntArgumentAtIndex(0);
+            char* dm;
+            if(compareTypeTagAtIndex(0, 's'))
+                dm = getStringArgumentAtIndex(0);
             else
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
                 return;
             }
 
-            if(dm == MODE_HOST && device_mode == MODE_DEVICE)
+            if(!strcmp(dm, "host"))
             {
-                USBSoftDetach();
+                if(device_mode == MODE_DEVICE)
+                    USBSoftDetach();
+
+                device_mode = MODE_HOST;
+            }
+            else if(!strcmp(dm, "device"))
+            {
+                device_mode = MODE_DEVICE;
             }
             else
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                 return;
             }
-            device_mode = dm;
             sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
         }
         else if(compareOSCAddress(sysPrefix, msgGetUsbMode))
         {
-            sendOSCMessage(sysPrefix, msgGetUsbMode, "i", device_mode);
+            if(device_mode == MODE_DEVICE)
+                sendOSCMessage(sysPrefix, msgUsbMode, "s", "device");
+            else if(device_mode == MODE_HOST)
+                sendOSCMessage(sysPrefix, msgUsbMode, "s", "host");
         }
         else if(compareOSCAddress(sysPrefix, msgSoftReset))
         {
-            BYTE chFlag;
-            if(compareTypeTagAtIndex(0, 'i'))
+            char* reset_mode;
+            if(compareTypeTagAtIndex(0, 's'))
             {
-                chFlag = getIntArgumentAtIndex(0);
-                if(chFlag > 1)
+                reset_mode = getStringArgumentAtIndex(0);
+                if(strcmp(reset_mode, "normal") && strcmp(reset_mode, "bootloader"))
                 {
                     sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
                     return;
@@ -1530,7 +1539,7 @@ void receiveOSCTask(void)
                 return;
             }
             
-            if(chFlag)
+            if(!strcmp(reset_mode, "bootloader"))
             {
                 NVMErasePage((void*)NVM_DATA);
                 NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
