@@ -156,6 +156,7 @@ extern const char msgHostPort[];
 extern const char msgSetHostPort[];
 extern const char msgGetHostPort[];
 extern const char msgSwitchUsbMode[];
+extern const char msgUsbMode[];
 extern const char msgGetUsbMode[];
 extern const char msgSoftReset[];
 extern const char msgConfiguration[];
