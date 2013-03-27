@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.3 2013/03/26
+ * picrouter.c,v.1.4.4 2013/03/27
  */
 
 #include "picrouter.h"
@@ -390,9 +390,9 @@ void receiveOSCTask(void)
             }
 
             if(analogEnable[id])
-                sendOSCMessage(stdPrefix, msgGetAdcEnable, "is", id, "on");
+                sendOSCMessage(stdPrefix, msgAdcEnable, "is", id, "on");
             else
-                sendOSCMessage(stdPrefix, msgGetAdcEnable, "is", id, "off");
+                sendOSCMessage(stdPrefix, msgAdcEnable, "is", id, "off");
         }
         else if(compareOSCAddress(stdPrefix, msgSetAdcDio))
         {
@@ -444,9 +444,9 @@ void receiveOSCTask(void)
             }
 
             if(getAnPortDioType(id))
-                sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "in");
+                sendOSCMessage(stdPrefix, msgAdcDio, "is", id, "in");
             else
-                sendOSCMessage(stdPrefix, msgGetAdcDio, "is", id, "out");
+                sendOSCMessage(stdPrefix, msgAdcDio, "is", id, "out");
         }
         else if(compareOSCAddress(stdPrefix, msgSetAdcDo))
         {
@@ -501,9 +501,9 @@ void receiveOSCTask(void)
             BYTE state = inputAnPort(id);
 
             if(state)
-                sendOSCMessage(stdPrefix, msgGetAdcDi, "is", id, "high");
+                sendOSCMessage(stdPrefix, msgAdcDi, "is", id, "high");
             else
-                sendOSCMessage(stdPrefix, msgGetAdcDi, "is", id, "low");
+                sendOSCMessage(stdPrefix, msgAdcDi, "is", id, "low");
         }
         // PWM
         else if(compareOSCAddress(stdPrefix, msgSetPwmEnable))
@@ -594,7 +594,7 @@ void receiveOSCTask(void)
                 return;
             }
 
-            sendOSCMessage(stdPrefix, msgGetPwmEnable, "is", index, onSquare[index] ? "on" : "off");
+            sendOSCMessage(stdPrefix, msgPwmEnable, "is", index, onSquare[index] ? "on" : "off");
         }
         else if(compareOSCAddress(stdPrefix, msgSetPwmFreq))
         {
@@ -625,7 +625,7 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(stdPrefix, msgGetPwmFreq))
         {
-            sendOSCMessage(stdPrefix, msgGetPwmFreq, "i", freq);
+            sendOSCMessage(stdPrefix, msgPwmFreq, "i", freq);
         }
         else if(compareOSCAddress(stdPrefix, msgSetPwmDuty))
         {
@@ -698,7 +698,7 @@ void receiveOSCTask(void)
                 return;
             }
 
-            sendOSCMessage(stdPrefix, msgGetPwmDuty, "ii", index, duty[index]);
+            sendOSCMessage(stdPrefix, msgPwmDuty, "ii", index, duty[index]);
         }
         else if(compareOSCAddress(stdPrefix, msgSetPwmDio))
         {
@@ -750,9 +750,9 @@ void receiveOSCTask(void)
             }
 
             if(getPwmPortDioType(id))
-                sendOSCMessage(stdPrefix, msgGetPwmDio, "is", id, "in");
+                sendOSCMessage(stdPrefix, msgPwmDio, "is", id, "in");
             else
-                sendOSCMessage(stdPrefix, msgGetPwmDio, "is", id, "out");
+                sendOSCMessage(stdPrefix, msgPwmDio, "is", id, "out");
         }
         else if(compareOSCAddress(stdPrefix, msgSetPwmDo))
         {
@@ -805,9 +805,9 @@ void receiveOSCTask(void)
             }
 
             if(state)
-                sendOSCMessage(stdPrefix, msgGetPwmDi, "is", id, "high");
+                sendOSCMessage(stdPrefix, msgPwmDi, "is", id, "high");
             else
-                sendOSCMessage(stdPrefix, msgGetPwmDi, "is", id, "low");
+                sendOSCMessage(stdPrefix, msgPwmDi, "is", id, "low");
         }
         // D/IO
         else if(compareOSCAddress(stdPrefix, msgSetDigitalDio))
@@ -819,7 +819,10 @@ void receiveOSCTask(void)
             {
                 id = getIntArgumentAtIndex(0);
                 if(id > D_NUM - 1)
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    return;
+                }
 
                 type = getStringArgumentAtIndex(1);
             }
@@ -858,9 +861,9 @@ void receiveOSCTask(void)
             }
 
             if(getDigitalPortDioType(id))
-                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", id, "in");
+                sendOSCMessage(stdPrefix, msgDigitalDio, "is", id, "in");
             else
-                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", id, "out");
+                sendOSCMessage(stdPrefix, msgDigitalDio, "is", id, "out");
         }
         else if(compareOSCAddress(stdPrefix, msgSetDigitalDo))
         {
@@ -905,12 +908,12 @@ void receiveOSCTask(void)
                 return;
 
             if(state)
-                sendOSCMessage(stdPrefix, msgGetDigitalDi, "is", id, "high");
+                sendOSCMessage(stdPrefix, msgDigitalDi, "is", id, "high");
             else
-                sendOSCMessage(stdPrefix, msgGetDigitalDi, "is", id, "low");
+                sendOSCMessage(stdPrefix, msgDigitalDi, "is", id, "low");
         }
         // SPI
-        else if(compareOSCAddress(stdPrefix, msgSetSpiEnable))
+        else if(compareOSCAddress(stdPrefix, msgSetSpiConfig))
         {
             BYTE id;
             DWORD bitrate0 = 0;
@@ -1149,7 +1152,7 @@ void receiveOSCTask(void)
                     case 1:
                         sendSpiOneWord(id, data[0], 8);
                         data[0] = receiveSpiOneWord(id, 8);
-                        sendOSCMessage(stdPrefix, msgGetSpiData, "ii", id, data[0]);
+                        sendOSCMessage(stdPrefix, msgSpiData, "ii", id, data[0]);
                         break;
                     case 2:
                         //data = receiveSpiTwoWord(id, 8);
@@ -1219,9 +1222,9 @@ void receiveOSCTask(void)
             }
 
             if(getSpiPortDioType(name))
-                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", name, "in");
+                sendOSCMessage(stdPrefix, msgDigitalDio, "is", name, "in");
             else
-                sendOSCMessage(stdPrefix, msgGetDigitalDio, "is", name, "out");
+                sendOSCMessage(stdPrefix, msgDigitalDio, "is", name, "out");
         }
         else if(compareOSCAddress(stdPrefix, msgSetSpiDo))
         {
@@ -1277,9 +1280,9 @@ void receiveOSCTask(void)
             }
 
             if(state)
-                sendOSCMessage(stdPrefix, msgGetSpiDi, "ss", name, "high");
+                sendOSCMessage(stdPrefix, msgSpiDi, "ss", name, "high");
             else
-                sendOSCMessage(stdPrefix, msgGetSpiDi, "ss", name, "low");
+                sendOSCMessage(stdPrefix, msgSpiDi, "ss", name, "low");
         }
         // System Setting
         else if(compareOSCAddress(sysPrefix, msgSetRemoteIp))
@@ -1412,7 +1415,9 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgGetHostName))
         {
-            sendOSCMessage(sysPrefix, msgHostName, "s", hostName);
+            char* fullHostName;
+            sprintf(fullHostName, "%s.local", hostName);
+            sendOSCMessage(sysPrefix, msgHostName, "s", fullHostName);
         }
         else if(compareOSCAddress(sysPrefix, msgGetHostIp))
         {
@@ -2454,22 +2459,22 @@ void convertMidiToOsc(void)
                                 {
                                     case 0x80:// Note off
                                     case 0x90:// Note on
-                                        sendOSCMessage(midiPrefix, msgGetNote, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgNote, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xA0:// Key Pressure
-                                        sendOSCMessage(midiPrefix, msgGetKp, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgKp, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xB0:// Control Change
-                                        sendOSCMessage(midiPrefix, msgGetCc, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgCc, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     case 0xC0:// Program Change
-                                        sendOSCMessage(midiPrefix, msgGetPc, "i", midiNum);
+                                        sendOSCMessage(midiPrefix, msgPc, "i", midiNum);
                                         break;
                                     case 0xD0:// Channel Pressure
-                                        sendOSCMessage(midiPrefix, msgGetCp, "ii", midiCh, midiNum);
+                                        sendOSCMessage(midiPrefix, msgCp, "ii", midiCh, midiNum);
                                         break;
                                     case 0xE0:// Pitch Bend
-                                        sendOSCMessage(midiPrefix, msgGetPb, "iii", midiCh, midiNum, midiVal);
+                                        sendOSCMessage(midiPrefix, msgPb, "iii", midiCh, midiNum, midiVal);
                                         break;
                                     default:
                                         break;
