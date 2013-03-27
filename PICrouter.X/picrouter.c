@@ -298,6 +298,119 @@ void receiveOSCTask(void)
             else
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_value");
         }
+        // Port
+        else if(compareOSCAddress(stdPrefix, msgSetPortIO))
+        {
+            char* port_name;
+            char* type;
+ 
+            if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+            {
+                port_name = getStringArgumentAtIndex(0);
+                if(!comparePortNameAtIndex(port_name))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                    return;
+                }
+                type = getStringArgumentAtIndex(1);
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(!strcmp(type, "in"))
+            {
+                setPortIOType(port_name, IO_IN);
+            }
+            else if(!strcmp(type, "out"))
+            {
+                setPortIOType(port_name, IO_OUT);
+                outputPort(port_name, LOW);
+            }
+        }
+        else if(compareOSCAddress(stdPrefix, msgGetPortIO))
+        {
+            char* port_name;
+
+            if(compareTypeTagAtIndex(0, 's'))
+            {
+                port_name = getStringArgumentAtIndex(0);
+                if(!comparePortNameAtIndex(port_name))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(getPortIOType(port_name))
+                sendOSCMessage(stdPrefix, msgPortIO, "ss", port_name, "in");
+            else
+                sendOSCMessage(stdPrefix, msgPortIO, "ss", port_name, "out");
+        }
+        else if(compareOSCAddress(stdPrefix, msgSetPortOut))
+        {
+            char* port_name;
+            char* state;
+
+            if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+            {
+                port_name = getStringArgumentAtIndex(0);
+                if(!comparePortNameAtIndex(port_name))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                    return;
+                }
+                state = getStringArgumentAtIndex(1);
+                if(strcmp(state, "high") && strcmp(state, "low"))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            if(!strcmp(state, "high"))
+                outputPort(port_name, HIGH);
+            else if(!strcmp(state, "low"))
+                outputPort(port_name, LOW);
+        }
+        else if(compareOSCAddress(stdPrefix, msgGetPortIn))
+        {
+            char* port_name;
+
+            if(compareTypeTagAtIndex(0, 's'))
+            {
+                port_name = getStringArgumentAtIndex(0);
+                if(!comparePortNameAtIndex(port_name))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                    return;
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                return;
+            }
+
+            BYTE state = inputPort(port_name);
+
+            if(state)
+                sendOSCMessage(stdPrefix, msgAdcDi, "ss", port_name, "high");
+            else
+                sendOSCMessage(stdPrefix, msgAdcDi, "ss", port_name, "low");
+        }
         // A/D
         else if(compareOSCAddress(stdPrefix, msgSetAdcEnable))
         {
@@ -1299,7 +1412,6 @@ void receiveOSCTask(void)
             }
 
             ip[0] = atoi(strtok(rip, "."));
-#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1310,9 +1422,7 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-#endif
             ip[1] = atoi(strtok(NULL, "."));
-#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1323,9 +1433,7 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-#endif
             ip[2] = atoi(strtok(NULL, "."));
-#if 0
             if(rip == NULL)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
@@ -1336,15 +1444,12 @@ void receiveOSCTask(void)
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-#endif
             ip[3] = atoi(strtok(NULL, "."));
-#if 0
             if(ip[3] > 255)
             {
                 sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
                 return;
             }
-#endif
             remoteIP[0] = (BYTE)ip[0];
             remoteIP[1] = (BYTE)ip[1];
             remoteIP[2] = (BYTE)ip[2];
