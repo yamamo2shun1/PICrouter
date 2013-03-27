@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.16 2013/03/26
+ * osc.c,v.0.9.17 2013/03/27
  */
 
 #include "osc.h"
@@ -71,54 +71,67 @@ const char stdPrefix[] = "/std";
 const char msgOnboardLed[] = "/onboard/led";
 const char msgOnboardSw1[] = "/onboard/sw1";
 // for A/D (7)
-const char msgGetAdc[]       = "/adc/get";
+const char msgAdc[]          = "/adc";
+const char msgAdcEnable[]    = "/adc/enable";
 const char msgSetAdcEnable[] = "/adc/enable/set";
 const char msgGetAdcEnable[] = "/adc/enable/get";
+const char msgAdcDio[]       = "/adc/dio";
 const char msgSetAdcDio[]    = "/adc/dio/set";
 const char msgGetAdcDio[]    = "/adc/dio/get";
 const char msgSetAdcDo[]     = "/adc/dout/set";
+const char msgAdcDi[]        = "/adc/din";
 const char msgGetAdcDi[]     = "/adc/din/get";
 // for PWM (10)
+const char msgPwmEnable[]    = "/pwm/enable";
 const char msgSetPwmEnable[] = "/pwm/enable/set";
 const char msgGetPwmEnable[] = "/pwm/enable/get";
-const char msgSetPwmFreq[]  = "/pwm/freq/set";
-const char msgGetPwmFreq[]  = "/pwm/freq/get";
-const char msgSetPwmDuty[]  = "/pwm/duty/set";
-const char msgGetPwmDuty[]  = "/pwm/duty/get";
-const char msgSetPwmDio[]   = "/pwm/dio/set";
-const char msgGetPwmDio[]   = "/pwm/dio/get";
-const char msgSetPwmDo[]    = "/pwm/dout/set";
-const char msgGetPwmDi[]    = "/pwm/din/get";
+const char msgPwmFreq[]      = "/pwm/freq";
+const char msgSetPwmFreq[]   = "/pwm/freq/set";
+const char msgGetPwmFreq[]   = "/pwm/freq/get";
+const char msgPwmDuty[]      = "/pwm/duty";
+const char msgSetPwmDuty[]   = "/pwm/duty/set";
+const char msgGetPwmDuty[]   = "/pwm/duty/get";
+const char msgPwmDio[]       = "/pwm/dio";
+const char msgSetPwmDio[]    = "/pwm/dio/set";
+const char msgGetPwmDio[]    = "/pwm/dio/get";
+const char msgSetPwmDo[]     = "/pwm/dout/set";
+const char msgPwmDi[]        = "/pwm/din";
+const char msgGetPwmDi[]     = "/pwm/din/get";
 // for DIO (4)
+const char msgDigitalDio[]    = "/digital/dio";
 const char msgSetDigitalDio[] = "/digital/dio/set";
 const char msgGetDigitalDio[] = "/digital/dio/get";
 const char msgSetDigitalDo[]  = "/digital/dout/set";
+const char msgDigitalDi[]     = "/digital/din";
 const char msgGetDigitalDi[]  = "/digital/din/get";
 // for SPI (7)
-const char msgSetSpiEnable[] = "/spi/enable/set";
+const char msgSetSpiConfig[] = "/spi/config/set";
+const char msgSpiData[]      = "/spi/data";
 const char msgSetSpiData[]   = "/spi/data/set";
 const char msgGetSpiData[]   = "/spi/data/get";
+const char msgSpiDio[]       = "/spi/dio";
 const char msgSetSpiDio[]    = "/spi/dio/set";
 const char msgGetSpiDio[]    = "/spi/dio/get";
 const char msgSetSpiDo[]     = "/spi/dout/set";
+const char msgSpiDi[]        = "/spi/din";
 const char msgGetSpiDi[]     = "/spi/din/get";
 
 //OSC Messages converted from MIDI Message (15)
 const char midiPrefix[] = "/midi";
 const char msgSetNote[] = "/note/set";
-const char msgGetNote[] = "/note/get";
+const char msgNote[]    = "/note";
 const char msgSetPp[]   = "/pp/set";
-const char msgGetPp[]   = "/pp/get";
+const char msgPp[]      = "/pp";
 const char msgSetCc[]   = "/cc/set";
-const char msgGetCc[]   = "/cc/get";
+const char msgCc[]      = "/cc";
 const char msgSetPc[]   = "/pc/set";
-const char msgGetPc[]   = "/pc/get";
+const char msgPc[]      = "/pc";
 const char msgSetKp[]   = "/kp/set";
-const char msgGetKp[]   = "/kp/get";
+const char msgKp[]      = "/kp";
 const char msgSetCp[]   = "/cp/set";
-const char msgGetCp[]   = "/cp/get";
+const char msgCp[]      = "/cp";
 const char msgSetPb[]   = "/pb/set";
-const char msgGetPb[]   = "/pb/get";
+const char msgPb[]      = "/pb";
 
 //System OSC Messages for Network Settings (25)
 const char sysPrefix[]        = "/sys";
@@ -141,6 +154,7 @@ const char msgGetHostMac[]    = "/host/mac/get";
 const char msgHostPort[]      = "/host/port";
 const char msgSetHostPort[]   = "/host/port/set";
 const char msgGetHostPort[]   = "/host/port/get";
+const char msgUsbMode[]       = "/usb/mode";
 const char msgSwitchUsbMode[] = "/usb/mode/switch";
 const char msgGetUsbMode[]    = "/usb/mode/get";
 const char msgSoftReset[]     = "/soft/reset";

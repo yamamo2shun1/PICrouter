@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.16 2013/03/26
+ * osc.h,v.0.9.17 2013/03/27
  */
 
 #ifndef OSC_H
@@ -72,54 +72,67 @@ extern const char stdPrefix[];
 extern const char msgOnboardLed[];
 extern const char msgOnboardSw1[];
 // for A/D 
-extern const char msgGetAdc[];
+extern const char msgAdc[];
+extern const char msgAdcEnable[];
 extern const char msgSetAdcEnable[];
 extern const char msgGetAdcEnable[];
+extern const char msgAdcDio[];
 extern const char msgSetAdcDio[];
 extern const char msgGetAdcDio[];
 extern const char msgSetAdcDo[];
+extern const char msgAdcDi[];
 extern const char msgGetAdcDi[];
 // for PWM
+extern const char msgPwmEnable[];
 extern const char msgSetPwmEnable[];
 extern const char msgGetPwmEnable[];
+extern const char msgPwmFreq[];
 extern const char msgSetPwmFreq[];
 extern const char msgGetPwmFreq[];
+extern const char msgPwmDuty[];
 extern const char msgSetPwmDuty[];
 extern const char msgGetPwmDuty[];
+extern const char msgPwmDio[];
 extern const char msgSetPwmDio[];
 extern const char msgGetPwmDio[];
 extern const char msgSetPwmDo[];
+extern const char msgPwmDi[];
 extern const char msgGetPwmDi[];
 // for DIO
+extern const char msgDigitalDio[];
 extern const char msgSetDigitalDio[];
 extern const char msgGetDigitalDio[];
 extern const char msgSetDigitalDo[];
+extern const char msgDigitalDi[];
 extern const char msgGetDigitalDi[];
 // for SPI
-extern const char msgSetSpiEnable[];
+extern const char msgSetSpiConfig[];
+extern const char msgSpiData[];
 extern const char msgSetSpiData[];
 extern const char msgGetSpiData[];
+extern const char msgSpiDio[];
 extern const char msgSetSpiDio[];
 extern const char msgGetSpiDio[];
 extern const char msgSetSpiDo[];
+extern const char msgSpiDi[];
 extern const char msgGetSpiDi[];
 
 // OSC Messages converted from MIDI Message
 extern const char midiPrefix[];
 extern const char msgSetNote[];
-extern const char msgGetNote[];
+extern const char msgNote[];
 extern const char msgSetPp[];
-extern const char msgGetPp[];
+extern const char msgPp[];
 extern const char msgSetCc[];
-extern const char msgGetCc[];
+extern const char msgCc[];
 extern const char msgSetPc[];
-extern const char msgGetPc[];
+extern const char msgPc[];
 extern const char msgSetKp[];
-extern const char msgGetKp[];
+extern const char msgKp[];
 extern const char msgSetCp[];
-extern const char msgGetCp[];
+extern const char msgCp[];
 extern const char msgGetPb[];
-extern const char msgSetPb[];
+extern const char msgPb[];
 
 // System OSC Messages for Network Settings
 extern const char sysPrefix[];
