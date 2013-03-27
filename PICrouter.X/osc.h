@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.17 2013/03/27
+ * osc.h,v.0.9.18 2013/03/27
  */
 
 #ifndef OSC_H
@@ -39,7 +39,7 @@ extern BOOL initReceiveFlag;
 extern BOOL initSendFlag;
 extern BOOL chCompletedFlag;
 extern char* hostName;
-extern char* prefix;
+extern char* stdPrefix;
 
 // Remote IP Address Initialization
 extern BYTE remoteIP[];
@@ -67,7 +67,6 @@ extern const char msgSetRotaryEncStep[];
 extern const char msgRotaryEncSwitch[];
 
 // Standard OSC Messages
-extern const char stdPrefix[];
 // for Onboard
 extern const char msgOnboardLed[];
 extern const char msgOnboardSw1[];

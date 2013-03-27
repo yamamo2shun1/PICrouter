@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.17 2013/03/27
+ * osc.c,v.0.9.18 2013/03/27
  */
 
 #include "osc.h"
@@ -29,7 +29,7 @@ BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
 BOOL chCompletedFlag = FALSE;
 char* hostName = NULL;
-char* prefix = NULL;
+char* stdPrefix = NULL;
 
 // Remote IP Address Initialization
 //BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
@@ -66,7 +66,6 @@ const char msgSetRotaryEncStep[]   = "/rotary/enc/step/set";
 const char msgRotaryEncSwitch[]    = "/rotary/enc/switch";
 
 //Standard OSC Messages
-const char stdPrefix[] = "/std";
 // for Onboard (2)
 const char msgOnboardLed[] = "/onboard/led";
 const char msgOnboardSw1[] = "/onboard/sw1";
@@ -189,8 +188,8 @@ void InitAppConfig(void)
 
 void setOSCPrefix(char* prefix_string)
 {
-    prefix = (char *)calloc(strlen(prefix_string), sizeof(char));
-    memcpy(prefix, prefix_string, strlen(prefix_string));
+    stdPrefix = (char *)calloc(strlen(prefix_string), sizeof(char));
+    memcpy(stdPrefix, prefix_string, strlen(prefix_string));
 }
 void setOSCHostName(char* host_name)
 {

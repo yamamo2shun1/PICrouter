@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.5 2013/01/26
+ * encoder.h,v.0.5.1 2013/03/27
  */
 
 #ifndef ENCODER_H

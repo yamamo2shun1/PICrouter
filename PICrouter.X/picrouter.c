@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     for(i = 0; i < PWM_NUM; i++)
         duty[i] = 50;
 
-    setOSCPrefix("/pic");
+    setOSCPrefix("/std");
     setOSCHostName(DEFAULT_HOST_NAME);
 
     // USB Initialization
@@ -1470,9 +1470,9 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "s", "must_begin_slash");
                     return;
                 }
-                free(prefix);
-                prefix = NULL;
-                prefix = getStringArgumentAtIndex(0);
+                free(stdPrefix);
+                stdPrefix = NULL;
+                stdPrefix = getStringArgumentAtIndex(0);
             }
             else
             {
@@ -1483,7 +1483,7 @@ void receiveOSCTask(void)
         }
         else if(compareOSCAddress(sysPrefix, msgGetPrefix))
         {
-            sendOSCMessage(sysPrefix, msgPrefix, "s", prefix);
+            sendOSCMessage(sysPrefix, msgPrefix, "s", stdPrefix);
         }
         else if(compareOSCAddress(sysPrefix, msgSwitchUsbMode))
         {

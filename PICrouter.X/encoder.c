@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.5 2013/01/26
+ * encoder.c,v.0.5.1 2013/03/27
  */
 
 #include "encoder.h"
@@ -410,7 +410,7 @@ void sendEnc(void)
         else
             reDirection = 0;
 
-        sendOSCMessage(prefix, msgRotaryEnc, "fiff", reAbsAnglePos, reDirection, reVelocity, reCounted);
+        sendOSCMessage(stdPrefix, msgRotaryEnc, "fiff", reAbsAnglePos, reDirection, reVelocity, reCounted);
         sendEncFlag = FALSE;
         reMatchCount = 0;
         reAbsAnglePosLast = reAbsAnglePos;
