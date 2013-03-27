@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * analog.c,v.0.60 2013/01/26
+ * analog.c,v.0.7.1 2013/03/27
  */
 
 #include "analog.h"
@@ -188,7 +188,7 @@ void sendAdc()
     {
         if(getAnalogFlag(i))
         {
-            sendOSCMessage(prefix, msgGetAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
+            sendOSCMessage(prefix, msgAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
             resetAnalogFlag(i);
             delayUs(20);
         }
@@ -218,12 +218,12 @@ void sendInfinium(void)
                 if(currentValue[0] <= 127 && currentValue[1] > 127)
                 {
                     faderValue = currentValue[0];
-                    sendOSCMessage(prefix, msgGetAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
+                    sendOSCMessage(prefix, msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
                 }
                 else if(currentValue[0] > 127 && currentValue[1] <= 127)
                 {
                     faderValue = 255 - currentValue[1];
-                    sendOSCMessage(prefix, msgGetAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
+                    sendOSCMessage(prefix, msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
                 }
 #endif
             }
@@ -324,7 +324,7 @@ void sendCFX2(void)
         else if((currentPosition >> 1) < (prevPosition >> 1))
             currentDirection = -1;
         if((currentPosition >> 1) != (currentPosition1 >> 1))
-            sendOSCMessage(prefix, msgGetAdc, "iiiiiiiii",
+            sendOSCMessage(prefix, msgAdc, "iiiiiiiii",
                            (currentPosition >> 1),
                             currentDirection,
                             currentSection,
