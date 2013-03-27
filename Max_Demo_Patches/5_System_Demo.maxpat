@@ -824,7 +824,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 792.0, 230.822266, 133.0, 23.0 ],
 					"tabmode" : 0,
-					"text" : "/pic2"
+					"text" : "/std"
 				}
 
 			}

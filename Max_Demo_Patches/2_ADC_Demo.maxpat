@@ -665,7 +665,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 370.25, 147.248047, 83.0, 20.0 ],
-					"text" : "route /pic/adc"
+					"text" : "route /std/adc"
 				}
 
 			}
