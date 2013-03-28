@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 175.0, 44.0, 929.0, 539.0 ],
+		"rect" : [ 175.0, 44.0, 675.0, 418.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -107,9 +107,9 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 2,
-					"outlettype" : [ "int", "" ],
+					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 458.5, 163.482422, 82.75, 20.0 ],
-					"text" : "unpack i s"
+					"text" : "unpack s s"
 				}
 
 			}
@@ -313,9 +313,9 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 2,
-					"outlettype" : [ "int", "" ],
+					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 151.0, 170.248047, 97.25, 20.0 ],
-					"text" : "unpack i s"
+					"text" : "unpack s s"
 				}
 
 			}
