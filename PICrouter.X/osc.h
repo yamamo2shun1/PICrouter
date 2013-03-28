@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.19 2013/03/27
+ * osc.h,v.0.9.21 2013/03/28
  */
 
 #ifndef OSC_H
@@ -169,6 +169,8 @@ extern const char msgSoftReset[];
 extern const char msgConfiguration[];
 extern const char msgDebug[];
 extern const char msgError[];
+extern const char msgVersion[];
+extern const char msgGetVersion[];
 
 extern BYTE oscPacket[1024];
 extern char rcvAddressStrings[128];
@@ -192,6 +194,7 @@ BOOL isOSCGetReady(WORD len);
 BOOL isOSCPutReady(void);
 void getOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
+BOOL compareOSCPrefix(const char* prefix);
 BOOL compareOSCAddress(const char* prefix, const char* address);
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag);
 WORD getArgumentsLength(void);

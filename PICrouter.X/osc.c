@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.19 2013/03/27
+ * osc.c,v.0.9.21 2013/03/28
  */
 
 #include "osc.h"
@@ -168,6 +168,8 @@ const char msgSoftReset[]     = "/soft/reset";
 const char msgConfiguration[] = "/configuration";
 const char msgDebug[]         = "/debug";
 const char msgError[]         = "/error";
+const char msgVersion[]       = "/version";
+const char msgGetVersion[]    = "/version/get";
 
 BYTE oscPacket[1024] = {0};
 char rcvAddressStrings[128] = {0};
@@ -207,7 +209,6 @@ void setOSCHostName(char* host_name)
 
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 {
-    BOOL flag = FALSE;
 #if 0
     TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
 #else
@@ -234,15 +235,15 @@ BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
         TxSocket = UDPOpenEx((ip_address[0] | (ip_address[1] << 8) | (ip_address[2] << 16) | (ip_address[3] << 24)), UDP_OPEN_IP_ADDRESS, 0, port_number);
     }
 #endif
-    if(TxSocket != INVALID_UDP_SOCKET)
-        flag = TRUE;
-    return flag;
+
+    if(TxSocket == INVALID_UDP_SOCKET)
+        return FALSE;
+
+    return TRUE;
 }
 
 BOOL openOSCReceivePort(WORD port_number)
 {
-    BOOL flag = FALSE;
-    
     RxSocket = UDPOpen(port_number, NULL, 0);
 #if 0
     NODE_INFO mcRemote;
@@ -262,9 +263,10 @@ BOOL openOSCReceivePort(WORD port_number)
     RxSocket = UDPOpen(port_number, (PTR_BASE)&mcRemote , 0);
 #endif
 
-    if(RxSocket != INVALID_UDP_SOCKET)
-        flag = TRUE;
-    return flag;
+    if(RxSocket == INVALID_UDP_SOCKET)
+        return FALSE;
+
+    return TRUE;
 }
 
 BOOL isOSCSendPortOpened(void)
@@ -293,29 +295,33 @@ void closeOSCReceivePort(void)
 
 BOOL isOSCGetReady(WORD len)
 {
-    BOOL isReadyFlag = FALSE;
     len = UDPIsGetReady(RxSocket);
-    if(len > 0)
-        isReadyFlag = TRUE;
-    return isReadyFlag;
+    if(!len)
+        return FALSE;
+
+    return TRUE;
 }
 
 BOOL isOSCPutReady(void)
 {
-    BOOL isReadyFlag = FALSE;
     WORD puttablePacketSize = 0;
     puttablePacketSize = UDPIsPutReady(TxSocket);
-    if(puttablePacketSize > 0)
-        isReadyFlag = TRUE;
-    return isReadyFlag;
+    if(!puttablePacketSize)
+        return FALSE;
+
+    return TRUE;
 }
 
 void getOSCPacket(void)
 {
     INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
     WORD size = sizeof(oscPacket);
+    WORD r_size = 0;
 
-    UDPGetArray(oscPacket, size);
+    r_size = UDPGetArray(oscPacket, size);
+    if(!r_size)
+        return;
+
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
     while(*(oscPacket + i) != NULL)
@@ -324,8 +330,6 @@ void getOSCPacket(void)
         i++;
         if(i > strlen(oscPacket))
             return;
-        if(*(oscPacket + i) == NULL)
-            break;
     }
     rcvAddressLength = i;
 
@@ -334,13 +338,18 @@ void getOSCPacket(void)
     j = i;
     rcvTypesStartIndex = j;
 
+    k = 0;
+    i++;
     while(*(oscPacket + i) != NULL)
+    {
+        *(rcvArgsTypeArray + k) = *(oscPacket + i);
+        k++;
         i++;
-    for(k = 0; k < i - j - 1; k++)
-        *(rcvArgsTypeArray + k) = *(oscPacket + (k + j + 1));
+    }
     rcvArgumentsLength = i - j;
     n = ((rcvArgumentsLength / 4) + 1) * 4;
 
+    length = 0;
     for(k = 0; k < rcvArgumentsLength - 1; k++)
     {
         *(rcvArgumentsStartIndex + k) = rcvTypesStartIndex + length + n;
@@ -355,30 +364,19 @@ void getOSCPacket(void)
                 u = 0;
                 while(*(oscPacket + (rcvTypesStartIndex + n + length + u)) != '\0')
                     u++;
-                v = 0;
-                do
-                {
-                    if(u < 4)
-                    {
-                        u = 0;
-                        v += 4;
-                    }
-                    else if(u == 4)
-                    {
-                        u -= 4;
-                        v += 8;
-                    }
-                    else
-                    {
-                        u -= 4;
-                        v += 4;
-                    }
-                } while(u > 0);
+
+                if((u % 4) == 0)
+                    v = (u / 4) * 8;
+                else
+                    v = ((u / 4) + 1) * 4;
+
                 length += v;
                 *(rcvArgumentsIndexLength + k) = v;
                 break;
             case 'T':
             case 'F':
+            case 'N':
+            case 'I':
                 break;
             default:
                 break;
@@ -405,16 +403,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
     if(isOSCPutReady())
     {
         //debug LED_1_On();
-        do
-        {
-            if(testSize <= 8)
-            {
-                zeroSize = (8 - testSize);
-                testSize -= 8;
-            }
-            else
-                testSize -= 8;
-        } while(testSize > 0);
+        zeroSize = (testSize % 8) == 0 ? 0 : 8 - (testSize % 8);
 
         if(zeroSize == 0)
             zeroSize = 4;
@@ -422,17 +411,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
             zeroSize -= 4;
 
         testSize1 = typeSize + 1;
-        zeroSize1 = 0;
-        do
-        {
-            if(testSize1 <= 4)
-            {
-                zeroSize1 = (4 - testSize1);
-                testSize1 -= 4;
-            }
-            else
-                testSize1 -= 4;
-        } while(testSize1 > 0);
+        zeroSize1 = (testSize1 % 4) == 0 ? 0 : 4 - (testSize1 % 4);
 
         if(zeroSize1 == 0)
             zeroSize1 = 4;
@@ -464,25 +443,12 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                 i = 0;
                 while(cstr[i] != '\0')
                     i++;
-                j = 0;
-                do
-                {
-                    if(i < 4)
-                    {
-                        i = 0;
-                        j += 4;
-                    }
-                    else if(i == 4)
-                    {
-                        i -= 4;
-                        j += 8;
-                    }
-                    else
-                    {
-                        i -= 4;
-                        j += 4;
-                    }
-                } while(i > 0);
+
+                if((i % 4) == 0)
+                    j = (i / 4) * 8;
+                else
+                    j = ((i / 4) + 1) * 4;
+
                 totalSize += j;
             }
             else if(*p == 'T')
@@ -529,25 +495,12 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                     i = 0;
                     while(cstr[i] != '\0')
                         i++;
-                    j = 0;
-                    do
-                    {
-                        if(i < 4)
-                        {
-                            i = 0;
-                            j += 4;
-                        }
-                        else if(i == 4)
-                        {
-                            i -= 4;
-                            j += 8;
-                        }
-                        else
-                        {
-                            i -= 4;
-                            j += 4;
-                        }
-                    } while(i > 0);
+
+                    if((i % 4) == 0)
+                        j = (i / 4) * 8;
+                    else
+                        j = ((i / 4) + 1) * 4;
+
                     i = 0;
                     while(cstr[i] != '\0')
                     {
@@ -578,16 +531,28 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
     }
 }
 
-BOOL compareOSCAddress(const char* prefix, const char* address)
+BOOL compareOSCPrefix(const char* prefix)
 {
     char* str = rcvAddressStrings;
-    if(strlen(str) > strlen(prefix) + strlen(address))
+    if(strlen(str) < strlen(prefix))
         return FALSE;
     while(*prefix != NULL)
     {
         if(*str++ != *prefix++)
             return FALSE;
     }
+    return TRUE;
+}
+
+BOOL compareOSCAddress(const char* prefix, const char* address)
+{
+    char* str = rcvAddressStrings;
+
+    if(strlen(str) > strlen(prefix) + strlen(address))
+        return FALSE;
+
+    str += strlen(prefix);
+
     while(*address != NULL)
     {
         if(*str++ != *address++)
@@ -598,18 +563,13 @@ BOOL compareOSCAddress(const char* prefix, const char* address)
 
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
 {
-    if(index >= rcvArgumentsLength - 1)
+    if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag ||
+       (*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
+        *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
+        *(rcvArgsTypeArray + index) != 'I'))
         return FALSE;
 
-    if(*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
-       *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
-       *(rcvArgsTypeArray + index) != 'I')
-        return FALSE;
-
-    if(*(rcvArgsTypeArray + index) == typetag)
-        return TRUE;
-    else
-        return FALSE;
+    return TRUE;
 }
 
 WORD getArgumentsLength(void)
@@ -668,7 +628,6 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
 float getFloatArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
-    INT16 m = rcvArgumentsLength;
     INT32 sign, exponent, mantissa;
     INT64 lvalue;
     float fvalue;
