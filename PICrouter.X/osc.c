@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.23 2013/03/30
+ * osc.c,v.0.9.24 2013/03/31
  */
 
 #include "osc.h"
@@ -318,6 +318,8 @@ void getOSCPacket(void)
     WORD r_size = 0;
 
     r_size = UDPGetArray(oscPacket, MAX_PACKET_SIZE);
+    UDPDiscard();
+
     if(!r_size && *(oscPacket + 0) != '/')
         return;
 
@@ -334,7 +336,11 @@ void getOSCPacket(void)
     rcvAddressLength = i;
 
     while(*(oscPacket + i) != ',')
+    {
         i++;
+        if(i >= MAX_PACKET_SIZE)
+            return;
+    }
     rcvTypesStartIndex = i;
 
     i++;
@@ -342,6 +348,8 @@ void getOSCPacket(void)
     {
         j++;
         i++;
+        if(i >= MAX_PACKET_SIZE)
+            return;
     }
     memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, j);
 
@@ -361,7 +369,11 @@ void getOSCPacket(void)
             case 's':
                 u = 0;
                 while(*(oscPacket + (rcvTypesStartIndex + n + length + u)))
+                {
                     u++;
+                    if(i >= MAX_PACKET_SIZE)
+                        return;
+                }
 
                 if((u % 4) == 0)
                     v = (u / 4) * 8;
@@ -380,7 +392,6 @@ void getOSCPacket(void)
                 break;
         }
     }
-    UDPDiscard();
 }
 
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
@@ -531,12 +542,21 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
 
 BOOL compareOSCPrefix(const char* prefix)
 {
+    BYTE i = 0;
     char* str = rcvAddressStrings;
-    if(strlen(str) < strlen(prefix))
+    WORD str_len = strlen(str);
+    WORD prefix_len = strlen(prefix);
+
+    if(str_len < prefix_len)
         return FALSE;
-    while(*prefix != NULL)
+
+    while(*(prefix + i))
     {
-        if(*str++ != *prefix++)
+        if(*(str + i) != *(prefix + i))
+            return FALSE;
+
+        i++;
+        if(i > prefix_len)
             return FALSE;
     }
     return TRUE;
@@ -544,16 +564,25 @@ BOOL compareOSCPrefix(const char* prefix)
 
 BOOL compareOSCAddress(const char* prefix, const char* address)
 {
+    BYTE i = 0, j = 0;
     char* str = rcvAddressStrings;
+    WORD str_len = strlen(str);
+    WORD prefix_len = strlen(prefix);
+    WORD address_len = strlen(address);
 
-    if(strlen(str) > strlen(prefix) + strlen(address))
+    if(str_len > prefix_len + address_len)
         return FALSE;
 
-    str += strlen(prefix);
+    i = prefix_len;
 
-    while(*address != NULL)
+    while(*(address + j))
     {
-        if(*str++ != *address++)
+        if(*(str + i) != *(address + j))
+            return FALSE;
+
+        i++;
+        j++;
+        if((i > prefix_len + address_len) || (j > address_len))
             return FALSE;
     }
     return TRUE;
@@ -561,10 +590,11 @@ BOOL compareOSCAddress(const char* prefix, const char* address)
 
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
 {
-    if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag ||
-       (*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
-        *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
-        *(rcvArgsTypeArray + index) != 'I'))
+    //if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag ||
+    //   (*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
+    //    *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
+    //    *(rcvArgsTypeArray + index) != 'I'))
+    if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag)
         return FALSE;
 
     return TRUE;
@@ -578,10 +608,10 @@ WORD getArgumentsLength(void)
 INT32 getIntArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
-    INT32 sign, exponent, mantissa;
-    INT64 lvalue;
-    float fvalue;
-    float sum;
+    INT32 sign = 0, exponent = 0, mantissa = 0;
+    INT64 lvalue = 0;
+    float fvalue = 0.0;
+    float sum = 0.0;
 
     if(index >= rcvArgumentsLength - 1)
         return 0;
@@ -605,7 +635,6 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
             exponent = ((lvalue >> 23) & 0xFF) - 127;
             mantissa = lvalue & 0x7FFFFF;
 
-            sum = 0.0;
             for(s = 0; s < 23; s++)
             {
                 int onebit = (mantissa >> (22 - s)) & 0x1;
@@ -626,10 +655,10 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
 float getFloatArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
-    INT32 sign, exponent, mantissa;
-    INT64 lvalue;
-    float fvalue;
-    float sum;
+    INT32 sign = 0, exponent = 0, mantissa = 0;
+    INT64 lvalue = 0;
+    float fvalue = 0.0;
+    float sum = 0.0;
 
     if(index >= rcvArgumentsLength - 1)
         return 0.0;
@@ -655,7 +684,6 @@ float getFloatArgumentAtIndex(const UINT16 index)
             exponent = ((lvalue >> 23) & 0xFF) - 127;
             mantissa = lvalue & 0x7FFFFF;
 
-            sum = 0.0;
             for(s = 0; s < 23; s++)
             {
                 int onebit = (mantissa >> (22 - s)) & 0x1;
@@ -674,7 +702,8 @@ float getFloatArgumentAtIndex(const UINT16 index)
 
 char* getStringArgumentAtIndex(const UINT16 index)
 {
-    char* cstr;
+    char cstr[rcvArgumentsIndexLength[index]];
+    char* cp = NULL;
 
     if(index >= rcvArgumentsLength - 1)
         return "error";
@@ -686,11 +715,11 @@ char* getStringArgumentAtIndex(const UINT16 index)
             return "error";
             break;
         case 's':
-            cstr = (char *)calloc(*(rcvArgumentsIndexLength + index), sizeof(char));
             memcpy(cstr, oscPacket + *(rcvArgumentsStartIndex + index), *(rcvArgumentsIndexLength + index));
+            cp = &cstr[0];
             break;
     }
-    return cstr;
+    return cp;
 }
 
 BOOL getBooleanArgumentAtIndex(const UINT16 index)
