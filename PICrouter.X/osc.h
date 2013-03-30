@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.22 2013/03/30
+ * osc.h,v.0.9.23 2013/03/30
  */
 
 #ifndef OSC_H
@@ -30,6 +30,8 @@
 #include "HardwareProfile.h"
 
 #define DEFAULT_HOST_NAME "picrouter"
+
+#define MAX_PACKET_SIZE 1024
 
 // Network
 extern APP_CONFIG AppConfig;
@@ -172,7 +174,7 @@ extern const char msgError[];
 extern const char msgVersion[];
 extern const char msgGetVersion[];
 
-extern BYTE oscPacket[1024];
+extern BYTE oscPacket[MAX_PACKET_SIZE];
 extern char rcvAddressStrings[128];
 extern UINT16 rcvAddressLength;
 extern UINT16 rcvTypesStartIndex;

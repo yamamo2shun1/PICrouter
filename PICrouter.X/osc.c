@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.22 2013/03/30
+ * osc.c,v.0.9.23 2013/03/30
  */
 
 #include "osc.h"
@@ -314,55 +314,53 @@ BOOL isOSCPutReady(void)
 
 void getOSCPacket(void)
 {
-    INT16 i = 0, j, k, n = 0, u = 0, v = 0, length = 0;
-    WORD size = sizeof(oscPacket);
+    INT16 i = 0, j = 0, n = 0, u = 0, v = 0, length = 0;
     WORD r_size = 0;
 
-    r_size = UDPGetArray(oscPacket, size);
-    if(!r_size)
+    r_size = UDPGetArray(oscPacket, MAX_PACKET_SIZE);
+    if(!r_size && *(oscPacket + 0) != '/')
         return;
 
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
-    while(*(oscPacket + i) != NULL)
+    while(*(oscPacket + i))
     {
-        *(rcvAddressStrings + i) = *(oscPacket + i);
         i++;
-        if(i > strlen(oscPacket))
+        if(i >= MAX_PACKET_SIZE)
             return;
     }
+    memcpy(rcvAddressStrings, oscPacket, i);
+
     rcvAddressLength = i;
 
     while(*(oscPacket + i) != ',')
         i++;
-    j = i;
-    rcvTypesStartIndex = j;
+    rcvTypesStartIndex = i;
 
-    k = 0;
     i++;
-    while(*(oscPacket + i) != NULL)
+    while(*(oscPacket + i))
     {
-        *(rcvArgsTypeArray + k) = *(oscPacket + i);
-        k++;
+        j++;
         i++;
     }
-    rcvArgumentsLength = i - j;
+    memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, j);
+
+    rcvArgumentsLength = i - rcvTypesStartIndex;
     n = ((rcvArgumentsLength / 4) + 1) * 4;
 
-    length = 0;
-    for(k = 0; k < rcvArgumentsLength - 1; k++)
+    for(j = 0; j < rcvArgumentsLength - 1; j++)
     {
-        *(rcvArgumentsStartIndex + k) = rcvTypesStartIndex + length + n;
-        switch(*(rcvArgsTypeArray + k))
+        *(rcvArgumentsStartIndex + j) = rcvTypesStartIndex + length + n;
+        switch(*(rcvArgsTypeArray + j))
         {
             case 'i':
             case 'f':
                 length += 4;
-                *(rcvArgumentsIndexLength + k) = 4;
+                *(rcvArgumentsIndexLength + j) = 4;
                 break;
             case 's':
                 u = 0;
-                while(*(oscPacket + (rcvTypesStartIndex + n + length + u)) != '\0')
+                while(*(oscPacket + (rcvTypesStartIndex + n + length + u)))
                     u++;
 
                 if((u % 4) == 0)
@@ -371,7 +369,7 @@ void getOSCPacket(void)
                     v = ((u / 4) + 1) * 4;
 
                 length += v;
-                *(rcvArgumentsIndexLength + k) = v;
+                *(rcvArgumentsIndexLength + j) = v;
                 break;
             case 'T':
             case 'F':
@@ -416,7 +414,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
         if(zeroSize1 == 0)
             zeroSize1 = 4;
 
-        totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);// + (typeSize * 4);
+        totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);
         p = type;
 
         va_start(list, type);
@@ -425,7 +423,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
         float fvalue;
         char* fchar;
         char* cstr;
-        while(*p != '\0')
+        while(*p)
         {
             if(*p == 'i')
             {
@@ -469,7 +467,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
         sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
 
         int index = 0;
-        while(*type != '\0')
+        while(*type)
         {
             switch(*type)
             {
