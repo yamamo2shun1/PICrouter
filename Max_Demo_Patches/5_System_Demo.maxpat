@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 71.0, 44.0, 1306.0, 763.0 ],
+		"rect" : [ 4.0, 44.0, 1030.0, 763.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -28,6 +28,33 @@
 		"digest" : "",
 		"tags" : "",
 		"boxes" : [ 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 203.0, 532.322266, 34.0, 20.0 ],
+					"text" : "print"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-14",
+					"maxclass" : "newobj",
+					"numinlets" : 2,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
+					"patching_rect" : [ 25.0, 629.0, 61.0, 20.0 ],
+					"text" : "route text"
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
@@ -191,20 +218,6 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 25.0, 567.023438, 43.0, 18.0 ],
 					"text" : "set $1"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 12.0,
-					"id" : "obj-14",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 25.0, 660.023438, 170.0, 20.0 ],
-					"text" : "fromsymbol @separator .local"
 				}
 
 			}
@@ -751,20 +764,6 @@
 , 			{
 				"box" : 				{
 					"fontname" : "Arial",
-					"fontsize" : 12.0,
-					"id" : "obj-211",
-					"maxclass" : "newobj",
-					"numinlets" : 2,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 25.0, 630.322266, 61.0, 20.0 ],
-					"text" : "route text"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
 					"fontsize" : 16.0,
 					"frgb" : 0.0,
 					"id" : "obj-212",
@@ -777,7 +776,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 25.0, 594.822266, 170.0, 24.476562 ],
 					"tabmode" : 0,
-					"text" : "picrouter.local"
+					"text" : "PICrouter"
 				}
 
 			}
@@ -790,7 +789,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 25.0, 690.298828, 158.0, 20.0 ],
+					"patching_rect" : [ 25.0, 658.298828, 158.0, 20.0 ],
 					"text" : "prepend /sys/host/name/set"
 				}
 
@@ -876,7 +875,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 25.0, 720.298828, 81.0, 20.0 ],
+					"patching_rect" : [ 25.0, 688.298828, 81.0, 20.0 ],
 					"text" : "send sndOsc"
 				}
 
@@ -1054,7 +1053,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 187.0, 690.298828, 111.0, 18.0 ],
+					"patching_rect" : [ 187.0, 658.298828, 111.0, 18.0 ],
 					"text" : "/sys/host/name/get"
 				}
 
@@ -1297,15 +1296,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-179", 0 ],
-					"disabled" : 0,
-					"hidden" : 0,
-					"source" : [ "obj-132", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-43", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
@@ -1527,15 +1517,6 @@
 					"destination" : [ "obj-14", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"source" : [ "obj-211", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-211", 0 ],
-					"disabled" : 0,
-					"hidden" : 0,
 					"source" : [ "obj-212", 0 ]
 				}
 
@@ -1591,6 +1572,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-28", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-29", 0 ]
 				}
 
 			}
