@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.6 2013/03/30
+ * picrouter.c,v.1.4.7 2013/03/31
  */
 
 #include "picrouter.h"
@@ -1463,7 +1463,8 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
             {
-                char* rip = (char *)calloc(15, sizeof(char));
+                //char* rip = (char *)calloc(15, sizeof(char));
+                char rip[15];
                 sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
                 sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
                 //free(rip);
