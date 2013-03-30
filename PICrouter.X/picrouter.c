@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.5 2013/03/28
+ * picrouter.c,v.1.4.6 2013/03/30
  */
 
 #include "picrouter.h"
@@ -1465,7 +1465,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
             {
-                char* rip = (char *)calloc(15, sizeof(char));;
+                char* rip = (char *)calloc(15, sizeof(char));
                 sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
                 sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
                 //free(rip);
@@ -1498,12 +1498,34 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgSetHostName))
             {
-                if(compareTypeTagAtIndex(index, 's'))
+                char* srcName = NULL;
+                char* np = NULL;
+                int len = 0;
+
+                if(compareTypeTagAtIndex(0, 's'))
                 {
+                    srcName = getStringArgumentAtIndex(0);
+                    np = strstr(srcName, ".local");
+                    if(np == NULL)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        return;
+                    }
+
+                    len = np - srcName;
+                    if(len >= 32)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "s", "too_long_string");
+                        return;
+                    }
+
                     mDNSServiceDeRegister();
                     free(hostName);
                     hostName = NULL;
-                    hostName = getStringArgumentAtIndex(0);
+                    hostName = (char *)calloc(len + 1, sizeof(char));
+                    strncpy(hostName, srcName, len);
+
+                    //debug sendOSCMessage(sysPrefix, msgError, "ss", srcName, hostName);
                 }
                 else
                 {
@@ -1525,7 +1547,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgGetHostName))
             {
-                char* fullHostName;
+                char fullHostName[32] = {0};
                 sprintf(fullHostName, "%s.local", hostName);
                 sendOSCMessage(sysPrefix, msgHostName, "s", fullHostName);
             }
@@ -2635,7 +2657,7 @@ void convertMidiToOsc(void)
                         }        
                         break;
                 }
-                delayUs(2);
+                //delayUs(2);
             }
             break;
         case STATE_ERROR:
