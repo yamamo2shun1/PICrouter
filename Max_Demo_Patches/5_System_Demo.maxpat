@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 4.0, 44.0, 1030.0, 763.0 ],
+		"rect" : [ 111.0, 48.0, 1030.0, 763.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -28,6 +28,20 @@
 		"digest" : "",
 		"tags" : "",
 		"boxes" : [ 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"frgb" : 0.0,
+					"id" : "obj-4",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 96.0, 622.0, 200.0, 20.0 ],
+					"text" : "Input a host name including \".local\""
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
@@ -776,7 +790,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 25.0, 594.822266, 170.0, 24.476562 ],
 					"tabmode" : 0,
-					"text" : "PICrouter"
+					"text" : "picrouter.local"
 				}
 
 			}
