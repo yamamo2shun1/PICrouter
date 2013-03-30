@@ -31,7 +31,7 @@
 
 #define DEFAULT_HOST_NAME "picrouter"
 
-#define MAX_PACKET_SIZE 1024
+#define MAX_PACKET_SIZE 256// 1024
 
 // Network
 extern APP_CONFIG AppConfig;

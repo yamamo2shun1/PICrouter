@@ -171,7 +171,7 @@ const char msgError[]         = "/error";
 const char msgVersion[]       = "/version";
 const char msgGetVersion[]    = "/version/get";
 
-BYTE oscPacket[1024] = {0};
+BYTE oscPacket[MAX_PACKET_SIZE] = {0};
 char rcvAddressStrings[128] = {0};
 UINT16 rcvAddressLength;
 UINT16 rcvTypesStartIndex;
