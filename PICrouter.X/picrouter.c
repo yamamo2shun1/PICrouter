@@ -170,7 +170,6 @@ int main(int argc, char** argv) {
                 while(device_mode == MODE_DEVICE)
                 {
                     StackTask();
-                    NBNSTask();
                     mDNSProcess();
                     DHCPServerTask();
 
@@ -199,7 +198,6 @@ int main(int argc, char** argv) {
                 while(device_mode == MODE_HOST)
                 {
                     StackTask();
-                    NBNSTask();
                     mDNSProcess();
                     DHCPServerTask();
 

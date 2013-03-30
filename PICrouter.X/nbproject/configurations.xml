@@ -19,7 +19,6 @@
           <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyRegs.h</itemPath>
           <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
           <itemPath>Include/TCPIP Stack/UDP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
@@ -77,7 +76,6 @@
         <itemPath>TCPIP Stack/Tick.c</itemPath>
         <itemPath>TCPIP Stack/DHCP.c</itemPath>
         <itemPath>TCPIP Stack/UDP.c</itemPath>
-        <itemPath>TCPIP Stack/NBNS.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
