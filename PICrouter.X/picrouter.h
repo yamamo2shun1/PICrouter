@@ -19,7 +19,7 @@
  * picrouter.h,v.1.4.6 2013/03/30
  */
 
-#define CURRENT_VERSION "1.4.5"
+#define CURRENT_VERSION "1.4.6"
 
 #include <plib.h>
 #include <stdio.h>
