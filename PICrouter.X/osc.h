@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.21 2013/03/28
+ * osc.h,v.0.9.22 2013/03/30
  */
 
 #ifndef OSC_H
@@ -29,7 +29,7 @@
 #include "TCPIP Stack/TCPIP.h"
 #include "HardwareProfile.h"
 
-#define DEFAULT_HOST_NAME "PICrouter"
+#define DEFAULT_HOST_NAME "picrouter"
 
 // Network
 extern APP_CONFIG AppConfig;
