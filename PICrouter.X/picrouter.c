@@ -172,7 +172,6 @@ int main(int argc, char** argv) {
                     StackTask();
                     NBNSTask();
                     mDNSProcess();
-
                     DHCPServerTask();
 
                     receiveOSCTask();
@@ -202,6 +201,7 @@ int main(int argc, char** argv) {
                     StackTask();
                     NBNSTask();
                     mDNSProcess();
+                    DHCPServerTask();
 
                     receiveOSCTask();
                     sendOSCTask();
