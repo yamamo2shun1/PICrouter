@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.27 2013/04/02
+ * osc.c,v.0.9.28 2013/04/02
  */
 
 #include "osc.h"
@@ -367,6 +367,9 @@ BOOL processOSCPacket(void)
             if(!extractArgumentsFromOSCPacket())
                 return flag;
 
+            state_index = 4;
+            break;
+        case 4:
             flag = TRUE;
             state_index = 0;
             break;
@@ -455,17 +458,14 @@ static BOOL extractArgumentsFromOSCPacket()
                 break;
             case 's':
                 u = 0;
-                while(*(oscPacket + (rcvTypesStartIndex + n + length + u)))
+                while(*(oscPacket + (*(rcvArgumentsStartIndex + i) + u)))
                 {
                     u++;
-                    if((rcvTypesStartIndex + n + length + u) >= MAX_PACKET_SIZE)
+                    if((*(rcvArgumentsStartIndex + i) + u) >= MAX_PACKET_SIZE)
                         return FALSE;
                 }
 
-                if((u ^ ((u >> 2) << 2)) == 0)
-                    *(rcvArgumentsIndexLength + i) = (u / 4) * 8;
-                else
-                    *(rcvArgumentsIndexLength + i) = ((u / 4) + 1) * 4;
+                *(rcvArgumentsIndexLength + i) = ((u / 4) + 1) * 4;
 
                 length += *(rcvArgumentsIndexLength + i);
                 break;
@@ -564,16 +564,14 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
 BOOL compareOSCPrefix(const char* prefix)
 {
     BYTE i = 0;
-    char* str = rcvAddressStrings;
-    WORD str_len = strlen(str);
     WORD prefix_len = strlen(prefix);
 
-    if(str_len < prefix_len)
+    if(rcvAddressLength < prefix_len)
         return FALSE;
 
     while(*(prefix + i))
     {
-        if(*(str + i) != *(prefix + i))
+        if(*(rcvAddressStrings + i) != *(prefix + i))
             return FALSE;
 
         i++;
@@ -586,19 +584,17 @@ BOOL compareOSCPrefix(const char* prefix)
 BOOL compareOSCAddress(const char* prefix, const char* address)
 {
     BYTE i = 0, j = 0;
-    char* str = rcvAddressStrings;
-    WORD str_len = strlen(str);
     WORD prefix_len = strlen(prefix);
     WORD address_len = strlen(address);
 
-    if(str_len > prefix_len + address_len)
+    if(rcvAddressLength > prefix_len + address_len)
         return FALSE;
 
     i = prefix_len;
 
     while(*(address + j))
     {
-        if(*(str + i) != *(address + j))
+        if(*(rcvAddressStrings + i) != *(address + j))
             return FALSE;
 
         i++;
