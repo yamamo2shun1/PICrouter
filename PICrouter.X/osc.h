@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.24 2013/03/31
+ * osc.h,v.0.9.26 2013/04/02
  */
 
 #ifndef OSC_H
@@ -31,12 +31,11 @@
 
 #define DEFAULT_HOST_NAME "picrouter"
 
+#define MAX_BUF_SIZE    64
 #define MAX_PACKET_SIZE 256// 1024
 
 // Network
 extern APP_CONFIG AppConfig;
-extern UDP_SOCKET RxSocket;
-extern UDP_SOCKET TxSocket;
 extern BOOL initReceiveFlag;
 extern BOOL initSendFlag;
 extern BOOL chCompletedFlag;
@@ -174,15 +173,6 @@ extern const char msgError[];
 extern const char msgVersion[];
 extern const char msgGetVersion[];
 
-extern BYTE oscPacket[MAX_PACKET_SIZE];
-extern char rcvAddressStrings[128];
-extern UINT16 rcvAddressLength;
-extern UINT16 rcvTypesStartIndex;
-extern INT16 rcvArgumentsLength;
-extern char rcvArgsTypeArray[128];
-extern UINT16 rcvArgumentsStartIndex[128];
-extern UINT16 rcvArgumentsIndexLength[128];
-
 void InitAppConfig(void);
 void setOSCPrefix(char* prefix_string);
 void setOSCHostName(char* host_name);
@@ -195,6 +185,7 @@ void closeOSCReceivePort(void);
 BOOL isOSCGetReady(WORD len);
 BOOL isOSCPutReady(void);
 void getOSCPacket(void);
+BOOL processOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
 BOOL compareOSCPrefix(const char* prefix);
 BOOL compareOSCAddress(const char* prefix, const char* address);

@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.24 2013/03/31
+ * osc.c,v.0.9.26 2013/04/02
  */
 
 #include "osc.h"
 
 // Network
 APP_CONFIG AppConfig;
-UDP_SOCKET RxSocket;
-UDP_SOCKET TxSocket;
+static UDP_SOCKET RxSocket;
+static UDP_SOCKET TxSocket;
 BOOL initReceiveFlag = FALSE;
 BOOL initSendFlag = FALSE;
 BOOL chCompletedFlag = FALSE;
@@ -32,7 +32,6 @@ char* hostName = NULL;
 char* stdPrefix = NULL;
 
 // Remote IP Address Initialization
-//BYTE remoteIP[] = {192ul, 168ul, 1ul, 255ul};
 BYTE remoteIP[] = {224ul, 0ul, 0ul, 1ul};
 
 // Port Number Initialization
@@ -171,17 +170,29 @@ const char msgError[]         = "/error";
 const char msgVersion[]       = "/version";
 const char msgGetVersion[]    = "/version/get";
 
-BYTE oscPacket[MAX_PACKET_SIZE] = {0};
-char rcvAddressStrings[128] = {0};
-UINT16 rcvAddressLength;
-UINT16 rcvTypesStartIndex;
-INT16 rcvArgumentsLength;
-char rcvArgsTypeArray[128] = {0};
-UINT16 rcvArgumentsStartIndex[128] = {0};
-UINT16 rcvArgumentsIndexLength[128] = {0};
+// Static Variables
+static BYTE state_index = 0;
+static BYTE indexA = 0;
+static BYTE indexB = 0;
+static BYTE ringBufIndex = 0;
+static BYTE ringProcessIndex = 0;
+static BYTE udpPacket[MAX_BUF_SIZE][MAX_PACKET_SIZE] = {0};
+static BYTE oscPacket[MAX_PACKET_SIZE] = {0};
+static char rcvAddressStrings[128] = {0};
+static UINT16 rcvAddressLength;
+static UINT16 rcvTypesStartIndex;
+static INT16 rcvArgumentsLength;
+static char rcvArgsTypeArray[128] = {0};
+static UINT16 rcvArgumentsStartIndex[128] = {0};
+static UINT16 rcvArgumentsIndexLength[128] = {0};
+
+// Static Functions
+static BOOL copyOSCPacketFromUDPPacket();
+static BOOL extractAddressFromOSCPacket();
+static BOOL extractTypeTagFromOSCPacket();
+static BOOL extractArgumentsFromOSCPacket();
 
 // Network Setting Initialization(IP Address, MAC Address and so on)
-//static void InitAppConfig(void)
 void InitAppConfig(void)
 {
     AppConfig.Flags.bIsDHCPEnabled = TRUE;
@@ -314,227 +325,240 @@ BOOL isOSCPutReady(void)
 
 void getOSCPacket(void)
 {
-    INT16 i = 0, j = 0, n = 0, u = 0, v = 0, length = 0;
-    WORD r_size = 0;
-
-    r_size = UDPGetArray(oscPacket, MAX_PACKET_SIZE);
+    WORD r_size = UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE);
     UDPDiscard();
 
-    if(!r_size && *(oscPacket + 0) != '/')
-        return;
+    if(r_size > 0)
+    {
+        ringBufIndex++;
+        if(ringBufIndex >= MAX_BUF_SIZE)
+            ringBufIndex = 0;
+    }
+}
 
+BOOL processOSCPacket(void)
+{
+    BOOL flag = FALSE;
+
+    switch(state_index)
+    {
+        case 0:
+            indexA = 0;
+            indexB = 0;
+
+            if(!copyOSCPacketFromUDPPacket())
+                return flag;
+
+            state_index = 1;
+            break;
+        case 1:
+            if(!extractAddressFromOSCPacket())
+                return flag;
+
+            state_index = 2;
+            break;
+        case 2:
+            if(!extractTypeTagFromOSCPacket())
+                return flag;
+
+            state_index = 3;
+            break;
+        case 3:
+            if(!extractArgumentsFromOSCPacket())
+                return flag;
+
+            flag = TRUE;
+            state_index = 0;
+            break;
+    }
+    return flag;
+}
+
+static BOOL copyOSCPacketFromUDPPacket()
+{
+    if(udpPacket[ringProcessIndex][0] != '/')
+    {
+        if(ringProcessIndex != ringBufIndex)
+        {
+            ringProcessIndex++;
+            if(ringProcessIndex >= MAX_BUF_SIZE)
+                ringProcessIndex = 0;
+        }
+        return FALSE;
+    }
+
+    memcpy(oscPacket, udpPacket[ringProcessIndex], MAX_PACKET_SIZE);
+    memset(udpPacket[ringProcessIndex], 0, MAX_PACKET_SIZE);
+    ringProcessIndex++;
+    if(ringProcessIndex >= MAX_BUF_SIZE)
+        ringProcessIndex = 0;
+
+    return TRUE;
+}
+
+static BOOL extractAddressFromOSCPacket()
+{
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
-    while(*(oscPacket + i))
+    while(*(oscPacket + indexA))
     {
-        i++;
-        if(i >= MAX_PACKET_SIZE)
-            return;
+        indexA++;
+        if(indexA >= MAX_PACKET_SIZE)
+            return FALSE;
     }
-    memcpy(rcvAddressStrings, oscPacket, i);
+    memcpy(rcvAddressStrings, oscPacket, indexA);
 
-    rcvAddressLength = i;
+    rcvAddressLength = indexA;
 
-    while(*(oscPacket + i) != ',')
+    return TRUE;
+}
+
+static BOOL extractTypeTagFromOSCPacket()
+{
+    while(*(oscPacket + indexA) != ',')
     {
-        i++;
-        if(i >= MAX_PACKET_SIZE)
-            return;
+        indexA++;
+        if(indexA >= MAX_PACKET_SIZE)
+            return FALSE;
     }
-    rcvTypesStartIndex = i;
+    rcvTypesStartIndex = indexA;
+    indexA++;
 
-    i++;
-    while(*(oscPacket + i))
+    while(*(oscPacket + indexA))
     {
-        j++;
-        i++;
-        if(i >= MAX_PACKET_SIZE)
-            return;
+        indexB++;
+        indexA++;
+        if(indexA >= MAX_PACKET_SIZE)
+            return FALSE;
     }
-    memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, j);
+    memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, indexB);
 
-    rcvArgumentsLength = i - rcvTypesStartIndex;
+    return TRUE;
+}
+
+static BOOL extractArgumentsFromOSCPacket()
+{
+    INT16 i = 0, n = 0, u = 0, length = 0;
+
+    rcvArgumentsLength = indexA - rcvTypesStartIndex;
     n = ((rcvArgumentsLength / 4) + 1) * 4;
 
-    for(j = 0; j < rcvArgumentsLength - 1; j++)
+    for(i = 0; i < rcvArgumentsLength - 1; i++)
     {
-        *(rcvArgumentsStartIndex + j) = rcvTypesStartIndex + length + n;
-        switch(*(rcvArgsTypeArray + j))
+        *(rcvArgumentsStartIndex + i) = rcvTypesStartIndex + length + n;
+        switch(*(rcvArgsTypeArray + i))
         {
             case 'i':
             case 'f':
                 length += 4;
-                *(rcvArgumentsIndexLength + j) = 4;
+                *(rcvArgumentsIndexLength + i) = 4;
                 break;
             case 's':
                 u = 0;
                 while(*(oscPacket + (rcvTypesStartIndex + n + length + u)))
                 {
                     u++;
-                    if(i >= MAX_PACKET_SIZE)
-                        return;
+                    if((rcvTypesStartIndex + n + length + u) >= MAX_PACKET_SIZE)
+                        return FALSE;
                 }
 
-                if((u % 4) == 0)
-                    v = (u / 4) * 8;
+                if((u ^ ((u >> 2) << 2)) == 0)
+                    *(rcvArgumentsIndexLength + i) = (u / 4) * 8;
                 else
-                    v = ((u / 4) + 1) * 4;
+                    *(rcvArgumentsIndexLength + i) = ((u / 4) + 1) * 4;
 
-                length += v;
-                *(rcvArgumentsIndexLength + j) = v;
+                length += *(rcvArgumentsIndexLength + i);
                 break;
-            case 'T':
-            case 'F':
-            case 'N':
-            case 'I':
-                break;
-            default:
+            default: // T, F,N,I and others
                 break;
         }
     }
+    return TRUE;
 }
 
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
 {
-    INT16 i, j;
     va_list list;
-    char* str;
-    const char *p;
-    INT32 strSize, testSize, zeroSize, testSize1, zeroSize1, totalSize;
+
     INT32 prefixSize = strchr(prefix, 0) - prefix;
     INT32 commandSize = strchr(command, 0) - command;
+    INT32 addressSize = prefixSize + commandSize;
     INT32 typeSize = strchr(type, 0) - type;
-
-    strSize = prefixSize + commandSize;
-    testSize = strSize;
-    zeroSize = 0;
+    INT32 zeroSize = 0;
+    INT32 totalSize = 0;
+    
+    int ivalue = 0;
+    float fvalue = 0.0;
+    char* fchar = NULL;
+    char* cstr = NULL;
+    int cstr_len = 0;
+    char str[128];
+    memset(str, 0, 128);
 
     if(isOSCPutReady())
     {
         //debug LED_1_On();
-        zeroSize = (testSize % 8) == 0 ? 0 : 8 - (testSize % 8);
 
+        sprintf(str, "%s%s", prefix, command);
+
+        zeroSize = (addressSize ^ ((addressSize >> 3) << 3)) == 0 ? 0 : 8 - (addressSize ^ ((addressSize >> 3) << 3));
         if(zeroSize == 0)
             zeroSize = 4;
         else if(zeroSize > 4 && zeroSize < 8)
             zeroSize -= 4;
 
-        testSize1 = typeSize + 1;
-        zeroSize1 = (testSize1 % 4) == 0 ? 0 : 4 - (testSize1 % 4);
+        totalSize = (addressSize + zeroSize);
+        sprintf((str + totalSize), ",%s", type);
 
-        if(zeroSize1 == 0)
-            zeroSize1 = 4;
-
-        totalSize = (prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1);
-        p = type;
-
-        va_start(list, type);
-
-        int ivalue;
-        float fvalue;
-        char* fchar;
-        char* cstr;
-        while(*p)
-        {
-            if(*p == 'i')
-            {
-                ivalue = va_arg(list, int);
-                totalSize += 4;
-            }
-            else if(*p == 'f')
-            {
-                fvalue = va_arg(list, double);
-                totalSize += 4;
-            }
-            else if(*p == 's')
-            {
-                cstr = va_arg(list, char*);
-                i = 0;
-                while(cstr[i] != '\0')
-                    i++;
-
-                if((i % 4) == 0)
-                    j = (i / 4) * 8;
-                else
-                    j = ((i / 4) + 1) * 4;
-
-                totalSize += j;
-            }
-            else if(*p == 'T')
-            {
-            }
-            else if(*p == 'F')
-            {
-            }
-            p++;
-        }
-        va_end(list);
-
-        str = (char *)calloc(totalSize, sizeof(char));
-        sprintf(str, "%s%s", prefix, command);
+        typeSize++;
+        zeroSize = (typeSize ^ ((typeSize >> 2) << 2)) == 0 ? 0 : 4 - (typeSize ^ ((typeSize >> 2) << 2));
+        if(zeroSize == 0)
+            zeroSize = 4;
+        
+        totalSize += (typeSize + zeroSize);
 
         va_start(list, type);
-
-        sprintf((str + (prefixSize + commandSize + zeroSize)), ",%s", type);
-
-        int index = 0;
         while(*type)
         {
             switch(*type)
             {
                 case 'i':
                     ivalue = va_arg(list, int);
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = (ivalue >> 24) & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = (ivalue >> 16) & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = (ivalue >> 8) & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = (ivalue >> 0) & 0xFF;
-                    index += 4;
+                    *(str + (totalSize++)) = (ivalue >> 24) & 0xFF;
+                    *(str + (totalSize++)) = (ivalue >> 16) & 0xFF;
+                    *(str + (totalSize++)) = (ivalue >> 8) & 0xFF;
+                    *(str + (totalSize++)) = (ivalue >> 0) & 0xFF;
                     break;
                 case 'f':
                     fvalue = (float)va_arg(list, double);
                     fchar = (char *)&fvalue;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 0)) = fchar[3] & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 1)) = fchar[2] & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 2)) = fchar[1] & 0xFF;
-                    *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + 3)) = fchar[0] & 0xFF;
-                    index += 4;
+                    *(str + (totalSize++)) = *(fchar + 3) & 0xFF;
+                    *(str + (totalSize++)) = *(fchar + 2) & 0xFF;
+                    *(str + (totalSize++)) = *(fchar + 1) & 0xFF;
+                    *(str + (totalSize++)) = *(fchar + 0) & 0xFF;
                     break;
                 case 's':
                     cstr = va_arg(list, char*);
-                    i = 0;
-                    while(cstr[i] != '\0')
-                        i++;
-
-                    if((i % 4) == 0)
-                        j = (i / 4) * 8;
-                    else
-                        j = ((i / 4) + 1) * 4;
-
-                    i = 0;
-                    while(cstr[i] != '\0')
+                    cstr_len = 0;
+                    while(*cstr)
                     {
-                        *(str + ((prefixSize + commandSize + zeroSize) + (typeSize + 1 + zeroSize1) + index + i)) = cstr[i] & 0xFF;
-                        i++;
+                        *(str + (totalSize + cstr_len)) = *(cstr++) & 0xFF;
+                        cstr_len++;
                     }
-                    index += j;
+                    if(!(cstr_len ^ ((cstr_len >> 2) << 2)))
+                        totalSize += (cstr_len / 4) * 8;
+                    else
+                        totalSize += ((cstr_len / 4) + 1) * 4;
                     break;
-                case 'T':
-                case 'F':
-                case 'N':
-                case 'I':
-                    break;
-                default:
+                default: // T, F, N, I and others
                     break;
             }
             type++;
         }
+        va_end(list);
 
         UDPPutArray((BYTE *)str, totalSize);
         UDPFlush();
-
-        free(str);
-        str = NULL;
-        va_end(list);
 
         //debug LED_1_Off();
     }
@@ -679,7 +703,6 @@ float getFloatArgumentAtIndex(const UINT16 index)
                       (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
             lvalue &= 0xffffffff;
 
-            //sign = ((lvalue >> 33) & 0x01) ? 1 : -1;
             sign = ((lvalue >> 31) & 0x01) ? -1 : 1;
             exponent = ((lvalue >> 23) & 0xFF) - 127;
             mantissa = lvalue & 0x7FFFFF;
@@ -702,9 +725,6 @@ float getFloatArgumentAtIndex(const UINT16 index)
 
 char* getStringArgumentAtIndex(const UINT16 index)
 {
-    char cstr[rcvArgumentsIndexLength[index]];
-    char* cp = NULL;
-
     if(index >= rcvArgumentsLength - 1)
         return "error";
 
@@ -715,11 +735,10 @@ char* getStringArgumentAtIndex(const UINT16 index)
             return "error";
             break;
         case 's':
-            memcpy(cstr, oscPacket + *(rcvArgumentsStartIndex + index), *(rcvArgumentsIndexLength + index));
-            cp = &cstr[0];
+            return oscPacket + *(rcvArgumentsStartIndex + index);
             break;
     }
-    return cp;
+    return "error";
 }
 
 BOOL getBooleanArgumentAtIndex(const UINT16 index)
