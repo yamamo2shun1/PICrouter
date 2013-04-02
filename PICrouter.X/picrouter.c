@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     // Enable the cache for the best performance
     CheKseg0CacheOn();
 
-    delayMs(100);
+    DelayMs(100);
     mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
     // Port Initialization
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 
     LED_1_Off();
     LED_2_Off();
-    delayMs(500);
+    DelayMs(500);
 
     while(1)
     {
@@ -160,9 +160,9 @@ int main(int argc, char** argv) {
                 for(i = 0; i < 3; i++)
                 {
                     LED_1_On();
-                    delayMs(200);
+                    DelayMs(200);
                     LED_1_Off();
-                    delayMs(200);
+                    DelayMs(200);
                 }
 
                 USBDeviceInit();
@@ -192,9 +192,9 @@ int main(int argc, char** argv) {
                 for(i = 0; i < 3; i++)
                 {
                     LED_2_On();
-                    delayMs(200);
+                    DelayMs(200);
                     LED_2_Off();
-                    delayMs(200);
+                    DelayMs(200);
                 }
 
                 while(device_mode == MODE_HOST)
@@ -1196,13 +1196,13 @@ void receiveOSCTask(void)
                     switch(byte_num)
                     {
                     case 1:
-                        sendSpiOneWord(id, data[0], 8);
+                        sendSpiOneWord(id, data[0], 1);
                         break;
                     case 2:
-                        sendSpiTwoWord(id, data[0], data[1], 8);
+                        sendSpiTwoWord(id, data[0], data[1], 1);
                         break;
                     case 4:
-                        sendSpiFourWord(id, data[0], data[1], data[2], data[3], 8);
+                        sendSpiFourWord(id, data[0], data[1], data[2], data[3], 1);
                         break;
                     }
                     if(!strcmp(active_state, "HL"))
@@ -1275,8 +1275,8 @@ void receiveOSCTask(void)
                     switch(byte_num)
                     {
                     case 1:
-                        sendSpiOneWord(id, data[0], 8);
-                        data[0] = receiveSpiOneWord(id, 8);
+                        sendSpiOneWord(id, data[0], 1);
+                        data[0] = receiveSpiOneWord(id, 1);
                         sendOSCMessage(stdPrefix, msgSpiData, "ii", id, data[0]);
                         break;
                     case 2:

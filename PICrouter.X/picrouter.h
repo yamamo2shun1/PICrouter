@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "myDelay.h"
+#include "TimeDelay.h"
 
 #include "HardwareProfile.h"
 #include "usb_config.h"

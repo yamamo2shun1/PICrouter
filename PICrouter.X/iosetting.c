@@ -737,7 +737,7 @@ void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
             putcSPI4(msb);
             break;
     }
-    delayUs(usec);
+    Delay10us(usec);
     // Set LOAD_PIN to high
     //
 }
@@ -757,7 +757,7 @@ void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
             putcSPI4(msb);
             break;
     }
-    delayUs(usec);
+    Delay10us(usec);
     // Set LOAD_PIN to low
     //
 }
@@ -781,7 +781,7 @@ void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DW
             putcSPI4(msb0);
             break;
     }
-    delayUs(usec);
+    Delay10us(usec);
     // Set LOAD_PIN to low
     //
 }
