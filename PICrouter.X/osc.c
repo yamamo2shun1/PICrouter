@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.26 2013/04/02
+ * osc.c,v.0.9.27 2013/04/02
  */
 
 #include "osc.h"
@@ -545,10 +545,7 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
                         *(str + (totalSize + cstr_len)) = *(cstr++) & 0xFF;
                         cstr_len++;
                     }
-                    if(!(cstr_len ^ ((cstr_len >> 2) << 2)))
-                        totalSize += (cstr_len / 4) * 8;
-                    else
-                        totalSize += ((cstr_len / 4) + 1) * 4;
+                    totalSize += ((cstr_len / 4) + 1) * 4;
                     break;
                 default: // T, F, N, I and others
                     break;
