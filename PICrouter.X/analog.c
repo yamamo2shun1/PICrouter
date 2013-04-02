@@ -190,7 +190,7 @@ void sendAdc()
         {
             sendOSCMessage(stdPrefix, msgAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
             resetAnalogFlag(i);
-            delayUs(20);
+            Delay10us(2);
         }
     }
 }
