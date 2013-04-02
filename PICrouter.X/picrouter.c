@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.7 2013/03/31
+ * picrouter.c,v.1.4.8 2013/04/02
  */
 
 #include "picrouter.h"
@@ -169,6 +169,7 @@ int main(int argc, char** argv) {
 
                 while(device_mode == MODE_DEVICE)
                 {
+                    // Ethernet Tasks
                     StackTask();
                     mDNSProcess();
                     DHCPServerTask();
@@ -176,6 +177,7 @@ int main(int argc, char** argv) {
                     receiveOSCTask();
                     sendOSCTask();
 
+                    // USB Tasks
                     USBDeviceTasks();
                     USBControlTask();
 
@@ -256,16 +258,20 @@ void receiveOSCTask(void)
         initReceiveFlag = openOSCReceivePort(localPort);
 
     if(initReceiveFlag && isOSCGetReady(rcvLen))
+        getOSCPacket();
+
+    if(processOSCPacket())
     {
         //debug LED_2_On();
-        getOSCPacket();
+
         if(compareOSCPrefix(stdPrefix))
         {
             if(compareOSCAddress(stdPrefix, msgOnboardLed))
             {
                 if(!compareTypeTagAtIndex(0, 'i') || !compareTypeTagAtIndex(1, 's'))
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_type");
+                    //sendOSCMessage(sysPrefix, msgError, "si", msgOnboardLed, 314);
                     return;
                 }
 
@@ -280,7 +286,7 @@ void receiveOSCTask(void)
                         LED_1_Off();
                     }
                     else
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
                 }
                 else if(getIntArgumentAtIndex(0) == 1)
                 {
@@ -293,10 +299,10 @@ void receiveOSCTask(void)
                         LED_2_Off();
                     }
                     else
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_value");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_value");
             }
             // Port
             else if(compareOSCAddress(stdPrefix, msgSetPortIO))
@@ -309,14 +315,14 @@ void receiveOSCTask(void)
                     port_name = getStringArgumentAtIndex(0);
                     if(!comparePortNameAtIndex(port_name))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrang_argument_string");
                         return;
                     }
                     type = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrong_argument_type");
                     return;
                 }
 
@@ -339,13 +345,13 @@ void receiveOSCTask(void)
                     port_name = getStringArgumentAtIndex(0);
                     if(!comparePortNameAtIndex(port_name))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrang_argument_string");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrong_argument_type");
                     return;
                 }
 
@@ -364,19 +370,19 @@ void receiveOSCTask(void)
                     port_name = getStringArgumentAtIndex(0);
                     if(!comparePortNameAtIndex(port_name))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrang_argument_string");
                         return;
                     }
                     state = getStringArgumentAtIndex(1);
                     if(strcmp(state, "high") && strcmp(state, "low"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_string");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_type");
                     return;
                 }
 
@@ -394,13 +400,13 @@ void receiveOSCTask(void)
                     port_name = getStringArgumentAtIndex(0);
                     if(!comparePortNameAtIndex(port_name))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrang_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrang_argument_string");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrong_argument_type");
                     return;
                 }
 
@@ -416,7 +422,7 @@ void receiveOSCTask(void)
             {
                 AD1CON1bits.ON = 0;
 
-                BYTE i, id, anum;
+                BYTE id, anum;
                 char* state;
 
                 if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
@@ -424,14 +430,14 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": out_of_value_range");
                         return;
                     }
                     state = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_type");
                     return;
                 }
 
@@ -453,7 +459,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_string");
                     return;
                 }
 
@@ -492,13 +498,13 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": wrong_argument_type");
                     return;
                 }
 
@@ -517,14 +523,14 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": out_of_value_range");
                         return;
                     }
                     type = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -546,13 +552,13 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -571,19 +577,19 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": out_of_value_range");
                         return;
                     }
                     state = getStringArgumentAtIndex(1);
                     if(strcmp(state, "high") && strcmp(state, "low"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_string");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_type");
                     return;
                 }
 
@@ -601,13 +607,13 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": wrong_argument_type");
                     return;
                 }
 
@@ -627,14 +633,14 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     if(index > 3)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": out_of_value_range");
                         return;
                     }
                     state = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_type");
                     return;
                 }
 
@@ -688,7 +694,7 @@ void receiveOSCTask(void)
                     }
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetPwmEnable))
             {
@@ -697,13 +703,13 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
                     return;
                 }
 
@@ -715,7 +721,7 @@ void receiveOSCTask(void)
                     freq = getIntArgumentAtIndex(0);
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
                     return;
                 }
 
@@ -747,7 +753,7 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
                         return;
                     }
 
@@ -755,7 +761,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
                     return;
                 }
 
@@ -801,13 +807,13 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": wrong_argument_type");
                     return;
                 }
 
@@ -823,14 +829,14 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": out_of_value_range");
                         return;
                     }
                     type = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -842,7 +848,7 @@ void receiveOSCTask(void)
                     outputPwmPort(id, LOW);
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetPwmDio))
             {
@@ -852,13 +858,13 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -877,14 +883,14 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": out_of_value_range");
                         return;
                     }
                     state = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_type");
                     return;
                 }
 
@@ -893,7 +899,7 @@ void receiveOSCTask(void)
                 else if(!strcmp(state, "low"))
                     outputPwmPort(id, LOW);
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetPwmDi))
             {
@@ -905,7 +911,7 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": out_of_value_range");
                         return;
                     }
 
@@ -913,7 +919,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": wrong_argument_type");
                     return;
                 }
 
@@ -933,7 +939,7 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": out_of_value_range");
                         return;
                     }
 
@@ -941,7 +947,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -953,7 +959,7 @@ void receiveOSCTask(void)
                     outputDigitalPort(id, LOW);
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetDigitalDio))
             {
@@ -963,13 +969,13 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -987,13 +993,13 @@ void receiveOSCTask(void)
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": out_of_value_range");
 
                     state = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_type");
                     return;
                 }
 
@@ -1002,7 +1008,7 @@ void receiveOSCTask(void)
                 else if(!strcmp(state, "low"))
                     outputDigitalPort(id, LOW);
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetDigitalDi))
             {
@@ -1013,12 +1019,18 @@ void receiveOSCTask(void)
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id >= D_NUM)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": out_of_value_range");
                         return;
+                    }
 
                     state = inputDigitalPort(id);
                 }
                 else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": wrong_argument_type");
                     return;
+                }
 
                 if(state)
                     sendOSCMessage(stdPrefix, msgDigitalDi, "is", id, "high");
@@ -1043,19 +1055,19 @@ void receiveOSCTask(void)
                             bitrate = (WORD)bitrate0;
                         else
                         {
-                            sendOSCMessage(sysPrefix, msgError, "s", "1:not_even_number");
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:not_even_number");
                             return;
                         }
                     }
                     else
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "1:out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:out_of_value_range");
                         return;
                     }
 
                     if(getArgumentsLength() < 3)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "need_3_arguments_at_leaset");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": need_3_arguments_at_leaset");
                         return;
                     }
 
@@ -1108,12 +1120,12 @@ void receiveOSCTask(void)
                         SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
                         break;
                     default:
-                        sendOSCMessage(sysPrefix, msgError, "s", "0:out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 0:out_of_value_range");
                         return;
                     }
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": wrong_argument_type");
             }
             else if(compareOSCAddress(stdPrefix, msgSetSpiData))
             {
@@ -1135,34 +1147,34 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id != 2 && id != 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "0:wrong_argument_value");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 0:wrong_argument_value");
                         return;
                     }
 
                     load_port = getStringArgumentAtIndex(1);
                     if(!comparePortNameAtIndex(load_port))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "1:wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 1:wrong_argument_string");
                         return;
                     }
 
                     active_state = getStringArgumentAtIndex(2);
                     if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "2:wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 2:wrong_argument_string");
                         return;
                     }
 
                     byte_num = getIntArgumentAtIndex(3);
                     if(byte_num != 1 && byte_num != 2 && byte_num != 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "3:wrong_argument_value");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 3:wrong_argument_value");
                         return;
                     }
 
                     if(getArgumentsLength() < byte_num + 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "too_few_arguments");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": too_few_arguments");
                         return;
                     }
 
@@ -1170,7 +1182,7 @@ void receiveOSCTask(void)
                     {
                         if(!compareTypeTagAtIndex(i + 4, 'i'))
                         {
-                            sendOSCMessage(sysPrefix, msgError, "s", "4:wrong_argument_type");
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 4:wrong_argument_type");
                             return;
                         }
 
@@ -1199,7 +1211,7 @@ void receiveOSCTask(void)
                         outputPort(load_port, HIGH);
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": wrong_argument_type");
             }
             else if(compareOSCAddress(stdPrefix, msgGetSpiData))
             {
@@ -1221,28 +1233,28 @@ void receiveOSCTask(void)
                     id = getIntArgumentAtIndex(0);
                     if(id != 2 && id != 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "0:wrong_argument_value");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 0:wrong_argument_value");
                         return;
                     }
 
                     load_port = getStringArgumentAtIndex(1);
                     if(!comparePortNameAtIndex(load_port))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "1:wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 1:wrong_argument_string");
                         return;
                     }
 
                     active_state = getStringArgumentAtIndex(2);
                     if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "2:wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 2:wrong_argument_string");
                         return;
                     }
 
                     byte_num = getIntArgumentAtIndex(3);
                     if(byte_num != 1 && byte_num != 2 && byte_num != 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "3:wrong_argument_value");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 3:wrong_argument_value");
                         return;
                     }
 
@@ -1252,7 +1264,7 @@ void receiveOSCTask(void)
                     }
                     else
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "4:wrong_argument_type");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 4:wrong_argument_type");
                         return;
                     }
 
@@ -1280,7 +1292,7 @@ void receiveOSCTask(void)
                         outputPort(load_port, HIGH);
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": wrong_argument_type");
             }
             else if(compareOSCAddress(stdPrefix, msgSetSpiDio))
             {
@@ -1293,14 +1305,14 @@ void receiveOSCTask(void)
                     if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
                        strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
                         return;
                     }
                     type = getStringArgumentAtIndex(1);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -1312,7 +1324,7 @@ void receiveOSCTask(void)
                     outputSpiPort(name, LOW);
                 }
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetSpiDio))
             {
@@ -1324,13 +1336,13 @@ void receiveOSCTask(void)
                     if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
                        strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_string");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_type");
                     return;
                 }
 
@@ -1350,7 +1362,7 @@ void receiveOSCTask(void)
                     if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
                        strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
                         return;
                     }
 
@@ -1358,7 +1370,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_type");
                     return;
                 }
 
@@ -1367,7 +1379,7 @@ void receiveOSCTask(void)
                 else if(!strcmp(state, "low"))
                     outputSpiPort(name, LOW);
                 else
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
             }
             else if(compareOSCAddress(stdPrefix, msgGetSpiDi))
             {
@@ -1380,7 +1392,7 @@ void receiveOSCTask(void)
                     if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
                        strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_string");
                         return;
                     }
 
@@ -1388,7 +1400,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_type");
                     return;
                 }
 
@@ -1410,47 +1422,47 @@ void receiveOSCTask(void)
                     rip = getStringArgumentAtIndex(0);
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_type");
                     return;
                 }
 
                 ip[0] = atoi(strtok(rip, "."));
                 if(rip == NULL)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 if(ip[0] > 255)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 ip[1] = atoi(strtok(NULL, "."));
                 if(rip == NULL)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 if(ip[1] > 255)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 ip[2] = atoi(strtok(NULL, "."));
                 if(rip == NULL)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 if(ip[2] > 255)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 ip[3] = atoi(strtok(NULL, "."));
                 if(ip[3] > 255)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
                 remoteIP[0] = (BYTE)ip[0];
@@ -1463,12 +1475,9 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
             {
-                //char* rip = (char *)calloc(15, sizeof(char));
                 char rip[15];
                 sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
                 sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
-                //free(rip);
-                //rip = NULL;
             }
             else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
             {
@@ -1476,14 +1485,14 @@ void receiveOSCTask(void)
                 {
                     if(getIntArgumentAtIndex(0) < 0)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": out_of_value_range");
                         return;
                     }
                     remotePort = getIntArgumentAtIndex(0);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": wrong_argument_type");
                     return;
                 }
 
@@ -1507,14 +1516,14 @@ void receiveOSCTask(void)
                     np = strstr(srcName, ".local");
                     if(np == NULL)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": wrong_argument_string");
                         return;
                     }
 
                     len = np - srcName;
                     if(len >= 32)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "too_long_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": too_long_string");
                         return;
                     }
 
@@ -1528,7 +1537,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": wrong_argument_type");
                     return;
                 }
 
@@ -1572,14 +1581,14 @@ void receiveOSCTask(void)
                 {
                     if(getIntArgumentAtIndex(0) < 0)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": out_of_value_range");
                         return;
                     }
                     localPort = getIntArgumentAtIndex(0);
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": wrong_argument_type");
                     return;
                 }
 
@@ -1598,7 +1607,7 @@ void receiveOSCTask(void)
                     char* str = getStringArgumentAtIndex(0);
                     if(str[0] != '/')
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "must_begin_slash");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": must_begin_slash");
                         return;
                     }
                     free(stdPrefix);
@@ -1607,7 +1616,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": wrong_argument_type");
                     return;
                 }
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
@@ -1623,7 +1632,7 @@ void receiveOSCTask(void)
                     dm = getStringArgumentAtIndex(0);
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": wrong_argument_type");
                     return;
                 }
 
@@ -1640,7 +1649,7 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": out_of_value_range");
                     return;
                 }
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
@@ -1660,13 +1669,13 @@ void receiveOSCTask(void)
                     reset_mode = getStringArgumentAtIndex(0);
                     if(strcmp(reset_mode, "normal") && strcmp(reset_mode, "bootloader"))
                     {
-                        sendOSCMessage(sysPrefix, msgError, "s", "out_of_value_range");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": out_of_value_range");
                         return;
                     }
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "s", "wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": wrong_argument_type");
                     return;
                 }
             
@@ -1682,7 +1691,7 @@ void receiveOSCTask(void)
                 for(i = 0; i < getArgumentsLength(); i++)
                 {
                     if(compareTypeTagAtIndex(i, 'i'))
-                        sendOSCMessage(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
+                        sendOSCMessage(sysPrefix, msgDebug, "iii", i, getIntArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 'f'))
                         sendOSCMessage(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 's'))
