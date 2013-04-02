@@ -45,7 +45,6 @@
         <itemPath>USB/usb_pic32.h</itemPath>
         <itemPath>USB/usb_host_local.h</itemPath>
       </logicalFolder>
-      <itemPath>myDelay.h</itemPath>
       <itemPath>HardwareProfile.h</itemPath>
       <itemPath>TCPIPConfig.h</itemPath>
       <itemPath>usb_config.h</itemPath>
@@ -55,6 +54,7 @@
       <itemPath>osc.h</itemPath>
       <itemPath>iosetting.h</itemPath>
       <itemPath>encoder.h</itemPath>
+      <itemPath>TimeDelay.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -88,7 +88,6 @@
         <itemPath>USB/usb_host.c</itemPath>
         <itemPath>USB/usb_host_midi.c</itemPath>
       </logicalFolder>
-      <itemPath>myDelay.c</itemPath>
       <itemPath>usb_descriptors.c</itemPath>
       <itemPath>picrouter.c</itemPath>
       <itemPath>button.c</itemPath>
@@ -97,6 +96,7 @@
       <itemPath>iosetting.c</itemPath>
       <itemPath>encoder.c</itemPath>
       <itemPath>usb_config.c</itemPath>
+      <itemPath>TimeDelay.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -147,7 +147,7 @@
         <property key="generate-16-bit-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
-        <property key="optimization-level" value=""/>
+        <property key="optimization-level" value="-O3"/>
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
@@ -189,6 +189,7 @@
         <property key="linker-symbols" value=""/>
         <property key="map-file" value=""/>
         <property key="no-startup-files" value="false"/>
+        <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value=""/>
         <property key="preprocessor-macros" value=""/>
         <property key="remove-unused-sections" value="false"/>
