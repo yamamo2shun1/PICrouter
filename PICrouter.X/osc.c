@@ -282,24 +282,24 @@ BOOL openOSCReceivePort(WORD port_number)
 
 BOOL isOSCSendPortOpened(void)
 {
-	return UDPIsOpened(TxSocket);
+    return UDPIsOpened(TxSocket);
 }
 
 BOOL isOSCReceivePortOpened(void)
 {
-	return UDPIsOpened(RxSocket);
+    return UDPIsOpened(RxSocket);
 }
 
 void closeOSCSendPort(void)
 {
-	initSendFlag = FALSE;
+    initSendFlag = FALSE;
     UDPClose(TxSocket);
     TxSocket = NULL;
 }
 
 void closeOSCReceivePort(void)
 {
-	initReceiveFlag = FALSE;
+    initReceiveFlag = FALSE;
     UDPClose(RxSocket);
     RxSocket = NULL;
 }
