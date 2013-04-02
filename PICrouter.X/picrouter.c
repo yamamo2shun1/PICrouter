@@ -1691,7 +1691,7 @@ void receiveOSCTask(void)
                 for(i = 0; i < getArgumentsLength(); i++)
                 {
                     if(compareTypeTagAtIndex(i, 'i'))
-                        sendOSCMessage(sysPrefix, msgDebug, "iii", i, getIntArgumentAtIndex(i));
+                        sendOSCMessage(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 'f'))
                         sendOSCMessage(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 's'))
