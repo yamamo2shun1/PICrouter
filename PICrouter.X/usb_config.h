@@ -154,7 +154,7 @@
 
 /* HID */
 #define HID_INTF_ID          0x00
-#define HID_EP 					     2
+#define HID_EP               2
 #define HID_INT_OUT_EP_SIZE  3
 #define HID_INT_IN_EP_SIZE   3
 #define HID_NUM_OF_DSC       1
@@ -163,13 +163,14 @@
 
 /* Host Configuration */
 #define USB_ENABLE_TRANSFER_EVENT
-#define NUM_TPL_ENTRIES 1
+#define NUM_TPL_ENTRIES 2
 #define USB_NUM_CONTROL_NAKS 200
+//test #define USB_NUM_CONTROL_NAKS 20
 #define USB_SUPPORT_INTERRUPT_TRANSFERS
 #define USB_SUPPORT_BULK_TRANSFERS
 #define USB_NUM_BULK_NAKS 10
-#define USB_NUM_INTERRUPT_NAKS 3
-//hid #define USB_NUM_INTERRUPT_NAKS 20
+//test #define USB_NUM_INTERRUPT_NAKS 3
+#define USB_NUM_INTERRUPT_NAKS 20
 #define USB_INITIAL_VBUS_CURRENT (100/2)
 #define USB_INSERT_TIME (250+1)
 #define USB_HOST_APP_EVENT_HANDLER USB_ApplicationEventHandler
@@ -178,14 +179,14 @@
 #define USB_MAX_MIDI_DEVICES 1
 
 // Host HID Client Driver Configuration
-//hid #define USB_MAX_HID_DEVICES 1
-//hid #define HID_MAX_DATA_FIELD_SIZE 8
-//hid #define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
+#define USB_MAX_HID_DEVICES 1
+#define HID_MAX_DATA_FIELD_SIZE 8
+#define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
 
 #define USBTasks()               \
 {                                \
     USBHostTasks();              \
-//hid    USBHostHIDTasks();          \
+    USBHostHIDTasks();          \
 }
 
 #define USBInitialize(x)        \
