@@ -35,6 +35,8 @@
           <itemPath>Include/USB/usb_function_hid.h</itemPath>
           <itemPath>Include/USB/usb_host.h</itemPath>
           <itemPath>Include/USB/usb_host_midi.h</itemPath>
+          <itemPath>Include/USB/usb_host_hid.h</itemPath>
+          <itemPath>Include/USB/usb_host_hid_parser.h</itemPath>
         </logicalFolder>
         <itemPath>Include/Compiler.h</itemPath>
         <itemPath>Include/GenericTypeDefs.h</itemPath>
@@ -87,6 +89,8 @@
         <itemPath>USB/usb_function_hid.c</itemPath>
         <itemPath>USB/usb_host.c</itemPath>
         <itemPath>USB/usb_host_midi.c</itemPath>
+        <itemPath>USB/usb_host_hid.c</itemPath>
+        <itemPath>USB/usb_host_hid_parser.c</itemPath>
       </logicalFolder>
       <itemPath>usb_descriptors.c</itemPath>
       <itemPath>picrouter.c</itemPath>
