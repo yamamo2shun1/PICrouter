@@ -163,7 +163,7 @@
 
 /* Host Configuration */
 #define USB_ENABLE_TRANSFER_EVENT
-#define NUM_TPL_ENTRIES 2
+#define NUM_TPL_ENTRIES 1// 2
 #define USB_NUM_CONTROL_NAKS 200
 //test #define USB_NUM_CONTROL_NAKS 20
 #define USB_SUPPORT_INTERRUPT_TRANSFERS
@@ -179,15 +179,24 @@
 #define USB_MAX_MIDI_DEVICES 1
 
 // Host HID Client Driver Configuration
-#define USB_MAX_HID_DEVICES 1
-#define HID_MAX_DATA_FIELD_SIZE 8
-#define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
+#if 0
+    #define USB_MAX_HID_DEVICES 1
+    #define HID_MAX_DATA_FIELD_SIZE 8
+    #define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
+#endif
 
+#if 0
 #define USBTasks()               \
 {                                \
     USBHostTasks();              \
-    USBHostHIDTasks();          \
+    USBHostHIDTasks();           \
 }
+#else
+#define USBTasks()               \
+{                                \
+    USBHostTasks();              \
+}
+#endif
 
 #define USBInitialize(x)        \
 {                               \

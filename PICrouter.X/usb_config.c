@@ -39,7 +39,9 @@ DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
 #include "HardwareProfile.h"
 #include "USB/usb.h"
 #include "USB/usb_host_midi.h"
-#include "USB/usb_host_hid.h"
+#if 0
+    #include "USB/usb_host_hid.h"
+#endif
 
 // *****************************************************************************
 // Client Driver Function Pointer Table for the USB Embedded Host foundation
@@ -47,12 +49,15 @@ DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
 
 CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 {
-	{
-    	USBHostHIDInitialize,
+#if 0
+    {
+        USBHostHIDInitialize,
         USBHostHIDEventHandler,
         0
-   　},
-   　{
+    }
+    ,
+#endif
+    {
         USBHostMIDIInit,
         USBHostMIDIEventHandler,
         0
@@ -65,7 +70,9 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 
 USB_TPL usbTPL[] =
 {
+#if 0
     { INIT_CL_SC_P( 0x03ul, 0x01ul, 0x02ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
-    { INIT_CL_SC_P( 0x01ul, 0x03ul, 0x00ul ), 0, 1, {TPL_CLASS_DRV} }  // MIDI Audio Subclass
+#endif
+    { INIT_CL_SC_P( 0x01ul, 0x03ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }  // MIDI Audio Subclass
 };
 
