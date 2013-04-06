@@ -221,7 +221,8 @@ void ARPProcessRxPkt(ARP_PACKET* packet)
         pass_on = 1; // Pass to Registered-Application for further processing        
 		// putsUART("ARPProcessRxPkt: MyIPAddr=0  -> pass_on = 1 \r\n"); 
 	}
-    else if ((AppConfig.MyIPAddr.Val != 0x00) && (AppConfig.networkType == WF_SOFT_AP)) // SOFTAP_ZEROCONF_SUPPORT
+    //syama else if ((AppConfig.MyIPAddr.Val != 0x00) && (AppConfig.networkType == WF_SOFT_AP)) // SOFTAP_ZEROCONF_SUPPORT
+    else if ((AppConfig.MyIPAddr.Val != 0x00)) // SOFTAP_ZEROCONF_SUPPORT
     {
 		//putsUART("ARPProcessRxPkt: MyIPAddr!=0 & SoftAP  -> pass_on = 1 \r\n"); 
         pass_on = 1; // Pass to Registered-Application for further processing        
@@ -505,7 +506,7 @@ BOOL ARPProcess(void)
                                 * was leading to flooding of ARP-answeres */
                                 if(!memcmp (&packet.SenderMACAddr, &AppConfig.MyMACAddr, 6))
                                 {
-                                     putsUART("Loopback answer suppressed \r\n");
+                                     //syama putsUART("Loopback answer suppressed \r\n");
                                      return TRUE;
                                 }
 #endif
