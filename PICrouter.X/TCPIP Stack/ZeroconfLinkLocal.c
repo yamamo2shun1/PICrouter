@@ -736,7 +736,7 @@ void ZeroconfLLProcess(void)
 									AppConfig.MyIPAddr.v[2], 
 									AppConfig.MyIPAddr.v[3]);
 								INFO_ZCLL_PRINT((char *)zeroconf_dbg_msg);
-								DisplayIPValue(AppConfig.MyIPAddr); // LCD Disaply
+								//syama DisplayIPValue(AppConfig.MyIPAddr); // LCD Disaply
 								INFO_ZCLL_PRINT("\r\n"); 
 
 								time_recorded = 0; // Cancel Timer
@@ -836,7 +836,7 @@ void ZeroconfLLProcess(void)
 		AppConfig.MyIPAddr.Val = 0x0;
 		bDefaultIPTried = FALSE;  			// SOFTAP_ZEROCONF_SUPPORT
 		
-		DisplayIPValue(AppConfig.MyIPAddr); // LCD Display
+		//syama DisplayIPValue(AppConfig.MyIPAddr); // LCD Display
 
 #ifdef STACK_CLIENT_MODE
 		INFO_ZCLL_PRINT("ZeroconfLLProcess: SM_ADDR_INIT: ARPInit\r\n");
@@ -992,9 +992,9 @@ void ZeroconfLLProcess(void)
 			}
 			else
 			{
-				if (AppConfig.networkType == WF_ADHOC)  // SOFTAP_ZEROCONF_SUPPORT  
-				temp_IP_addr.Val = (IPV4_LLBASE | ((abs(zcll_rand()) % 0xfdff) ));
-				else
+				//syama if (AppConfig.networkType == WF_ADHOC)  // SOFTAP_ZEROCONF_SUPPORT
+				//syama temp_IP_addr.Val = (IPV4_LLBASE | ((abs(zcll_rand()) % 0xfdff) ));
+				//syama else
 					temp_IP_addr.Val = (IPV4_SOFTAP_LLBASE | ((abs(zcll_rand()) % 0x00ff) ));			
 			}                
 
@@ -1081,7 +1081,7 @@ void ZeroconfLLProcess(void)
 			AppConfig.MyIPAddr = temp_IP_addr;
 			AppConfig.MyMask.Val = 0x0000FFFF;
 			zcll_state = SM_ADDR_DEFEND;
-			DisplayIPValue(AppConfig.MyIPAddr);
+			//syama DisplayIPValue(AppConfig.MyIPAddr);
 			INFO_ZCLL_MESG(zeroconf_dbg_msg,"\r\n******** Taken IP-Addr: " \
 				"%d.%d.%d.%d ******** \r\n",
 				AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], 
@@ -1162,9 +1162,9 @@ void ZeroconfLLProcess(void)
 		AppConfig.MyIPAddr.Val = 0x00;
 		
 		// Need New Addr
-		if (AppConfig.networkType == WF_ADHOC)  // SOFTAP_ZEROCONF_SUPPORT  
-		temp_IP_addr.Val = (IPV4_LLBASE | ((abs(zcll_rand()) % 0xfdff) ));
-		else
+		//syama if (AppConfig.networkType == WF_ADHOC)  // SOFTAP_ZEROCONF_SUPPORT
+		//syama temp_IP_addr.Val = (IPV4_LLBASE | ((abs(zcll_rand()) % 0xfdff) ));
+		//syama else
 			temp_IP_addr.Val = (IPV4_SOFTAP_LLBASE | ((abs(zcll_rand()) % 0x00ff) ));
 
 		temp_IP_addr.Val = swapl((DWORD) temp_IP_addr.Val);
