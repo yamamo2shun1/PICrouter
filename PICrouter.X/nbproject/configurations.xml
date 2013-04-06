@@ -23,6 +23,7 @@
           <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
           <itemPath>Include/TCPIP Stack/AutoIP.h</itemPath>
+          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
           <itemPath>Include/USB/usb.h</itemPath>
@@ -83,6 +84,7 @@
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
         <itemPath>TCPIP Stack/DHCPs.c</itemPath>
         <itemPath>TCPIP Stack/AutoIP.c</itemPath>
+        <itemPath>TCPIP Stack/NBNS.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
@@ -188,7 +190,7 @@
         <property key="extra-lib-directories" value=""/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-cross-reference-file" value="false"/>
-        <property key="heap-size" value="16000"/>
+        <property key="heap-size" value="19200"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value=""/>
