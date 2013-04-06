@@ -459,18 +459,15 @@ BYTE    USBHostHIDDeviceStatus( BYTE deviceAddress )
                case STATE_GET_REPORT_DSC:
                    return USB_PROCESSING_REPORT_DESCRIPTOR;
                    break;
-
                case STATE_RUNNING:
                    return USB_HID_NORMAL_RUNNING;
                    break;
                case STATE_HOLDING:
                    return USB_HID_DEVICE_HOLDING;
                    break;
-
                case STATE_HID_RESET_RECOVERY:
                    return USB_HID_RESETTING_DEVICE;
                    break;
-
                default:
                    return USB_HID_DEVICE_DETACHED;
                    break;
