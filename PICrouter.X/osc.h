@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.28 2013/04/02
+ * osc.h,v.0.9.30 2013/04/06
  */
 
 #ifndef OSC_H
@@ -173,17 +173,36 @@ extern const char msgError[];
 extern const char msgVersion[];
 extern const char msgGetVersion[];
 
+// for touchOSC
+extern const char toscPrefix[];
+
+extern const char msgOnboardLed1[];
+extern const char msgOnboardLed2[];
+
 void InitAppConfig(void);
 void setOSCPrefix(char* prefix_string);
 void setOSCHostName(char* host_name);
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number);
 BOOL openOSCReceivePort(WORD localPort);
+#if 1
 BOOL isOSCSendPortOpened(void);
 BOOL isOSCReceivePortOpened(void);
+#endif
 void closeOSCSendPort(void);
 void closeOSCReceivePort(void);
-BOOL isOSCGetReady(WORD len);
+
+#if 1
+BOOL isOSCGetReady(void);
 BOOL isOSCPutReady(void);
+#endif
+
+#if 0
+#define isOSCSendPortOpened() UDPIsOpened(TxSocket);
+#define isOSCReceivePortOpened() UDPIsOpened(RxSocket);
+#define isOSCGetReady() (UDPIsGetReady(RxSocket) ? TRUE : FALSE)
+#define isOSCPutReady() (UDPIsPutReady(TxSocket) ? TRUE : FALSE)
+#endif
+
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);

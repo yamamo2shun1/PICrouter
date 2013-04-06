@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.28 2013/04/02
+ * osc.c,v.0.9.30 2013/04/06
  */
 
 #include "osc.h"
@@ -170,21 +170,28 @@ const char msgError[]         = "/error";
 const char msgVersion[]       = "/version";
 const char msgGetVersion[]    = "/version/get";
 
+// for touchOSC
+const char toscPrefix[]      = "/tosc";
+
+const char msgOnboardLed1[]  = "/onboard/led/1";
+const char msgOnboardLed2[]  = "/onboard/led/2";
+
+
 // Static Variables
-static BYTE state_index = 0;
-static BYTE indexA = 0;
-static BYTE indexB = 0;
-static BYTE ringBufIndex = 0;
-static BYTE ringProcessIndex = 0;
+static volatile BYTE state_index = 0;
+static volatile BYTE indexA = 0;
+static volatile BYTE indexB = 0;
+static volatile BYTE ringBufIndex = 0;
+static volatile BYTE ringProcessIndex = 0;
 static BYTE udpPacket[MAX_BUF_SIZE][MAX_PACKET_SIZE] = {0};
 static BYTE oscPacket[MAX_PACKET_SIZE] = {0};
-static char rcvAddressStrings[128] = {0};
+static char rcvAddressStrings[MAX_PACKET_SIZE / 2] = {0};
 static UINT16 rcvAddressLength;
 static UINT16 rcvTypesStartIndex;
 static INT16 rcvArgumentsLength;
-static char rcvArgsTypeArray[128] = {0};
-static UINT16 rcvArgumentsStartIndex[128] = {0};
-static UINT16 rcvArgumentsIndexLength[128] = {0};
+static char rcvArgsTypeArray[MAX_PACKET_SIZE / 2] = {0};
+static UINT16 rcvArgumentsStartIndex[MAX_PACKET_SIZE / 2] = {0};
+static UINT16 rcvArgumentsIndexLength[MAX_PACKET_SIZE / 2] = {0};
 
 // Static Functions
 static BOOL copyOSCPacketFromUDPPacket();
@@ -280,15 +287,19 @@ BOOL openOSCReceivePort(WORD port_number)
     return TRUE;
 }
 
+#if 1
 BOOL isOSCSendPortOpened(void)
 {
     return UDPIsOpened(TxSocket);
 }
+#endif
 
+#if 1
 BOOL isOSCReceivePortOpened(void)
 {
     return UDPIsOpened(RxSocket);
 }
+#endif
 
 void closeOSCSendPort(void)
 {
@@ -304,81 +315,116 @@ void closeOSCReceivePort(void)
     RxSocket = NULL;
 }
 
-BOOL isOSCGetReady(WORD len)
+#if 1
+BOOL isOSCGetReady(void)
 {
-    len = UDPIsGetReady(RxSocket);
-    if(!len)
+    if(!UDPIsGetReady(RxSocket))
         return FALSE;
 
     return TRUE;
 }
+#endif
 
+#if 1
 BOOL isOSCPutReady(void)
 {
-    WORD puttablePacketSize = 0;
-    puttablePacketSize = UDPIsPutReady(TxSocket);
-    if(!puttablePacketSize)
+    if(!UDPIsPutReady(TxSocket))
         return FALSE;
 
     return TRUE;
 }
+#endif
 
 void getOSCPacket(void)
 {
-    WORD r_size = UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE);
-    UDPDiscard();
-
-    if(r_size > 0)
+    if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
     {
         ringBufIndex++;
         if(ringBufIndex >= MAX_BUF_SIZE)
             ringBufIndex = 0;
     }
+    UDPDiscard();
 }
 
 BOOL processOSCPacket(void)
 {
-    BOOL flag = FALSE;
-
     switch(state_index)
     {
         case 0:
             indexA = 0;
             indexB = 0;
-
             if(!copyOSCPacketFromUDPPacket())
-                return flag;
-
+                return FALSE;
             state_index = 1;
             break;
         case 1:
             if(!extractAddressFromOSCPacket())
-                return flag;
+                return FALSE;
 
             state_index = 2;
             break;
         case 2:
             if(!extractTypeTagFromOSCPacket())
-                return flag;
+                return FALSE;
 
             state_index = 3;
             break;
         case 3:
             if(!extractArgumentsFromOSCPacket())
-                return flag;
+                return FALSE;
 
             state_index = 4;
             break;
         case 4:
-            flag = TRUE;
+            state_index = 0;
+            return TRUE;
+            break;
+        default:
             state_index = 0;
             break;
     }
-    return flag;
+    return FALSE;
 }
 
 static BOOL copyOSCPacketFromUDPPacket()
 {
+    BYTE i, j;
+    DWORD len = 0;
+
+    if(!strcmp(udpPacket[ringProcessIndex], "#bundle"))
+    {
+        j = 16;
+        while(TRUE)
+        {
+            len = 0;
+            len += (DWORD)udpPacket[ringProcessIndex][j] << 24;
+            len += (DWORD)udpPacket[ringProcessIndex][j + 1] << 16;
+            len += (DWORD)udpPacket[ringProcessIndex][j + 2] << 8;
+            len += (DWORD)udpPacket[ringProcessIndex][j + 3];
+
+            if(len == 0)
+                break;
+
+            //memcpy(oscPacket, &udpPacket[ringProcessIndex][20], len);
+            for(i = 0; i < len; i++)
+            {
+                //oscPacket[i] = udpPacket[ringProcessIndex][20 + i];
+                udpPacket[ringBufIndex][i] = udpPacket[ringProcessIndex][j + 4 + i];
+            }
+            j += (4 + len);
+
+            ringBufIndex++;
+            if(ringBufIndex >= MAX_BUF_SIZE)
+                ringBufIndex = 0;
+        }
+
+        memset(udpPacket[ringProcessIndex], 0, MAX_PACKET_SIZE);
+        ringProcessIndex++;
+        if(ringProcessIndex >= MAX_BUF_SIZE)
+            ringProcessIndex = 0;
+
+    }
+
     if(udpPacket[ringProcessIndex][0] != '/')
     {
         if(ringProcessIndex != ringBufIndex)
@@ -443,8 +489,14 @@ static BOOL extractArgumentsFromOSCPacket()
 {
     INT16 i = 0, n = 0, u = 0, length = 0;
 
+    if(indexA == 0 || indexA >= MAX_PACKET_SIZE)
+        return FALSE;
+
     rcvArgumentsLength = indexA - rcvTypesStartIndex;
     n = ((rcvArgumentsLength / 4) + 1) * 4;
+
+    if(!rcvArgumentsLength)
+        return FALSE;
 
     for(i = 0; i < rcvArgumentsLength - 1; i++)
     {
