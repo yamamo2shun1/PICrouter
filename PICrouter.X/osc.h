@@ -179,6 +179,15 @@ extern const char toscPrefix[];
 extern const char msgOnboardLed1[];
 extern const char msgOnboardLed2[];
 
+extern const char msgSetPwmEnable1[];
+extern const char msgSetPwmEnable2[];
+extern const char msgSetPwmEnable3[];
+extern const char msgSetPwmEnable4[];
+extern const char msgSetPwmDuty1[];
+extern const char msgSetPwmDuty2[];
+extern const char msgSetPwmDuty3[];
+extern const char msgSetPwmDuty4[];
+
 void InitAppConfig(void);
 void setOSCPrefix(char* prefix_string);
 void setOSCHostName(char* host_name);

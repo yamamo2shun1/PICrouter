@@ -176,6 +176,14 @@ const char toscPrefix[]      = "/tosc";
 const char msgOnboardLed1[]  = "/onboard/led/1";
 const char msgOnboardLed2[]  = "/onboard/led/2";
 
+const char msgSetPwmEnable1[] = "/pwm/enable/set/1";
+const char msgSetPwmEnable2[] = "/pwm/enable/set/2";
+const char msgSetPwmEnable3[] = "/pwm/enable/set/3";
+const char msgSetPwmEnable4[] = "/pwm/enable/set/4";
+const char msgSetPwmDuty1[]   = "/pwm/duty/set/1";
+const char msgSetPwmDuty2[]   = "/pwm/duty/set/2";
+const char msgSetPwmDuty3[]   = "/pwm/duty/set/3";
+const char msgSetPwmDuty4[]   = "/pwm/duty/set/4";
 
 // Static Variables
 static volatile BYTE state_index = 0;
