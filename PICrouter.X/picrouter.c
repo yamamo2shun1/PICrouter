@@ -265,7 +265,6 @@ void receiveOSCTask(void)
     if(initReceiveFlag && isOSCGetReady())
         getOSCPacket();
 
-#if 1
     if(processOSCPacket())
     {
         //debug LED_2_On();
@@ -1442,6 +1441,345 @@ void receiveOSCTask(void)
                         break;
                 }
             }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable1) && compareTypeTagAtIndex(0, 'f'))
+            {
+                if(getIntArgumentAtIndex(0))
+                {
+                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    if(!onTimer23)
+                    {
+                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                        onTimer23 = TRUE;
+                    }
+                    OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    onSquare[0] = TRUE;
+                }
+                else
+                {
+                    onSquare[0] = FALSE;
+                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    {
+                        CloseTimer23();
+                        onTimer23 = FALSE;
+                    }
+                    CloseOC1();
+                }
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable2) && compareTypeTagAtIndex(0, 'f'))
+            {
+                if(getIntArgumentAtIndex(0))
+                {
+                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    if(!onTimer23)
+                    {
+                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                        onTimer23 = TRUE;
+                    }
+                    OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    onSquare[1] = TRUE;
+                }
+                else
+                {
+                    onSquare[1] = FALSE;
+                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    {
+                        CloseTimer23();
+                        onTimer23 = FALSE;
+                    }
+                    CloseOC3();
+                }
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable3) && compareTypeTagAtIndex(0, 'f'))
+            {
+                if(getIntArgumentAtIndex(0))
+                {
+                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    if(!onTimer23)
+                    {
+                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                        onTimer23 = TRUE;
+                    }
+                    OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    onSquare[2] = TRUE;
+                }
+                else
+                {
+                    onSquare[2] = FALSE;
+                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    {
+                        CloseTimer23();
+                        onTimer23 = FALSE;
+                    }
+                    CloseOC4();
+                }
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable4) && compareTypeTagAtIndex(0, 'f'))
+            {
+                if(getIntArgumentAtIndex(0))
+                {
+                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                    if(!onTimer23)
+                    {
+                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
+                        onTimer23 = TRUE;
+                    }
+                    OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    onSquare[3] = TRUE;
+                }
+                else
+                {
+                    onSquare[3] = FALSE;
+                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    {
+                        CloseTimer23();
+                        onTimer23 = FALSE;
+                    }
+                    CloseOC5();
+                }
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmFreq))
+            {
+                if(compareTypeTagAtIndex(0, 'f'))
+                    freq = getIntArgumentAtIndex(0);
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
+                    return;
+                }
+
+                if(freq < 20)
+                {
+                    freq = 20;
+                }
+                else if(freq > 44100)
+                {
+                    freq = 44100;
+                }
+                T2CONbits.TON = 0;
+                TMR2 = 0;
+                OC1CONbits.OCM = 0b000;
+                width = GetSystemClock() / freq;
+                PR2 = width;
+                OC1RS = width / 2;
+                OC1CONbits.OCM = 0b110;
+                T2CONbits.TON = 1;
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty1))
+            {
+                if(compareTypeTagAtIndex(0, 'f'))
+                {
+                    index = 0;
+                    if(index > PWM_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
+                        return;
+                    }
+
+                    duty[index] = getIntArgumentAtIndex(0);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
+                    return;
+                }
+
+                if(duty[index] < 0)
+                {
+                    duty[index] = 0;
+                }
+                else if(duty[index] > 100)
+                {
+                    duty[index] = 100;
+                }
+                T2CONbits.TON = 0;
+                TMR2 = 0;
+                switch(index)
+                {
+                    case 0:
+                        OC1CONbits.OCM = 0b000;
+                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC1CONbits.OCM = 0b110;
+                        break;
+                    case 1:
+                        OC3CONbits.OCM = 0b000;
+                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC3CONbits.OCM = 0b110;
+                        break;
+                    case 2:
+                        OC4CONbits.OCM = 0b000;
+                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC4CONbits.OCM = 0b110;
+                        break;
+                    case 3:
+                        OC5CONbits.OCM = 0b000;
+                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC5CONbits.OCM = 0b110;
+                        break;
+                }
+                T2CONbits.TON = 1;
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty2))
+            {
+                if(compareTypeTagAtIndex(0, 'f'))
+                {
+                    index = 1;
+                    if(index > PWM_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
+                        return;
+                    }
+
+                    duty[index] = getIntArgumentAtIndex(0);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
+                    return;
+                }
+
+                if(duty[index] < 0)
+                {
+                    duty[index] = 0;
+                }
+                else if(duty[index] > 100)
+                {
+                    duty[index] = 100;
+                }
+                T2CONbits.TON = 0;
+                TMR2 = 0;
+                switch(index)
+                {
+                    case 0:
+                        OC1CONbits.OCM = 0b000;
+                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC1CONbits.OCM = 0b110;
+                        break;
+                    case 1:
+                        OC3CONbits.OCM = 0b000;
+                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC3CONbits.OCM = 0b110;
+                        break;
+                    case 2:
+                        OC4CONbits.OCM = 0b000;
+                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC4CONbits.OCM = 0b110;
+                        break;
+                    case 3:
+                        OC5CONbits.OCM = 0b000;
+                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC5CONbits.OCM = 0b110;
+                        break;
+                }
+                T2CONbits.TON = 1;
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty3))
+            {
+                if(compareTypeTagAtIndex(0, 'f'))
+                {
+                    index = 2;
+                    if(index > PWM_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
+                        return;
+                    }
+
+                    duty[index] = getIntArgumentAtIndex(0);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
+                    return;
+                }
+
+                if(duty[index] < 0)
+                {
+                    duty[index] = 0;
+                }
+                else if(duty[index] > 100)
+                {
+                    duty[index] = 100;
+                }
+                T2CONbits.TON = 0;
+                TMR2 = 0;
+                switch(index)
+                {
+                    case 0:
+                        OC1CONbits.OCM = 0b000;
+                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC1CONbits.OCM = 0b110;
+                        break;
+                    case 1:
+                        OC3CONbits.OCM = 0b000;
+                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC3CONbits.OCM = 0b110;
+                        break;
+                    case 2:
+                        OC4CONbits.OCM = 0b000;
+                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC4CONbits.OCM = 0b110;
+                        break;
+                    case 3:
+                        OC5CONbits.OCM = 0b000;
+                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC5CONbits.OCM = 0b110;
+                        break;
+                }
+                T2CONbits.TON = 1;
+            }
+            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty4))
+            {
+                if(compareTypeTagAtIndex(0, 'f'))
+                {
+                    index = 3;
+                    if(index > PWM_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
+                        return;
+                    }
+
+                    duty[index] = getIntArgumentAtIndex(0);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
+                    return;
+                }
+
+                if(duty[index] < 0)
+                {
+                    duty[index] = 0;
+                }
+                else if(duty[index] > 100)
+                {
+                    duty[index] = 100;
+                }
+                T2CONbits.TON = 0;
+                TMR2 = 0;
+                switch(index)
+                {
+                    case 0:
+                        OC1CONbits.OCM = 0b000;
+                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC1CONbits.OCM = 0b110;
+                        break;
+                    case 1:
+                        OC3CONbits.OCM = 0b000;
+                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC3CONbits.OCM = 0b110;
+                        break;
+                    case 2:
+                        OC4CONbits.OCM = 0b000;
+                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC4CONbits.OCM = 0b110;
+                        break;
+                    case 3:
+                        OC5CONbits.OCM = 0b000;
+                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+                        OC5CONbits.OCM = 0b110;
+                        break;
+                }
+                T2CONbits.TON = 1;
+            }
         }
         else if(compareOSCPrefix(sysPrefix))
         {
@@ -1746,7 +2084,6 @@ void receiveOSCTask(void)
         }
         //debug LED_2_Off();
     }
-#endif
 }
 
 void sendOSCTask(void)
