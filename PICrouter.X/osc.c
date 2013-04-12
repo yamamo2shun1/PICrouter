@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.30 2013/04/06
+ * osc.c,v.0.9.31 2013/04/13
  */
 
 #include "osc.h"
@@ -295,19 +295,15 @@ BOOL openOSCReceivePort(WORD port_number)
     return TRUE;
 }
 
-#if 1
 BOOL isOSCSendPortOpened(void)
 {
     return UDPIsOpened(TxSocket);
 }
-#endif
 
-#if 1
 BOOL isOSCReceivePortOpened(void)
 {
     return UDPIsOpened(RxSocket);
 }
-#endif
 
 void closeOSCSendPort(void)
 {
@@ -323,7 +319,6 @@ void closeOSCReceivePort(void)
     RxSocket = NULL;
 }
 
-#if 1
 BOOL isOSCGetReady(void)
 {
     if(!UDPIsGetReady(RxSocket))
@@ -331,9 +326,7 @@ BOOL isOSCGetReady(void)
 
     return TRUE;
 }
-#endif
 
-#if 1
 BOOL isOSCPutReady(void)
 {
     if(!UDPIsPutReady(TxSocket))
@@ -341,7 +334,6 @@ BOOL isOSCPutReady(void)
 
     return TRUE;
 }
-#endif
 
 void getOSCPacket(void)
 {
