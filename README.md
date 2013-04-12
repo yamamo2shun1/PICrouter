@@ -62,13 +62,14 @@ Specifications
 ------
 0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client) and NBNS.
 1. Supported Open Sound Control.
-2. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI).
-3. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
-4. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)
-5. A/D port x14
-6. PWM output x4
-7. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
-8. 100mm x 33.5mm, 4-layers board
+2. Supported the multicast address(224.0.0.1 and 224.0.0.251).
+3. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI).
+4. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
+5. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)
+6. A/D port x14
+7. PWM output x4
+8. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
+9. 100mm x 33.5mm, 4-layers board
 
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
