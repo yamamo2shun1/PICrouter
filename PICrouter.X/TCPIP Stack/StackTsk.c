@@ -395,6 +395,7 @@ void StackTask(void)
 #if defined(STACK_USE_ZEROCONF_LINK_LOCAL) || defined(STACK_USE_ZEROCONF_MDNS_SD)
                                                 (tempLocalIP.Val == 0xFB0000E0) ||
 #endif
+                                                (tempLocalIP.Val == 0x010000E0) || //syama for supporting IGMP 224.0.0.1
 						(tempLocalIP.Val == ((AppConfig.MyIPAddr.Val & AppConfig.MyMask.Val) | ~AppConfig.MyMask.Val)))
 					{
 						ICMPProcess(&remoteNode, dataCount);
