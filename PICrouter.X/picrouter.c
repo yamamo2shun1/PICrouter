@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.10 2013/04/06
+ * picrouter.c,v.1.4.11 2013/04/13
  */
 
 #include "picrouter.h"
@@ -273,7 +273,7 @@ void receiveOSCTask(void)
         {
             if(compareOSCAddress(stdPrefix, msgOnboardLed))
             {
-                if(!compareTypeTagAtIndex(0, 'i') || !compareTypeTagAtIndex(1, 's'))
+                if(!(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || !compareTypeTagAtIndex(1, 's'))
                 {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_type");
                     return;
@@ -429,7 +429,7 @@ void receiveOSCTask(void)
                 BYTE id, anum;
                 char* state;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -497,7 +497,7 @@ void receiveOSCTask(void)
             {
                 BYTE id;
 
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -522,7 +522,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* type;
  
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -551,7 +551,7 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(stdPrefix, msgGetAdcDio))
             {
                 BYTE id;
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -576,7 +576,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* state;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -606,7 +606,7 @@ void receiveOSCTask(void)
             {
                 BYTE id;
 
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > AN_NUM - 1)
@@ -632,7 +632,7 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(stdPrefix, msgSetPwmEnable))
             {
                 char* state;
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     index = getIntArgumentAtIndex(0);
                     if(index > 3)
@@ -702,7 +702,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(stdPrefix, msgGetPwmEnable))
             {
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
@@ -721,7 +721,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(stdPrefix, msgSetPwmFreq))
             {
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                     freq = getIntArgumentAtIndex(0);
                 else
                 {
@@ -752,7 +752,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(stdPrefix, msgSetPwmDuty))
             {
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
                 {
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
@@ -806,7 +806,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(stdPrefix, msgGetPwmDuty))
             {
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     index = getIntArgumentAtIndex(0);
                     if(index > PWM_NUM - 1)
@@ -828,7 +828,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* type;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
@@ -857,7 +857,7 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(stdPrefix, msgGetPwmDio))
             {
                 BYTE id;
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
@@ -882,7 +882,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* state;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
@@ -910,7 +910,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 BYTE state;
 
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > PWM_NUM - 1)
@@ -938,7 +938,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* type;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
@@ -968,7 +968,7 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(stdPrefix, msgGetDigitalDio))
             {
                 BYTE id;
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
@@ -993,7 +993,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 char* state;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id > D_NUM - 1)
@@ -1019,7 +1019,7 @@ void receiveOSCTask(void)
                 BYTE id;
                 BYTE state;
 
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id >= D_NUM)
@@ -1049,7 +1049,7 @@ void receiveOSCTask(void)
                 WORD bitrate = 0;
                 DWORD spiFlags = 0;
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     bitrate0 = getIntArgumentAtIndex(1);
@@ -1146,7 +1146,7 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id != 2 && id != 4)
@@ -1184,7 +1184,7 @@ void receiveOSCTask(void)
 
                     for(i = 0; i < byte_num; i++)
                     {
-                        if(!compareTypeTagAtIndex(i + 4, 'i'))
+                        if(!(compareTypeTagAtIndex(i + 4, 'i') || compareTypeTagAtIndex(i + 4, 'f')))
                         {
                             sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 4:wrong_argument_type");
                             return;
@@ -1232,7 +1232,7 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
                     if(id != 2 && id != 4)
@@ -1262,7 +1262,7 @@ void receiveOSCTask(void)
                         return;
                     }
 
-                    if(compareTypeTagAtIndex(4, 'i'))
+                    if((compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
                     {
                         data[0] = getIntArgumentAtIndex(4);
                     }
@@ -1852,7 +1852,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
             {
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     if(getIntArgumentAtIndex(0) < 0)
                     {
@@ -1948,7 +1948,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgSetHostPort))
             {
-                if(compareTypeTagAtIndex(0, 'i'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
                     if(getIntArgumentAtIndex(0) < 0)
                     {
