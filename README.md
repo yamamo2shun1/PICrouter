@@ -35,7 +35,15 @@ PICrouter will be an useful with the following purpose.
 * Study a PIC32 microcontroller.
 * Study a communication with usb and ethernet.
 
+Demo
+
+* [PICrouter and MobMuPlat OSC Demo]
+* [PICrouter and touchOSC Demo: PWM Control]
+
 [Open Sound Control]:http://opensoundcontrol.org
+
+[PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
+[PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
 
 <div align="center">
 <a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a>  
