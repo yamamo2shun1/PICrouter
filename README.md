@@ -156,11 +156,12 @@ Tutorial 7 : [ファームウェアの書き換え][]
 Tutorial (EN)
 --------------------------------
 Tutorial 0 : [Introduction]  
-Tutorial 1 : [How to Control Digital I/O with OSC]  
+Tutorial 1 : [Digital IO Control with OSC][]  
 Tutorial 2 : [How to Control Analog Inputs with OSC][]  
 Tutorial 3 : [How to Control PWM with OSC]  
 Tutorial 4 : [How to Control SPI with OSC]  
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
+[Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
 [How to Control Analog Inputs with OSC]: https://github.com/tkrworks/PICrouter/wiki/How-to-Control-Analog-Inputs-with-OSC
 
 Supported OSC Messages
