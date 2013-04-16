@@ -159,11 +159,12 @@ Tutorial 0 : [Introduction][]
 Tutorial 1 : [Digital IO Control with OSC][]  
 Tutorial 2 : [Analog Input Control with OSC][]  
 Tutorial 3 : [PWM Output Control with OSC][]  
-Tutorial 4 : [How to Control SPI with OSC]  
+Tutorial 4 : [SPI Configuration with OSC][]  
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
 [Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
 [Analog Input Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Analog-Input-Control-with-OSC
 [PWM Output Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/PWM-Output-Control-with-OSC
+[SPI Configuration with OSC]: https://github.com/tkrworks/PICrouter/wiki/SPI-Configuration-with-OSC
 
 Supported OSC Messages
 --------------------------------
