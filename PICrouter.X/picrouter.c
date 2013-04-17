@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.4.11 2013/04/13
+ * picrouter.c,v.1.5.0 2013/04/17
  */
 
 #include "picrouter.h"
@@ -69,7 +69,7 @@ void initIOPorts(void)
 
 int main(int argc, char** argv) {
     int i;
-    static DWORD t = 0;
+    BYTE eth_state = 0;
 
     // Enable optimal performance
     SYSTEMConfigPerformance(GetSystemClock());
@@ -118,7 +118,6 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
-    ZeroconfLLInitialize();
     mDNSInitialize(DEFAULT_HOST_NAME);
     mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
                         "_oscit._udp.local",       // type of the service
@@ -139,13 +138,6 @@ int main(int argc, char** argv) {
 
     while(1)
     {
-#if 0
-        if(TickGet() - t >= TICK_SECOND / 2ul)
-        {
-            t = TickGet();
-            LED_2_Toggle();
-        }
-#endif
         currentState = SW_State();
 
         if(prevState != currentState)
@@ -171,11 +163,17 @@ int main(int argc, char** argv) {
                 {
                     // Ethernet Tasks
                     StackTask();
-                    NBNSTask();
-                    ZeroconfLLProcess();
-                    mDNSProcess();
-                    DHCPServerTask();
-
+                    switch(eth_state)
+                    {
+                        case 0:
+                            mDNSProcess();
+                            eth_state = 1;
+                            break;
+                        case 1:
+                            DHCPServerTask();
+                            eth_state = 0;
+                            break;
+                    }
                     receiveOSCTask();
                     sendOSCTask();
 
@@ -202,11 +200,17 @@ int main(int argc, char** argv) {
                 while(device_mode == MODE_HOST)
                 {
                     StackTask();
-                    NBNSTask();
-                    ZeroconfLLProcess();
-                    mDNSProcess();
-                    DHCPServerTask();
-
+                    switch(eth_state)
+                    {
+                        case 0:
+                            mDNSProcess();
+                            eth_state = 1;
+                            break;
+                        case 3:
+                            DHCPServerTask();
+                            eth_state = 0;
+                            break;
+                    }
                     receiveOSCTask();
                     sendOSCTask();
 
@@ -258,12 +262,9 @@ int main(int argc, char** argv) {
 void receiveOSCTask(void)
 {
     BYTE index, i, j, k;
+    //debug static BYTE testNum = 0;
 
-    if(!initReceiveFlag)
-        initReceiveFlag = openOSCReceivePort(localPort);
-
-    if(initReceiveFlag && isOSCGetReady())
-        getOSCPacket();
+    getOSCPacket();
 
     if(processOSCPacket())
     {
@@ -2059,23 +2060,31 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(sysPrefix, msgDebug))
             {
+                //debug testNum++;
+
+                clearOSCBundle();
                 for(i = 0; i < getArgumentsLength(); i++)
                 {
                     if(compareTypeTagAtIndex(i, 'i'))
-                        sendOSCMessage(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 'f'))
-                        sendOSCMessage(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
+                    {
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
+                        //debug appendOSCMessageToBundle(sysPrefix, msgDebug, "ifi", i, getFloatArgumentAtIndex(i), testNum - 1);
+                        //debug testNum = 0;
+                    }
                     else if(compareTypeTagAtIndex(i, 's'))
-                        sendOSCMessage(sysPrefix, msgDebug, "is", i, getStringArgumentAtIndex(i));
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "is", i, getStringArgumentAtIndex(i));
                     else if(compareTypeTagAtIndex(i, 'T'))
-                        sendOSCMessage(sysPrefix, msgDebug, "iT", i);
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iT", i);
                     else if(compareTypeTagAtIndex(i, 'F'))
-                        sendOSCMessage(sysPrefix, msgDebug, "iF", i);
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iF", i);
                     else if(compareTypeTagAtIndex(i, 'N'))
-                        sendOSCMessage(sysPrefix, msgDebug, "iN", i);
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iN", i);
                     else if(compareTypeTagAtIndex(i, 'I'))
-                        sendOSCMessage(sysPrefix, msgDebug, "iI", i);
+                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iI", i);
                 }
+                sendOSCBundle();
             }
             else if(compareOSCAddress(sysPrefix, msgGetVersion))
             {
