@@ -66,12 +66,12 @@
 //#define STACK_USE_UART					// Application demo using UART for IP address display and stack configuration
 //#define STACK_USE_UART2TCP_BRIDGE		// UART to TCP Bridge application example
 //#define STACK_USE_IP_GLEANING
-#define STACK_USE_ICMP_SERVER			// Ping query and response capability
-//#define STACK_USE_ICMP_CLIENT			// Ping transmission capability
+//#define STACK_USE_ICMP_SERVER			// Ping query and response capability
+#define STACK_USE_ICMP_CLIENT			// Ping transmission capability
 //#define STACK_USE_HTTP2_SERVER			// New HTTP server with POST, Cookies, Authentication, etc.
 //#define STACK_USE_SSL_SERVER			// SSL server socket support (Requires SW300052)
 //#define STACK_USE_SSL_CLIENT			// SSL client socket support (Requires SW300052)
-#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
+//#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
 #define STACK_USE_DHCP_CLIENT			// Dynamic Host Configuration Protocol client for obtaining IP address and other parameters
 #define STACK_USE_DHCP_SERVER			// Single host DHCP server
 //#define STACK_USE_FTP_SERVER			// File Transfer Protocol (old)
@@ -85,14 +85,14 @@
 //#define STACK_USE_ANNOUNCE				// Microchip Embedded Ethernet Device Discoverer server/client
 //#define STACK_USE_DNS					// Domain Name Service Client for resolving hostname strings to IP addresses
 //#define STACK_USE_DNS_SERVER			// Domain Name Service Server for redirection to the local device
-#define STACK_USE_NBNS					// NetBIOS Name Service Server for repsonding to NBNS hostname broadcast queries
+//#define STACK_USE_NBNS					// NetBIOS Name Service Server for repsonding to NBNS hostname broadcast queries
 //#define STACK_USE_REBOOT_SERVER			// Module for resetting this PIC remotely.  Primarily useful for a Bootloader.
 //#define STACK_USE_SNTP_CLIENT			// Simple Network Time Protocol for obtaining current date/time from Internet
 //#define STACK_USE_UDP_PERFORMANCE_TEST	// Module for testing UDP TX performance characteristics.  NOTE: Enabling this will cause a huge amount of UDP broadcast packets to flood your network on the discard port.  Use care when enabling this on production networks, especially with VPNs (could tunnel broadcast traffic across a limited bandwidth connection).
 //#define STACK_USE_TCP_PERFORMANCE_TEST	// Module for testing TCP TX performance characteristics
 //#define STACK_USE_DYNAMICDNS_CLIENT		// Dynamic DNS client updater module
 //#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
-#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
+//#define STACK_USE_ZEROCONF_LINK_LOCAL	// Zeroconf IPv4 Link-Local Addressing
 #define STACK_USE_ZEROCONF_MDNS_SD		// Zeroconf mDNS and mDNS service discovery
 
 
@@ -155,54 +155,54 @@
 #define MY_DEFAULT_MAC_BYTE5            (0x00)	// internal factory programmed MAC
 #define MY_DEFAULT_MAC_BYTE6            (0x00)	// address instead.
 
-    #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)//test (169ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)//test (254ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)//test (1ul)
-    #define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)//test (1ul)
+#define MY_DEFAULT_IP_ADDR_BYTE1        (169ul)
+#define MY_DEFAULT_IP_ADDR_BYTE2        (254ul)
+#define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)
+#define MY_DEFAULT_IP_ADDR_BYTE4        (1ul)
 
-    #define MY_DEFAULT_MASK_BYTE1           (255ul)
-    #define MY_DEFAULT_MASK_BYTE2           (255ul)
-    #define MY_DEFAULT_MASK_BYTE3           (255ul)//test (0ul)
-    #define MY_DEFAULT_MASK_BYTE4           (0ul)
+#define MY_DEFAULT_MASK_BYTE1           (255ul)
+#define MY_DEFAULT_MASK_BYTE2           (255ul)
+#define MY_DEFAULT_MASK_BYTE3           (255ul)
+#define MY_DEFAULT_MASK_BYTE4           (0ul)
 
-    #define MY_DEFAULT_GATE_BYTE1           (192ul)//test (169ul)
-    #define MY_DEFAULT_GATE_BYTE2           (168ul)//test (254ul)
-    #define MY_DEFAULT_GATE_BYTE3           (1ul)//test (1ul)
-    #define MY_DEFAULT_GATE_BYTE4           (1ul)//test (1ul)
+#define MY_DEFAULT_GATE_BYTE1           (169ul)
+#define MY_DEFAULT_GATE_BYTE2           (254ul)
+#define MY_DEFAULT_GATE_BYTE3           (1ul)
+#define MY_DEFAULT_GATE_BYTE4           (1ul)
 
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE1	(192ul)//test (169ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE2	(168ul)//test (254ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)//test (1ul)
-    #define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)//test (1ul)
+#define MY_DEFAULT_PRIMARY_DNS_BYTE1	(169ul)
+#define MY_DEFAULT_PRIMARY_DNS_BYTE2	(254ul)
+#define MY_DEFAULT_PRIMARY_DNS_BYTE3	(1ul)
+#define MY_DEFAULT_PRIMARY_DNS_BYTE4	(1ul)
 
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE2	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE3	(0ul)
-    #define MY_DEFAULT_SECONDARY_DNS_BYTE4	(0ul)
+#define MY_DEFAULT_SECONDARY_DNS_BYTE1	(0ul)
+#define MY_DEFAULT_SECONDARY_DNS_BYTE2	(0ul)
+#define MY_DEFAULT_SECONDARY_DNS_BYTE3	(0ul)
+#define MY_DEFAULT_SECONDARY_DNS_BYTE4	(0ul)
 
 // =======================================================================
 //   PIC32MX7XX/6XX MAC Layer Options
 //   If not using a PIC32MX7XX/6XX device, ignore this section.
 // =======================================================================
-#define	ETH_CFG_LINK			1		// set to 1 if you need to config the link to specific following parameters
-										// otherwise the default connection will be attempted
-										// depending on the selected PHY
-	#define	ETH_CFG_AUTO		1		// use auto negotiation
-	#define	ETH_CFG_10			1		// use/advertise 10 Mbps capability
-	#define	ETH_CFG_100			1		// use/advertise 100 Mbps capability
-	#define	ETH_CFG_HDUPLEX		1		// use/advertise half duplex capability
-	#define	ETH_CFG_FDUPLEX		1		// use/advertise full duplex capability
-	#define	ETH_CFG_AUTO_MDIX	1		// use/advertise auto MDIX capability
-	#define	ETH_CFG_SWAP_MDIX	1		// use swapped MDIX. else normal MDIX
+#define	ETH_CFG_LINK        1           // set to 1 if you need to config the link to specific following parameters
+                                        // otherwise the default connection will be attempted
+                                        // depending on the selected PHY
+#define	ETH_CFG_AUTO        1           // use auto negotiation
+#define	ETH_CFG_10          1           // use/advertise 10 Mbps capability
+#define	ETH_CFG_100         1           // use/advertise 100 Mbps capability
+#define	ETH_CFG_HDUPLEX     1           // use/advertise half duplex capability
+#define	ETH_CFG_FDUPLEX     1           // use/advertise full duplex capability
+#define	ETH_CFG_AUTO_MDIX   1           // use/advertise auto MDIX capability
+#define	ETH_CFG_SWAP_MDIX   1           // use swapped MDIX. else normal MDIX
 
-#define EMAC_TX_DESCRIPTORS		2		// number of the TX descriptors to be created
-#define EMAC_RX_DESCRIPTORS		8		// number of the RX descriptors and RX buffers to be created
+#define EMAC_TX_DESCRIPTORS 2           // number of the TX descriptors to be created
+#define EMAC_RX_DESCRIPTORS 16 // 8     // number of the RX descriptors and RX buffers to be created
 
-#define	EMAC_RX_BUFF_SIZE		1536	// size of a RX buffer. should be multiple of 16
-										// this is the size of all receive buffers processed by the ETHC
-										// The size should be enough to accomodate any network received packet
-										// If the packets are larger, they will have to take multiple RX buffers
-										// The current implementation does not handle this situation right now and the packet is discarded.
+#define	EMAC_RX_BUFF_SIZE   512 // 1536 // size of a RX buffer. should be multiple of 16
+                                        // this is the size of all receive buffers processed by the ETHC
+                                        // The size should be enough to accomodate any network received packet
+                                        // If the packets are larger, they will have to take multiple RX buffers
+                                        // The current implementation does not handle this situation right now and the packet is discarded.
 
 
 // =======================================================================
