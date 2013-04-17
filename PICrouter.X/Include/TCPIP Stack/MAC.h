@@ -162,9 +162,9 @@ typedef struct  __attribute__((aligned(2), packed))
 	#define BASE_SSLB_ADDR	(BASE_HTTPB_ADDR + RESERVED_HTTP_MEMORY)
 #endif
 
-#if (RXSIZE < 1400) || (RXSIZE > RAMSIZE)
-	#error Warning, Ethernet RX buffer is tiny.  Reduce TCP socket count, the size of each TCP socket, or move sockets to a different RAM
-#endif
+//test #if (RXSIZE < 1400) || (RXSIZE > RAMSIZE)
+//test 	#error Warning, Ethernet RX buffer is tiny.  Reduce TCP socket count, the size of each TCP socket, or move sockets to a different RAM
+//test #endif
 
 WORD	MACCalcRxChecksum(WORD offset, WORD len);
 WORD 	CalcIPBufferChecksum(WORD len);
