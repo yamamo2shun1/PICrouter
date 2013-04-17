@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.0.9.31 2013/04/13
+ * osc.c,v.1.0.0 2013/04/17
  */
 
 #include "osc.h"
@@ -193,13 +193,15 @@ static volatile BYTE ringBufIndex = 0;
 static volatile BYTE ringProcessIndex = 0;
 static BYTE udpPacket[MAX_BUF_SIZE][MAX_PACKET_SIZE] = {0};
 static BYTE oscPacket[MAX_PACKET_SIZE] = {0};
-static char rcvAddressStrings[MAX_PACKET_SIZE / 2] = {0};
+static char rcvAddressStrings[MAX_ADDRESS_LEN] = {0};
 static UINT16 rcvAddressLength;
 static UINT16 rcvTypesStartIndex;
 static INT16 rcvArgumentsLength;
-static char rcvArgsTypeArray[MAX_PACKET_SIZE / 2] = {0};
-static UINT16 rcvArgumentsStartIndex[MAX_PACKET_SIZE / 2] = {0};
-static UINT16 rcvArgumentsIndexLength[MAX_PACKET_SIZE / 2] = {0};
+static char rcvArgsTypeArray[MAX_ARGS_LEN] = {0};
+static UINT16 rcvArgumentsStartIndex[MAX_ARGS_LEN] = {0};
+static UINT16 rcvArgumentsIndexLength[MAX_ARGS_LEN] = {0};
+static BYTE bundleData[512] = {0};
+static UINT16 bundleAppendIndex = 0;
 
 // Static Functions
 static BOOL copyOSCPacketFromUDPPacket();
@@ -337,13 +339,19 @@ BOOL isOSCPutReady(void)
 
 void getOSCPacket(void)
 {
-    if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
+    if(!initReceiveFlag)
+        initReceiveFlag = openOSCReceivePort(localPort);
+    
+    if(initReceiveFlag && isOSCGetReady())
     {
-        ringBufIndex++;
-        if(ringBufIndex >= MAX_BUF_SIZE)
-            ringBufIndex = 0;
+        if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
+        {
+            ringBufIndex++;
+            if(ringBufIndex >= MAX_BUF_SIZE)
+                ringBufIndex = 0;
+        }
+        UDPDiscard();
     }
-    UDPDiscard();
 }
 
 BOOL processOSCPacket(void)
@@ -610,6 +618,111 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
         UDPFlush();
 
         //debug LED_1_Off();
+    }
+}
+
+void clearOSCBundle(void)
+{
+    memset(bundleData, 0, sizeof(bundleData));
+    bundleData[0] = '#';
+    bundleData[1] = 'b';
+    bundleData[2] = 'u';
+    bundleData[3] = 'n';
+    bundleData[4] = 'd';
+    bundleData[5] = 'l';
+    bundleData[6] = 'e';
+
+    bundleAppendIndex = 16;
+}
+
+void appendOSCMessageToBundle(const char* prefix, const char* command, const char* type, ...)
+{
+    va_list list;
+
+    INT32 prefixSize = strchr(prefix, 0) - prefix;
+    INT32 commandSize = strchr(command, 0) - command;
+    INT32 addressSize = prefixSize + commandSize;
+    INT32 typeSize = strchr(type, 0) - type;
+    INT32 zeroSize = 0;
+    INT32 totalSize = 0;
+
+    int ivalue = 0;
+    float fvalue = 0.0;
+    char* fchar = NULL;
+    char* cstr = NULL;
+    int cstr_len = 0;
+    char str[128];
+    memset(str, 0, 128);
+
+    sprintf(str, "%s%s", prefix, command);
+
+    zeroSize = (addressSize ^ ((addressSize >> 3) << 3)) == 0 ? 0 : 8 - (addressSize ^ ((addressSize >> 3) << 3));
+    if(zeroSize == 0)
+        zeroSize = 4;
+    else if(zeroSize > 4 && zeroSize < 8)
+        zeroSize -= 4;
+
+    totalSize = (addressSize + zeroSize);
+    sprintf((str + totalSize), ",%s", type);
+
+    typeSize++;
+    zeroSize = (typeSize ^ ((typeSize >> 2) << 2)) == 0 ? 0 : 4 - (typeSize ^ ((typeSize >> 2) << 2));
+    if(zeroSize == 0)
+        zeroSize = 4;
+
+    totalSize += (typeSize + zeroSize);
+
+    va_start(list, type);
+    while(*type)
+    {
+        switch(*type)
+        {
+            case 'i':
+                ivalue = va_arg(list, int);
+                *(str + (totalSize++)) = (ivalue >> 24) & 0xFF;
+                *(str + (totalSize++)) = (ivalue >> 16) & 0xFF;
+                *(str + (totalSize++)) = (ivalue >> 8) & 0xFF;
+                *(str + (totalSize++)) = (ivalue >> 0) & 0xFF;
+                break;
+            case 'f':
+                fvalue = (float)va_arg(list, double);
+                fchar = (char *)&fvalue;
+                *(str + (totalSize++)) = *(fchar + 3) & 0xFF;
+                *(str + (totalSize++)) = *(fchar + 2) & 0xFF;
+                *(str + (totalSize++)) = *(fchar + 1) & 0xFF;
+                *(str + (totalSize++)) = *(fchar + 0) & 0xFF;
+                break;
+            case 's':
+                cstr = va_arg(list, char*);
+                cstr_len = 0;
+                while(*cstr)
+                {
+                    *(str + (totalSize + cstr_len)) = *(cstr++) & 0xFF;
+                    cstr_len++;
+                }
+                totalSize += ((cstr_len / 4) + 1) * 4;
+                break;
+            default: // T, F, N, I and others
+                break;
+        }
+        type++;
+    }
+    va_end(list);
+
+    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 24) & 0xFF;
+    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 16) & 0xFF;
+    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 8) & 0xFF;
+    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 0) & 0xFF;
+    memcpy(bundleData + bundleAppendIndex, str, totalSize);
+    bundleAppendIndex += totalSize;
+}
+
+void sendOSCBundle(void)
+{
+    if(isOSCPutReady())
+    {
+        UDPPutArray(bundleData, bundleAppendIndex);
+        UDPFlush();
     }
 }
 

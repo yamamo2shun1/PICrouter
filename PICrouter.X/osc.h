@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.0.9.31 2013/04/13
+ * osc.h,v.1.0.0 2013/04/17
  */
 
 #ifndef OSC_H
@@ -33,6 +33,8 @@
 
 #define MAX_BUF_SIZE    64
 #define MAX_PACKET_SIZE 256// 1024
+#define MAX_ADDRESS_LEN 64
+#define MAX_ARGS_LEN 32
 
 // Network
 extern APP_CONFIG AppConfig;
@@ -215,6 +217,9 @@ BOOL isOSCPutReady(void);
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
+void clearOSCBundle(void);
+void appendOSCMessageToBundle(const char* prefix, const char* command, const char* type, ...);
+void sendOSCBundle(void);
 BOOL compareOSCPrefix(const char* prefix);
 BOOL compareOSCAddress(const char* prefix, const char* address);
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag);
