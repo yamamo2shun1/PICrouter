@@ -162,7 +162,7 @@ Tutorial 3 : [PWM Output Control with OSC][]
 Tutorial 4 : [SPI Configuration with OSC][]  
 Tutorial 5 : [System Configuration with OSC][]  
 Tutorial 6 : [OSC-MIDI Bridge][]  
-Tutorial 7 : Firmware Update  
+Tutorial 7 : [Firmware Update][]  
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
 [Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
 [Analog Input Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Analog-Input-Control-with-OSC
@@ -170,6 +170,7 @@ Tutorial 7 : Firmware Update
 [SPI Configuration with OSC]: https://github.com/tkrworks/PICrouter/wiki/SPI-Configuration-with-OSC
 [System Configuration with OSC]: https://github.com/tkrworks/PICrouter/wiki/System-Configuration-with-OSC
 [OSC-MIDI Bridge]: https://github.com/tkrworks/PICrouter/wiki/OSC-MIDI-Bridge
+[Firmware Update]: https://github.com/tkrworks/PICrouter/wiki/Firmware-Update
 
 Supported OSC Messages
 --------------------------------
