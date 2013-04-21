@@ -158,7 +158,7 @@
 #define MY_DEFAULT_IP_ADDR_BYTE1        (169ul)
 #define MY_DEFAULT_IP_ADDR_BYTE2        (254ul)
 #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)
-#define MY_DEFAULT_IP_ADDR_BYTE4        (1ul)
+#define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)
 
 #define MY_DEFAULT_MASK_BYTE1           (255ul)
 #define MY_DEFAULT_MASK_BYTE2           (255ul)
@@ -196,9 +196,9 @@
 #define	ETH_CFG_SWAP_MDIX   1           // use swapped MDIX. else normal MDIX
 
 #define EMAC_TX_DESCRIPTORS 2           // number of the TX descriptors to be created
-#define EMAC_RX_DESCRIPTORS 16 // 8     // number of the RX descriptors and RX buffers to be created
+#define EMAC_RX_DESCRIPTORS 8     // number of the RX descriptors and RX buffers to be created
 
-#define	EMAC_RX_BUFF_SIZE   512 // 1536 // size of a RX buffer. should be multiple of 16
+#define	EMAC_RX_BUFF_SIZE   1024 // 1536 // size of a RX buffer. should be multiple of 16
                                         // this is the size of all receive buffers processed by the ETHC
                                         // The size should be enough to accomodate any network received packet
                                         // If the packets are larger, they will have to take multiple RX buffers
