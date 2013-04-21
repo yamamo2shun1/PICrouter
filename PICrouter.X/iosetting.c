@@ -89,61 +89,61 @@ void setPortIOType(char* port_name, BYTE io)
 BYTE getPortIOType(char* port_name)
 {
     if(!strcmp(port_name, "b0"))
-        getAnPortDioType(0);
+        return getAnPortDioType(0);
     else if(!strcmp(port_name, "b1"))
-        getAnPortDioType(1);
+        return getAnPortDioType(1);
     else if(!strcmp(port_name, "b2"))
-        getAnPortDioType(2);
+        return getAnPortDioType(2);
     else if(!strcmp(port_name, "b3"))
-        getAnPortDioType(3);
+        return getAnPortDioType(3);
     else if(!strcmp(port_name, "b4"))
-        getAnPortDioType(4);
+        return getAnPortDioType(4);
     else if(!strcmp(port_name, "b5"))
-        getAnPortDioType(5);
+        return getAnPortDioType(5);
     else if(!strcmp(port_name, "b6"))
-        getAnPortDioType(6);
+        return getAnPortDioType(6);
     else if(!strcmp(port_name, "b7"))
-        getAnPortDioType(7);
+        return getAnPortDioType(7);
     else if(!strcmp(port_name, "b8"))
-        getAnPortDioType(8);
+        return getAnPortDioType(8);
     else if(!strcmp(port_name, "b9"))
-        getAnPortDioType(9);
+        return getAnPortDioType(9);
     else if(!strcmp(port_name, "b10"))
-        getAnPortDioType(10);
+        return getAnPortDioType(10);
     else if(!strcmp(port_name, "b11"))
-        getAnPortDioType(11);
+        return getAnPortDioType(11);
     else if(!strcmp(port_name, "b12"))
-        getAnPortDioType(12);
+        return getAnPortDioType(12);
     else if(!strcmp(port_name, "b13"))
-        getAnPortDioType(13);
+        return getAnPortDioType(13);
     else if(!strcmp(port_name, "d0"))
-        getPwmPortDioType(0);
+        return getPwmPortDioType(0);
     else if(!strcmp(port_name, "d2"))
-        getPwmPortDioType(1);
+        return getPwmPortDioType(1);
     else if(!strcmp(port_name, "d3"))
-        getPwmPortDioType(2);
+        return getPwmPortDioType(2);
     else if(!strcmp(port_name, "d4"))
-        getPwmPortDioType(3);
+        return getPwmPortDioType(3);
     else if(!strcmp(port_name, "c13"))
-        getDigitalPortDioType(0);
+        return getDigitalPortDioType(0);
     else if(!strcmp(port_name, "c14"))
-        getDigitalPortDioType(1);
+        return getDigitalPortDioType(1);
     else if(!strcmp(port_name, "f0"))
-        getDigitalPortDioType(2);
+        return getDigitalPortDioType(2);
     else if(!strcmp(port_name, "f1"))
-        getDigitalPortDioType(3);
+        return getDigitalPortDioType(3);
     else if(!strcmp(port_name, "b14"))
-        getSpiPortDioType("sck4");
+        return getSpiPortDioType("sck4");
     else if(!strcmp(port_name, "f4"))
-        getSpiPortDioType("sdi4");
+        return getSpiPortDioType("sdi4");
     else if(!strcmp(port_name, "f5"))
-        getSpiPortDioType("sdo4");
+        return getSpiPortDioType("sdo4");
     else if(!strcmp(port_name, "g6"))
-        getSpiPortDioType("sck2");
+        return getSpiPortDioType("sck2");
     else if(!strcmp(port_name, "g7"))
-        getSpiPortDioType("sdi2");
+        return getSpiPortDioType("sdi2");
     else if(!strcmp(port_name, "g8"))
-        getSpiPortDioType("sdo2");
+        return getSpiPortDioType("sdo2");
 }
 
 void outputPort(char* port_name, BYTE state)
@@ -726,8 +726,6 @@ BYTE inputSpiPort(char* name)
 
 void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
 {
-    // Set LOAD_PIN to low
-    //
     switch(spi_id)
     {
         case SPI_2:
@@ -737,15 +735,11 @@ void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
             putcSPI4(msb);
             break;
     }
-    Delay10us(usec);
-    // Set LOAD_PIN to high
-    //
+    Nop();
 }
 
 void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
 {
-    // Set LOAD_PIN to low
-    //
     switch(spi_id)
     {
         case SPI_2:
@@ -757,15 +751,11 @@ void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
             putcSPI4(msb);
             break;
     }
-    Delay10us(usec);
-    // Set LOAD_PIN to low
-    //
+    Nop();
 }
 
 void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
 {
-    // Set LOAD_PIN to low
-    //
     switch(spi_id)
     {
         case SPI_2:
@@ -781,9 +771,7 @@ void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DW
             putcSPI4(msb0);
             break;
     }
-    Delay10us(usec);
-    // Set LOAD_PIN to low
-    //
+    Nop();
 }
 
 WORD receiveSpiOneWord(BYTE spi_id, DWORD usec)
