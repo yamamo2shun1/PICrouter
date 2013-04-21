@@ -112,7 +112,7 @@ void TickInit(void)
 	// 1:256 prescale
 	T1CONbits.TCKPS = 3;
 	// Base
-	PR1 = 0x0FFF;//0xFFFF;
+	PR1 = 0xFFFF;
 	// Clear counter
 	TMR1 = 0;
 
