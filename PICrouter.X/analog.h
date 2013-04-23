@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * analog.h,v.0.7.3 2013/04/02
+ * analog.h,v.0.7.4 2013/04/23
  */
 
 #ifndef ANALOG_H
