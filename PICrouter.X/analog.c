@@ -188,7 +188,7 @@ void sendAdc()
     {
         if(getAnalogFlag(i))
         {
-            sendOSCMessage(stdPrefix, msgAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
+            sendOSCMessage(getOSCPrefix(), msgAdc, "ii", i, getAnalogWord(i, LONG_ORIGINAL));
             resetAnalogFlag(i);
             Delay10us(2);
         }
@@ -218,12 +218,12 @@ void sendInfinium(void)
                 if(currentValue[0] <= 127 && currentValue[1] > 127)
                 {
                     faderValue = currentValue[0];
-                    sendOSCMessage(stdPrefix, msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
+                    sendOSCMessage(getOSCPrefix(), msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
                 }
                 else if(currentValue[0] > 127 && currentValue[1] <= 127)
                 {
                     faderValue = 255 - currentValue[1];
-                    sendOSCMessage(stdPrefix, msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
+                    sendOSCMessage(getOSCPrefix(), msgAdc, "iiii", i + 10, faderValue, currentValue[0], currentValue[1]);
                 }
 #endif
             }
@@ -261,7 +261,7 @@ void sendCFX2(void)
         }
     }
 
-    if(initSendFlag && flag)
+    if(getInitSendFlag() && flag)
     {
         if((*(currentValue + 0) >= b_min && *(currentValue + 0) <= b_max) &&
            (*(currentValue + 1) >= b_min && *(currentValue + 1) <= b_max) &&
@@ -324,7 +324,7 @@ void sendCFX2(void)
         else if((currentPosition >> 1) < (prevPosition >> 1))
             currentDirection = -1;
         if((currentPosition >> 1) != (currentPosition1 >> 1))
-            sendOSCMessage(stdPrefix, msgAdc, "iiiiiiiii",
+            sendOSCMessage(getOSCPrefix(), msgAdc, "iiiiiiiii",
                            (currentPosition >> 1),
                             currentDirection,
                             currentSection,
