@@ -16,27 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.0 2013/04/17
+ * osc.c,v.1.0.1 2013/04/23
  */
 
 #include "osc.h"
 
 // Network
-APP_CONFIG AppConfig;
 static UDP_SOCKET RxSocket;
 static UDP_SOCKET TxSocket;
-BOOL initReceiveFlag = FALSE;
-BOOL initSendFlag = FALSE;
-BOOL chCompletedFlag = FALSE;
-char* hostName = NULL;
-char* stdPrefix = NULL;
+static BOOL initReceiveFlag = FALSE;
+static BOOL initSendFlag = FALSE;
+static BOOL chCompletedFlag = FALSE;
+static char* hostName = NULL;
+static char* stdPrefix = NULL;
 
 // Remote IP Address Initialization
-BYTE remoteIP[] = {224ul, 0ul, 0ul, 1ul};
+static BYTE remoteIP[] = {224ul, 0ul, 0ul, 1ul};
 
 // Port Number Initialization
-WORD remotePort = 8000;
-WORD localPort  = 8080;
+static WORD remotePort = 8000;
+static WORD localPort  = 8080;
 
 // MAC address Initialization
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
@@ -47,22 +46,30 @@ static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
                                            MY_DEFAULT_MAC_BYTE6};
 
 // for LED_PAD_16 or LED_PAD_64 (6)
-const char msgLatticePad[]       = "/lattice/pad";
-const char msgLatticeLed[]       = "/lattice/led";
-const char msgLatticeLedColumn[] = "/lattice/led/col";
-const char msgLatticeLedRow[]    = "/lattice/led/row";
-const char msgLatticeLedAll[]    = "/lattice/led/all";
-const char msgLatticeLedClear[]  = "/lattice/led/clear";
+const char msgLatticePad[]       = "/kit/lattice/pad";
+const char msgLatticeLed[]       = "/kit/lattice/led";
+const char msgLatticeLedColumn[] = "/kit/lattice/led/col";
+const char msgLatticeLedRow[]    = "/kit/lattice/led/row";
+const char msgLatticeLedAll[]    = "/kit/lattice/led/all";
+const char msgLatticeLedClear[]  = "/kit/lattice/led/clear";
 
-// for LED_ENC_32 or LED_ENC_ABS_32 (6)
-const char msgRotaryLedStep[]      = "/rotary/led/step";
-const char msgRotaryLedBits[]      = "/rotary/led/bits";
-const char msgRotaryLedIntensity[] = "/rotary/led/intensity";
-const char msgRotaryLedAllInt[]    = "/rotary/led/allint";
-const char msgRotaryEnc[]          = "/rotary/enc";
-const char msgSetRotaryEncStep[]   = "/rotary/enc/step/set";
-// for ONLY LED_ENC_32 (1)
-const char msgRotaryEncSwitch[]    = "/rotary/enc/switch";
+// for LED_ENC_32 or LED_ENC_ABS_32 (4)
+const char msgRotaryLedStep[]      = "/kit/rotary/led/step";
+const char msgRotaryLedBits[]      = "/kit/rotary/led/bits";
+const char msgRotaryLedIntensity[] = "/kit/rotary/led/intensity";
+const char msgRotaryLedAllInt[]    = "/kit/rotary/led/allint";
+// for LED_ENC_32 (3)
+const char msgRotaryIncEncPinSelect[] = "/kit/rotary/inc/enc/pin/select";
+const char msgRotaryIncEnc[]          = "/kit/rotary/inc/enc";
+const char msgRotaryEncSwitch[]       = "/kit/rotary/inc/enc/switch";
+// for LED_ENC_ABS_32 (3)
+const char msgRotaryAbsEncPinSelect[]       = "/kit/rotary/abs/enc/pin/select";
+const char msgRotaryAbsEncConnectedNum[]    = "/kit/rotary/abs/enc/num";
+const char msgSetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/set";
+const char msgGetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/get";
+const char msgRotaryAbsEnc[]                = "/kit/rotary/abs/enc";
+const char msgSetRotaryEncStep[]            = "/kit/rotary/enc/step/set";
+const char msgRotaryLedDrvPinSelect[]       = "/kit/rotary/led/driver/pin/select";
 
 //Standard OSC Messages
 // for Onboard (2)
@@ -112,6 +119,7 @@ const char msgDigitalDi[]     = "/digital/din";
 const char msgGetDigitalDi[]  = "/digital/din/get";
 // for SPI (7)
 const char msgSetSpiConfig[] = "/spi/config/set";
+const char msgDisableSpi[]   = "/spi/disable";
 const char msgSpiData[]      = "/spi/data";
 const char msgSetSpiData[]   = "/spi/data/set";
 const char msgGetSpiData[]   = "/spi/data/get";
@@ -185,7 +193,7 @@ const char msgSetPwmDuty2[]   = "/pwm/duty/set/2";
 const char msgSetPwmDuty3[]   = "/pwm/duty/set/3";
 const char msgSetPwmDuty4[]   = "/pwm/duty/set/4";
 
-// Static Variables
+// Variables
 static volatile BYTE state_index = 0;
 static volatile BYTE indexA = 0;
 static volatile BYTE indexB = 0;
@@ -194,9 +202,10 @@ static volatile BYTE ringProcessIndex = 0;
 static BYTE udpPacket[MAX_BUF_SIZE][MAX_PACKET_SIZE] = {0};
 static BYTE oscPacket[MAX_PACKET_SIZE] = {0};
 static char rcvAddressStrings[MAX_ADDRESS_LEN] = {0};
-static UINT16 rcvAddressLength;
-static UINT16 rcvTypesStartIndex;
-static INT16 rcvArgumentsLength;
+static UINT16 rcvPrefixLength = 0;
+static UINT16 rcvAddressLength = 0;
+static UINT16 rcvTypesStartIndex = 0;
+static INT16 rcvArgumentsLength = 0;
 static char rcvArgsTypeArray[MAX_ARGS_LEN] = {0};
 static UINT16 rcvArgumentsStartIndex[MAX_ARGS_LEN] = {0};
 static UINT16 rcvArgumentsIndexLength[MAX_ARGS_LEN] = {0};
@@ -224,15 +233,92 @@ void InitAppConfig(void)
     AppConfig.SecondaryDNSServer.Val = MY_DEFAULT_SECONDARY_DNS_BYTE1 | MY_DEFAULT_SECONDARY_DNS_BYTE2<<8ul | MY_DEFAULT_SECONDARY_DNS_BYTE3<<16ul  | MY_DEFAULT_SECONDARY_DNS_BYTE4<<24ul;
 }
 
+void setInitReceiveFlag(BOOL flag)
+{
+    initReceiveFlag = flag;
+}
+BOOL getInitReceiveFlag(void)
+{
+    return initReceiveFlag;
+}
+
+void setInitSendFlag(BOOL flag)
+{
+    initSendFlag = flag;
+}
+BOOL getInitSendFlag(void)
+{
+    return initSendFlag;
+}
+
+void setChCompletedFlag(BOOL flag)
+{
+    chCompletedFlag = flag;
+}
+BOOL getChCompletedFlag(void)
+{
+    return chCompletedFlag;
+}
+
+void setRemoteIpAtIndex(BYTE index, BYTE number)
+{
+    remoteIP[index] = number;
+}
+BYTE getRemoteIpAtIndex(BYTE index)
+{
+    return remoteIP[index];
+}
+BYTE* getRemoteIp(void)
+{
+    return remoteIP;
+}
+
+void setRemotePort(WORD number)
+{
+    remotePort = number;
+}
+WORD getRemotePort(void)
+{
+    return remotePort;
+}
+
+void setLocalPort(WORD number)
+{
+    localPort = number;
+}
+WORD getLocalPort(void)
+{
+    return localPort;
+}
+
 void setOSCPrefix(char* prefix_string)
 {
     stdPrefix = (char *)calloc(strlen(prefix_string), sizeof(char));
     memcpy(stdPrefix, prefix_string, strlen(prefix_string));
 }
+char* getOSCPrefix(void)
+{
+    return stdPrefix;
+}
+void clearOSCPrefix(void)
+{
+    free(stdPrefix);
+    stdPrefix = NULL;
+}
+
 void setOSCHostName(char* host_name)
 {
     hostName = (char *)calloc(strlen(host_name), sizeof(char));
     memcpy(hostName, host_name, strlen(host_name));
+}
+char* getOSCHostName(void)
+{
+    return hostName;
+}
+void clearOSCHostName(void)
+{
+    free(hostName);
+    hostName = NULL;
 }
 
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
@@ -457,7 +543,7 @@ static BOOL extractAddressFromOSCPacket()
 {
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
-    while(*(oscPacket + indexA))
+    while(oscPacket[indexA])
     {
         indexA++;
         if(indexA >= MAX_PACKET_SIZE)
@@ -472,7 +558,7 @@ static BOOL extractAddressFromOSCPacket()
 
 static BOOL extractTypeTagFromOSCPacket()
 {
-    while(*(oscPacket + indexA) != ',')
+    while(oscPacket[indexA] != ',')
     {
         indexA++;
         if(indexA >= MAX_PACKET_SIZE)
@@ -481,7 +567,7 @@ static BOOL extractTypeTagFromOSCPacket()
     rcvTypesStartIndex = indexA;
     indexA++;
 
-    while(*(oscPacket + indexA))
+    while(oscPacket[indexA])
     {
         indexB++;
         indexA++;
@@ -508,26 +594,26 @@ static BOOL extractArgumentsFromOSCPacket()
 
     for(i = 0; i < rcvArgumentsLength - 1; i++)
     {
-        *(rcvArgumentsStartIndex + i) = rcvTypesStartIndex + length + n;
-        switch(*(rcvArgsTypeArray + i))
+        rcvArgumentsStartIndex[i] = rcvTypesStartIndex + length + n;
+        switch(rcvArgsTypeArray[i])
         {
             case 'i':
             case 'f':
                 length += 4;
-                *(rcvArgumentsIndexLength + i) = 4;
+                rcvArgumentsIndexLength[i] = 4;
                 break;
             case 's':
                 u = 0;
-                while(*(oscPacket + (*(rcvArgumentsStartIndex + i) + u)))
+                while(oscPacket[rcvArgumentsStartIndex[i] + u])
                 {
                     u++;
-                    if((*(rcvArgumentsStartIndex + i) + u) >= MAX_PACKET_SIZE)
+                    if((rcvArgumentsStartIndex[i] + u) >= MAX_PACKET_SIZE)
                         return FALSE;
                 }
 
-                *(rcvArgumentsIndexLength + i) = ((u / 4) + 1) * 4;
+                rcvArgumentsIndexLength[i] = ((u / 4) + 1) * 4;
 
-                length += *(rcvArgumentsIndexLength + i);
+                length += rcvArgumentsIndexLength[i];
                 break;
             default: // T, F,N,I and others
                 break;
@@ -584,25 +670,25 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
             {
                 case 'i':
                     ivalue = va_arg(list, int);
-                    *(str + (totalSize++)) = (ivalue >> 24) & 0xFF;
-                    *(str + (totalSize++)) = (ivalue >> 16) & 0xFF;
-                    *(str + (totalSize++)) = (ivalue >> 8) & 0xFF;
-                    *(str + (totalSize++)) = (ivalue >> 0) & 0xFF;
+                    str[totalSize++] = (ivalue >> 24) & 0xFF;
+                    str[totalSize++] = (ivalue >> 16) & 0xFF;
+                    str[totalSize++] = (ivalue >> 8) & 0xFF;
+                    str[totalSize++] = (ivalue >> 0) & 0xFF;
                     break;
                 case 'f':
                     fvalue = (float)va_arg(list, double);
                     fchar = (char *)&fvalue;
-                    *(str + (totalSize++)) = *(fchar + 3) & 0xFF;
-                    *(str + (totalSize++)) = *(fchar + 2) & 0xFF;
-                    *(str + (totalSize++)) = *(fchar + 1) & 0xFF;
-                    *(str + (totalSize++)) = *(fchar + 0) & 0xFF;
+                    str[totalSize++] = fchar[3] & 0xFF;
+                    str[totalSize++] = fchar[2] & 0xFF;
+                    str[totalSize++] = fchar[1] & 0xFF;
+                    str[totalSize++] = fchar[0] & 0xFF;
                     break;
                 case 's':
                     cstr = va_arg(list, char*);
                     cstr_len = 0;
                     while(*cstr)
                     {
-                        *(str + (totalSize + cstr_len)) = *(cstr++) & 0xFF;
+                        str[totalSize + cstr_len] = *(cstr++) & 0xFF;
                         cstr_len++;
                     }
                     totalSize += ((cstr_len / 4) + 1) * 4;
@@ -679,25 +765,25 @@ void appendOSCMessageToBundle(const char* prefix, const char* command, const cha
         {
             case 'i':
                 ivalue = va_arg(list, int);
-                *(str + (totalSize++)) = (ivalue >> 24) & 0xFF;
-                *(str + (totalSize++)) = (ivalue >> 16) & 0xFF;
-                *(str + (totalSize++)) = (ivalue >> 8) & 0xFF;
-                *(str + (totalSize++)) = (ivalue >> 0) & 0xFF;
+                str[totalSize++] = (ivalue >> 24) & 0xFF;
+                str[totalSize++] = (ivalue >> 16) & 0xFF;
+                str[totalSize++] = (ivalue >> 8) & 0xFF;
+                str[totalSize++] = (ivalue >> 0) & 0xFF;
                 break;
             case 'f':
                 fvalue = (float)va_arg(list, double);
                 fchar = (char *)&fvalue;
-                *(str + (totalSize++)) = *(fchar + 3) & 0xFF;
-                *(str + (totalSize++)) = *(fchar + 2) & 0xFF;
-                *(str + (totalSize++)) = *(fchar + 1) & 0xFF;
-                *(str + (totalSize++)) = *(fchar + 0) & 0xFF;
+                str[totalSize++] = fchar[3] & 0xFF;
+                str[totalSize++] = fchar[2] & 0xFF;
+                str[totalSize++] = fchar[1] & 0xFF;
+                str[totalSize++] = fchar[0] & 0xFF;
                 break;
             case 's':
                 cstr = va_arg(list, char*);
                 cstr_len = 0;
                 while(*cstr)
                 {
-                    *(str + (totalSize + cstr_len)) = *(cstr++) & 0xFF;
+                    str[totalSize + cstr_len] = *(cstr++) & 0xFF;
                     cstr_len++;
                 }
                 totalSize += ((cstr_len / 4) + 1) * 4;
@@ -709,10 +795,10 @@ void appendOSCMessageToBundle(const char* prefix, const char* command, const cha
     }
     va_end(list);
 
-    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 24) & 0xFF;
-    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 16) & 0xFF;
-    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 8) & 0xFF;
-    *(bundleData + (bundleAppendIndex++)) = (totalSize >> 0) & 0xFF;
+    bundleData[bundleAppendIndex++] = (totalSize >> 24) & 0xFF;
+    bundleData[bundleAppendIndex++] = (totalSize >> 16) & 0xFF;
+    bundleData[bundleAppendIndex++] = (totalSize >> 8) & 0xFF;
+    bundleData[bundleAppendIndex++] = (totalSize) & 0xFF;
     memcpy(bundleData + bundleAppendIndex, str, totalSize);
     bundleAppendIndex += totalSize;
 }
@@ -729,42 +815,39 @@ void sendOSCBundle(void)
 BOOL compareOSCPrefix(const char* prefix)
 {
     BYTE i = 0;
-    WORD prefix_len = strlen(prefix);
+    rcvPrefixLength = strlen(prefix);
 
-    if(rcvAddressLength < prefix_len)
+    if(rcvAddressLength < rcvPrefixLength)
         return FALSE;
 
-    while(*(prefix + i))
+    while(prefix[i])
     {
-        if(*(rcvAddressStrings + i) != *(prefix + i))
+        if(rcvAddressStrings[i] != prefix[i])
             return FALSE;
 
         i++;
-        if(i > prefix_len)
+        if(i > rcvPrefixLength)
             return FALSE;
     }
     return TRUE;
 }
 
-BOOL compareOSCAddress(const char* prefix, const char* address)
+BOOL compareOSCAddress(const char* address)
 {
-    BYTE i = 0, j = 0;
-    WORD prefix_len = strlen(prefix);
+    BYTE i = rcvPrefixLength, j = 0;
     WORD address_len = strlen(address);
 
-    if(rcvAddressLength > prefix_len + address_len)
+    if(rcvAddressLength > rcvPrefixLength + address_len)
         return FALSE;
 
-    i = prefix_len;
-
-    while(*(address + j))
+    while(address[j])
     {
-        if(*(rcvAddressStrings + i) != *(address + j))
+        if(rcvAddressStrings[i] != address[j])
             return FALSE;
 
         i++;
         j++;
-        if((i > prefix_len + address_len) || (j > address_len))
+        if((i > rcvPrefixLength + address_len) || (j > address_len))
             return FALSE;
     }
     return TRUE;
@@ -772,11 +855,7 @@ BOOL compareOSCAddress(const char* prefix, const char* address)
 
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
 {
-    //if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag ||
-    //   (*(rcvArgsTypeArray + index) != 'i' && *(rcvArgsTypeArray + index) != 'f' && *(rcvArgsTypeArray + index) != 's' &&
-    //    *(rcvArgsTypeArray + index) != 'T' && *(rcvArgsTypeArray + index) != 'F' && *(rcvArgsTypeArray + index) != 'N' &&
-    //    *(rcvArgsTypeArray + index) != 'I'))
-    if(index >= rcvArgumentsLength - 1 || *(rcvArgsTypeArray + index) != typetag)
+    if(index >= rcvArgumentsLength - 1 || rcvArgsTypeArray[index] != typetag)
         return FALSE;
 
     return TRUE;
@@ -798,19 +877,19 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
     if(index >= rcvArgumentsLength - 1)
         return 0;
 
-    switch(*(rcvArgsTypeArray + index))
+    switch(rcvArgsTypeArray[index])
     {
         case 'i':
-            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((oscPacket[rcvArgumentsStartIndex[index]] & 0xFF) << 24) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+                      (oscPacket[rcvArgumentsStartIndex[index] + 3] & 0xFF);
             break;
         case 'f':
-            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((oscPacket[rcvArgumentsStartIndex[index]] & 0xFF) << 24) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+                      (oscPacket[rcvArgumentsStartIndex[index] + 3] & 0xFF);
             lvalue &= 0xffffffff;
 
             sign = ((lvalue >> 31) & 0x01) ? -1 : 1;
@@ -845,20 +924,20 @@ float getFloatArgumentAtIndex(const UINT16 index)
     if(index >= rcvArgumentsLength - 1)
         return 0.0;
 
-    switch(*(rcvArgsTypeArray + index))
+    switch(rcvArgsTypeArray[index])
     {
         case 'i':
-            lvalue = (*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) << 24) |
-                     (*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) << 16) |
-                     (*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) << 8) |
-                      *(oscPacket + *(rcvArgumentsStartIndex + index) + 3);
+            lvalue = (oscPacket[rcvArgumentsStartIndex[index]] << 24) |
+                     (oscPacket[rcvArgumentsStartIndex[index] + 1] << 16) |
+                     (oscPacket[rcvArgumentsStartIndex[index] + 2] << 8) |
+                      oscPacket[rcvArgumentsStartIndex[index] + 3];
             fvalue = (float)lvalue;
             break;
         case 'f':
-            lvalue = ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 0) & 0xFF) << 24) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 1) & 0xFF) << 16) |
-                     ((*(oscPacket + *(rcvArgumentsStartIndex + index) + 2) & 0xFF) << 8) |
-                      (*(oscPacket + *(rcvArgumentsStartIndex + index) + 3) & 0xFF);
+            lvalue = ((oscPacket[rcvArgumentsStartIndex[index]] & 0xFF) << 24) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 1] & 0xFF) << 16) |
+                     ((oscPacket[rcvArgumentsStartIndex[index] + 2] & 0xFF) << 8) |
+                      (oscPacket[rcvArgumentsStartIndex[index] + 3] & 0xFF);
             lvalue &= 0xffffffff;
 
             sign = ((lvalue >> 31) & 0x01) ? -1 : 1;
@@ -886,14 +965,14 @@ char* getStringArgumentAtIndex(const UINT16 index)
     if(index >= rcvArgumentsLength - 1)
         return "error";
 
-    switch(*(rcvArgsTypeArray + index))
+    switch(rcvArgsTypeArray[index])
     {
         case 'i':
         case 'f':
             return "error";
             break;
         case 's':
-            return oscPacket + *(rcvArgumentsStartIndex + index);
+            return oscPacket + rcvArgumentsStartIndex[index];
             break;
     }
     return "error";
@@ -906,7 +985,7 @@ BOOL getBooleanArgumentAtIndex(const UINT16 index)
     if(index >= rcvArgumentsLength - 1)
         return flag;
 
-    switch(*(rcvArgsTypeArray + index))
+    switch(rcvArgsTypeArray[index])
     {
         case 'T':
             flag = TRUE;

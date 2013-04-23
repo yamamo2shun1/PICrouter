@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.0.0 2013/04/17
+ * osc.h,v.1.0.1 2013/04/23
  */
 
 #ifndef OSC_H
@@ -32,24 +32,12 @@
 #define DEFAULT_HOST_NAME "picrouter"
 
 #define MAX_BUF_SIZE    64
-#define MAX_PACKET_SIZE 256// 1024
+#define MAX_PACKET_SIZE 320// 1024
 #define MAX_ADDRESS_LEN 64
-#define MAX_ARGS_LEN 32
+#define MAX_ARGS_LEN 40
 
 // Network
-extern APP_CONFIG AppConfig;
-extern BOOL initReceiveFlag;
-extern BOOL initSendFlag;
-extern BOOL chCompletedFlag;
-extern char* hostName;
-extern char* stdPrefix;
-
-// Remote IP Address Initialization
-extern BYTE remoteIP[];
-
-// Port Number Initialization
-extern WORD remotePort;
-extern WORD localPort;
+APP_CONFIG AppConfig;
 
 // for LED_PAD_16 or LED_PAD_64
 extern const char msgLatticePad[];
@@ -64,10 +52,16 @@ extern const char msgRotaryLedStep[];
 extern const char msgRotaryLedBits[];
 extern const char msgRotaryLedIntensity[];
 extern const char msgRotaryLedAllInt[];
-extern const char msgRotaryEnc[];
-extern const char msgSetRotaryEncStep[];
-// for ONLY LED_ENC_32
+extern const char msgRotaryIncEncPinSelect[];
+extern const char msgRotaryIncEnc[];
 extern const char msgRotaryEncSwitch[];
+extern const char msgRotaryAbsEncPinSelect[];
+extern const char msgRotaryAbsEncConnectedNum[];
+extern const char msgSetRotaryAbsEncConnectedNum[];
+extern const char msgGetRotaryAbsEncConnectedNum[];
+extern const char msgRotaryAbsEnc[];
+extern const char msgSetRotaryEncStep[];
+extern const char msgRotaryLedDrvPinSelect[];
 
 // Standard OSC Messages
 // for Onboard
@@ -117,6 +111,7 @@ extern const char msgDigitalDi[];
 extern const char msgGetDigitalDi[];
 // for SPI
 extern const char msgSetSpiConfig[];
+extern const char msgDisableSpi[];
 extern const char msgSpiData[];
 extern const char msgSetSpiData[];
 extern const char msgGetSpiData[];
@@ -190,29 +185,39 @@ extern const char msgSetPwmDuty2[];
 extern const char msgSetPwmDuty3[];
 extern const char msgSetPwmDuty4[];
 
+
 void InitAppConfig(void);
+
+void setInitReceiveFlag(BOOL flag);
+BOOL getInitReceiveFlag(void);
+void setInitSendFlag(BOOL flag);
+BOOL getInitSendFlag(void);
+void setChCompletedFlag(BOOL flag);
+BOOL getChCompletedFlag(void);
+
+void setRemoteIpAtIndex(BYTE index, BYTE number);
+BYTE getRemoteIpAtIndex(BYTE index);
+BYTE* getRemoteIp(void);
+void setRemotePort(WORD number);
+WORD getRemotePort(void);
+void setLocalPort(WORD number);
+WORD getLocalPort(void);
+
 void setOSCPrefix(char* prefix_string);
+char* getOSCPrefix(void);
+void clearOSCPrefix(void);
 void setOSCHostName(char* host_name);
+char* getOSCHostName(void);
+void clearOSCHostName(void);
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number);
 BOOL openOSCReceivePort(WORD localPort);
-#if 1
 BOOL isOSCSendPortOpened(void);
 BOOL isOSCReceivePortOpened(void);
-#endif
 void closeOSCSendPort(void);
 void closeOSCReceivePort(void);
 
-#if 1
 BOOL isOSCGetReady(void);
 BOOL isOSCPutReady(void);
-#endif
-
-#if 0
-#define isOSCSendPortOpened() UDPIsOpened(TxSocket);
-#define isOSCReceivePortOpened() UDPIsOpened(RxSocket);
-#define isOSCGetReady() (UDPIsGetReady(RxSocket) ? TRUE : FALSE)
-#define isOSCPutReady() (UDPIsPutReady(TxSocket) ? TRUE : FALSE)
-#endif
 
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
@@ -221,7 +226,7 @@ void clearOSCBundle(void);
 void appendOSCMessageToBundle(const char* prefix, const char* command, const char* type, ...);
 void sendOSCBundle(void);
 BOOL compareOSCPrefix(const char* prefix);
-BOOL compareOSCAddress(const char* prefix, const char* address);
+BOOL compareOSCAddress(const char* address);
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag);
 WORD getArgumentsLength(void);
 INT32 getIntArgumentAtIndex(const UINT16 index);
