@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.0 2013/04/17
+ * picrouter.c,v.1.5.1 2013/04/23
  */
 
 #include "picrouter.h"
@@ -47,10 +47,10 @@ void initIOPorts(void)
     for(i = 0; i < 4; i++)
     {
         setDigitalPortDioType(i, IO_OUT);
-        if(i == 1)
-            outputDigitalPort(i, HIGH);
-        else
-        outputDigitalPort(i, LOW);
+        //if(i == 1)
+        //    outputDigitalPort(i, HIGH);
+        //else
+           outputDigitalPort(i, LOW);
     }
 
     setSpiPortDioType("sck2", IO_OUT);
@@ -81,6 +81,9 @@ int main(int argc, char** argv) {
     DelayMs(100);
     mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 2000);
+    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
+
     // Port Initialization
     initIOPorts();
     initAnalogVariables();
@@ -96,6 +99,7 @@ int main(int argc, char** argv) {
 
     LED_1_On();
     LED_2_On();
+    DelayMs(200);
 
     // PWM
     freq = 10000; // 10kHz
@@ -134,7 +138,7 @@ int main(int argc, char** argv) {
 
     LED_1_Off();
     LED_2_Off();
-    DelayMs(500);
+    DelayMs(200);
 
     while(1)
     {
@@ -163,6 +167,7 @@ int main(int argc, char** argv) {
                 {
                     // Ethernet Tasks
                     StackTask();
+
                     switch(eth_state)
                     {
                         case 0:
@@ -174,8 +179,8 @@ int main(int argc, char** argv) {
                             eth_state = 0;
                             break;
                     }
+
                     receiveOSCTask();
-                    sendOSCTask();
 
                     // USB Tasks
                     USBDeviceTasks();
@@ -212,7 +217,6 @@ int main(int argc, char** argv) {
                             break;
                     }
                     receiveOSCTask();
-                    sendOSCTask();
 
                     if(bUsbHostInitialized)
                     {
@@ -270,9 +274,9 @@ void receiveOSCTask(void)
     {
         //debug LED_2_On();
 
-        if(compareOSCPrefix(stdPrefix))
+        if(compareOSCPrefix(getOSCPrefix()))
         {
-            if(compareOSCAddress(stdPrefix, msgOnboardLed))
+            if(compareOSCAddress(msgOnboardLed))
             {
                 if(!(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || !compareTypeTagAtIndex(1, 's'))
                 {
@@ -310,7 +314,7 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_value");
             }
             // Port
-            else if(compareOSCAddress(stdPrefix, msgSetPortIO))
+            else if(compareOSCAddress(msgSetPortIO))
             {
                 char* port_name;
                 char* type;
@@ -341,7 +345,7 @@ void receiveOSCTask(void)
                     outputPort(port_name, LOW);
                 }
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPortIO))
+            else if(compareOSCAddress(msgGetPortIO))
             {
                 char* port_name;
 
@@ -361,11 +365,11 @@ void receiveOSCTask(void)
                 }
 
                 if(getPortIOType(port_name))
-                    sendOSCMessage(stdPrefix, msgPortIO, "ss", port_name, "in");
+                    sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "in");
                 else
-                    sendOSCMessage(stdPrefix, msgPortIO, "ss", port_name, "out");
+                    sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "out");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetPortOut))
+            else if(compareOSCAddress(msgSetPortOut))
             {
                 char* port_name;
                 char* state;
@@ -396,7 +400,7 @@ void receiveOSCTask(void)
                 else if(!strcmp(state, "low"))
                     outputPort(port_name, LOW);
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPortIn))
+            else if(compareOSCAddress(msgGetPortIn))
             {
                 char* port_name;
 
@@ -418,12 +422,12 @@ void receiveOSCTask(void)
                 BYTE state = inputPort(port_name);
 
                 if(state)
-                    sendOSCMessage(stdPrefix, msgAdcDi, "ss", port_name, "high");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "ss", port_name, "high");
                 else
-                    sendOSCMessage(stdPrefix, msgAdcDi, "ss", port_name, "low");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "ss", port_name, "low");
             }
             // A/D
-            else if(compareOSCAddress(stdPrefix, msgSetAdcEnable))
+            else if(compareOSCAddress(msgSetAdcEnable))
             {
                 AD1CON1bits.ON = 0;
 
@@ -494,7 +498,7 @@ void receiveOSCTask(void)
                     AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
                 }
             }
-            else if(compareOSCAddress(stdPrefix, msgGetAdcEnable))
+            else if(compareOSCAddress(msgGetAdcEnable))
             {
                 BYTE id;
 
@@ -514,11 +518,11 @@ void receiveOSCTask(void)
                 }
 
                 if(analogEnable[id])
-                    sendOSCMessage(stdPrefix, msgAdcEnable, "is", id, "on");
+                    sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "on");
                 else
-                    sendOSCMessage(stdPrefix, msgAdcEnable, "is", id, "off");
+                    sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "off");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetAdcDio))
+            else if(compareOSCAddress(msgSetAdcDio))
             {
                 BYTE id;
                 char* type;
@@ -549,7 +553,7 @@ void receiveOSCTask(void)
                     outputAnPort(id, 0);
                 }
             }
-            else if(compareOSCAddress(stdPrefix, msgGetAdcDio))
+            else if(compareOSCAddress(msgGetAdcDio))
             {
                 BYTE id;
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
@@ -568,11 +572,11 @@ void receiveOSCTask(void)
                 }
 
                 if(getAnPortDioType(id))
-                    sendOSCMessage(stdPrefix, msgAdcDio, "is", id, "in");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "in");
                 else
-                    sendOSCMessage(stdPrefix, msgAdcDio, "is", id, "out");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "out");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetAdcDo))
+            else if(compareOSCAddress(msgSetAdcDo))
             {
                 BYTE id;
                 char* state;
@@ -603,7 +607,7 @@ void receiveOSCTask(void)
                 else if(!strcmp(state, "low"))
                     outputAnPort(id, LOW);
             }
-            else if(compareOSCAddress(stdPrefix, msgGetAdcDi))
+            else if(compareOSCAddress(msgGetAdcDi))
             {
                 BYTE id;
 
@@ -625,12 +629,12 @@ void receiveOSCTask(void)
                 BYTE state = inputAnPort(id);
 
                 if(state)
-                    sendOSCMessage(stdPrefix, msgAdcDi, "is", id, "high");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "high");
                 else
-                    sendOSCMessage(stdPrefix, msgAdcDi, "is", id, "low");
+                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "low");
             }
             // PWM
-            else if(compareOSCAddress(stdPrefix, msgSetPwmEnable))
+            else if(compareOSCAddress(msgSetPwmEnable))
             {
                 char* state;
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
@@ -701,7 +705,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPwmEnable))
+            else if(compareOSCAddress(msgGetPwmEnable))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
@@ -718,9 +722,9 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                sendOSCMessage(stdPrefix, msgPwmEnable, "is", index, onSquare[index] ? "on" : "off");
+                sendOSCMessage(getOSCPrefix(), msgPwmEnable, "is", index, onSquare[index] ? "on" : "off");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetPwmFreq))
+            else if(compareOSCAddress(msgSetPwmFreq))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                     freq = getIntArgumentAtIndex(0);
@@ -747,11 +751,11 @@ void receiveOSCTask(void)
                 OC1CONbits.OCM = 0b110;
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPwmFreq))
+            else if(compareOSCAddress(msgGetPwmFreq))
             {
-                sendOSCMessage(stdPrefix, msgPwmFreq, "i", freq);
+                sendOSCMessage(getOSCPrefix(), msgPwmFreq, "i", freq);
             }
-            else if(compareOSCAddress(stdPrefix, msgSetPwmDuty))
+            else if(compareOSCAddress(msgSetPwmDuty))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
                 {
@@ -805,7 +809,7 @@ void receiveOSCTask(void)
                 }
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPwmDuty))
+            else if(compareOSCAddress(msgGetPwmDuty))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
@@ -822,9 +826,9 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                sendOSCMessage(stdPrefix, msgPwmDuty, "ii", index, duty[index]);
+                sendOSCMessage(getOSCPrefix(), msgPwmDuty, "ii", index, duty[index]);
             }
-            else if(compareOSCAddress(stdPrefix, msgSetPwmDio))
+            else if(compareOSCAddress(msgSetPwmDio))
             {
                 BYTE id;
                 char* type;
@@ -855,7 +859,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPwmDio))
+            else if(compareOSCAddress(msgGetPwmDio))
             {
                 BYTE id;
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
@@ -874,11 +878,11 @@ void receiveOSCTask(void)
                 }
 
                 if(getPwmPortDioType(id))
-                    sendOSCMessage(stdPrefix, msgPwmDio, "is", id, "in");
+                    sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "in");
                 else
-                    sendOSCMessage(stdPrefix, msgPwmDio, "is", id, "out");
+                    sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "out");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetPwmDo))
+            else if(compareOSCAddress(msgSetPwmDo))
             {
                 BYTE id;
                 char* state;
@@ -906,7 +910,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetPwmDi))
+            else if(compareOSCAddress(msgGetPwmDi))
             {
                 BYTE id;
                 BYTE state;
@@ -929,12 +933,12 @@ void receiveOSCTask(void)
                 }
 
                 if(state)
-                    sendOSCMessage(stdPrefix, msgPwmDi, "is", id, "high");
+                    sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "high");
                 else
-                    sendOSCMessage(stdPrefix, msgPwmDi, "is", id, "low");
+                    sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "low");
             }
             // D/IO
-            else if(compareOSCAddress(stdPrefix, msgSetDigitalDio))
+            else if(compareOSCAddress(msgSetDigitalDio))
             {
                 BYTE id;
                 char* type;
@@ -966,7 +970,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetDigitalDio))
+            else if(compareOSCAddress(msgGetDigitalDio))
             {
                 BYTE id;
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
@@ -985,11 +989,11 @@ void receiveOSCTask(void)
                 }
 
                 if(getDigitalPortDioType(id))
-                    sendOSCMessage(stdPrefix, msgDigitalDio, "is", id, "in");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "in");
                 else
-                    sendOSCMessage(stdPrefix, msgDigitalDio, "is", id, "out");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "out");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetDigitalDo))
+            else if(compareOSCAddress(msgSetDigitalDo))
             {
                 BYTE id;
                 char* state;
@@ -1015,7 +1019,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetDigitalDi))
+            else if(compareOSCAddress(msgGetDigitalDi))
             {
                 BYTE id;
                 BYTE state;
@@ -1038,12 +1042,12 @@ void receiveOSCTask(void)
                 }
 
                 if(state)
-                    sendOSCMessage(stdPrefix, msgDigitalDi, "is", id, "high");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "high");
                 else
-                    sendOSCMessage(stdPrefix, msgDigitalDi, "is", id, "low");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "low");
             }
             // SPI
-            else if(compareOSCAddress(stdPrefix, msgSetSpiConfig))
+            else if(compareOSCAddress(msgSetSpiConfig))
             {
                 BYTE id;
                 DWORD bitrate0 = 0;
@@ -1132,7 +1136,30 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": wrong_argument_type");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetSpiData))
+            else if(compareOSCAddress(msgDisableSpi))
+            {
+                BYTE id;
+
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    switch(id)
+                    {
+                        case 2:
+                            SpiChnClose(2);
+                            break;
+                        case 4:
+                            SpiChnClose(4);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": out_of_range_value");
+                            break;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgSetSpiData))
             {
                 BYTE id = 0;
                 char* load_port;
@@ -1194,6 +1221,9 @@ void receiveOSCTask(void)
                         data[i] = getIntArgumentAtIndex(i + 4);
                     }
 
+                    if(getPortIOType(load_port) == IO_IN)
+                        setPortIOType(load_port, IO_OUT);
+
                     if(!strcmp(active_state, "HL"))
                         outputPort(load_port, HIGH);
                     else if(!strcmp(active_state, "LH"))
@@ -1218,7 +1248,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": wrong_argument_type");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetSpiData))
+            else if(compareOSCAddress(msgGetSpiData))
             {
                 BYTE id = 0;
                 char* load_port;
@@ -1282,7 +1312,7 @@ void receiveOSCTask(void)
                     case 1:
                         sendSpiOneWord(id, data[0], 1);
                         data[0] = receiveSpiOneWord(id, 1);
-                        sendOSCMessage(stdPrefix, msgSpiData, "ii", id, data[0]);
+                        sendOSCMessage(getOSCPrefix(), msgSpiData, "ii", id, data[0]);
                         break;
                     case 2:
                         //data = receiveSpiTwoWord(id, 8);
@@ -1299,7 +1329,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": wrong_argument_type");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetSpiDio))
+            else if(compareOSCAddress(msgSetSpiDio))
             {
                 char* name;
                 char* type;
@@ -1331,7 +1361,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetSpiDio))
+            else if(compareOSCAddress(msgGetSpiDio))
             {
                 char* name;
 
@@ -1352,11 +1382,11 @@ void receiveOSCTask(void)
                 }
 
                 if(getSpiPortDioType(name))
-                    sendOSCMessage(stdPrefix, msgDigitalDio, "is", name, "in");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", name, "in");
                 else
-                    sendOSCMessage(stdPrefix, msgDigitalDio, "is", name, "out");
+                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", name, "out");
             }
-            else if(compareOSCAddress(stdPrefix, msgSetSpiDo))
+            else if(compareOSCAddress(msgSetSpiDo))
             {
                 char* name;
                 char* state;
@@ -1386,7 +1416,7 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
             }
-            else if(compareOSCAddress(stdPrefix, msgGetSpiDi))
+            else if(compareOSCAddress(msgGetSpiDi))
             {
                 char* name;
                 BYTE state;
@@ -1410,15 +1440,375 @@ void receiveOSCTask(void)
                 }
 
                 if(state)
-                    sendOSCMessage(stdPrefix, msgSpiDi, "ss", name, "high");
+                    sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "high");
                 else
-                    sendOSCMessage(stdPrefix, msgSpiDi, "ss", name, "low");
+                    sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
+            }
+            else if(compareOSCAddress(msgRotaryIncEncPinSelect))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryIncEncPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's'))
+                {
+                    char* name_a = getStringArgumentAtIndex(0);
+                    char* name_b = getStringArgumentAtIndex(1);
+                    char* name_sw = getStringArgumentAtIndex(2);
+                    
+                    if(strlen(name_a) > 3 || strlen(name_b) > 3 || strlen(name_sw))
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryIncEncPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setIncEncoderPortAName(name_a);
+                    setPortIOType(name_a, IO_IN);
+                    setIncEncoderPortBName(name_b);
+                    setPortIOType(name_b, IO_IN);
+                    setIncEncoderPortSwName(name_sw);
+                    setPortIOType(name_sw, IO_IN);
+
+                    setInitIncEncFlag(TRUE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryIncEncPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgRotaryAbsEncPinSelect))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryAbsEncPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's'))
+                {
+                    char* name_cs = getStringArgumentAtIndex(0);
+                    char* name_clk = getStringArgumentAtIndex(1);
+                    char* name_do = getStringArgumentAtIndex(2);
+
+                    if(strlen(name_cs) > 3 || strlen(name_clk) > 3 || strlen(name_do) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryAbsEncPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setAbsEncoderPortCsName(name_cs);
+                    setPortIOType(name_cs, IO_OUT);
+                    setAbsEncoderPortClkName(name_clk);
+                    setPortIOType(name_clk, IO_OUT);
+                    setAbsEncoderPortDoName(name_do);
+                    setPortIOType(name_do, IO_IN);
+
+                    setInitAbsEncFlag(TRUE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryAbsEncPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgRotaryLedDrvPinSelect))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedDrvPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && compareTypeTagAtIndex(2, 's'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE num = getIntArgumentAtIndex(1);
+                    char* name_ss = getStringArgumentAtIndex(2);
+
+                    if(strlen(name_ss) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedDrvPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLedDriverPortSsName(index, name_ss);
+                    setPortIOType(name_ss, IO_OUT);
+                    outputPort(name_ss, LOW);
+
+                    switch(num)
+                    {
+                        case 2:
+                            SpiChnClose(2);
+                            SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
+                            setInitLedDrvFlag(TRUE);
+                            break;
+                        case 4:
+                            SpiChnClose(4);
+                            SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
+                            setInitLedDrvFlag(TRUE);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedDrvPinSelect, ": out_of_range_value");
+                            return;
+                            break;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedDrvPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetRotaryAbsEncConnectedNum))
+            {
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    int num = getIntArgumentAtIndex(0);
+                    if(num < 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryAbsEncConnectedNum, ": out_of_range_value");
+                        return;
+                    }
+                    setNumConnectedAbsEnc(num);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryAbsEncConnectedNum, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetRotaryAbsEncConnectedNum))
+            {
+                sendOSCMessage(getOSCPrefix(), msgRotaryAbsEncConnectedNum, "i", getNumConnectedAbsEnc());
+            }
+            else if(compareOSCAddress(msgRotaryLedStep))
+            {
+                BYTE index;
+                INT16 pos0, pos;
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) || (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) || (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    index = getIntArgumentAtIndex(0);
+                    pos0 = getIntArgumentAtIndex(1);
+                    if(24 - pos0 >= 0)
+                        pos = 24 - pos0;
+                    else
+                        pos = (24 - pos0) + 32;
+                    INT8 direction = getIntArgumentAtIndex(2);
+                    INT8 len = getIntArgumentAtIndex(3);
+                    setDwLedData(index, 0);
+
+                    INT8 argLen = getArgumentsLength() - 4;
+
+                    if(argLen >= len)
+                        argLen = len;
+#if 0
+                    {
+                        for(i = 0; i < len; i++)
+                        {
+                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug0", "iiii", argLen, len, pos, i);
+                            if(!compareTypeTagAtIndex(0, 'i') && !compareTypeTagAtIndex(0, 'f'))
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryAbsEncPinSelect, ": wrong_argument_type");
+                                return;
+                            }
+
+                            if(direction > 0)
+                            {
+                                if(pos + i < 32)
+                                    setIntensity(index, pos + i, getIntArgumentAtIndex(i + 4));
+                                else
+                                    setIntensity(index, pos + i - 32, getIntArgumentAtIndex(i + 4));
+                            }
+                            else if(direction < 0)
+                            {
+                                if(pos >= i)
+                                    setIntensity(index, pos - i, getIntArgumentAtIndex(i + 4));
+                                else
+                                    setIntensity(index, 32 + pos - i, getIntArgumentAtIndex(i + 4));
+                            }
+                        }
+                    }
+                    else if(argLen < len)
+#endif
+                    {
+                        for(i = 0; i < argLen; i++)
+                        {
+                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
+                            if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": wrong_argument_type");
+                                return;
+                            }
+                            
+                            if(direction > 0)
+                            {
+                                if(pos + i < 32)
+                                    setIntensity(index, pos + i, getIntArgumentAtIndex(i + 4));
+                                else
+                                    setIntensity(index, pos + i - 32, getIntArgumentAtIndex(i + 4));
+                            }
+                            else if(direction < 0)
+                            {
+                                if(pos >= i)
+                                    setIntensity(index, pos - i, getIntArgumentAtIndex(i + 4));
+                                else
+                                    setIntensity(index, 32 + pos - i, getIntArgumentAtIndex(i + 4));
+                            }
+                        }
+                    }
+
+                    for(i = 0; i < len; i++)
+                    {
+                        if(direction > 0)
+                        {
+                            if(pos + i < 32)
+                                setDwLedData(index, getDwLedData(index) | (1 << (pos + i)));
+                            else
+                                setDwLedData(index, getDwLedData(index) | (1 << (pos + i - 32)));
+                        }
+                        else if(direction < 0)
+                        {
+                            if(pos >= i)
+                                setDwLedData(index, getDwLedData(index) | (1 << (pos - i)));
+                            else
+                                setDwLedData(index, getDwLedData(index) | (1 << (32 + pos - i)));
+                        }
+                    }
+
+                    for(j = 0; j < 100; j++)
+                    {
+                        setDwLedSequence(index, j, getDwLedData(index));
+
+                        for(k = 0; k < 32; k++)
+                        {
+                            if(j >= getIntensity(index, k))
+                                setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                        }
+                    }
+
+                    if(getDwLedData(index) != 0)
+                        setLedOn(index, TRUE);
+                    else
+                        setLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgRotaryLedBits))
+            {
+                BYTE index;
+                BYTE argLen = getArgumentsLength() - 2;
+
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    index = getIntArgumentAtIndex(0);
+                    setDwLedData(index, getIntArgumentAtIndex(1));
+
+                    if(argLen >= 32)
+                    {
+                        for(i = 0; i < 32; i++)
+                        {
+                            if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                                return;
+                            }
+                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug0", "iiii", argLen, len, pos, i);
+                            setIntensity(index, i, getIntArgumentAtIndex(i + 2));
+                        }
+                    }
+                    else if(argLen < 32)
+                    {
+                        for(i = 0; i < argLen; i++)
+                        {
+                            if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                                return;
+                            }
+                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
+                            setIntensity(index, i, getIntArgumentAtIndex(i + 2));
+                        }
+                    }
+
+                    for(j = 0; j < 100; j++)
+                    {
+                        setDwLedSequence(index, j, getDwLedData(index));
+
+                        for(k = 0; k < 32; k++)
+                        {
+                            if(j >= getIntensity(index, k))
+                                setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                        }
+                    }
+
+                    if(getDwLedData(index) != 0)
+                        setLedOn(index, TRUE);
+                    else
+                        setLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgRotaryLedIntensity))
+            {
+                BYTE index0 = getIntArgumentAtIndex(0);
+                BYTE index1 = getIntArgumentAtIndex(1);
+                setIntensity(index0, index1, getIntArgumentAtIndex(2));
+                if(getIntensity(index0, index1) > 90)
+                    setIntensity(index0, index1, 90);
+
+                for(j = 0; j < 100; j++)
+                {
+                    setDwLedSequence(index0, j, getDwLedData(index0));
+                    for(k = 0; k < 32; k++)
+                    {
+                        if(j >= getIntensity(index0, k))
+                            setDwLedSequence(index0, j, getDwLedSequence(index0, j) & ~(1 << k));
+                    }
+                }
+            }
+            else if(compareOSCAddress(msgRotaryLedAllInt))
+            {
+                BYTE index = getIntArgumentAtIndex(0);
+                DWORD dwld = getIntArgumentAtIndex(1);
+                if(dwld > 90)
+                    dwld = 90;
+
+                for(j = 0; j < 100; j++)
+                {
+                    setDwLedSequence(index, j, getDwLedData(index));
+                    for(k = 0; k < 32; k++)
+                    {
+                        setIntensity(index, k, dwld);
+                        if(j >= getIntensity(index, k))
+                            setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                    }
+                }
             }
         }
         else if(compareOSCPrefix(toscPrefix))
         {
             // touchOSC
-            if(compareOSCAddress(toscPrefix, msgOnboardLed1) && compareTypeTagAtIndex(0, 'f'))
+            if(compareOSCAddress(msgOnboardLed1) && compareTypeTagAtIndex(0, 'f'))
             {
                 switch(getIntArgumentAtIndex(0))
                 {
@@ -1430,7 +1820,7 @@ void receiveOSCTask(void)
                         break;
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgOnboardLed2) && compareTypeTagAtIndex(0, 'f'))
+            else if(compareOSCAddress(msgOnboardLed2) && compareTypeTagAtIndex(0, 'f'))
             {
                 switch(getIntArgumentAtIndex(0))
                 {
@@ -1442,7 +1832,7 @@ void receiveOSCTask(void)
                         break;
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable1) && compareTypeTagAtIndex(0, 'f'))
+            else if(compareOSCAddress(msgSetPwmEnable1) && compareTypeTagAtIndex(0, 'f'))
             {
                 if(getIntArgumentAtIndex(0))
                 {
@@ -1466,7 +1856,7 @@ void receiveOSCTask(void)
                     CloseOC1();
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable2) && compareTypeTagAtIndex(0, 'f'))
+            else if(compareOSCAddress(msgSetPwmEnable2) && compareTypeTagAtIndex(0, 'f'))
             {
                 if(getIntArgumentAtIndex(0))
                 {
@@ -1490,7 +1880,7 @@ void receiveOSCTask(void)
                     CloseOC3();
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable3) && compareTypeTagAtIndex(0, 'f'))
+            else if(compareOSCAddress(msgSetPwmEnable3) && compareTypeTagAtIndex(0, 'f'))
             {
                 if(getIntArgumentAtIndex(0))
                 {
@@ -1514,7 +1904,7 @@ void receiveOSCTask(void)
                     CloseOC4();
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmEnable4) && compareTypeTagAtIndex(0, 'f'))
+            else if(compareOSCAddress(msgSetPwmEnable4) && compareTypeTagAtIndex(0, 'f'))
             {
                 if(getIntArgumentAtIndex(0))
                 {
@@ -1538,7 +1928,7 @@ void receiveOSCTask(void)
                     CloseOC5();
                 }
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmFreq))
+            else if(compareOSCAddress(msgSetPwmFreq))
             {
                 if(compareTypeTagAtIndex(0, 'f'))
                     freq = getIntArgumentAtIndex(0);
@@ -1565,7 +1955,7 @@ void receiveOSCTask(void)
                 OC1CONbits.OCM = 0b110;
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty1))
+            else if(compareOSCAddress(msgSetPwmDuty1))
             {
                 if(compareTypeTagAtIndex(0, 'f'))
                 {
@@ -1619,7 +2009,7 @@ void receiveOSCTask(void)
                 }
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty2))
+            else if(compareOSCAddress(msgSetPwmDuty2))
             {
                 if(compareTypeTagAtIndex(0, 'f'))
                 {
@@ -1673,7 +2063,7 @@ void receiveOSCTask(void)
                 }
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty3))
+            else if(compareOSCAddress(msgSetPwmDuty3))
             {
                 if(compareTypeTagAtIndex(0, 'f'))
                 {
@@ -1727,7 +2117,7 @@ void receiveOSCTask(void)
                 }
                 T2CONbits.TON = 1;
             }
-            else if(compareOSCAddress(toscPrefix, msgSetPwmDuty4))
+            else if(compareOSCAddress(msgSetPwmDuty4))
             {
                 if(compareTypeTagAtIndex(0, 'f'))
                 {
@@ -1785,7 +2175,7 @@ void receiveOSCTask(void)
         else if(compareOSCPrefix(sysPrefix))
         {
             // System Setting
-            if(compareOSCAddress(sysPrefix, msgSetRemoteIp))
+            if(compareOSCAddress(msgSetRemoteIp))
             {
                 char* rip;
                 WORD ip[4] = {0};
@@ -1837,21 +2227,21 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
                     return;
                 }
-                remoteIP[0] = (BYTE)ip[0];
-                remoteIP[1] = (BYTE)ip[1];
-                remoteIP[2] = (BYTE)ip[2];
-                remoteIP[3] = (BYTE)ip[3];
-                initSendFlag = FALSE;
-                chCompletedFlag = TRUE;
+                setRemoteIpAtIndex(0, (BYTE)ip[0]);
+                setRemoteIpAtIndex(1, (BYTE)ip[1]);
+                setRemoteIpAtIndex(2, (BYTE)ip[2]);
+                setRemoteIpAtIndex(3, (BYTE)ip[3]);
+                setInitSendFlag(FALSE);
+                setChCompletedFlag(TRUE);
                 closeOSCSendPort();
             }
-            else if(compareOSCAddress(sysPrefix, msgGetRemoteIp))
+            else if(compareOSCAddress(msgGetRemoteIp))
             {
                 char rip[15];
-                sprintf(rip, "%d.%d.%d.%d", remoteIP[0], remoteIP[1], remoteIP[2], remoteIP[3]);
+                sprintf(rip, "%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
                 sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
             }
-            else if(compareOSCAddress(sysPrefix, msgSetRemotePort))
+            else if(compareOSCAddress(msgSetRemotePort))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
@@ -1860,7 +2250,7 @@ void receiveOSCTask(void)
                         sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": out_of_value_range");
                         return;
                     }
-                    remotePort = getIntArgumentAtIndex(0);
+                    setRemotePort(getIntArgumentAtIndex(0));
                 }
                 else
                 {
@@ -1869,14 +2259,14 @@ void receiveOSCTask(void)
                 }
 
                 closeOSCSendPort();
-                initSendFlag = FALSE;
-                chCompletedFlag = TRUE;
+                setInitSendFlag(FALSE);
+                setChCompletedFlag(TRUE);
             }
-            else if(compareOSCAddress(sysPrefix, msgGetRemotePort))
+            else if(compareOSCAddress(msgGetRemotePort))
             {
-                sendOSCMessage(sysPrefix, msgRemotePort, "i", remotePort);
+                sendOSCMessage(sysPrefix, msgRemotePort, "i", getRemotePort());
             }
-            else if(compareOSCAddress(sysPrefix, msgSetHostName))
+            else if(compareOSCAddress(msgSetHostName))
             {
                 char* srcName = NULL;
                 char* np = NULL;
@@ -1900,10 +2290,8 @@ void receiveOSCTask(void)
                     }
 
                     mDNSServiceDeRegister();
-                    free(hostName);
-                    hostName = NULL;
-                    hostName = (char *)calloc(len + 1, sizeof(char));
-                    strncpy(hostName, srcName, len);
+                    clearOSCHostName();
+                    setOSCHostName(srcName);
 
                     //debug sendOSCMessage(sysPrefix, msgError, "ss", srcName, hostName);
                 }
@@ -1913,8 +2301,8 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                mDNSInitialize(hostName);
-                mDNSServiceRegister((const char *)hostName, // base name of the service
+                mDNSInitialize(getOSCHostName());
+                mDNSServiceRegister((const char *)getOSCHostName(), // base name of the service
                                     "_oscit._udp.local",    // type of the service
                                     8080,                   // TCP or UDP port, at which this service is available
                                     ((const BYTE *)""),     // TXT info
@@ -1925,13 +2313,13 @@ void receiveOSCTask(void)
                 mDNSMulticastFilterRegister();
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
             }
-            else if(compareOSCAddress(sysPrefix, msgGetHostName))
+            else if(compareOSCAddress(msgGetHostName))
             {
                 char fullHostName[32] = {0};
-                sprintf(fullHostName, "%s.local", hostName);
+                sprintf(fullHostName, "%s.local", getOSCHostName());
                 sendOSCMessage(sysPrefix, msgHostName, "s", fullHostName);
             }
-            else if(compareOSCAddress(sysPrefix, msgGetHostIp))
+            else if(compareOSCAddress(msgGetHostIp))
             {
                 char hip[15] = {0};
                 BYTE hip0 = AppConfig.MyIPAddr.Val & 0xFF;
@@ -1941,13 +2329,13 @@ void receiveOSCTask(void)
                 sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
                 sendOSCMessage(sysPrefix, msgHostIp, "s", hip);
             }
-            else if(compareOSCAddress(sysPrefix, msgGetHostMac))
+            else if(compareOSCAddress(msgGetHostMac))
             {
                 char macaddr[17] = {0};
                 sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
                 sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
             }
-            else if(compareOSCAddress(sysPrefix, msgSetHostPort))
+            else if(compareOSCAddress(msgSetHostPort))
             {
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                 {
@@ -1956,7 +2344,7 @@ void receiveOSCTask(void)
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": out_of_value_range");
                         return;
                     }
-                    localPort = getIntArgumentAtIndex(0);
+                    setLocalPort(getIntArgumentAtIndex(0));
                 }
                 else
                 {
@@ -1965,14 +2353,14 @@ void receiveOSCTask(void)
                 }
 
                 closeOSCReceivePort();
-                initReceiveFlag = FALSE;
-                chCompletedFlag = TRUE;
+                setInitReceiveFlag(FALSE);
+                setChCompletedFlag(TRUE);
             }
-            else if(compareOSCAddress(sysPrefix, msgGetHostPort))
+            else if(compareOSCAddress(msgGetHostPort))
             {
-                sendOSCMessage(sysPrefix, msgHostPort, "i", localPort);
+                sendOSCMessage(sysPrefix, msgHostPort, "i", getLocalPort());
             }
-            else if(compareOSCAddress(sysPrefix, msgSetPrefix))
+            else if(compareOSCAddress(msgSetPrefix))
             {
                 if(compareTypeTagAtIndex(0, 's'))
                 {
@@ -1982,9 +2370,8 @@ void receiveOSCTask(void)
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": must_begin_slash");
                         return;
                     }
-                    free(stdPrefix);
-                    stdPrefix = NULL;
-                    stdPrefix = getStringArgumentAtIndex(0);
+                    clearOSCPrefix();
+                    setOSCPrefix(getStringArgumentAtIndex(0));
                 }
                 else
                 {
@@ -1993,11 +2380,11 @@ void receiveOSCTask(void)
                 }
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
             }
-            else if(compareOSCAddress(sysPrefix, msgGetPrefix))
+            else if(compareOSCAddress(msgGetPrefix))
             {
-                sendOSCMessage(sysPrefix, msgPrefix, "s", stdPrefix);
+                sendOSCMessage(sysPrefix, msgPrefix, "s", getOSCPrefix());
             }
-            else if(compareOSCAddress(sysPrefix, msgSwitchUsbMode))
+            else if(compareOSCAddress(msgSwitchUsbMode))
             {
                 char* dm;
                 if(compareTypeTagAtIndex(0, 's'))
@@ -2026,14 +2413,14 @@ void receiveOSCTask(void)
                 }
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
             }
-            else if(compareOSCAddress(sysPrefix, msgGetUsbMode))
+            else if(compareOSCAddress(msgGetUsbMode))
             {
                 if(device_mode == MODE_DEVICE)
                     sendOSCMessage(sysPrefix, msgUsbMode, "s", "device");
                 else if(device_mode == MODE_HOST)
                     sendOSCMessage(sysPrefix, msgUsbMode, "s", "host");
             }
-            else if(compareOSCAddress(sysPrefix, msgSoftReset))
+            else if(compareOSCAddress(msgSoftReset))
             {
                 char* reset_mode;
                 if(compareTypeTagAtIndex(0, 's'))
@@ -2058,7 +2445,7 @@ void receiveOSCTask(void)
                 }
                 SoftReset();
             }
-            else if(compareOSCAddress(sysPrefix, msgDebug))
+            else if(compareOSCAddress(msgDebug))
             {
                 //debug testNum++;
 
@@ -2070,6 +2457,7 @@ void receiveOSCTask(void)
                     else if(compareTypeTagAtIndex(i, 'f'))
                     {
                         appendOSCMessageToBundle(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
+
                         //debug appendOSCMessageToBundle(sysPrefix, msgDebug, "ifi", i, getFloatArgumentAtIndex(i), testNum - 1);
                         //debug testNum = 0;
                     }
@@ -2086,7 +2474,7 @@ void receiveOSCTask(void)
                 }
                 sendOSCBundle();
             }
-            else if(compareOSCAddress(sysPrefix, msgGetVersion))
+            else if(compareOSCAddress(msgGetVersion))
             {
                 sendOSCMessage(sysPrefix, msgVersion, "s", CURRENT_VERSION);
             }
@@ -2095,45 +2483,69 @@ void receiveOSCTask(void)
     }
 }
 
-void sendOSCTask(void)
+void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
-    BYTE i, j;
+    volatile BYTE i, j;
+    static BYTE state_index = 0;
     static BYTE swState0 = 0;
     static BYTE swState1 = 0;
 
-    if(!initSendFlag)
+    if(!getInitSendFlag())
     {
-        initSendFlag = openOSCSendPort(remoteIP, remotePort);
-        if(chCompletedFlag)
+        setInitSendFlag(openOSCSendPort(getRemoteIp(), getRemotePort()));
+        if(getChCompletedFlag())
         {
             sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
-            chCompletedFlag = FALSE;
+            setChCompletedFlag(FALSE);
         }
     }
 
-    if(initSendFlag)
+    if(getInitSendFlag())
     {
-        swState1 = SW_State();
-        if(swState1 != swState0)
+        switch(state_index)
         {
-            if(swState1)
-                sendOSCMessage(stdPrefix, msgOnboardSw1, "s", "off");
-            else
-                sendOSCMessage(stdPrefix, msgOnboardSw1, "s", "on");
-        }
-        swState0 = swState1;
+            case 0:
+                swState1 = SW_State();
+                if(swState1 != swState0)
+                {
+                    if(swState1)
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
+                    else
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+                }
+                swState0 = swState1;
 
-        j = 0;
-        for(i = 0; i < AN_NUM; i++)
-        {
-            if(analogEnable[i])
-            {
-                analogInHandle(i, (LONG)ReadADC10(j));
-                j++;
-            }
+                state_index = 1;
+                break;
+            case 1:
+                j = 0;
+                for(i = 0; i < AN_NUM; i++)
+                {
+                    if(analogEnable[i])
+                    {
+                        analogInHandle(i, (LONG)ReadADC10(j));
+                        j++;
+                    }
+                }
+                sendAdc();
+
+                state_index = 2;
+                break;
+            case 2:
+                absEncoderHandle();
+                for(i = 0; i < getNumConnectedAbsEnc(); i++)
+                {
+                    sendEncAbs32(i);
+                }
+                
+                state_index = 0;
+                break;
+            default:
+                state_index = 0;
+                break;
         }
-        sendAdc();
     }
+    mT5ClearIntFlag();
 }
 
 void USBControlTask()
@@ -2719,10 +3131,10 @@ void HIDControlTask(void)
                 {
                     ToSendHidDataBuffer[0] = 0xF1;
                     ToSendHidDataBuffer[1] = 4;
-                    ToSendHidDataBuffer[2] = remoteIP[0];
-                    ToSendHidDataBuffer[3] = remoteIP[1];
-                    ToSendHidDataBuffer[4] = remoteIP[2];
-                    ToSendHidDataBuffer[5] = remoteIP[3];
+                    ToSendHidDataBuffer[2] = getRemoteIpAtIndex(0);
+                    ToSendHidDataBuffer[3] = getRemoteIpAtIndex(1);
+                    ToSendHidDataBuffer[4] = getRemoteIpAtIndex(2);
+                    ToSendHidDataBuffer[5] = getRemoteIpAtIndex(3);
                     ToSendHidDataBuffer[6] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
@@ -2732,11 +3144,11 @@ void HIDControlTask(void)
                 }
                 else
                 {
-                    remoteIP[0] = ReceivedHidDataBuffer[2];
-                    remoteIP[1] = ReceivedHidDataBuffer[3];
-                    remoteIP[2] = ReceivedHidDataBuffer[4];
-                    remoteIP[3] = ReceivedHidDataBuffer[5];
-                    initSendFlag = FALSE;
+                    setRemoteIpAtIndex(0, ReceivedHidDataBuffer[2]);
+                    setRemoteIpAtIndex(1, ReceivedHidDataBuffer[3]);
+                    setRemoteIpAtIndex(2, ReceivedHidDataBuffer[4]);
+                    setRemoteIpAtIndex(3, ReceivedHidDataBuffer[5]);
+                    setInitSendFlag(FALSE);
                     closeOSCSendPort();
                 }
                 break;
@@ -2745,8 +3157,8 @@ void HIDControlTask(void)
                 {
                     ToSendHidDataBuffer[0] = 0xF2;
                     ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = (BYTE)((localPort >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((localPort >> 8) & 0x00FF);
+                    ToSendHidDataBuffer[2] = (BYTE)((getLocalPort() >> 0) & 0x00FF);
+                    ToSendHidDataBuffer[3] = (BYTE)((getLocalPort() >> 8) & 0x00FF);
                     ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
@@ -2756,8 +3168,8 @@ void HIDControlTask(void)
                 }
                 else
                 {
-                    localPort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
-                    initReceiveFlag = FALSE;
+                    setLocalPort(ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8));
+                    setInitReceiveFlag(FALSE);
                     closeOSCReceivePort();
                 }
                 break;
@@ -2766,8 +3178,8 @@ void HIDControlTask(void)
                 {
                     ToSendHidDataBuffer[0] = 0xF3;
                     ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = (BYTE)((remotePort >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((remotePort >> 8) & 0x00FF);
+                    ToSendHidDataBuffer[2] = (BYTE)((getRemotePort() >> 0) & 0x00FF);
+                    ToSendHidDataBuffer[3] = (BYTE)((getRemotePort() >> 8) & 0x00FF);
                     ToSendHidDataBuffer[4] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
@@ -2777,8 +3189,8 @@ void HIDControlTask(void)
                 }
                 else
                 {
-                    remotePort = ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8);
-                    initSendFlag = FALSE;
+                    setRemotePort(ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8));
+                    setInitSendFlag(FALSE);
                     closeOSCSendPort();
                 }
                 break;
@@ -2812,14 +3224,14 @@ void HIDControlTask(void)
             case 0xF6:// Save Current Settings
                 if(ReceivedHidDataBuffer[1])
                 {
-                    u8Data[0] = remoteIP[0];
-                    u8Data[1] = remoteIP[1];
-                    u8Data[2] = remoteIP[2];
-                    u8Data[3] = remoteIP[3];
-                    u8Data[4] = (BYTE)((localPort >> 0) & 0x00FF);
-                    u8Data[5] = (BYTE)((localPort >> 8) & 0x00FF);
-                    u8Data[6] = (BYTE)((remotePort >> 0) & 0x00FF);
-                    u8Data[7] = (BYTE)((remotePort >> 8) & 0x00FF);
+                    u8Data[0] = getRemoteIpAtIndex(0);
+                    u8Data[1] = getRemoteIpAtIndex(1);
+                    u8Data[2] = getRemoteIpAtIndex(2);
+                    u8Data[3] = getRemoteIpAtIndex(3);
+                    u8Data[4] = (BYTE)((getLocalPort() >> 0) & 0x00FF);
+                    u8Data[5] = (BYTE)((getLocalPort() >> 8) & 0x00FF);
+                    u8Data[6] = (BYTE)((getRemotePort() >> 0) & 0x00FF);
+                    u8Data[7] = (BYTE)((getRemotePort() >> 8) & 0x00FF);
 
                     //NVMWriteRow((void *)NVM_PROGRAM_PAGE, (void *)u8Data);
                 }
@@ -2827,24 +3239,24 @@ void HIDControlTask(void)
                 {
                     //memcpy(u8Data, (void *)NVM_PROGRAM_PAGE, 8);
 
-                    remoteIP[0] = u8Data[0];
-                    remoteIP[1] = u8Data[1];
-                    remoteIP[2] = u8Data[2];
-                    remoteIP[3] = u8Data[3];
-                    localPort = (WORD)u8Data[4] | ((WORD)u8Data[5] << 8);
-                    remotePort = (WORD)u8Data[6] | ((WORD)u8Data[7] << 8);
+                    setRemoteIpAtIndex(0, u8Data[0]);
+                    setRemoteIpAtIndex(1, u8Data[1]);
+                    setRemoteIpAtIndex(2, u8Data[2]);
+                    setRemoteIpAtIndex(3, u8Data[3]);
+                    setLocalPort((WORD)u8Data[4] | ((WORD)u8Data[5] << 8));
+                    setRemotePort((WORD)u8Data[6] | ((WORD)u8Data[7] << 8));
 
                     if(!USBHandleBusy(HIDTxHandle))
                     {
                         ToSendHidDataBuffer[0] = 0xF6;
-                        ToSendHidDataBuffer[1] = remoteIP[0];
-                        ToSendHidDataBuffer[2] = remoteIP[1];
-                        ToSendHidDataBuffer[3] = remoteIP[2];
-                        ToSendHidDataBuffer[4] = remoteIP[3];
-                        ToSendHidDataBuffer[5] = (BYTE)((localPort >> 0) & 0x00FF);
-                        ToSendHidDataBuffer[6] = (BYTE)((localPort >> 8) & 0x00FF);
-                        ToSendHidDataBuffer[7] = (BYTE)((remotePort >> 0) & 0x00FF);
-                        ToSendHidDataBuffer[8] = (BYTE)((remotePort >> 8) & 0x00FF);
+                        ToSendHidDataBuffer[1] = getRemoteIpAtIndex(0);
+                        ToSendHidDataBuffer[2] = getRemoteIpAtIndex(1);
+                        ToSendHidDataBuffer[3] = getRemoteIpAtIndex(2);
+                        ToSendHidDataBuffer[4] = getRemoteIpAtIndex(3);
+                        ToSendHidDataBuffer[5] = (BYTE)((getLocalPort() >> 0) & 0x00FF);
+                        ToSendHidDataBuffer[6] = (BYTE)((getLocalPort() >> 8) & 0x00FF);
+                        ToSendHidDataBuffer[7] = (BYTE)((getRemotePort() >> 0) & 0x00FF);
+                        ToSendHidDataBuffer[8] = (BYTE)((getRemotePort() >> 8) & 0x00FF);
                         ToSendHidDataBuffer[9] = 0x00;
 
                         HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
@@ -2986,7 +3398,7 @@ void convertMidiToOsc(void)
                             midiNum = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_1;
                             midiVal = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_2;
                             
-                            if(initSendFlag)
+                            if(getInitSendFlag())
                             {
                                 switch(midiType)
                                 {
