@@ -196,7 +196,7 @@
 #define	ETH_CFG_SWAP_MDIX   1           // use swapped MDIX. else normal MDIX
 
 #define EMAC_TX_DESCRIPTORS 2           // number of the TX descriptors to be created
-#define EMAC_RX_DESCRIPTORS 8     // number of the RX descriptors and RX buffers to be created
+#define EMAC_RX_DESCRIPTORS 16// 8     // number of the RX descriptors and RX buffers to be created
 
 #define	EMAC_RX_BUFF_SIZE   1024 // 1536 // size of a RX buffer. should be multiple of 16
                                         // this is the size of all receive buffers processed by the ETHC
