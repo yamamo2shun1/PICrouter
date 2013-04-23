@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.5.1 2013/03/27
+ * encoder.h,v.0.6.0 2013/04/23
  */
 
 #ifndef ENCODER_H
@@ -27,57 +27,68 @@
 #include "osc.h"
 
 // Timer4 12.5nsec x 8(pre scaler) x TIMER_COUNT = 100nsec x TIMER_COUNT = timer interval
-// 100nsec x 100 = 10000nsec = 10usec
-#define TIMER_COUNT 2000//150
+// 100nsec x 1000 = 100000nsec = 100usec
+#define TIMER_COUNT 1000
 #define MA_COUNT    8
 #define DELTA       69.230769231
 
-BYTE reA[2];
-BYTE reB[2];
-
-BYTE reD;
-int reStep;
-
-volatile BOOL sendEncFlag;
-BOOL reFlag[2];
-float omega[2];
-float omega_ma[2][8];
-float alpha[2];
-INT8 direction;
-DWORD encCount[2];
-DWORD dt;
-
-DWORD dwLedData;
-volatile DWORD dwLedSequence[100];
-BYTE intensity[32];
-BOOL ledOn;
-WORD ledCount;
-BYTE ledIntensity;
-volatile BYTE ledIntensityIndex;
-
-// test for EMS22A50
+#define MAX_RE_NUM 4
 #define AVG_NUM 8
-BYTE reDataIndex;
-BYTE reAvgIndex;
-BYTE reVelAvgIndex;
-int reVelAvgIndex2;
-volatile BYTE reMatchCount;
-BYTE reState[16];
-WORD rePosData[AVG_NUM];
-float reAbsAnglePosLast;
-float reAbsAnglePos;
-int reDirection;
-DWORD reCounting;
-float reCounted;
-DWORD reAvgCounted[8];
-float reVelocity; 
-float reAvgVelocity[16];
+
+// LED_ENC
+#if 0 // for LED_ENC_32
+    #define LD32_LOAD(state) LATCbits.LATC13 = state;
+    #define RE_SW()          PORTCbits.RC14
+    #define RE_A()           PORTFbits.RF0
+    #define RE_B()           PORTFbits.RF1
+    #define RE_CLK(state)    LATFbits.LATF0 = state;
+#endif
 
 void initEncoderVariables(void);
+
+void setNumConnectedAbsEnc(BYTE num);
+BYTE getNumConnectedAbsEnc(void);
+
+void setInitIncEncFlag(BOOL flag);
+void setInitAbsEncFlag(BOOL flag);
+void setInitLedDrvFlag(BOOL flag);
+
+void setIncEncoderPortAName(char* name);
+char* getIncEncoderPortAName(void);
+void setIncEncoderPortBName(char* name);
+char* getIncEncoderPortBName(void);
+void setIncEncoderPortSwName(char* name);
+char* getIncEncoderPortSwName(void);
+void setAbsEncoderPortCsName(char* name);
+char* getAbsEncoderPortCsName(void);
+void setAbsEncoderPortClkName(char* name);
+char* getAbsEncoderPortClkName(void);
+void setAbsEncoderPortDoName(char* name);
+char* getAbsEncoderPortDoName(void);
+void setLedDriverPortSsName(BYTE index, char* name);
+char* getLedDriverPortSsName(BYTE index);
+void setLedDriverSpiNumber(BYTE num);
+BYTE getLedDriverSpiNumber(void);
+
+BOOL getInitIncEncFlag(void);
+BOOL getInitAbsEncFlag(void);
+BOOL getInitLedDrvFlag(void);
+
+void setDwLedData(BYTE index, DWORD data);
+DWORD getDwLedData(BYTE index);
+void setDwLedSequence(BYTE index, BYTE step, DWORD data);
+DWORD getDwLedSequence(BYTE index, BYTE step);
+void setLedOn(BYTE index, BOOL flag);
+BOOL getLedOn(BYTE index);
+void setIntensity(BYTE index0, BYTE index1, BYTE value);
+BYTE getIntensity(BYTE index0, BYTE index1);
+
 void encoderCheck(BYTE rea, BYTE reb);
-//void encoderHandle(void);
-void annularLedHandle(void);
-void sendEnc(void);
+void incEncoderHandle(void);
+void absEncoderHandle(void);
+void annularLedHandle(BYTE index);
+void sendEncInc32(void);
+void sendEncAbs32(BYTE index);
 
 #endif	/* ENCODER_H */
 

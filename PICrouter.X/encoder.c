@@ -16,16 +16,81 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.5.1 2013/03/27
+ * encoder.c,v.0.6.0 2013/04/23
  */
 
 #include "encoder.h"
+#include "TimeDelay.h"
+
+// for LED_ENC_32
+static BOOL initIncEncFlag = FALSE;
+static char pin_a[4] = {NULL};
+static char pin_b[4] = {NULL};
+static char pin_sw[4] = {NULL};
+
+// for LED_ENC_ABS_32
+static BOOL initAbsEncFlag = FALSE;
+static BYTE numConnectedAbsEnc = 1;
+static char pin_cs[4] = {NULL};
+static char pin_clk[4] = {NULL};
+static char pin_do[4] = {NULL};
+
+static BOOL initLedDrvFlag = FALSE;
+static char pin_ss[8][4] = {NULL};
+static BYTE spi_num = 2;
+
+static BYTE reA[2];
+static BYTE reB[2];
+
+static BYTE reD;
+static int reStep;
+
+static volatile BOOL sendEncFlag[MAX_RE_NUM];
+static BOOL reFlag[2];
+static float omega[2];
+static float omega_ma[2][8];
+static float alpha[2];
+static INT8 direction;
+static DWORD encCount[2];
+static DWORD dt;
+
+static DWORD dwLedData[MAX_RE_NUM];
+static volatile DWORD dwLedSequence[MAX_RE_NUM][100];
+static BYTE intensity[MAX_RE_NUM][32];
+static BOOL ledOn[MAX_RE_NUM];
+static WORD ledCount[MAX_RE_NUM];
+static BYTE ledIntensity[MAX_RE_NUM];
+static volatile BYTE ledIntensityIndex[MAX_RE_NUM];
+
+
+// test for EMS22A50
+static WORD reCurrentPos[MAX_RE_NUM];
+static BYTE reAvgIndex[MAX_RE_NUM];
+static BYTE reVelAvgIndex[MAX_RE_NUM];
+static int reVelAvgIndex2[MAX_RE_NUM];
+static volatile BYTE reMatchCount[MAX_RE_NUM];
+static BYTE reState[MAX_RE_NUM][16];
+static WORD rePosData[MAX_RE_NUM][AVG_NUM];
+static float reAbsAnglePosLast[MAX_RE_NUM];
+static float reAbsAnglePos0[MAX_RE_NUM];
+static float reAbsAnglePos[MAX_RE_NUM];
+static int reDirection[MAX_RE_NUM];
+static DWORD reCounting[MAX_RE_NUM];
+static float reCounted[MAX_RE_NUM];
+static DWORD reAvgCounted[MAX_RE_NUM][8];
+static float reVelocity[MAX_RE_NUM];
+static float reAvgVelocity[MAX_RE_NUM][16];
+
+static void receiveEncoderData(BYTE index);
+static void matchingEncoderData(BYTE index);
+static void calculateEncoderPosition(BYTE index);
+static void calculateEncoderVelocity(BYTE index);
+static void smoothingEncoderVelocity(BYTE index);
 
 void initEncoderVariables(void)
 {
-    BYTE i = 0;
+    BYTE i = 0, j = 0;
 
-    sendEncFlag = FALSE;
     direction = 0;
     reD = 0;
     reStep = 0;
@@ -39,44 +104,199 @@ void initEncoderVariables(void)
         encCount[i] = 0;
     }
 
-    reDataIndex = 0;
-    reAvgIndex = 0;
-    reVelAvgIndex = 0;
-    reVelAvgIndex2 = 0;
-    reMatchCount = 0;
-    reAbsAnglePosLast = 0;
-    reAbsAnglePos = 0;
-    reDirection = 0;
-    reCounting = 0;
-    reCounted = 0;
-
-    reVelocity = 0; 
-
-    for(i = 0; i < AVG_NUM; i++)
+    for(j = 0; j < MAX_RE_NUM; j++)
     {
-        rePosData[i] = 0;
-        reAvgCounted[i] = 0;
-    }
-    for(i = 0; i < 16; i++)
-    {
-        reState[i] = 0;
-        reAvgVelocity[i] = 0;
+        sendEncFlag[j] = FALSE;
+
+        reCurrentPos[j] = 0;
+        reAvgIndex[j] = 0;
+        reVelAvgIndex[j] = 0;
+        reVelAvgIndex2[j] = 0;
+        reMatchCount[j] = 0;
+        reAbsAnglePosLast[j] = 0;
+        reAbsAnglePos[j] = 0;
+        reDirection[j] = 0;
+        reCounting[j] = 0;
+        reCounted[j] = 0;
+
+        reVelocity[j] = 0;
+
+        for(i = 0; i < AVG_NUM; i++)
+        {
+            rePosData[j][i] = 0;
+            reAvgCounted[j][i] = 0;
+        }
+        for(i = 0; i < 16; i++)
+        {
+            reState[j][i] = 0;
+            reAvgVelocity[j][i] = 0;
+        }
+
+        dwLedData[j] = 0;
+        for(i = 0; i < 100; i++)
+            dwLedSequence[j][i] = 0;
+        for(i = 0; i < 32; i++)
+            intensity[j][i] = 0;
+        ledOn[j] = FALSE;
+        ledCount[j] = 0;
+        ledIntensity[j] = 10;
+        ledIntensityIndex[j] = 0;
     }
 
-    dwLedData = 0;
-    for(i = 0; i < 100; i++)
-        dwLedSequence[i] = 0;
-    for(i = 0; i < 32; i++)
-        intensity[i] = 0;
-    ledOn = FALSE;
-    ledCount = 0;
-    ledIntensity = 10;
-    ledIntensityIndex = 0;
-
-#if 0
+#if 1
     OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_1);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_7);
 #endif
+}
+
+void setNumConnectedAbsEnc(BYTE num)
+{
+    numConnectedAbsEnc = num;
+}
+BYTE getNumConnectedAbsEnc(void)
+{
+    return numConnectedAbsEnc;
+}
+
+void setInitIncEncFlag(BOOL flag)
+{
+    initIncEncFlag = flag;
+}
+void setInitAbsEncFlag(BOOL flag)
+{
+    initAbsEncFlag = flag;
+}
+void setInitLedDrvFlag(BOOL flag)
+{
+    initLedDrvFlag = flag;
+}
+
+void setIncEncoderPortAName(char* name)
+{
+    memset(pin_a, NULL, sizeof(pin_a));
+    strcpy(pin_a, name);
+}
+char* getIncEncoderPortAName(void)
+{
+    return pin_a;
+}
+
+void setIncEncoderPortBName(char* name)
+{
+    memset(pin_b, NULL, sizeof(pin_b));
+    strcpy(pin_b, name);
+}
+char* getIncEncoderPortBName(void)
+{
+    return pin_b;
+}
+
+void setIncEncoderPortSwName(char* name)
+{
+    memset(pin_sw, NULL, sizeof(pin_sw));
+    strcpy(pin_sw, name);
+}
+char* getIncEncoderPortSwName(void)
+{
+    return pin_sw;
+}
+
+void setAbsEncoderPortCsName(char* name)
+{
+    memset(pin_cs, NULL, sizeof(pin_cs));
+    strcpy(pin_cs, name);
+}
+char* getAbsEncoderPortCsName(void)
+{
+    return pin_cs;
+}
+
+void setAbsEncoderPortClkName(char* name)
+{
+    memset(pin_clk, NULL, sizeof(pin_clk));
+    strcpy(pin_clk, name);
+}
+char* getAbsEncoderPortClkName(void)
+{
+    return pin_clk;
+}
+
+void setAbsEncoderPortDoName(char* name)
+{
+    memset(pin_do, NULL, sizeof(pin_do));
+    strcpy(pin_do, name);
+}
+char* getAbsEncoderPortDoName(void)
+{
+    return pin_do;
+}
+
+void setLedDriverPortSsName(BYTE index, char* name)
+{
+    memset(pin_ss[index], NULL, sizeof(pin_ss[index]));
+    strcpy(pin_ss[index], name);
+}
+char* getLedDriverPortSsName(BYTE index)
+{
+    return pin_ss[index];
+}
+
+void setLedDriverSpiNumber(BYTE num)
+{
+    spi_num = num;
+}
+BYTE getLedDriverSpiNumber(void)
+{
+    return spi_num;
+}
+
+BOOL getInitIncEncFlag(void)
+{
+    return initIncEncFlag;
+}
+BOOL getInitAbsEncFlag(void)
+{
+    return initAbsEncFlag;
+}
+BOOL getInitLedDrvFlag(void)
+{
+    return initLedDrvFlag;
+}
+
+void setDwLedData(BYTE index, DWORD data)
+{
+    dwLedData[index] = data;
+}
+DWORD getDwLedData(BYTE index)
+{
+    return dwLedData[index];
+}
+
+void setDwLedSequence(BYTE index, BYTE step, DWORD data)
+{
+    dwLedSequence[index][step] = data;
+}
+DWORD getDwLedSequence(BYTE index, BYTE step)
+{
+    return dwLedSequence[index][step];
+}
+
+void setLedOn(BYTE index, BOOL flag)
+{
+    ledOn[index] = flag;
+}
+BOOL getLedOn(BYTE index)
+{
+    return ledOn[index];
+}
+
+void setIntensity(BYTE index0, BYTE index1, BYTE value)
+{
+    intensity[index0][index1] = value;
+}
+BYTE getIntensity(BYTE index0, BYTE index1)
+{
+    return intensity[index0][index1];
 }
 
 void encoderCheck(BYTE rea, BYTE reb)
@@ -136,7 +356,7 @@ void encoderCheck(BYTE rea, BYTE reb)
             if(reStep < 0)
                 reStep = 255;
         }
-        sendEncFlag = TRUE;
+        sendEncFlag[0] = TRUE;
     }
 #if 0
     else
@@ -151,9 +371,7 @@ void encoderCheck(BYTE rea, BYTE reb)
 #endif
 }
 
-#if 0
-void __ISR(_TIMER_4_VECTOR, ipl1) encoderHandle(void)
-//void encoderHandle(void)
+void incEncoderHandle(void)
 {
 #if 0 // for LED_ENC_32
     encoderCheck(RE_A(), RE_B());
@@ -174,53 +392,105 @@ void __ISR(_TIMER_4_VECTOR, ipl1) encoderHandle(void)
         encCount[1]++;
     if(dt < 100000)
         dt++;
-#else // for LED_ENC_ABS_32
-    int i;
-    WORD currentPos;
+#endif
+}
 
-    if(!initSendFlag)
-    {
-        mT4ClearIntFlag();
+void absEncoderHandle(void)
+{
+    volatile BYTE i = 0;
+    static BYTE state_index = 0;
+    static BYTE j = 0;
+
+    if(!getInitSendFlag() || !initAbsEncFlag)
         return;
-    }
 
-    annularLedHandle();
-
-    RE_CS(1);
-    delayUs(1);
-    RE_CS(0);
-    delayUs(1);
-
-    for(reDataIndex = 0; reDataIndex < 16; reDataIndex++)
+    switch(state_index)
     {
-        RE_CLK(0);
-        delayUs(1);
-        RE_CLK(1);
-        delayUs(1);
-        reState[reDataIndex] = RE_DO();
+        case 0:
+            receiveEncoderData(j);
+            state_index = 1;
+            break;
+        case 1:
+            matchingEncoderData(j);
+            state_index = 2;
+            break;
+        case 2:
+            calculateEncoderPosition(j);
+            state_index = 3;
+            break;
+        case 3:
+            calculateEncoderVelocity(j);
+            state_index = 4;
+        case 4:
+            smoothingEncoderVelocity(j);
+            j++;
+            if(j >= numConnectedAbsEnc)
+                j = 0;
+            state_index = 0;
+            break;
     }
 
-    currentPos = 0;
-    for(i = 0; i < 10; i++)
-        currentPos |= (reState[9 - i] << i);
+    for(i = 0; i < numConnectedAbsEnc; i++)
+    {
+        if(reCounting[i] < 100000)
+            reCounting[i]++;
+    }
+}
 
-    reAvgIndex++;
-    if(reMatchCount == 0)
+static void receiveEncoderData(BYTE index)
+{
+    volatile BYTE i;
+
+    if(index == 0)
+    {
+        outputPort(pin_cs, HIGH);
+        Nop();
+        outputPort(pin_cs, LOW);
+        Nop();
+    }
+
+    if(index > 0)
+    {
+        outputPort(pin_clk, LOW);
+        Nop();
+        outputPort(pin_clk, HIGH);
+        Nop();
+    }
+
+    reCurrentPos[index] = 0;
+    for(i = 0; i < 16; i++)
+    {
+        outputPort(pin_clk, LOW);
+        Nop();
+        outputPort(pin_clk, HIGH);
+        Nop();
+        reState[index][i] = inputPort(pin_do);
+
+        if(i < 10)
+            reCurrentPos[index] |= (reState[index][i] << (9 - i));
+    }
+}
+
+static void matchingEncoderData(BYTE index)
+{
+    volatile BYTE i;
+    BOOL matchFlag = FALSE;
+
+    reAvgIndex[index]++;
+    if(reMatchCount[index] == 0)
     {
         for(i = 0; i < AVG_NUM; i++)
-            rePosData[i] = 0;
-        rePosData[0] = currentPos;
-        reMatchCount = 1;
+            rePosData[index][i] = 0;
+        rePosData[index][0] = reCurrentPos[index];
+        reMatchCount[index] = 1;
     }
     else
     {
-        BOOL matchFlag = FALSE;
-        
-        if(reMatchCount > 8)
-            reMatchCount = 8;
-        for(i = 0; i < reMatchCount; i++)
+        if(reMatchCount[index] > 8)
+            reMatchCount[index] = 8;
+        for(i = 0; i < reMatchCount[index]; i++)
         {
-            if(currentPos != rePosData[i])
+            if(reCurrentPos[index] != rePosData[index][i])
                 matchFlag = TRUE;
             else
             {
@@ -230,138 +500,174 @@ void __ISR(_TIMER_4_VECTOR, ipl1) encoderHandle(void)
         }
         if(matchFlag)
         {
-            if(reMatchCount > 7)
-                reMatchCount = 7;
-            rePosData[reMatchCount] = currentPos;
-            reMatchCount++;
-            if(reMatchCount > 8)
-                reMatchCount = 8;
+            if(reMatchCount[index] > 7)
+                reMatchCount[index] = 7;
+            rePosData[index][reMatchCount[index]] = reCurrentPos[index];
+            reMatchCount[index]++;
         }
     }
+}
 
-    if(reAvgIndex == AVG_NUM)
+static void calculateEncoderPosition(BYTE index)
+{
+    volatile BYTE i;
+    BYTE startBoundaryCount = 0;
+    BYTE endBoundaryCount = 0;
+    float raap_min = 0.0;
+    float raap_max = 0.0;
+    float raap_mid = 0.0;
+
+    if(reAvgIndex[index] == AVG_NUM)
     {
-        if(reMatchCount > 3)
+        if(reMatchCount[index] > 3)
         {
-            BYTE startBoundaryCount = 0;
-            BYTE endBoundaryCount = 0;
-            float test = reAbsAnglePos;
+            reAbsAnglePos0[index] = reAbsAnglePos[index];
+                
+            if(reMatchCount[index] > 8)
+                reMatchCount[index] = 8;
 
-            if(reMatchCount > 8)
-                reMatchCount = 8;
-
-            reAbsAnglePos = 0.0;
-            for(i = 0; i < reMatchCount; i++)
+            for(i = 0; i < reMatchCount[index]; i++)
             {
-                if(rePosData[i] <= 10)
+                if(rePosData[index][i] <= 10)
+                {
+                    raap_min += rePosData[index][i];
                     startBoundaryCount++;
-                if(rePosData[i] >= 1013)
+                }
+                else if(rePosData[index][i] >= 1013)
+                {
+                    raap_max += rePosData[index][i];
                     endBoundaryCount++;
+                }
+                raap_mid += rePosData[index][i];
             }
 
             if(startBoundaryCount == 0 || endBoundaryCount == 0)
-            {
-                for(i = 0; i < reMatchCount; i++)
-                {
-                    reAbsAnglePos += (float)rePosData[i];
-                }
-                reAbsAnglePos /= (float)reMatchCount;
-            }
+                reAbsAnglePos[index] = raap_mid / (float)reMatchCount[index];
             else
             {
                 if(startBoundaryCount > endBoundaryCount)
-                {
-                    for(i = 0; i < reMatchCount; i++)
-                    {
-                        if(rePosData[i] <= 10)
-                            reAbsAnglePos += (float)rePosData[i];
-                    }
-                    reAbsAnglePos /= (float)startBoundaryCount;
-                }
+                    reAbsAnglePos[index] = raap_min / (float)startBoundaryCount;
                 else
-                {
-                    for(i = 0; i < reMatchCount; i++)
-                    {
-                        if(rePosData[i] >= 1013)
-                            reAbsAnglePos += (float)rePosData[i];
-                    }
-                    reAbsAnglePos /= (float)endBoundaryCount;
-                }
+                    reAbsAnglePos[index] = raap_max / (float)endBoundaryCount;
             }
-            sendEncFlag = TRUE;
+        }
+    }
+}
 
-            if(reCounting != 0)
+static void calculateEncoderVelocity(BYTE index)
+{
+    volatile BYTE i;
+    float diff = 0.0;
+    
+    if(reAvgIndex[index] == AVG_NUM)
+    {
+        if(reMatchCount[index] > 3)
+        {
+            if(reCounting[index] != 0)
             {
-                float diff = 0;
-
-                reAvgCounted[reVelAvgIndex] = reCounting;
-                reCounted = 0.0;
+                reAvgCounted[index][reVelAvgIndex[index]] = reCounting[index];
+                reCounted[index] = 0.0;
                 for(i = 0; i < 8; i++)
                 {
-                    if(i <= reVelAvgIndex)
-                        reCounted += (7 - (reVelAvgIndex - i)) * reAvgCounted[i];
+                    if(i <= reVelAvgIndex[index])
+                        reCounted[index] += (7 - (reVelAvgIndex[index] - i)) * reAvgCounted[index][i];
                     else
-                        reCounted += (7 - (reVelAvgIndex - i) - 8) * reAvgCounted[i];
+                        reCounted[index] += (7 - (reVelAvgIndex[index] - i) - 8) * reAvgCounted[index][i];
                 }
-                reCounted /= ((8.0 * 9.0) / 2.0);
-                reVelAvgIndex++;
-                if(reVelAvgIndex >= 8)
-                    reVelAvgIndex = 0;
+                reCounted[index] /= 36.0;// ((8.0 * 9.0) / 2.0);
+                reVelAvgIndex[index]++;
+                if(reVelAvgIndex[index] >= 8)
+                    reVelAvgIndex[index] = 0;
 
-                if(fabs(reAbsAnglePos - test) > 1000.0)
+                if(fabs(reAbsAnglePos[index] - reAbsAnglePos0[index]) > 800.0)
                 {
-                    if(reAbsAnglePos - test < 1000.0)
-                        diff = (reAbsAnglePos + 1023.0) - test;
-                    else if(reAbsAnglePos - test > 1000.0)
-                        diff = reAbsAnglePos - (test + 1023.0);
+                    if(reAbsAnglePos[index] - reAbsAnglePos0[index] < 0.0)
+                        diff = (reAbsAnglePos[index] + 1023.0) - reAbsAnglePos0[index];
+                    else if(reAbsAnglePos[index] - reAbsAnglePos0[index] > 0.0)
+                        diff = reAbsAnglePos[index] - (reAbsAnglePos0[index] + 1023.0);
                 }
                 else
-                    diff = reAbsAnglePos - test;
+                    diff = reAbsAnglePos[index] - reAbsAnglePos0[index];
 
-                reAvgVelocity[reVelAvgIndex2] = diff / (reCounted * ((float)TIMER_COUNT / 10.0)) * 1000000.0;
-                reVelocity = 0.0;
+                 reAvgVelocity[index][reVelAvgIndex2[index]] = diff / (reCounted[index] * ((float)TIMER_COUNT / 10.0)) * 1000000.0;
+            }
+        }
+    }
+}
+
+static void smoothingEncoderVelocity(BYTE index)
+{
+    volatile BYTE i;
+
+    if(reAvgIndex[index] == AVG_NUM)
+    {
+        if(reMatchCount[index] > 3)
+        {
+            if(reCounting[index] != 0)
+            {
+                reVelocity[index] = 0.0;
                 for(i = 0; i < 16; i++)
                 {
-                    if(i <= reVelAvgIndex2)
-                        reVelocity += (15 - (reVelAvgIndex2 - i)) * reAvgVelocity[i];
+                    if(i <= reVelAvgIndex2[index])
+                        reVelocity[index] += (15 - (reVelAvgIndex2[index] - i)) * reAvgVelocity[index][i];
                     else
-                        reVelocity += (15 - (reVelAvgIndex2 - i) - 16) * reAvgVelocity[i];
+                        reVelocity[index] += (15 - (reVelAvgIndex2[index] - i) - 16) * reAvgVelocity[index][i];
                 }
-                reVelocity /= ((17.0 * 16.0) / 2.0);
-                reVelAvgIndex2++;
-                if(reVelAvgIndex2 >= 16)
-                    reVelAvgIndex2 = 0;
+                reVelocity[index] /= 136.0;// ((17.0 * 16.0) / 2.0);
+                reVelAvgIndex2[index]++;
+                if(reVelAvgIndex2[index] >= 16)
+                    reVelAvgIndex2[index] = 0;
             }
-
-            reCounting = 0;
+            reCounting[index] = 0;
+            sendEncFlag[index] = TRUE;
         }
-        else
-        {
-            if(reCounting < 100000)
-                reCounting++;
-        }
-        reAvgIndex = 0;
+        reAvgIndex[index] = 0;
     }
-#endif
+}
+
+#if 1
+void __ISR(_TIMER_4_VECTOR, ipl7SRS) encoderHandle(void)
+{
+    static BYTE loop = 0;
+
+    if(initLedDrvFlag)
+    {
+        annularLedHandle(loop);
+        loop++;
+        if(loop >= numConnectedAbsEnc)
+            loop = 0;
+    }
     mT4ClearIntFlag();
 }
 #endif
 
-void annularLedHandle(void)
+void annularLedHandle(BYTE index)
 {
-    if(ledOn)
+    volatile BYTE i;
+    
+    if(ledOn[index])
     {
-        WORD msb, lsb;
-        msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
-        lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
-        sendSpiTwoWord(msb, lsb, 8);
-        ledIntensityIndex++;
-        if(ledIntensityIndex >= 100)
-            ledIntensityIndex = 0;
+        //WORD msb, lsb;
+        WORD msb = (WORD)((dwLedSequence[index][ledIntensityIndex[index]] >> 16) & 0x0000FFFF);
+        WORD lsb = (WORD)(dwLedSequence[index][ledIntensityIndex[index]] & 0x0000FFFF);
+
+        for(i = 0; i < numConnectedAbsEnc; i++)
+            outputPort(pin_ss[i], LOW);
+
+        outputPort(pin_ss[index], HIGH);
+
+        sendSpiTwoWord(spi_num, msb, lsb, 1);
+        //Delay10us(1);
+
+        outputPort(pin_ss[index], LOW);
+
+        ledIntensityIndex[index]++;
+        if(ledIntensityIndex[index] >= 100)
+            ledIntensityIndex[index] = 0;
     }
 }
 
-void sendEnc(void)
+void sendEncInc32(void)
 {
 #if 0 // for LED_ENC_32
     currentSwitch = RE_SW();
@@ -389,31 +695,34 @@ void sendEnc(void)
         sendOSCMessage(TxSocket, prefix, msgRotaryEncSwitch, "i", 1 - currentSwitch);
         switchFlag = FALSE;
     }
-#else// for LED_ENC_ABS_32
-    if(initSendFlag && sendEncFlag)
+#endif
+}
+
+void sendEncAbs32(BYTE index)
+{
+    if(getInitSendFlag() && sendEncFlag[index])
     {
         //debug sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "fiiiiiiiii", reAbsAnglePos, reMatchCount, rePosData[0], rePosData[1], rePosData[2], rePosData[3], rePosData[4], rePosData[5], rePosData[6], rePosData[7]);
-        if(reAbsAnglePos > reAbsAnglePosLast)
+        if(reAbsAnglePos[index] > reAbsAnglePosLast[index])
         {
-            if(reAbsAnglePos - reAbsAnglePosLast > 1000)
-                reDirection = -1;
+            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] > 1000)
+                reDirection[index] = -1;
             else
-                reDirection = 1;
+                reDirection[index] = 1;
         }
-        else if(reAbsAnglePos < reAbsAnglePosLast)
+        else if(reAbsAnglePos[index] < reAbsAnglePosLast[index])
         {
-            if(reAbsAnglePos - reAbsAnglePosLast < -1000)
-                reDirection = 1;
+            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] < -1000)
+                reDirection[index] = 1;
             else
-                reDirection = -1;
+                reDirection[index] = -1;
         }
         else
-            reDirection = 0;
+            reDirection[index] = 0;
 
-        sendOSCMessage(stdPrefix, msgRotaryEnc, "fiff", reAbsAnglePos, reDirection, reVelocity, reCounted);
-        sendEncFlag = FALSE;
-        reMatchCount = 0;
-        reAbsAnglePosLast = reAbsAnglePos;
+        sendOSCMessage(getOSCPrefix(), msgRotaryAbsEnc, "ififf", index, reAbsAnglePos[index], reDirection[index], reVelocity[index], reCounted[index]);
+        sendEncFlag[index] = FALSE;
+        reMatchCount[index] = 0;
+        reAbsAnglePosLast[index] = reAbsAnglePos[index];
     }
-#endif
 }
