@@ -628,19 +628,16 @@ static void smoothingEncoderVelocity(BYTE index)
 #if 1
 void __ISR(_TIMER_4_VECTOR, ipl6) encoderHandle(void)
 {
-    mT5IntEnable(0);
     if(initLedDrvFlag)
         annularLedHandle();
 
     mT4ClearIntFlag();
-
-    mT5IntEnable(1);
 }
 #endif
 
 void annularLedHandle(void)
 {
-    volatile int i;
+    int i;
     WORD msb, lsb;
     
     outputPort(pin_ss, HIGH);
