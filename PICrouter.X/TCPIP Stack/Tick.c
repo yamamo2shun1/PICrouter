@@ -112,7 +112,7 @@ void TickInit(void)
 	// 1:256 prescale
 	T1CONbits.TCKPS = 3;
 	// Base
-	PR1 = 0x7FFF;// 0xFFFF;
+	PR1 = 0x7FFF;//picrouter 0xFFFF;
 	// Clear counter
 	TMR1 = 0;
 
@@ -122,7 +122,7 @@ void TickInit(void)
 		IFS0bits.T1IF = 0;
 		IEC0bits.T1IE = 1;
 	#else
-		IPC1bits.T1IP = 2;	// Interrupt priority 2 (low)
+		IPC1bits.T1IP = 7;//picrouter 2;	// Interrupt priority 2 (low)
 		IFS0CLR = _IFS0_T1IF_MASK;
 		IEC0SET = _IEC0_T1IE_MASK;
 	#endif
@@ -416,7 +416,8 @@ void TickUpdate(void)
   	None
   ***************************************************************************/
 #elif defined(__PIC32MX__)
-void __attribute((interrupt(ipl2), vector(_TIMER_1_VECTOR), nomips16)) _T1Interrupt(void)
+//void __attribute((interrupt(ipl2), vector(_TIMER_1_VECTOR), nomips16)) _T1Interrupt(void)
+void __attribute((interrupt(ipl7srs), vector(_TIMER_1_VECTOR), nomips16)) _T1Interrupt(void)
 {
 	// Increment internal high tick counter
 	dwInternalTicks++;
