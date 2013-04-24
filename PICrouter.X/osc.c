@@ -430,11 +430,11 @@ void getOSCPacket(void)
     
     if(initReceiveFlag && isOSCGetReady())
     {
-        if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
+        //if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
+        if(UDPGetArray(udpPacket[ringBufIndex++], MAX_PACKET_SIZE) > 0)
         {
-            ringBufIndex++;
-            if(ringBufIndex >= MAX_BUF_SIZE)
-                ringBufIndex = 0;
+            //ringBufIndex++;
+            ringBufIndex &= (MAX_BUF_SIZE - 1);
         }
         UDPDiscard();
     }
@@ -507,34 +507,30 @@ static BOOL copyOSCPacketFromUDPPacket()
             }
             j += (4 + len);
 
-            ringBufIndex++;
-            if(ringBufIndex >= MAX_BUF_SIZE)
-                ringBufIndex = 0;
+            //ringBufIndex++;
+            ringBufIndex = (ringBufIndex + 1) & (MAX_BUF_SIZE - 1);
         }
 
-        memset(udpPacket[ringProcessIndex], 0, MAX_PACKET_SIZE);
-        ringProcessIndex++;
-        if(ringProcessIndex >= MAX_BUF_SIZE)
-            ringProcessIndex = 0;
+        memset(udpPacket[ringProcessIndex++], 0, MAX_PACKET_SIZE);
+        //ringProcessIndex++;
+        ringProcessIndex &= (MAX_BUF_SIZE - 1);
 
     }
 
     if(udpPacket[ringProcessIndex][0] != '/')
     {
-        if(ringProcessIndex != ringBufIndex)
+        if(ringProcessIndex++ != ringBufIndex)
         {
-            ringProcessIndex++;
-            if(ringProcessIndex >= MAX_BUF_SIZE)
-                ringProcessIndex = 0;
+            //ringProcessIndex++;
+            ringProcessIndex &= (MAX_BUF_SIZE - 1);
         }
         return FALSE;
     }
 
     memcpy(oscPacket, udpPacket[ringProcessIndex], MAX_PACKET_SIZE);
-    memset(udpPacket[ringProcessIndex], 0, MAX_PACKET_SIZE);
-    ringProcessIndex++;
-    if(ringProcessIndex >= MAX_BUF_SIZE)
-        ringProcessIndex = 0;
+    memset(udpPacket[ringProcessIndex++], 0, MAX_PACKET_SIZE);
+    //ringProcessIndex++;
+    ringProcessIndex &= (MAX_BUF_SIZE - 1);
 
     return TRUE;
 }
