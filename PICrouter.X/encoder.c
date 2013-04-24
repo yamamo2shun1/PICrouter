@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.0 2013/04/23
+ * encoder.c,v.0.6.1 2013/04/24
  */
 
 #include "encoder.h"
@@ -34,9 +34,9 @@ static BYTE numConnectedAbsEnc = 1;
 static char pin_cs[4] = {NULL};
 static char pin_clk[4] = {NULL};
 static char pin_do[4] = {NULL};
+static char pin_ss[4] = {NULL};
 
 static BOOL initLedDrvFlag = FALSE;
-static char pin_ss[8][4] = {NULL};
 static BYTE spi_num = 2;
 
 static BYTE reA[2];
@@ -145,7 +145,7 @@ void initEncoderVariables(void)
 
 #if 1
     OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_7);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_6);
 #endif
 }
 
@@ -231,14 +231,14 @@ char* getAbsEncoderPortDoName(void)
     return pin_do;
 }
 
-void setLedDriverPortSsName(BYTE index, char* name)
+void setLedDriverPortSsName(char* name)
 {
-    memset(pin_ss[index], NULL, sizeof(pin_ss[index]));
-    strcpy(pin_ss[index], name);
+    memset(pin_ss, NULL, sizeof(pin_ss));
+    strcpy(pin_ss, name);
 }
-char* getLedDriverPortSsName(BYTE index)
+char* getLedDriverPortSsName(void)
 {
-    return pin_ss[index];
+    return pin_ss;
 }
 
 void setLedDriverSpiNumber(BYTE num)
@@ -579,7 +579,7 @@ static void calculateEncoderVelocity(BYTE index)
                 if(reVelAvgIndex[index] >= 8)
                     reVelAvgIndex[index] = 0;
 
-                if(fabs(reAbsAnglePos[index] - reAbsAnglePos0[index]) > 800.0)
+                if(fabs(reAbsAnglePos[index] - reAbsAnglePos0[index]) > 700.0)
                 {
                     if(reAbsAnglePos[index] - reAbsAnglePos0[index] < 0.0)
                         diff = (reAbsAnglePos[index] + 1023.0) - reAbsAnglePos0[index];
@@ -626,45 +626,45 @@ static void smoothingEncoderVelocity(BYTE index)
 }
 
 #if 1
-void __ISR(_TIMER_4_VECTOR, ipl7SRS) encoderHandle(void)
+void __ISR(_TIMER_4_VECTOR, ipl6) encoderHandle(void)
 {
-    static BYTE loop = 0;
-
+    mT5IntEnable(0);
     if(initLedDrvFlag)
-    {
-        annularLedHandle(loop);
-        loop++;
-        if(loop >= numConnectedAbsEnc)
-            loop = 0;
-    }
+        annularLedHandle();
+
     mT4ClearIntFlag();
+
+    mT5IntEnable(1);
 }
 #endif
 
-void annularLedHandle(BYTE index)
+void annularLedHandle(void)
 {
-    volatile BYTE i;
+    volatile int i;
+    WORD msb, lsb;
     
-    if(ledOn[index])
+    outputPort(pin_ss, HIGH);
+
+    for(i = numConnectedAbsEnc - 1; i >= 0; i--)
     {
-        //WORD msb, lsb;
-        WORD msb = (WORD)((dwLedSequence[index][ledIntensityIndex[index]] >> 16) & 0x0000FFFF);
-        WORD lsb = (WORD)(dwLedSequence[index][ledIntensityIndex[index]] & 0x0000FFFF);
-
-        for(i = 0; i < numConnectedAbsEnc; i++)
-            outputPort(pin_ss[i], LOW);
-
-        outputPort(pin_ss[index], HIGH);
-
+        if(ledOn[i])
+        {
+            msb = (WORD)((dwLedSequence[i][ledIntensityIndex[i]] >> 16) & 0x0000FFFF);
+            lsb = (WORD)(dwLedSequence[i][ledIntensityIndex[i]] & 0x0000FFFF);
+        }
+        else
+        {
+            msb = 0;
+            lsb = 0;
+        }
         sendSpiTwoWord(spi_num, msb, lsb, 1);
-        //Delay10us(1);
 
-        outputPort(pin_ss[index], LOW);
-
-        ledIntensityIndex[index]++;
-        if(ledIntensityIndex[index] >= 100)
-            ledIntensityIndex[index] = 0;
+        ledIntensityIndex[i]++;
+        if(ledIntensityIndex[i] >= 100)
+            ledIntensityIndex[i] = 0;
     }
+
+    outputPort(pin_ss, LOW);
 }
 
 void sendEncInc32(void)

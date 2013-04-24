@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.6.0 2013/04/23
+ * encoder.h,v.0.6.1 2013/04/24
  */
 
 #ifndef ENCODER_H
@@ -65,8 +65,8 @@ void setAbsEncoderPortClkName(char* name);
 char* getAbsEncoderPortClkName(void);
 void setAbsEncoderPortDoName(char* name);
 char* getAbsEncoderPortDoName(void);
-void setLedDriverPortSsName(BYTE index, char* name);
-char* getLedDriverPortSsName(BYTE index);
+void setLedDriverPortSsName(char* name);
+char* getLedDriverPortSsName(void);
 void setLedDriverSpiNumber(BYTE num);
 BYTE getLedDriverSpiNumber(void);
 
@@ -86,7 +86,7 @@ BYTE getIntensity(BYTE index0, BYTE index1);
 void encoderCheck(BYTE rea, BYTE reb);
 void incEncoderHandle(void);
 void absEncoderHandle(void);
-void annularLedHandle(BYTE index);
+void annularLedHandle(void);
 void sendEncInc32(void);
 void sendEncAbs32(BYTE index);
 
