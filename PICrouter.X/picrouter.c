@@ -268,7 +268,8 @@ void receiveOSCTask(void)
     BYTE index, i, j, k;
     //debug static BYTE testNum = 0;
 
-    mT5IntEnable(0);
+    //mT4IntEnable(0);
+    //mT5IntEnable(0);
 
     getOSCPacket();
 
@@ -2482,7 +2483,8 @@ void receiveOSCTask(void)
         }
         //debug LED_2_Off();
     }
-    mT5IntEnable(1);
+    //mT4IntEnable(1);
+    //mT5IntEnable(1);
 }
 
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
