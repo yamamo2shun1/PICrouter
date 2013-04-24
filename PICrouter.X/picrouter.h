@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.5.1 2013/04/23
+ * picrouter.h,v.1.5.2 2013/04/24
  */
 
 #define CURRENT_VERSION "1.5.1"

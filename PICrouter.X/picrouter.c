@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.1 2013/04/23
+ * picrouter.c,v.1.5.2 2013/04/24
  */
 
 #include "picrouter.h"
@@ -267,6 +267,8 @@ void receiveOSCTask(void)
 {
     BYTE index, i, j, k;
     //debug static BYTE testNum = 0;
+
+    mT5IntEnable(0);
 
     getOSCPacket();
 
@@ -1514,16 +1516,15 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgRotaryLedDrvPinSelect))
             {
-                if(getArgumentsLength() < 3)
+                if(getArgumentsLength() < 2)
                 {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedDrvPinSelect, ": too_few_arguments");
                     return;
                 }
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && compareTypeTagAtIndex(2, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
                 {
-                    BYTE index = getIntArgumentAtIndex(0);
-                    BYTE num = getIntArgumentAtIndex(1);
-                    char* name_ss = getStringArgumentAtIndex(2);
+                    BYTE num = getIntArgumentAtIndex(0);
+                    char* name_ss = getStringArgumentAtIndex(1);
 
                     if(strlen(name_ss) > 3)
                     {
@@ -1531,7 +1532,7 @@ void receiveOSCTask(void)
                         return;
                     }
 
-                    setLedDriverPortSsName(index, name_ss);
+                    setLedDriverPortSsName(name_ss);
                     setPortIOType(name_ss, IO_OUT);
                     outputPort(name_ss, LOW);
 
@@ -2481,6 +2482,7 @@ void receiveOSCTask(void)
         }
         //debug LED_2_Off();
     }
+    mT5IntEnable(1);
 }
 
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
