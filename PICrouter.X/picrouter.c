@@ -29,7 +29,7 @@ void _general_exception_handler(unsigned cause, unsigned status)
 
 void initIOPorts(void)
 {
-    BYTE i = 0;
+    int i = 0;
 
     for(i = 0; i < 14; i++)
     {
@@ -265,7 +265,8 @@ int main(int argc, char** argv) {
 **********************************************/
 void receiveOSCTask(void)
 {
-    BYTE index, i, j, k;
+    BYTE index;
+    int i, j, k;
     //debug static BYTE testNum = 0;
 
     //mT4IntEnable(0);
@@ -2489,7 +2490,7 @@ void receiveOSCTask(void)
 
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
-    volatile BYTE i, j;
+    int i, j;
     static BYTE state_index = 0;
     static BYTE swState0 = 0;
     static BYTE swState1 = 0;
@@ -2513,9 +2514,9 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 if(swState1 != swState0)
                 {
                     if(swState1)
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "si", "off", AppConfig.MyIPAddr.Val);
                     else
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "si", "on", AppConfig.MyIPAddr.Val);
                 }
                 swState0 = swState1;
 
@@ -2583,7 +2584,7 @@ void HIDControlTask(void)
                 {
                     AD1CON1bits.ON = 0;
 
-                    BYTE i;
+                    int i;
                     WORD anum = 0;
                     WORD id = ReceivedHidDataBuffer[2];
                     BYTE state = ReceivedHidDataBuffer[3];
@@ -3275,7 +3276,7 @@ void HIDControlTask(void)
 
 void sendNote(void)
 {
-    BYTE i, j;
+    int i, j;
     for(i = 0; i < MAX_BTN_ROW; i++)
         btnLast[i] = btnCurrent[i];
 
@@ -3302,7 +3303,8 @@ void sendNote(void)
 
 void sendControlChange(void)
 {
-    BYTE i, value;
+    int i;
+    BYTE value;
 
     for(i = 0; i < AN_NUM; i++)
     {
@@ -3335,7 +3337,8 @@ void sendControlChange(void)
 
 void receiveMIDIDatas(void)
 {
-    BYTE i, ch, num, val;
+    int i;
+    BYTE ch, num, val;
 
     if((USBDeviceState < CONFIGURED_STATE) || (USBSuspendControl == 1))
         return;
