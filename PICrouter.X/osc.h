@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.0.1 2013/04/23
+ * osc.h,v.1.0.2 2013/04/25
  */
 
 #ifndef OSC_H
@@ -60,7 +60,6 @@ extern const char msgRotaryAbsEncConnectedNum[];
 extern const char msgSetRotaryAbsEncConnectedNum[];
 extern const char msgGetRotaryAbsEncConnectedNum[];
 extern const char msgRotaryAbsEnc[];
-extern const char msgSetRotaryEncStep[];
 extern const char msgRotaryLedDrvPinSelect[];
 
 // Standard OSC Messages

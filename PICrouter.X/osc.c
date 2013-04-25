@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.1 2013/04/23
+ * osc.c,v.1.0.2 2013/04/25
  */
 
 #include "osc.h"
@@ -68,7 +68,6 @@ const char msgRotaryAbsEncConnectedNum[]    = "/kit/rotary/abs/enc/num";
 const char msgSetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/set";
 const char msgGetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/get";
 const char msgRotaryAbsEnc[]                = "/kit/rotary/abs/enc";
-const char msgSetRotaryEncStep[]            = "/kit/rotary/enc/step/set";
 const char msgRotaryLedDrvPinSelect[]       = "/kit/rotary/led/driver/pin/select";
 
 //Standard OSC Messages
@@ -194,11 +193,11 @@ const char msgSetPwmDuty3[]   = "/pwm/duty/set/3";
 const char msgSetPwmDuty4[]   = "/pwm/duty/set/4";
 
 // Variables
-static volatile BYTE state_index = 0;
-static volatile BYTE indexA = 0;
-static volatile BYTE indexB = 0;
-static volatile BYTE ringBufIndex = 0;
-static volatile BYTE ringProcessIndex = 0;
+static BYTE state_index = 0;
+static BYTE indexA = 0;
+static BYTE indexB = 0;
+static BYTE ringBufIndex = 0;
+static BYTE ringProcessIndex = 0;
 static BYTE udpPacket[MAX_BUF_SIZE][MAX_PACKET_SIZE] = {0};
 static BYTE oscPacket[MAX_PACKET_SIZE] = {0};
 static char rcvAddressStrings[MAX_ADDRESS_LEN] = {0};
@@ -359,23 +358,6 @@ BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 BOOL openOSCReceivePort(WORD port_number)
 {
     RxSocket = UDPOpen(port_number, NULL, 0);
-#if 0
-    NODE_INFO mcRemote;
-
-    mcRemote.IPAddr.v[0] = 224;
-    mcRemote.IPAddr.v[1] = 0;
-    mcRemote.IPAddr.v[2] = 0;
-    mcRemote.IPAddr.v[3] = 1;
-
-    mcRemote.MACAddr.v[0] = 0x01;
-    mcRemote.MACAddr.v[1] = 0x00;
-    mcRemote.MACAddr.v[2] = 0x5E;
-    mcRemote.MACAddr.v[3] = 0x00;
-    mcRemote.MACAddr.v[4] = 0x00;
-    mcRemote.MACAddr.v[5] = 0x01;
-
-    RxSocket = UDPOpen(port_number, (PTR_BASE)&mcRemote , 0);
-#endif
 
     if(RxSocket == INVALID_UDP_SOCKET)
         return FALSE;
@@ -482,7 +464,7 @@ BOOL processOSCPacket(void)
 
 static BOOL copyOSCPacketFromUDPPacket()
 {
-    BYTE i, j;
+    int i, j;
     DWORD len = 0;
 
     if(!strcmp(udpPacket[ringProcessIndex], "#bundle"))
@@ -810,7 +792,7 @@ void sendOSCBundle(void)
 
 BOOL compareOSCPrefix(const char* prefix)
 {
-    BYTE i = 0;
+    int i = 0;
     rcvPrefixLength = strlen(prefix);
 
     if(rcvAddressLength < rcvPrefixLength)
@@ -830,7 +812,7 @@ BOOL compareOSCPrefix(const char* prefix)
 
 BOOL compareOSCAddress(const char* address)
 {
-    BYTE i = rcvPrefixLength, j = 0;
+    int i = rcvPrefixLength, j = 0;
     WORD address_len = strlen(address);
 
     if(rcvAddressLength > rcvPrefixLength + address_len)
