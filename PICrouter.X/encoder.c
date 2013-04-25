@@ -45,7 +45,7 @@ static BYTE reB[2];
 static BYTE reD;
 static int reStep;
 
-static volatile BOOL sendEncFlag[MAX_RE_NUM];
+static BOOL sendEncFlag[MAX_RE_NUM];
 static BOOL reFlag[2];
 static float omega[2];
 static float omega_ma[2][8];
@@ -55,12 +55,12 @@ static DWORD encCount[2];
 static DWORD dt;
 
 static DWORD dwLedData[MAX_RE_NUM];
-static volatile DWORD dwLedSequence[MAX_RE_NUM][100];
+static DWORD dwLedSequence[MAX_RE_NUM][100];
 static BYTE intensity[MAX_RE_NUM][32];
 static BOOL ledOn[MAX_RE_NUM];
 static WORD ledCount[MAX_RE_NUM];
 static BYTE ledIntensity[MAX_RE_NUM];
-static volatile BYTE ledIntensityIndex[MAX_RE_NUM];
+static BYTE ledIntensityIndex[MAX_RE_NUM];
 
 
 // test for EMS22A50
@@ -68,7 +68,7 @@ static WORD reCurrentPos[MAX_RE_NUM];
 static BYTE reAvgIndex[MAX_RE_NUM];
 static BYTE reVelAvgIndex[MAX_RE_NUM];
 static int reVelAvgIndex2[MAX_RE_NUM];
-static volatile BYTE reMatchCount[MAX_RE_NUM];
+static BYTE reMatchCount[MAX_RE_NUM];
 static BYTE reState[MAX_RE_NUM][16];
 static WORD rePosData[MAX_RE_NUM][AVG_NUM];
 static float reAbsAnglePosLast[MAX_RE_NUM];
@@ -397,7 +397,7 @@ void incEncoderHandle(void)
 
 void absEncoderHandle(void)
 {
-    volatile BYTE i = 0;
+    int i = 0;
     static BYTE state_index = 0;
     static BYTE j = 0;
 
@@ -439,7 +439,7 @@ void absEncoderHandle(void)
 
 static void receiveEncoderData(BYTE index)
 {
-    volatile BYTE i;
+    int i;
 
     if(index == 0)
     {
@@ -473,7 +473,7 @@ static void receiveEncoderData(BYTE index)
 
 static void matchingEncoderData(BYTE index)
 {
-    volatile BYTE i;
+    int i;
     BOOL matchFlag = FALSE;
 
     reAvgIndex[index]++;
@@ -510,7 +510,7 @@ static void matchingEncoderData(BYTE index)
 
 static void calculateEncoderPosition(BYTE index)
 {
-    volatile BYTE i;
+    int i;
     BYTE startBoundaryCount = 0;
     BYTE endBoundaryCount = 0;
     float raap_min = 0.0;
@@ -556,7 +556,7 @@ static void calculateEncoderPosition(BYTE index)
 
 static void calculateEncoderVelocity(BYTE index)
 {
-    volatile BYTE i;
+    int i;
     float diff = 0.0;
     
     if(reAvgIndex[index] == AVG_NUM)
@@ -597,7 +597,7 @@ static void calculateEncoderVelocity(BYTE index)
 
 static void smoothingEncoderVelocity(BYTE index)
 {
-    volatile BYTE i;
+    int i;
 
     if(reAvgIndex[index] == AVG_NUM)
     {
@@ -717,7 +717,7 @@ void sendEncAbs32(BYTE index)
         else
             reDirection[index] = 0;
 
-        sendOSCMessage(getOSCPrefix(), msgRotaryAbsEnc, "ififf", index, reAbsAnglePos[index], reDirection[index], reVelocity[index], reCounted[index]);
+        sendOSCMessage(getOSCPrefix(), msgRotaryAbsEnc, "iiif", index, (int)reAbsAnglePos[index], reDirection[index], reVelocity[index]);
         sendEncFlag[index] = FALSE;
         reMatchCount[index] = 0;
         reAbsAnglePosLast[index] = reAbsAnglePos[index];
