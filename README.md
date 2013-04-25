@@ -143,7 +143,7 @@ Tutorial 3 : [OSCを使ったPWMの制御][]
 Tutorial 4 : [OSCを使ったSPIの制御][]  
 Tutorial 5 : [システム設定の変更][]  
 Tutorial 6 : [MIDIをOSCに変換する][]  
-Tutorial 7 : [ファームウェアの書き換え][]
+Tutorial 7 : [ファームウェアの書き換え][]  
 Tutorial 8 : [LED_ENC_ABS_32をPICrouterで制御][]  
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
