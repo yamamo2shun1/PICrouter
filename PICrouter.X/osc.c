@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.2 2013/04/25
+ * osc.c,v.1.0.3 2013/04/26
  */
 
 #include "osc.h"
@@ -54,10 +54,12 @@ const char msgLatticeLedAll[]    = "/kit/lattice/led/all";
 const char msgLatticeLedClear[]  = "/kit/lattice/led/clear";
 
 // for LED_ENC_32 or LED_ENC_ABS_32 (4)
-const char msgRotaryLedStep[]      = "/kit/rotary/led/step";
-const char msgRotaryLedBits[]      = "/kit/rotary/led/bits";
-const char msgRotaryLedIntensity[] = "/kit/rotary/led/intensity";
-const char msgRotaryLedAllInt[]    = "/kit/rotary/led/allint";
+const char msgRotaryLedStep[]         = "/kit/rotary/led/step";
+const char msgRotaryLedBits[]         = "/kit/rotary/led/bits";
+const char msgRotaryLedIntensity[]    = "/kit/rotary/led/intensity";
+const char msgSetRotaryLedIntensity[] = "/kit/rotary/led/intensity/set";
+const char msgGetRotaryLedIntensity[] = "/kit/rotary/led/intensity/get";
+const char msgSetRotaryLedIntensityAll[] = "/kit/rotary/led/intensity/all/set";
 // for LED_ENC_32 (3)
 const char msgRotaryIncEncPinSelect[] = "/kit/rotary/inc/enc/pin/select";
 const char msgRotaryIncEnc[]          = "/kit/rotary/inc/enc";
