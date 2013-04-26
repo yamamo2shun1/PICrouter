@@ -48,8 +48,10 @@ extern const char msgLatticeLedAll[];
 extern const char msgLatticeLedClear[];
 
 // for LED_ENC_32 or LED_ENC_ABS_32
-extern const char msgRotaryLedStep[];
-extern const char msgRotaryLedBits[];
+//extern const char msgRotaryLedStep[];
+extern const char msgSetRotaryLedStep[];
+//extern const char msgRotaryLedBits[];
+extern const char msgSetRotaryLedBits[];
 extern const char msgRotaryLedIntensity[];
 extern const char msgSetRotaryLedIntensity[];
 extern const char msgGetRotaryLedIntensity[];

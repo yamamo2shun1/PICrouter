@@ -54,8 +54,10 @@ const char msgLatticeLedAll[]    = "/kit/lattice/led/all";
 const char msgLatticeLedClear[]  = "/kit/lattice/led/clear";
 
 // for LED_ENC_32 or LED_ENC_ABS_32 (4)
-const char msgRotaryLedStep[]         = "/kit/rotary/led/step";
-const char msgRotaryLedBits[]         = "/kit/rotary/led/bits";
+//const char msgRotaryLedStep[]         = "/kit/rotary/led/step";
+const char msgSetRotaryLedStep[]         = "/kit/rotary/led/step/set";
+//const char msgRotaryLedBits[]         = "/kit/rotary/led/bits";
+const char msgSetRotaryLedBits[]         = "/kit/rotary/led/bits/set";
 const char msgRotaryLedIntensity[]    = "/kit/rotary/led/intensity";
 const char msgSetRotaryLedIntensity[] = "/kit/rotary/led/intensity/set";
 const char msgGetRotaryLedIntensity[] = "/kit/rotary/led/intensity/get";
