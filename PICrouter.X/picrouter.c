@@ -16,10 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.2 2013/04/24
+ * picrouter.c,v.1.5.3 2013/04/26
  */
 
 #include "picrouter.h"
+
+static BYTE sendOSCTaskIndex = 0;
+static BYTE swState0 = 0;
+static BYTE swState1 = 0;
 
 void _general_exception_handler(unsigned cause, unsigned status)
 {
@@ -1584,13 +1588,13 @@ void receiveOSCTask(void)
             {
                 sendOSCMessage(getOSCPrefix(), msgRotaryAbsEncConnectedNum, "i", getNumConnectedAbsEnc());
             }
-            else if(compareOSCAddress(msgRotaryLedStep))
+            else if(compareOSCAddress(msgSetRotaryLedStep))
             {
                 BYTE index;
                 INT16 pos0, pos;
                 if(getArgumentsLength() < 4)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": too_few_arguments");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedStep, ": too_few_arguments");
                     return;
                 }
 
@@ -1598,10 +1602,11 @@ void receiveOSCTask(void)
                 {
                     index = getIntArgumentAtIndex(0);
                     pos0 = getIntArgumentAtIndex(1);
-                    if(24 - pos0 >= 0)
-                        pos = 24 - pos0;
+                    if(pos0 + 16 > 31)
+                        pos = pos0 -16;
                     else
-                        pos = (24 - pos0) + 32;
+                        pos = pos0 + 16;
+
                     INT8 direction = getIntArgumentAtIndex(2);
                     INT8 len = getIntArgumentAtIndex(3);
                     setDwLedData(index, 0);
@@ -1645,7 +1650,7 @@ void receiveOSCTask(void)
                             //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
                             if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
                             {
-                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": wrong_argument_type");
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedStep, ": wrong_argument_type");
                                 return;
                             }
                             
@@ -1702,25 +1707,28 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedStep, ": wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedStep, ": wrong_argument_type");
                     return;
                 }
             }
-            else if(compareOSCAddress(msgRotaryLedBits))
+            else if(compareOSCAddress(msgSetRotaryLedBits))
             {
                 BYTE index;
                 BYTE argLen = getArgumentsLength() - 2;
+                DWORD data0, data1;
 
                 if(getArgumentsLength() < 2)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": too_few_arguments");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedBits, ": too_few_arguments");
                     return;
                 }
 
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
                 {
                     index = getIntArgumentAtIndex(0);
-                    setDwLedData(index, getIntArgumentAtIndex(1));
+                    data0 = getIntArgumentAtIndex(1);
+                    data1 = ((data0 & 0x0000FFFF) << 16) + ((data0 >> 16) & 0x0000FFFF);
+                    setDwLedData(index, data1);
 
                     if(argLen >= 32)
                     {
@@ -1728,7 +1736,7 @@ void receiveOSCTask(void)
                         {
                             if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
                             {
-                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedBits, ": wrong_argument_type");
                                 return;
                             }
                             //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug0", "iiii", argLen, len, pos, i);
@@ -1741,7 +1749,7 @@ void receiveOSCTask(void)
                         {
                             if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
                             {
-                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedBits, ": wrong_argument_type");
                                 return;
                             }
                             //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
@@ -1767,44 +1775,133 @@ void receiveOSCTask(void)
                 }
                 else
                 {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedBits, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetRotaryLedIntensity))
+            {
+                BYTE index, position, intensity;
+
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    index = getIntArgumentAtIndex(0);
+                    if(getInitAbsEncFlag() && index >= getNumConnectedAbsEnc())
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    position = getIntArgumentAtIndex(1) + 16;
+                    if(position > 31)
+                        position -= 32;
+                    if(position > 31)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    intensity = getIntArgumentAtIndex(2);
+                    setIntensity(index, position, intensity);
+                    if(intensity > 100)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    for(j = 0; j < 100; j++)
+                    {
+                        setDwLedSequence(index, j, getDwLedData(index));
+                        for(k = 0; k < 32; k++)
+                        {
+                            if(k == position)
+                                setIntensity(index, k, intensity);
+                            if(j >= getIntensity(index, k))
+                            //if(j >= getIntensity(index, position))
+                                setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                                //setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << position));
+                        }
+                    }
+                }
+                else
+                {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
                     return;
                 }
             }
-            else if(compareOSCAddress(msgRotaryLedIntensity))
+            else if(compareOSCAddress(msgGetRotaryLedIntensity))
             {
-                BYTE index0 = getIntArgumentAtIndex(0);
-                BYTE index1 = getIntArgumentAtIndex(1);
-                setIntensity(index0, index1, getIntArgumentAtIndex(2));
-                if(getIntensity(index0, index1) > 90)
-                    setIntensity(index0, index1, 90);
+                BYTE index, position, intensity;
 
-                for(j = 0; j < 100; j++)
+                if(getArgumentsLength() < 2)
                 {
-                    setDwLedSequence(index0, j, getDwLedData(index0));
-                    for(k = 0; k < 32; k++)
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetRotaryLedIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    index = getIntArgumentAtIndex(0);
+                    if(getInitAbsEncFlag() && index >= getNumConnectedAbsEnc())
                     {
-                        if(j >= getIntensity(index0, k))
-                            setDwLedSequence(index0, j, getDwLedSequence(index0, j) & ~(1 << k));
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetRotaryLedIntensity, ": out_of_range_value");
+                        return;
                     }
+
+                    position = getIntArgumentAtIndex(1);
+                    if(position > 31)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    intensity = getIntensity(index, position);
+
+                    sendOSCMessage(getOSCPrefix(), msgRotaryLedIntensity, "iii", index, position, intensity);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetRotaryLedIntensity, ": wrong_argument_type");
+                    return;
                 }
             }
-            else if(compareOSCAddress(msgRotaryLedAllInt))
+            else if(compareOSCAddress(msgSetRotaryLedIntensityAll))
             {
-                BYTE index = getIntArgumentAtIndex(0);
-                DWORD dwld = getIntArgumentAtIndex(1);
-                if(dwld > 90)
-                    dwld = 90;
+                BYTE index;
+                DWORD all_intensity;
 
-                for(j = 0; j < 100; j++)
+                if(getArgumentsLength() < 2)
                 {
-                    setDwLedSequence(index, j, getDwLedData(index));
-                    for(k = 0; k < 32; k++)
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensityAll, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    index = getIntArgumentAtIndex(0);
+                    all_intensity = getIntArgumentAtIndex(1);
+
+                    for(j = 0; j < 100; j++)
                     {
-                        setIntensity(index, k, dwld);
-                        if(j >= getIntensity(index, k))
-                            setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                        setDwLedSequence(index, j, getDwLedData(index));
+                        for(k = 0; k < 32; k++)
+                        {
+                            setIntensity(index, k, all_intensity);
+                            if(j >= getIntensity(index, k))
+                                setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
+                        }
                     }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensityAll, ": wrong_argument_type");
+                    return;
                 }
             }
         }
@@ -2491,9 +2588,6 @@ void receiveOSCTask(void)
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
-    static BYTE state_index = 0;
-    static BYTE swState0 = 0;
-    static BYTE swState1 = 0;
 
     if(!getInitSendFlag())
     {
@@ -2507,7 +2601,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 
     if(getInitSendFlag())
     {
-        switch(state_index)
+        switch(sendOSCTaskIndex)
         {
             case 0:
                 swState1 = SW_State();
@@ -2520,7 +2614,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 }
                 swState0 = swState1;
 
-                state_index = 1;
+                sendOSCTaskIndex = 1;
                 break;
             case 1:
                 j = 0;
@@ -2534,7 +2628,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 }
                 sendAdc();
 
-                state_index = 2;
+                sendOSCTaskIndex = 2;
                 break;
             case 2:
                 absEncoderHandle();
@@ -2543,10 +2637,10 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                     sendEncAbs32(i);
                 }
                 
-                state_index = 0;
+                sendOSCTaskIndex = 0;
                 break;
             default:
-                state_index = 0;
+                sendOSCTaskIndex = 0;
                 break;
         }
     }
