@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.3 2013/04/26
+ * osc.c,v.1.0.4 2013/05/01
  */
 
 #include "osc.h"
@@ -46,39 +46,38 @@ static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
                                            MY_DEFAULT_MAC_BYTE6};
 
 // for LED_PAD_16 or LED_PAD_64 (6)
-const char msgLatticePad[]       = "/kit/lattice/pad";
-const char msgLatticeLed[]       = "/kit/lattice/led";
-const char msgLatticeLedColumn[] = "/kit/lattice/led/col";
-const char msgLatticeLedRow[]    = "/kit/lattice/led/row";
-const char msgLatticeLedAll[]    = "/kit/lattice/led/all";
-const char msgLatticeLedClear[]  = "/kit/lattice/led/clear";
+const char msgLatticePad[]          = "/lattice/pad";
+const char msgSetLatticeLed[]       = "/lattice/led/set";
+const char msgSetLatticeLedColumn[] = "/lattice/led/col/set";
+const char msgSetLatticeLedRow[]    = "/lattice/led/row/set";
+const char msgSetLatticeLedAll[]    = "/lattice/led/all/set";
+const char msgLatticeLedClear[]     = "/lattice/led/clear";
 
-// for LED_ENC_32 or LED_ENC_ABS_32 (4)
-//const char msgRotaryLedStep[]         = "/kit/rotary/led/step";
-const char msgSetRotaryLedStep[]         = "/kit/rotary/led/step/set";
-//const char msgRotaryLedBits[]         = "/kit/rotary/led/bits";
-const char msgSetRotaryLedBits[]         = "/kit/rotary/led/bits/set";
-const char msgRotaryLedIntensity[]    = "/kit/rotary/led/intensity";
-const char msgSetRotaryLedIntensity[] = "/kit/rotary/led/intensity/set";
-const char msgGetRotaryLedIntensity[] = "/kit/rotary/led/intensity/get";
-const char msgSetRotaryLedIntensityAll[] = "/kit/rotary/led/intensity/all/set";
+// for LED_ENC_32 or LED_ENC_ABS_32 (6)
+const char msgSetRotaryLedStep[]         = "/rotary/led/step/set";
+const char msgSetRotaryLedBits[]         = "/rotary/led/bits/set";
+const char msgRotaryLedIntensity[]       = "/rotary/led/intensity";
+const char msgSetRotaryLedIntensity[]    = "/rotary/led/intensity/set";
+const char msgGetRotaryLedIntensity[]    = "/rotary/led/intensity/get";
+const char msgSetRotaryLedIntensityAll[] = "/rotary/led/intensity/all/set";
 // for LED_ENC_32 (3)
-const char msgRotaryIncEncPinSelect[] = "/kit/rotary/inc/enc/pin/select";
-const char msgRotaryIncEnc[]          = "/kit/rotary/inc/enc";
-const char msgRotaryEncSwitch[]       = "/kit/rotary/inc/enc/switch";
-// for LED_ENC_ABS_32 (3)
-const char msgRotaryAbsEncPinSelect[]       = "/kit/rotary/abs/enc/pin/select";
-const char msgRotaryAbsEncConnectedNum[]    = "/kit/rotary/abs/enc/num";
-const char msgSetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/set";
-const char msgGetRotaryAbsEncConnectedNum[] = "/kit/rotary/abs/enc/num/get";
-const char msgRotaryAbsEnc[]                = "/kit/rotary/abs/enc";
-const char msgRotaryLedDrvPinSelect[]       = "/kit/rotary/led/driver/pin/select";
+const char msgRotaryIncEncPinSelect[] = "/rotary/inc/enc/pin/select";
+const char msgRotaryIncEnc[]          = "/rotary/inc/enc";
+const char msgRotaryIncEncSwitch[]    = "/rotary/inc/enc/switch";
+// for LED_ENC_ABS_32 (6)
+const char msgRotaryAbsEncPinSelect[]       = "/rotary/abs/enc/pin/select";
+const char msgRotaryAbsEncConnectedNum[]    = "/rotary/abs/enc/num";
+const char msgSetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/set";
+const char msgGetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/get";
+const char msgRotaryAbsEnc[]                = "/rotary/abs/enc";
+const char msgRotaryLedDrvPinSelect[]       = "/rotary/led/driver/pin/select";
 
 //Standard OSC Messages
 // for Onboard (2)
 const char msgOnboardLed[] = "/onboard/led";
 const char msgOnboardSw1[] = "/onboard/sw1";
 
+// for I/O Port (6)
 const char msgPortIO[]     = "/port/io";
 const char msgSetPortIO[]  = "/port/io/set";
 const char msgGetPortIO[]  = "/port/io/get";
@@ -97,7 +96,7 @@ const char msgGetAdcDio[]    = "/adc/dio/get";
 const char msgSetAdcDo[]     = "/adc/dout/set";
 const char msgAdcDi[]        = "/adc/din";
 const char msgGetAdcDi[]     = "/adc/din/get";
-// for PWM (10)
+// for PWM (15)
 const char msgPwmEnable[]    = "/pwm/enable";
 const char msgSetPwmEnable[] = "/pwm/enable/set";
 const char msgGetPwmEnable[] = "/pwm/enable/get";
@@ -113,14 +112,14 @@ const char msgGetPwmDio[]    = "/pwm/dio/get";
 const char msgSetPwmDo[]     = "/pwm/dout/set";
 const char msgPwmDi[]        = "/pwm/din";
 const char msgGetPwmDi[]     = "/pwm/din/get";
-// for DIO (4)
+// for DIO (6)
 const char msgDigitalDio[]    = "/digital/dio";
 const char msgSetDigitalDio[] = "/digital/dio/set";
 const char msgGetDigitalDio[] = "/digital/dio/get";
 const char msgSetDigitalDo[]  = "/digital/dout/set";
 const char msgDigitalDi[]     = "/digital/din";
 const char msgGetDigitalDi[]  = "/digital/din/get";
-// for SPI (7)
+// for SPI (11)
 const char msgSetSpiConfig[] = "/spi/config/set";
 const char msgDisableSpi[]   = "/spi/disable";
 const char msgSpiData[]      = "/spi/data";
@@ -182,10 +181,10 @@ const char msgVersion[]       = "/version";
 const char msgGetVersion[]    = "/version/get";
 
 // for touchOSC
-const char toscPrefix[]      = "/tosc";
+const char toscPrefix[] = "/tosc";
 
-const char msgOnboardLed1[]  = "/onboard/led/1";
-const char msgOnboardLed2[]  = "/onboard/led/2";
+const char msgOnboardLed1[] = "/onboard/led/1";
+const char msgOnboardLed2[] = "/onboard/led/2";
 
 const char msgSetPwmEnable1[] = "/pwm/enable/set/1";
 const char msgSetPwmEnable2[] = "/pwm/enable/set/2";
@@ -383,14 +382,14 @@ void closeOSCSendPort(void)
 {
     initSendFlag = FALSE;
     UDPClose(TxSocket);
-    TxSocket = NULL;
+    TxSocket = 0;
 }
 
 void closeOSCReceivePort(void)
 {
     initReceiveFlag = FALSE;
     UDPClose(RxSocket);
-    RxSocket = NULL;
+    RxSocket = 0;
 }
 
 BOOL isOSCGetReady(void)
