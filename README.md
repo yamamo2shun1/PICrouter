@@ -144,7 +144,8 @@ Tutorial 4 : [OSCを使ったSPIの制御][]
 Tutorial 5 : [システム設定の変更][]  
 Tutorial 6 : [MIDIをOSCに変換する][]  
 Tutorial 7 : [ファームウェアの書き換え][]  
-Tutorial 8 : [LED_ENC_ABS_32をPICrouterで制御][]  
+Tutorial 8 : [LED_ENC_32をPICrouterからOSCで制御][]  
+Tutorial 9 : [LED_ENC_ABS_32をPICrouterからOSCで制御][]  
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
@@ -154,7 +155,8 @@ Tutorial 8 : [LED_ENC_ABS_32をPICrouterで制御][]
 [システム設定の変更]: https://github.com/tkrworks/PICrouter/wiki/システム設定の変更
 [MIDIをOSCに変換する]: https://github.com/tkrworks/PICrouter/wiki/MIDIをOSCに変換する
 [ファームウェアの書き換え]: https://github.com/tkrworks/PICrouter/wiki/ファームウェアの書き換え
-[LED_ENC_ABS_32をPICrouterで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_ABS_32をPICrouterで制御
+[LED_ENC_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_32をPICrouterで制御
+[LED_ENC_ABS_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_ABS_32をPICrouterで制御
 
 Tutorial (EN)
 --------------------------------
@@ -166,7 +168,8 @@ Tutorial 4 : [SPI Configuration with OSC][]
 Tutorial 5 : [System Configuration with OSC][]  
 Tutorial 6 : [OSC-MIDI Bridge][]  
 Tutorial 7 : [Firmware Update][]  
-Tutorial 8 : [Control LED_ENC_ABS_32 from PICrouter][]  
+Tutorial 8 : [Control LED_ENC_32 from PICrouter with OSC][]  
+Tutorial 9 : [Control LED_ENC_ABS_32 from PICrouter with OSC][]  
 
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
 [Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
@@ -176,7 +179,8 @@ Tutorial 8 : [Control LED_ENC_ABS_32 from PICrouter][]
 [System Configuration with OSC]: https://github.com/tkrworks/PICrouter/wiki/System-Configuration-with-OSC
 [OSC-MIDI Bridge]: https://github.com/tkrworks/PICrouter/wiki/OSC-MIDI-Bridge
 [Firmware Update]: https://github.com/tkrworks/PICrouter/wiki/Firmware-Update
-[Control LED_ENC_ABS_32 from PICrouter]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_ENC_ABS_32-from-PICrouter
+[Control LED_ENC_32 from PICrouter with OSC]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_ENC_32-from-PICrouter
+[Control LED_ENC_ABS_32 from PICrouter with OSC]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_ENC_ABS_32-from-PICrouter
 
 Supported OSC Messages
 --------------------------------
