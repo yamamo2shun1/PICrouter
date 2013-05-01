@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.6.1 2013/04/24
+ * encoder.h,v.0.6.2 2013/05/01
  */
 
 #ifndef ENCODER_H
@@ -53,12 +53,13 @@ void setInitIncEncFlag(BOOL flag);
 void setInitAbsEncFlag(BOOL flag);
 void setInitLedDrvFlag(BOOL flag);
 
-void setIncEncoderPortAName(char* name);
-char* getIncEncoderPortAName(void);
-void setIncEncoderPortBName(char* name);
-char* getIncEncoderPortBName(void);
-void setIncEncoderPortSwName(char* name);
-char* getIncEncoderPortSwName(void);
+void setIncEncoderPortAName(BYTE index, char* name);
+char* getIncEncoderPortAName(BYTE index);
+void setIncEncoderPortBName(BYTE index, char* name);
+char* getIncEncoderPortBName(BYTE index);
+void setIncEncoderPortSwName(BYTE index, char* name);
+char* getIncEncoderPortSwName(BYTE index);
+
 void setAbsEncoderPortCsName(char* name);
 char* getAbsEncoderPortCsName(void);
 void setAbsEncoderPortClkName(char* name);
@@ -83,11 +84,11 @@ BOOL getLedOn(BYTE index);
 void setIntensity(BYTE index0, BYTE index1, BYTE value);
 BYTE getIntensity(BYTE index0, BYTE index1);
 
-void encoderCheck(BYTE rea, BYTE reb);
-void incEncoderHandle(void);
+void encoderCheck(BYTE index);
+void incEncoderHandle(BYTE index);
 void absEncoderHandle(void);
 void annularLedHandle(void);
-void sendEncInc32(void);
+void sendEncInc32(BYTE index);
 void sendEncAbs32(BYTE index);
 
 #endif	/* ENCODER_H */

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.1 2013/04/24
+ * encoder.c,v.0.6.2 2013/05/01
  */
 
 #include "encoder.h"
@@ -24,42 +24,40 @@
 
 // for LED_ENC_32
 static BOOL initIncEncFlag = FALSE;
-static char pin_a[4] = {NULL};
-static char pin_b[4] = {NULL};
-static char pin_sw[4] = {NULL};
+static char pin_a[MAX_RE_NUM][4] = {0};
+static char pin_b[MAX_RE_NUM][4] = {0};
+static char pin_sw[MAX_RE_NUM][4] = {0};
 
 // for LED_ENC_ABS_32
 static BOOL initAbsEncFlag = FALSE;
 static BYTE numConnectedAbsEnc = 1;
-static char pin_cs[4] = {NULL};
-static char pin_clk[4] = {NULL};
-static char pin_do[4] = {NULL};
-static char pin_ss[4] = {NULL};
+static char pin_cs[4] = {0};
+static char pin_clk[4] = {0};
+static char pin_do[4] = {0};
+static char pin_ss[4] = {0};
 
 static BOOL initLedDrvFlag = FALSE;
 static BYTE spi_num = 2;
 
-static BYTE reA[2];
-static BYTE reB[2];
+static BYTE reA[MAX_RE_NUM][2];
+static BYTE reB[MAX_RE_NUM][2];
 
-static BYTE reD;
-static int reStep;
+static BYTE reD[MAX_RE_NUM];
+static int reStep[MAX_RE_NUM];
 
 static BOOL sendEncFlag[MAX_RE_NUM];
-static BOOL reFlag[2];
-static float omega[2];
-static float omega_ma[2][8];
-static float alpha[2];
-static INT8 direction;
-static DWORD encCount[2];
-static DWORD dt;
+static BOOL reFlag[MAX_RE_NUM][2];
+static float omega[MAX_RE_NUM][2];
+static float omega_ma[MAX_RE_NUM][2][8];
+static INT8 direction[MAX_RE_NUM];
+static DWORD encCount[MAX_RE_NUM][2];
+static DWORD dt[MAX_RE_NUM];
 
 static DWORD dwLedData[MAX_RE_NUM];
 static DWORD dwLedSequence[MAX_RE_NUM][100];
 static BYTE intensity[MAX_RE_NUM][32];
 static BOOL ledOn[MAX_RE_NUM];
 static WORD ledCount[MAX_RE_NUM];
-static BYTE ledIntensity[MAX_RE_NUM];
 static BYTE ledIntensityIndex[MAX_RE_NUM];
 
 
@@ -91,21 +89,21 @@ void initEncoderVariables(void)
 {
     BYTE i = 0, j = 0;
 
-    direction = 0;
-    reD = 0;
-    reStep = 0;
-
-    for(i = 0; i < 2; i++)
-    {
-        reA[i] = 0;
-        reB[i] = 0;
-        reFlag[i] = FALSE;
-        omega[i] = 0.0f;
-        encCount[i] = 0;
-    }
-
     for(j = 0; j < MAX_RE_NUM; j++)
     {
+        direction[j] = 0;
+        reD[j] = 0;
+        reStep[j] = 0;
+
+        for(i = 0; i < 2; i++)
+        {
+            reA[j][i] = 0;
+            reB[j][i] = 0;
+            reFlag[j][i] = FALSE;
+            omega[j][i] = 0.0f;
+            encCount[j][i] = 0;
+        }
+
         sendEncFlag[j] = FALSE;
 
         reCurrentPos[j] = 0;
@@ -139,7 +137,6 @@ void initEncoderVariables(void)
             intensity[j][i] = 0;
         ledOn[j] = FALSE;
         ledCount[j] = 0;
-        ledIntensity[j] = 10;
         ledIntensityIndex[j] = 0;
     }
 
@@ -171,39 +168,39 @@ void setInitLedDrvFlag(BOOL flag)
     initLedDrvFlag = flag;
 }
 
-void setIncEncoderPortAName(char* name)
+void setIncEncoderPortAName(BYTE index, char* name)
 {
-    memset(pin_a, NULL, sizeof(pin_a));
-    strcpy(pin_a, name);
+    memset(pin_a[index], 0, sizeof(pin_a[index]));
+    strcpy(pin_a[index], name);
 }
-char* getIncEncoderPortAName(void)
+char* getIncEncoderPortAName(BYTE index)
 {
-    return pin_a;
-}
-
-void setIncEncoderPortBName(char* name)
-{
-    memset(pin_b, NULL, sizeof(pin_b));
-    strcpy(pin_b, name);
-}
-char* getIncEncoderPortBName(void)
-{
-    return pin_b;
+    return pin_a[index];
 }
 
-void setIncEncoderPortSwName(char* name)
+void setIncEncoderPortBName(BYTE index, char* name)
 {
-    memset(pin_sw, NULL, sizeof(pin_sw));
-    strcpy(pin_sw, name);
+    memset(pin_b[index], 0, sizeof(pin_b[index]));
+    strcpy(pin_b[index], name);
 }
-char* getIncEncoderPortSwName(void)
+char* getIncEncoderPortBName(BYTE index)
 {
-    return pin_sw;
+    return pin_b[index];
+}
+
+void setIncEncoderPortSwName(BYTE index, char* name)
+{
+    memset(pin_sw[index], 0, sizeof(pin_sw[index]));
+    strcpy(pin_sw[index], name);
+}
+char* getIncEncoderPortSwName(BYTE index)
+{
+    return pin_sw[index];
 }
 
 void setAbsEncoderPortCsName(char* name)
 {
-    memset(pin_cs, NULL, sizeof(pin_cs));
+    memset(pin_cs, 0, sizeof(pin_cs));
     strcpy(pin_cs, name);
 }
 char* getAbsEncoderPortCsName(void)
@@ -213,7 +210,7 @@ char* getAbsEncoderPortCsName(void)
 
 void setAbsEncoderPortClkName(char* name)
 {
-    memset(pin_clk, NULL, sizeof(pin_clk));
+    memset(pin_clk, 0, sizeof(pin_clk));
     strcpy(pin_clk, name);
 }
 char* getAbsEncoderPortClkName(void)
@@ -223,7 +220,7 @@ char* getAbsEncoderPortClkName(void)
 
 void setAbsEncoderPortDoName(char* name)
 {
-    memset(pin_do, NULL, sizeof(pin_do));
+    memset(pin_do, 0, sizeof(pin_do));
     strcpy(pin_do, name);
 }
 char* getAbsEncoderPortDoName(void)
@@ -233,7 +230,7 @@ char* getAbsEncoderPortDoName(void)
 
 void setLedDriverPortSsName(char* name)
 {
-    memset(pin_ss, NULL, sizeof(pin_ss));
+    memset(pin_ss, 0, sizeof(pin_ss));
     strcpy(pin_ss, name);
 }
 char* getLedDriverPortSsName(void)
@@ -299,100 +296,116 @@ BYTE getIntensity(BYTE index0, BYTE index1)
     return intensity[index0][index1];
 }
 
-void encoderCheck(BYTE rea, BYTE reb)
+void encoderCheck(BYTE index)
 {
     static BYTE cnt = 0;
-    BYTE i;
+    int i;
     float sum = 0.0;
 
-    reA[1] = rea;
-    reB[1] = reb;
+    reA[index][1] = inputPort(pin_a[index]);
+    reB[index][1] = inputPort(pin_b[index]);
     
-    if((reA[1] != reA[0]) || (reB[1] != reB[0]))
+    if((reA[index][1] != reA[index][0]) || (reB[index][1] != reB[index][0]))
     {
-        reD = (((reA[0] << 1) + reB[0]) << 1) + ((reA[1] << 1) + reB[1]);
-        direction = ((reD & 0x02) >> 1) ? 1 : -1;
-        if(reA[1] != reA[0])
+        reD[index] = (((reA[index][0] << 1) + reB[index][0]) << 1) + ((reA[index][1] << 1) + reB[index][1]);
+        direction[index] = ((reD[index] & 0x02) >> 1) ? 1 : -1;
+        if(reA[index][1] != reA[index][0])
         {
-            //omega[0] = (float)(direction * (2.0 * M_PI / 256.0) / (encCount[0] * TIMER_COUNT) * 10000000.0);
-            //omega_ma[0][cnt] = (float)(direction * (2.0 * M_PI / 256.0) / (encCount[0] * TIMER_COUNT) * 10000000.0);
-            omega_ma[0][cnt] = (float)(direction * (1.0) / (encCount[0] * TIMER_COUNT) * 10000000.0);
-            sum = 0.0;
-            for(i = 0; i < MA_COUNT; i++)
-                sum += omega_ma[0][i];
-            omega[0] = sum / (float)MA_COUNT;
-            alpha[0] = (omega[0] - omega[1]) / (float)(dt * TIMER_COUNT) * 10000000.0;
-            reFlag[0] = TRUE;
-            reFlag[1] = FALSE;
-            encCount[0] = 1;
+            //omega_ma[index][0][cnt] = (float)(direction[index] * (1.0) / (encCount[index][0] * TIMER_COUNT) * 10000000.0);
+            //sum = 0.0;
+            //for(i = 0; i < MA_COUNT; i++)
+            //    sum += omega_ma[index][0][i];
+            //omega[index][0] = sum / (float)MA_COUNT;
+            reFlag[index][0] = TRUE;
+            reFlag[index][1] = FALSE;
+            //encCount[index][0] = 1;
         }
-        else if(reB[1] != reB[0])
+        else if(reB[index][1] != reB[index][0])
         {
-            //omega[1] = (float)(direction * (2.0 * M_PI / 256.0) / (encCount[1] * TIMER_COUNT) * 10000000.0);
-            //omega_ma[1][cnt] = (float)(direction * (2.0 * M_PI / 256.0) / (encCount[1] * TIMER_COUNT) * 10000000.0);
-            omega_ma[1][cnt] = (float)(direction * (1.0) / (encCount[1] * TIMER_COUNT) * 10000000.0);
-            sum = 0.0;
-            for(i = 0; i < MA_COUNT; i++)
-                sum += omega_ma[1][i];
-            omega[1] = sum / (float)MA_COUNT;
-            alpha[1] = (omega[1] - omega[0]) / (float)(dt * TIMER_COUNT) * 10000000.0;
-            reFlag[0] = FALSE;
-            reFlag[1] = TRUE;
-            encCount[1] = 1;
+            //omega_ma[index][1][cnt] = (float)(direction[index] * (1.0) / (encCount[index][1] * TIMER_COUNT) * 10000000.0);
+            //sum = 0.0;
+            //for(i = 0; i < MA_COUNT; i++)
+            //    sum += omega_ma[index][1][i];
+            //omega[index][1] = sum / (float)MA_COUNT;
+            reFlag[index][0] = FALSE;
+            reFlag[index][1] = TRUE;
+            //encCount[index][1] = 1;
         }
-        dt = 1;
-        reA[0] = reA[1];
-        reB[0] = reB[1];
+        //dt[index] = 1;
+        reA[index][0] = reA[index][1];
+        reB[index][0] = reB[index][1];
 
-        if(direction == 1)
+        if(direction[index] == 1)
         {
-            reStep++;
-            if(reStep > 255)
-                reStep = 0;
+            reStep[index]++;
+            if(reStep[index] > 255)
+                reStep[index] = 0;
         }
         else
         {
-            reStep--;
-            if(reStep < 0)
-                reStep = 255;
+            reStep[index]--;
+            if(reStep[index] < 0)
+                reStep[index] = 255;
         }
-        sendEncFlag[0] = TRUE;
+        sendEncFlag[index] = TRUE;
+    }
+}
+
+void incEncoderHandle(BYTE index)
+{
+    if(!getInitSendFlag() || !initIncEncFlag)
+        return;
+
+    encoderCheck(index);
+    //if(ledOn)
+    {
+        //WORD msb, lsb;
+        //msb = (WORD)((dwLedSequence[index][ledIntensityIndex[index]] >> 16) & 0x0000FFFF);
+        //lsb = (WORD)(dwLedSequence[index][ledIntensityIndex[index]] & 0x0000FFFF);
+
+        //sendSpiTwoWord(msb, lsb, 8);
+        //ledIntensityIndex[index]++;
+        //if(ledIntensityIndex[index] == 100)
+        //    ledIntensityIndex[index] = 0;
     }
 #if 0
-    else
-    {
-        if(encCount[0] < 100000)
-            encCount[0]++;
-        if(encCount[1] < 100000)
-            encCount[1]++;
-        if(dt < 100000)
-            dt++;
-    }
+    if(encCount[index][0] < 100000)
+        encCount[index][0]++;
+    if(encCount[index][1] < 100000)
+        encCount[index][1]++;
+    if(dt[index] < 100000)
+        dt[index]++;
 #endif
 }
 
-void incEncoderHandle(void)
+void sendEncInc32(BYTE index)
 {
-#if 0 // for LED_ENC_32
-    encoderCheck(RE_A(), RE_B());
-    if(ledOn)
+    BYTE currentSwitch[MAX_RE_NUM];
+    static BYTE prevSwitch[MAX_RE_NUM];
+    static BOOL switchFlag[MAX_RE_NUM];
+
+    currentSwitch[index] = inputPort(pin_sw[index]);
+    if(prevSwitch[index] != currentSwitch[index])
     {
-        WORD msb, lsb;
-        msb = (WORD)((dwLedSequence[ledIntensityIndex] >> 16) & 0x0000FFFF);
-        lsb = (WORD)(dwLedSequence[ledIntensityIndex] & 0x0000FFFF);
-        sendSpiTwoWord(msb, lsb, 8);
-        ledIntensityIndex++;
-        if(ledIntensityIndex == 100)
-            ledIntensityIndex = 0;
+        switchFlag[index] = TRUE;
+        prevSwitch[index] = currentSwitch[index];
     }
 
-    if(encCount[0] < 100000)
-        encCount[0]++;
-    if(encCount[1] < 100000)
-        encCount[1]++;
-    if(dt < 100000)
-        dt++;
-#endif
+    if(getInitSendFlag() && sendEncFlag[index])
+    {
+        if(reFlag[index][0])
+            sendOSCMessage(getOSCPrefix(), msgRotaryIncEnc, "iiii", index, direction[index], reStep[index], (1 - currentSwitch[index]));
+        else if(reFlag[index][1])
+            sendOSCMessage(getOSCPrefix(), msgRotaryIncEnc, "iiii", index, direction[index], reStep[index], (1 - currentSwitch[index]));
+
+        sendEncFlag[index] = FALSE;
+    }
+
+    if(getInitSendFlag() && switchFlag[index])
+    {
+        sendOSCMessage(getOSCPrefix(), msgRotaryIncEncSwitch, "i", 1 - currentSwitch[index]);
+        switchFlag[index] = FALSE;
+    }
 }
 
 void absEncoderHandle(void)
@@ -639,6 +652,7 @@ void annularLedHandle(void)
 {
     int i;
     WORD msb, lsb;
+    static WORD msb0, lsb0;
     
     outputPort(pin_ss, HIGH);
 
@@ -654,7 +668,12 @@ void annularLedHandle(void)
             msb = 0;
             lsb = 0;
         }
-        sendSpiTwoWord(spi_num, msb, lsb, 1);
+        if(msb != msb0 || lsb != lsb0)
+        {
+            sendSpiTwoWord(spi_num, msb, lsb, 1);
+            msb0 = msb;
+            lsb0 = lsb;
+        }
 
         ledIntensityIndex[i]++;
         if(ledIntensityIndex[i] >= 100)
@@ -662,37 +681,6 @@ void annularLedHandle(void)
     }
 
     outputPort(pin_ss, LOW);
-}
-
-void sendEncInc32(void)
-{
-#if 0 // for LED_ENC_32
-    currentSwitch = RE_SW();
-    if(prevSwitch != currentSwitch)
-    {
-        switchFlag = TRUE;
-        prevSwitch = currentSwitch;
-    }
-
-    if(initSendFlag && sendEncFlag)
-    {
-        if(reFlag[0])
-        {
-            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiffi", direction, reStep, omega[0], alpha[0], (1 - currentSwitch));
-        }
-        else if(reFlag[1])
-        {
-            sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "iiffi", direction, reStep, omega[1], alpha[1], (1 - currentSwitch));
-        }
-        sendEncFlag = FALSE;
-    }
-
-    if(initSendFlag && switchFlag)
-    {
-        sendOSCMessage(TxSocket, prefix, msgRotaryEncSwitch, "i", 1 - currentSwitch);
-        switchFlag = FALSE;
-    }
-#endif
 }
 
 void sendEncAbs32(BYTE index)
