@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.3 2013/04/26
+ * picrouter.c,v.1.5.3 2013/05/01
  */
 
 #include "picrouter.h"
@@ -1454,29 +1454,30 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgRotaryIncEncPinSelect))
             {
-                if(getArgumentsLength() < 3)
+                if(getArgumentsLength() < 4)
                 {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryIncEncPinSelect, ": too_few_arguments");
                     return;
                 }
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's'))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 's'))
                 {
-                    char* name_a = getStringArgumentAtIndex(0);
-                    char* name_b = getStringArgumentAtIndex(1);
-                    char* name_sw = getStringArgumentAtIndex(2);
+                    BYTE index = getIntArgumentAtIndex(0);
+                    char* name_a = getStringArgumentAtIndex(1);
+                    char* name_b = getStringArgumentAtIndex(2);
+                    char* name_sw = getStringArgumentAtIndex(3);
                     
-                    if(strlen(name_a) > 3 || strlen(name_b) > 3 || strlen(name_sw))
+                    if(strlen(name_a) > 3 || strlen(name_b) > 3 || strlen(name_sw) > 3)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryIncEncPinSelect, ": too_long_string_length");
                         return;
                     }
 
-                    setIncEncoderPortAName(name_a);
-                    setPortIOType(name_a, IO_IN);
-                    setIncEncoderPortBName(name_b);
-                    setPortIOType(name_b, IO_IN);
-                    setIncEncoderPortSwName(name_sw);
-                    setPortIOType(name_sw, IO_IN);
+                    setIncEncoderPortAName(index, name_a);
+                    setPortIOType(getIncEncoderPortAName(index), IO_IN);
+                    setIncEncoderPortBName(index, name_b);
+                    setPortIOType(getIncEncoderPortBName(index), IO_IN);
+                    setIncEncoderPortSwName(index, name_sw);
+                    setPortIOType(getIncEncoderPortSwName(index), IO_IN);
 
                     setInitIncEncFlag(TRUE);
                 }
@@ -1603,7 +1604,7 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     pos0 = getIntArgumentAtIndex(1);
                     if(pos0 + 16 > 31)
-                        pos = pos0 -16;
+                        pos = pos0 - 16;
                     else
                         pos = pos0 + 16;
 
@@ -1831,13 +1832,13 @@ void receiveOSCTask(void)
                 }
                 else
                 {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryLedBits, ": wrong_argument_type");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedBits, ": wrong_argument_type");
                     return;
                 }
             }
             else if(compareOSCAddress(msgGetRotaryLedIntensity))
             {
-                BYTE index, position, intensity;
+                BYTE index, position0, position1, intensity;
 
                 if(getArgumentsLength() < 2)
                 {
@@ -1854,16 +1855,20 @@ void receiveOSCTask(void)
                         return;
                     }
 
-                    position = getIntArgumentAtIndex(1);
-                    if(position > 31)
+                    position0 = getIntArgumentAtIndex(1);
+                    position1 = position0 + 16;
+                    if(position1 > 31)
+                        position1 -= 32;
+                    
+                    if(position1 > 31)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensity, ": out_of_range_value");
                         return;
                     }
 
-                    intensity = getIntensity(index, position);
+                    intensity = getIntensity(index, position1);
 
-                    sendOSCMessage(getOSCPrefix(), msgRotaryLedIntensity, "iii", index, position, intensity);
+                    sendOSCMessage(getOSCPrefix(), msgRotaryLedIntensity, "iii", index, position0, intensity);
                 }
                 else
                 {
@@ -2631,6 +2636,15 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 sendOSCTaskIndex = 2;
                 break;
             case 2:
+                for(i = 0; i < getNumConnectedAbsEnc(); i++)
+                {
+                    incEncoderHandle(i);
+                    sendEncInc32(i);
+                }
+                
+                sendOSCTaskIndex = 3;
+                break;
+            case 3:
                 absEncoderHandle();
                 for(i = 0; i < getNumConnectedAbsEnc(); i++)
                 {
