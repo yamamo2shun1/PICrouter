@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.5 2013/01/23
+ * button.h,v.0.6 2013/05/04
  */
 
 #ifndef BUTTON_H
@@ -24,23 +24,44 @@
 
 #include <plib.h>
 #include <GenericTypeDefs.h>
+#include "TimeDelay.h"
 #include "HardwareProfile.h"
 #include "osc.h"
 
+#define MAX_PAD_NUM 4
+
 #define MAX_BTN_ROW 4//1 // 2
 #define MAX_BTN_COL 4//16 // 2
+#define MAX_BTN_NUM 16
 
-extern WORD ledState;
-extern WORD matrixLed[4];
-extern const WORD matrixLedData[4][4];
+void setInitPadFlag(BOOL flag);
+void setNumConnectedLatticePad(BYTE num);
+BYTE getNumConnectedLatticePad(void);
+void setLatticePadPortClkName(BYTE index, char* name);
+char* getLatticePadPortClkName(BYTE index);
+void setLatticePadPortShLdName(BYTE index, char* name);
+char* getLatticePadPortShLdName(BYTE index);
+void setLatticePadPortQhName(BYTE index, char* name);
+char* getLatticePadPortQhName(BYTE index);
+void setLatticePadPortLoadName(char* name);
+char* getLatticePadPortLoadName(void);
+void setInitLatticeLedDrvFlag(BOOL flag);
+BOOL getInitLatticeLedDrvFlag(void);
+void setLatticeLedDriverSpiNumber(BYTE num);
+BYTE getLatticeLedDriverSpiNumber(void);
+void setLatticeLed(BYTE index, WORD data);
+WORD getLatticeLed(BYTE index);
 
-WORD btnCurrent[MAX_BTN_ROW];
-WORD btnLast[MAX_BTN_ROW];
-WORD btnState[MAX_BTN_ROW];
-WORD btnDebounceCount[MAX_BTN_ROW][MAX_BTN_COL];
+void setLatticeLed(BYTE index, WORD data);
+WORD getLatticeLed(BYTE index);
+void setLatticeIntensity(BYTE index0, BYTE index1, BYTE value);
+BYTE getLatticeIntensity(BYTE index0, BYTE index1);
+void setLatticeLedOn(BYTE index, BOOL flag);
+BOOL getLatticeLedOn(BYTE index);
 
 void buttonInit(void);
 BOOL buttonCheck(BYTE row, BYTE index);
-void sendPad(void);
+void sendPad16(void);
+void latticeLedHandle(void);
 
 #endif	/* BUTTON_H */
