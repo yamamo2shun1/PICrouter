@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.2 2013/05/01
+ * encoder.c,v.0.6.3 2013/05/04
  */
 
 #include "encoder.h"
@@ -139,11 +139,6 @@ void initEncoderVariables(void)
         ledCount[j] = 0;
         ledIntensityIndex[j] = 0;
     }
-
-#if 1
-    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_6);
-#endif
 }
 
 void setNumConnectedAbsEnc(BYTE num)
@@ -602,7 +597,7 @@ static void calculateEncoderVelocity(BYTE index)
                 else
                     diff = reAbsAnglePos[index] - reAbsAnglePos0[index];
 
-                 reAvgVelocity[index][reVelAvgIndex2[index]] = diff / (reCounted[index] * ((float)TIMER_COUNT / 10.0)) * 1000000.0;
+                 reAvgVelocity[index][reVelAvgIndex2[index]] = diff / (reCounted[index] * ((float)TIMER4_COUNT / 10.0)) * 1000000.0;
             }
         }
     }
@@ -637,16 +632,6 @@ static void smoothingEncoderVelocity(BYTE index)
         reAvgIndex[index] = 0;
     }
 }
-
-#if 1
-void __ISR(_TIMER_4_VECTOR, ipl6) encoderHandle(void)
-{
-    if(initLedDrvFlag)
-        annularLedHandle();
-
-    mT4ClearIntFlag();
-}
-#endif
 
 void annularLedHandle(void)
 {

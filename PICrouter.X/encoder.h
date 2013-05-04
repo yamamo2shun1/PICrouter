@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.6.2 2013/05/01
+ * encoder.h,v.0.6.3 2013/05/04
  */
 
 #ifndef ENCODER_H
@@ -25,24 +25,15 @@
 #include <math.h>
 #include <GenericTypeDefs.h>
 #include "osc.h"
+#include "iosetting.h"
 
 // Timer4 12.5nsec x 8(pre scaler) x TIMER_COUNT = 100nsec x TIMER_COUNT = timer interval
 // 100nsec x 1000 = 100000nsec = 100usec
-#define TIMER_COUNT 1000
 #define MA_COUNT    8
 #define DELTA       69.230769231
 
 #define MAX_RE_NUM 4
 #define AVG_NUM 8
-
-// LED_ENC
-#if 0 // for LED_ENC_32
-    #define LD32_LOAD(state) LATCbits.LATC13 = state;
-    #define RE_SW()          PORTCbits.RC14
-    #define RE_A()           PORTFbits.RF0
-    #define RE_B()           PORTFbits.RF1
-    #define RE_CLK(state)    LATFbits.LATF0 = state;
-#endif
 
 void initEncoderVariables(void);
 
