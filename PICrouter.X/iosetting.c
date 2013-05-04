@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.7.3 2013/04/02
+  * iosetting.c,v.0.7.4 2013/05/04
  */
 
 #include "iosetting.h"
@@ -736,6 +736,7 @@ void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
             break;
     }
     Nop();
+    //Delay10us(usec);
 }
 
 void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
@@ -752,6 +753,7 @@ void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
             break;
     }
     Nop();
+    //Delay10us(usec);
 }
 
 void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
