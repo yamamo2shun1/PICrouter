@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.h,v.0.6.3 2013/05/04
+ * encoder.h,v.0.6.3 2013/05/05
  */
 
 #ifndef ENCODER_H
@@ -68,8 +68,10 @@ BOOL getInitLedDrvFlag(void);
 
 void setDwLedData(BYTE index, DWORD data);
 DWORD getDwLedData(BYTE index);
+#if 0
 void setDwLedSequence(BYTE index, BYTE step, DWORD data);
 DWORD getDwLedSequence(BYTE index, BYTE step);
+#endif
 void setLedOn(BYTE index, BOOL flag);
 BOOL getLedOn(BYTE index);
 void setIntensity(BYTE index0, BYTE index1, BYTE value);

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.3 2013/05/04
+ * encoder.c,v.0.6.3 2013/05/05
  */
 
 #include "encoder.h"
@@ -54,7 +54,7 @@ static DWORD encCount[MAX_RE_NUM][2];
 static DWORD dt[MAX_RE_NUM];
 
 static DWORD dwLedData[MAX_RE_NUM];
-static DWORD dwLedSequence[MAX_RE_NUM][100];
+//static DWORD dwLedSequence[MAX_RE_NUM][100];
 static BYTE intensity[MAX_RE_NUM][32];
 static BOOL ledOn[MAX_RE_NUM];
 static WORD ledCount[MAX_RE_NUM];
@@ -131,8 +131,10 @@ void initEncoderVariables(void)
         }
 
         dwLedData[j] = 0;
+#if 0
         for(i = 0; i < 100; i++)
             dwLedSequence[j][i] = 0;
+#endif
         for(i = 0; i < 32; i++)
             intensity[j][i] = 0;
         ledOn[j] = FALSE;
@@ -264,6 +266,7 @@ DWORD getDwLedData(BYTE index)
     return dwLedData[index];
 }
 
+#if 0
 void setDwLedSequence(BYTE index, BYTE step, DWORD data)
 {
     dwLedSequence[index][step] = data;
@@ -272,6 +275,7 @@ DWORD getDwLedSequence(BYTE index, BYTE step)
 {
     return dwLedSequence[index][step];
 }
+#endif
 
 void setLedOn(BYTE index, BOOL flag)
 {
@@ -352,25 +356,6 @@ void incEncoderHandle(BYTE index)
         return;
 
     encoderCheck(index);
-    //if(ledOn)
-    {
-        //WORD msb, lsb;
-        //msb = (WORD)((dwLedSequence[index][ledIntensityIndex[index]] >> 16) & 0x0000FFFF);
-        //lsb = (WORD)(dwLedSequence[index][ledIntensityIndex[index]] & 0x0000FFFF);
-
-        //sendSpiTwoWord(msb, lsb, 8);
-        //ledIntensityIndex[index]++;
-        //if(ledIntensityIndex[index] == 100)
-        //    ledIntensityIndex[index] = 0;
-    }
-#if 0
-    if(encCount[index][0] < 100000)
-        encCount[index][0]++;
-    if(encCount[index][1] < 100000)
-        encCount[index][1]++;
-    if(dt[index] < 100000)
-        dt[index]++;
-#endif
 }
 
 void sendEncInc32(BYTE index)
@@ -635,7 +620,8 @@ static void smoothingEncoderVelocity(BYTE index)
 
 void annularLedHandle(void)
 {
-    int i;
+    int i, j;
+    DWORD data;
     WORD msb, lsb;
     static WORD msb0, lsb0;
     
@@ -645,8 +631,19 @@ void annularLedHandle(void)
     {
         if(ledOn[i])
         {
+#if 0
             msb = (WORD)((dwLedSequence[i][ledIntensityIndex[i]] >> 16) & 0x0000FFFF);
             lsb = (WORD)(dwLedSequence[i][ledIntensityIndex[i]] & 0x0000FFFF);
+#else
+            data = dwLedData[i];
+            for(j = 0; j < 16; j++)
+            {
+                if(ledIntensityIndex[i] > intensity[i][j])
+                    data &= ~(1 << j);
+            }
+            msb = (WORD)((data >> 16) & 0x0000FFFF);
+            lsb = (WORD)(data & 0x0000FFFF);
+#endif
         }
         else
         {
