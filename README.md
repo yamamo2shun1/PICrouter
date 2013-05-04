@@ -123,7 +123,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.5.3) Updated 2013/05/01  
+#### PICrouter (current ver. is 1.5.4) Updated 2013/05/04  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
@@ -146,6 +146,7 @@ Tutorial 6 : [MIDIをOSCに変換する][]
 Tutorial 7 : [ファームウェアの書き換え][]  
 Tutorial 8 : [LED_ENC_32をPICrouterからOSCで制御][]  
 Tutorial 9 : [LED_ENC_ABS_32をPICrouterからOSCで制御][]  
+Tutorial 10 : LED_PAD_16をPICrouterからOSCで制御
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
@@ -170,6 +171,7 @@ Tutorial 6 : [OSC-MIDI Bridge][]
 Tutorial 7 : [Firmware Update][]  
 Tutorial 8 : [Control LED_ENC_32 from PICrouter with OSC][]  
 Tutorial 9 : [Control LED_ENC_ABS_32 from PICrouter with OSC][]  
+Tutorial 10 : Control LED_PAD_16 from PICrouter with OSC
 
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
 [Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
