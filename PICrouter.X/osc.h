@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.0.4 2013/05/01
+ * osc.h,v.1.0.6 2013/05/05
  */
 
 #ifndef OSC_H
@@ -40,14 +40,24 @@
 APP_CONFIG AppConfig;
 
 // for LED_PAD_16 or LED_PAD_64
+extern const char msgLatticePadConnectedNum[];
+extern const char msgSetLatticePadConnectedNum[];
+extern const char msgGetLatticePadConnectedNum[];
+extern const char msgLatticePadPinSelect[];
 extern const char msgLatticePad[];
+extern const char msgLatticeLedDrvPinSelect[];
 extern const char msgSetLatticeLed[];
 extern const char msgSetLatticeLedColumn[];
 extern const char msgSetLatticeLedRow[];
 extern const char msgSetLatticeLedAll[];
 extern const char msgLatticeLedClear[];
+extern const char msgLatticeLedIntensity[];
+extern const char msgGetLatticeLedIntensity[];
+extern const char msgLatticeLedIntensityAll[];
+extern const char msgGetLatticeLedIntensityAll[];
 
 // for LED_ENC_32 or LED_ENC_ABS_32
+extern const char msgRotaryLedDrvPinSelect[];
 //extern const char msgRotaryLedStep[];
 extern const char msgSetRotaryLedStep[];
 //extern const char msgRotaryLedBits[];
@@ -64,7 +74,6 @@ extern const char msgRotaryAbsEncConnectedNum[];
 extern const char msgSetRotaryAbsEncConnectedNum[];
 extern const char msgGetRotaryAbsEncConnectedNum[];
 extern const char msgRotaryAbsEnc[];
-extern const char msgRotaryLedDrvPinSelect[];
 
 // Standard OSC Messages
 // for Onboard

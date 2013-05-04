@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.4 2013/05/01
+ * osc.c,v.1.0.6 2013/05/05
  */
 
 #include "osc.h"
@@ -45,15 +45,25 @@ static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1,
                                            MY_DEFAULT_MAC_BYTE5,
                                            MY_DEFAULT_MAC_BYTE6};
 
-// for LED_PAD_16 or LED_PAD_64 (6)
-const char msgLatticePad[]          = "/lattice/pad";
-const char msgSetLatticeLed[]       = "/lattice/led/set";
-const char msgSetLatticeLedColumn[] = "/lattice/led/col/set";
-const char msgSetLatticeLedRow[]    = "/lattice/led/row/set";
-const char msgSetLatticeLedAll[]    = "/lattice/led/all/set";
-const char msgLatticeLedClear[]     = "/lattice/led/clear";
+// for LED_PAD_16 or LED_PAD_64 (15)
+const char msgLatticePadConnectedNum[]    = "/lattice/pad/num";
+const char msgSetLatticePadConnectedNum[] = "/lattice/pad/num/set";
+const char msgGetLatticePadConnectedNum[] = "/lattice/pad/num/get";
+const char msgLatticePadPinSelect[]       = "/lattice/pad/pin/select";
+const char msgLatticePad[]                = "/lattice/pad";
+const char msgLatticeLedDrvPinSelect[]    = "/lattice/led/driver/pin/select";
+const char msgSetLatticeLed[]             = "/lattice/led/set";
+const char msgSetLatticeLedColumn[]       = "/lattice/led/col/set";
+const char msgSetLatticeLedRow[]          = "/lattice/led/row/set";
+const char msgSetLatticeLedAll[]          = "/lattice/led/all/set";
+const char msgLatticeLedClear[]           = "/lattice/led/clear";
+const char msgLatticeLedIntensity[]       = "/lattice/led/intensity";
+const char msgGetLatticeLedIntensity[]    = "/lattice/led/intensity/get";
+const char msgLatticeLedIntensityAll[]    = "/lattice/led/intensity/all";
+const char msgGetLatticeLedIntensityAll[] = "/lattice/led/intensity/all/get";
 
 // for LED_ENC_32 or LED_ENC_ABS_32 (6)
+const char msgRotaryLedDrvPinSelect[]    = "/rotary/led/driver/pin/select";
 const char msgSetRotaryLedStep[]         = "/rotary/led/step/set";
 const char msgSetRotaryLedBits[]         = "/rotary/led/bits/set";
 const char msgRotaryLedIntensity[]       = "/rotary/led/intensity";
@@ -70,7 +80,6 @@ const char msgRotaryAbsEncConnectedNum[]    = "/rotary/abs/enc/num";
 const char msgSetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/set";
 const char msgGetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/get";
 const char msgRotaryAbsEnc[]                = "/rotary/abs/enc";
-const char msgRotaryLedDrvPinSelect[]       = "/rotary/led/driver/pin/select";
 
 //Standard OSC Messages
 // for Onboard (2)
