@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.3 2013/05/01
+ * picrouter.c,v.1.5.4 2013/05/04
  */
 
 #include "picrouter.h"
@@ -85,7 +85,10 @@ int main(int argc, char** argv) {
     DelayMs(100);
     mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
-    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, 2000);
+    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER4_COUNT);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_6);
+
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
     ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
 
     // Port Initialization
@@ -1452,6 +1455,417 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
             }
+            else if(compareOSCAddress(msgLatticePadPinSelect))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 's'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    char* name_clk = getStringArgumentAtIndex(1);
+                    char* name_shld = getStringArgumentAtIndex(2);
+                    char* name_qh = getStringArgumentAtIndex(3);
+
+                    if(strlen(name_clk) > 3 || strlen(name_shld) > 3 || strlen(name_qh) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLatticePadPortClkName(index, name_clk);
+                    setPortIOType(getLatticePadPortClkName(index), IO_OUT);
+                    setLatticePadPortShLdName(index, name_shld);
+                    setPortIOType(getLatticePadPortShLdName(index), IO_OUT);
+                    setLatticePadPortQhName(index, name_qh);
+                    setPortIOType(getLatticePadPortQhName(index), IO_IN);
+
+                    setInitPadFlag(TRUE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgLatticeLedDrvPinSelect))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedDrvPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+                {
+                    BYTE num = getIntArgumentAtIndex(0);
+                    char* name_load = getStringArgumentAtIndex(1);
+
+                    if(strlen(name_load) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedDrvPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLatticePadPortLoadName(name_load);
+                    setPortIOType(name_load, IO_OUT);
+                    outputPort(name_load, LOW);
+
+                    switch(num)
+                    {
+                        case 2:
+                            setLatticeLedDriverSpiNumber(2);
+                            SpiChnClose(2);
+                            SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 4);
+                            setInitLatticeLedDrvFlag(TRUE);
+                            break;
+                        case 4:
+                            setLatticeLedDriverSpiNumber(4);
+                            SpiChnClose(4);
+                            SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 4);
+                            setInitLatticeLedDrvFlag(TRUE);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedDrvPinSelect, ": out_of_range_value");
+                            return;
+                            break;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedDrvPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticePadConnectedNum))
+            {
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    int num = getIntArgumentAtIndex(0);
+                    if(num < 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticePadConnectedNum, ": out_of_range_value");
+                        return;
+                    }
+                    setNumConnectedLatticePad(num);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticePadConnectedNum, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticePadConnectedNum))
+            {
+                sendOSCMessage(getOSCPrefix(), msgLatticePadConnectedNum, "i", getNumConnectedLatticePad());
+            }
+            else if(compareOSCAddress(msgSetLatticeLed))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLed, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE x = getIntArgumentAtIndex(1);
+                    BYTE y = getIntArgumentAtIndex(2);
+                    BYTE state = getIntArgumentAtIndex(3);
+                    BYTE intensity;
+                    WORD pos = (1 << y) << (x * 4);
+
+                    if(x > 3 || y > 3 || state > 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLed, ": out_of_range_value");
+                        return;
+                    }
+
+                    if(getArgumentsLength() == 4)
+                        setLatticeIntensity(index, y + (x * 4), 100);
+                    else if(getArgumentsLength() == 5)
+                    {
+                        if(compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f'))
+                        {
+                            intensity = getIntArgumentAtIndex(4);
+                            if(intensity > 100)
+                                intensity = 100;
+                            setLatticeIntensity(index, y + (x * 4), intensity);
+                        }
+                        else
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLed, ": wrong_argument_type");
+                            return;
+                        }
+                    }
+
+                    if(state)
+                        setLatticeLed(index, getLatticeLed(index) | pos);
+                    else
+                        setLatticeLed(index, getLatticeLed(index) & ~pos);
+
+                    if(getLatticeLed(index) != 0)
+                        setLatticeLedOn(index, TRUE);
+                    else
+                        setLatticeLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLed, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeLedColumn))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE column = getIntArgumentAtIndex(1);
+                    BYTE data = getIntArgumentAtIndex(2);
+
+                    if(column > 3 || data > 15)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": out_of_range_value");
+                        return;
+                    }
+
+                    setLatticeLed(index, getLatticeLed(index) & ~(0x000F << (column * 4)));
+                    setLatticeLed(index, getLatticeLed(index) | (data << (column * 4)));
+
+                    if(getArgumentsLength() == 3)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeIntensity(index, i + (column * 4), 100);
+                    }
+                    else if(getArgumentsLength() == 7)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeIntensity(index, i + (column * 4), getIntArgumentAtIndex(3 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeLed(index) != 0)
+                        setLatticeLedOn(index, TRUE);
+                    else
+                        setLatticeLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeLedRow))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE row = getIntArgumentAtIndex(1);
+                    BYTE data = getIntArgumentAtIndex(2);
+                    WORD data1 = 0;
+
+                    if(row > 3 || data > 15)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedRow, ": out_of_range_value");
+                        return;
+                    }
+
+                    for(i = 0; i < 4; i++)
+                    {
+                        if((data >> i) & 0x01)
+                            data1 |= (1 << (i * 4));
+                    }
+                    setLatticeLed(index, getLatticeLed(index) & ~(0x1111 << row));
+                    setLatticeLed(index, getLatticeLed(index) | (data1 << row));
+
+                    if(getArgumentsLength() == 3)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeIntensity(index, row + (i * 4), 100);
+                    }
+                    else if(getArgumentsLength() == 7)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeIntensity(index, row + (i * 4), getIntArgumentAtIndex(3 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedRow, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeLed(index) != 0)
+                        setLatticeLedOn(index, TRUE);
+                    else
+                        setLatticeLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedRow, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeLedAll))
+            {
+                if(getArgumentsLength() < 5)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedAll, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE data = 0;
+                    WORD data1;
+
+                    for(i = 0; i < 4; i++)
+                    {
+                        data = getIntArgumentAtIndex(i + 1);
+                        if(data > 15)
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedAll, ": out_of_range_value");
+                            return;
+                        }
+
+                        data1 = 0;
+                        for(j = 0; j < 4; j++)
+                        {
+                            if((data >> j) & 0x01)
+                                data1 |= (1 << (j * 4));
+                        }
+                        setLatticeLed(index, getLatticeLed(index) & ~(0x1111 << i));
+                        setLatticeLed(index, getLatticeLed(index) | (data1 << i));
+                    }
+
+                    if(getArgumentsLength() == 5)
+                    {
+                        for(i = 0; i < 16; i++)
+                            setLatticeIntensity(index, i, 100);
+                    }
+                    else if(getArgumentsLength() == 21)
+                    {
+                        for(i = 0; i < 16; i++)
+                            setLatticeIntensity(index, i, getIntArgumentAtIndex(5 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedAll, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeLed(index) != 0)
+                        setLatticeLedOn(index, TRUE);
+                    else
+                        setLatticeLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeLedColumn, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgLatticeLedClear))
+            {
+                if(getArgumentsLength() < 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedClear, ": too_few_arguments");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    setLatticeLed(index, 0);
+                    setLatticeLedOn(index, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeLedClear, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeLedIntensity))
+            {
+                if(getArgumentsLength() < 3)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeLedIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE x = getIntArgumentAtIndex(1);
+                    BYTE y = getIntArgumentAtIndex(2);
+
+                    if(x > 3 || y > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeLedIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    sendOSCMessage(getOSCPrefix(), msgLatticeLedIntensity, "iiii", index, x, y, getLatticeIntensity(index, y + (x * 4)));
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeLedIntensity, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeLedIntensityAll))
+            {
+                if(getArgumentsLength() < 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeLedIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+
+                    sendOSCMessage(getOSCPrefix(), msgLatticeLedIntensity, "iiiiiiiiiiiiiiiii", index,
+                                   getLatticeIntensity(index, 0), getLatticeIntensity(index, 1),
+                                   getLatticeIntensity(index, 2), getLatticeIntensity(index, 3),
+                                   getLatticeIntensity(index, 4), getLatticeIntensity(index, 5),
+                                   getLatticeIntensity(index, 6), getLatticeIntensity(index, 7),
+                                   getLatticeIntensity(index, 8), getLatticeIntensity(index, 9),
+                                   getLatticeIntensity(index, 10), getLatticeIntensity(index, 11),
+                                   getLatticeIntensity(index, 12), getLatticeIntensity(index, 13),
+                                   getLatticeIntensity(index, 14), getLatticeIntensity(index, 15));
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeLedIntensity, ": wrong_argument_type");
+                    return;
+                }
+            }
             else if(compareOSCAddress(msgRotaryIncEncPinSelect))
             {
                 if(getArgumentsLength() < 4)
@@ -1546,11 +1960,13 @@ void receiveOSCTask(void)
                     switch(num)
                     {
                         case 2:
+                            setLedDriverSpiNumber(2);
                             SpiChnClose(2);
                             SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
                             setInitLedDrvFlag(TRUE);
                             break;
                         case 4:
+                            setLedDriverSpiNumber(4);
                             SpiChnClose(4);
                             SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_ON, 4);
                             setInitLedDrvFlag(TRUE);
@@ -1616,59 +2032,29 @@ void receiveOSCTask(void)
 
                     if(argLen >= len)
                         argLen = len;
-#if 0
-                    {
-                        for(i = 0; i < len; i++)
-                        {
-                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug0", "iiii", argLen, len, pos, i);
-                            if(!compareTypeTagAtIndex(0, 'i') && !compareTypeTagAtIndex(0, 'f'))
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "ss", msgRotaryAbsEncPinSelect, ": wrong_argument_type");
-                                return;
-                            }
 
-                            if(direction > 0)
-                            {
-                                if(pos + i < 32)
-                                    setIntensity(index, pos + i, getIntArgumentAtIndex(i + 4));
-                                else
-                                    setIntensity(index, pos + i - 32, getIntArgumentAtIndex(i + 4));
-                            }
-                            else if(direction < 0)
-                            {
-                                if(pos >= i)
-                                    setIntensity(index, pos - i, getIntArgumentAtIndex(i + 4));
-                                else
-                                    setIntensity(index, 32 + pos - i, getIntArgumentAtIndex(i + 4));
-                            }
-                        }
-                    }
-                    else if(argLen < len)
-#endif
+                    for(i = 0; i < argLen; i++)
                     {
-                        for(i = 0; i < argLen; i++)
+                        //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
+                        if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
                         {
-                            //debug sendOSCMessage(TxSocket, getOSCPrefix(), "/debug1", "iiii", argLen, len, pos, i);
-                            if(!compareTypeTagAtIndex(i, 'i') && !compareTypeTagAtIndex(i, 'f'))
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedStep, ": wrong_argument_type");
-                                return;
-                            }
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedStep, ": wrong_argument_type");
+                            return;
+                        }
                             
-                            if(direction > 0)
-                            {
-                                if(pos + i < 32)
-                                    setIntensity(index, pos + i, getIntArgumentAtIndex(i + 4));
-                                else
-                                    setIntensity(index, pos + i - 32, getIntArgumentAtIndex(i + 4));
-                            }
-                            else if(direction < 0)
-                            {
-                                if(pos >= i)
-                                    setIntensity(index, pos - i, getIntArgumentAtIndex(i + 4));
-                                else
-                                    setIntensity(index, 32 + pos - i, getIntArgumentAtIndex(i + 4));
-                            }
+                        if(direction > 0)
+                        {
+                            if(pos + i < 32)
+                                setIntensity(index, pos + i, getIntArgumentAtIndex(i + 4));
+                            else
+                                setIntensity(index, pos + i - 32, getIntArgumentAtIndex(i + 4));
+                        }
+                        else if(direction < 0)
+                        {
+                            if(pos >= i)
+                                setIntensity(index, pos - i, getIntArgumentAtIndex(i + 4));
+                            else
+                                setIntensity(index, 32 + pos - i, getIntArgumentAtIndex(i + 4));
                         }
                     }
 
@@ -1690,6 +2076,7 @@ void receiveOSCTask(void)
                         }
                     }
 
+#if 0
                     for(j = 0; j < 100; j++)
                     {
                         setDwLedSequence(index, j, getDwLedData(index));
@@ -1700,6 +2087,7 @@ void receiveOSCTask(void)
                                 setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
                         }
                     }
+#endif
 
                     if(getDwLedData(index) != 0)
                         setLedOn(index, TRUE);
@@ -1758,6 +2146,7 @@ void receiveOSCTask(void)
                         }
                     }
 
+#if 0
                     for(j = 0; j < 100; j++)
                     {
                         setDwLedSequence(index, j, getDwLedData(index));
@@ -1768,6 +2157,7 @@ void receiveOSCTask(void)
                                 setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
                         }
                     }
+#endif
 
                     if(getDwLedData(index) != 0)
                         setLedOn(index, TRUE);
@@ -1816,6 +2206,7 @@ void receiveOSCTask(void)
                         return;
                     }
 
+#if 0
                     for(j = 0; j < 100; j++)
                     {
                         setDwLedSequence(index, j, getDwLedData(index));
@@ -1829,6 +2220,7 @@ void receiveOSCTask(void)
                                 //setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << position));
                         }
                     }
+#endif
                 }
                 else
                 {
@@ -1892,6 +2284,7 @@ void receiveOSCTask(void)
                     index = getIntArgumentAtIndex(0);
                     all_intensity = getIntArgumentAtIndex(1);
 
+#if 0
                     for(j = 0; j < 100; j++)
                     {
                         setDwLedSequence(index, j, getDwLedData(index));
@@ -1902,6 +2295,10 @@ void receiveOSCTask(void)
                                 setDwLedSequence(index, j, getDwLedSequence(index, j) & ~(1 << k));
                         }
                     }
+#else
+                    for(k = 0; k < 32; k++)
+                        setIntensity(index, k, all_intensity);
+#endif
                 }
                 else
                 {
@@ -2590,6 +2987,32 @@ void receiveOSCTask(void)
     //mT5IntEnable(1);
 }
 
+void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
+{
+    static BYTE led_state = 0;
+    
+    switch(led_state)
+    {
+        case 0:
+            if(getInitLedDrvFlag())
+                annularLedHandle();
+            
+            led_state = 1;
+            break;
+        case 1:
+            if(getInitLatticeLedDrvFlag())
+                latticeLedHandle();
+            
+            led_state = 0;
+            break;
+        default:
+            led_state = 0;
+            break;
+    }
+
+    mT4ClearIntFlag();
+}
+
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
@@ -2636,15 +3059,24 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 sendOSCTaskIndex = 2;
                 break;
             case 2:
+                //for(i = 0; i < getNumConnectedAbsEnc(); i++)
+                //{
+                //    incEncoderHandle(i);
+                //}
+                sendPad16();
+
+                sendOSCTaskIndex = 3;
+                break;
+            case 3:
                 for(i = 0; i < getNumConnectedAbsEnc(); i++)
                 {
                     incEncoderHandle(i);
                     sendEncInc32(i);
                 }
                 
-                sendOSCTaskIndex = 3;
+                sendOSCTaskIndex = 4;
                 break;
-            case 3:
+            case 4:
                 absEncoderHandle();
                 for(i = 0; i < getNumConnectedAbsEnc(); i++)
                 {
@@ -3382,6 +3814,7 @@ void HIDControlTask(void)
     }
 }
 
+#if 0
 void sendNote(void)
 {
     int i, j;
@@ -3408,6 +3841,7 @@ void sendNote(void)
     }
     //delayUs(2);
 }
+#endif
 
 void sendControlChange(void)
 {
