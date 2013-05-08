@@ -37,16 +37,16 @@ PICrouter will be an useful with the following purpose.
 
 Demo
 
-* [PICrouter and MobMuPlat OSC Demo]
-* [PICrouter and touchOSC Demo: PWM Control]
-* [LED Intensity Control Test with PICrouter and LED_PAD_16]
-* [Multiple LED_ENC_ABS_32 Control Test from PICrouter]
+* [PICrouter and MobMuPlat OSC Demo][]
+* [PICrouter and touchOSC Demo: PWM Control][]
+* [LED Intensity Control Test with PICrouter and LED_PAD_16][]
+* [Multiple LED_ENC_ABS_32 Control Test from PICrouter][]
 
 [Open Sound Control]:http://opensoundcontrol.org
 
 [PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
 [PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
-[LED_Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
+[LED Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
 [Multiple LED_ENC_ABS_32 Control Test from PICrouter]: http://youtu.be/imvcYX0qTLs
 
 <div align="center">
