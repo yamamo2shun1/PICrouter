@@ -158,7 +158,7 @@ Tutorial 10 : [LED_PAD_16をPICrouterからOSCで制御][]
 [ファームウェアの書き換え]: https://github.com/tkrworks/PICrouter/wiki/ファームウェアの書き換え
 [LED_ENC_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_32をPICrouterで制御
 [LED_ENC_ABS_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_ABS_32をPICrouterで制御
-[LED_PAD_16をPICrouterからOSCで制御][]: https://github.com/tkrworks/PICrouter/wiki/LED_PAD_16をPICrouterで制御
+[LED_PAD_16をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_PAD_16をPICrouterで制御
 
 Tutorial (EN)
 --------------------------------
