@@ -172,7 +172,7 @@ Tutorial 6 : [OSC-MIDI Bridge][]
 Tutorial 7 : [Firmware Update][]  
 Tutorial 8 : [Control LED_ENC_32 from PICrouter with OSC][]  
 Tutorial 9 : [Control LED_ENC_ABS_32 from PICrouter with OSC][]  
-Tutorial 10 : Control LED_PAD_16 from PICrouter with OSC
+Tutorial 10 : [Control LED_PAD_16 from PICrouter with OSC][]
 
 [Introduction]: https://github.com/tkrworks/PICrouter/wiki/Introduction
 [Digital IO Control with OSC]: https://github.com/tkrworks/PICrouter/wiki/Digital-IO-Control-with-OSC
@@ -184,6 +184,7 @@ Tutorial 10 : Control LED_PAD_16 from PICrouter with OSC
 [Firmware Update]: https://github.com/tkrworks/PICrouter/wiki/Firmware-Update
 [Control LED_ENC_32 from PICrouter with OSC]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_ENC_32-from-PICrouter
 [Control LED_ENC_ABS_32 from PICrouter with OSC]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_ENC_ABS_32-from-PICrouter
+[Control LED_PAD_16 from PICrouter with OSC]: https://github.com/tkrworks/PICrouter/wiki/Control-LED_PAD_16-from-PICrouter-with-OSC
 
 Supported OSC Messages
 --------------------------------
