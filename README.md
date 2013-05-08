@@ -39,11 +39,15 @@ Demo
 
 * [PICrouter and MobMuPlat OSC Demo]
 * [PICrouter and touchOSC Demo: PWM Control]
+* [LED Intensity Control Test with PICrouter and LED_PAD_16]
+* [Multiple LED_ENC_ABS_32 Control Test from PICrouter]
 
 [Open Sound Control]:http://opensoundcontrol.org
 
 [PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
 [PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
+[LED_Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
+[Multiple LED_ENC_ABS_32 Control Test from PICrouter]: http://youtu.be/imvcYX0qTLs
 
 <div align="center">
 <a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a>  
