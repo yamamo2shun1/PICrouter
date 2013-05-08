@@ -90,7 +90,7 @@ Pin Assign
 
 Development
 ------
-* Microchip [MPLABX] v1.70
+* Microchip [MPLABX] v1.80
 * Microchip [MPLAB XC32 Compiler] v1.21  
   *To develop application, you can use free version.*
 
@@ -146,7 +146,7 @@ Tutorial 6 : [MIDIをOSCに変換する][]
 Tutorial 7 : [ファームウェアの書き換え][]  
 Tutorial 8 : [LED_ENC_32をPICrouterからOSCで制御][]  
 Tutorial 9 : [LED_ENC_ABS_32をPICrouterからOSCで制御][]  
-Tutorial 10 : LED_PAD_16をPICrouterからOSCで制御
+Tutorial 10 : [LED_PAD_16をPICrouterからOSCで制御][]
 
 [まずはじめに]: https://github.com/tkrworks/PICrouter/wiki/まずはじめに
 [OSCを使ったデジタル入出力の制御]: https://github.com/tkrworks/PICrouter/wiki/OSCを使ったデジタル入出力の制御
@@ -158,6 +158,7 @@ Tutorial 10 : LED_PAD_16をPICrouterからOSCで制御
 [ファームウェアの書き換え]: https://github.com/tkrworks/PICrouter/wiki/ファームウェアの書き換え
 [LED_ENC_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_32をPICrouterで制御
 [LED_ENC_ABS_32をPICrouterからOSCで制御]: https://github.com/tkrworks/PICrouter/wiki/LED_ENC_ABS_32をPICrouterで制御
+[LED_PAD_16をPICrouterからOSCで制御][]: https://github.com/tkrworks/PICrouter/wiki/LED_PAD_16をPICrouterで制御
 
 Tutorial (EN)
 --------------------------------
