@@ -39,6 +39,7 @@ Demo
 
 * [PICrouter and MobMuPlat OSC Demo][]
 * [PICrouter and touchOSC Demo: PWM Control][]
+* [LED Step Sequencer Test with PICrouter and LED_PAD_16][]
 * [LED Intensity Control Test with PICrouter and LED_PAD_16][]
 * [Multiple LED_ENC_ABS_32 Control Test from PICrouter][]
 
@@ -46,6 +47,7 @@ Demo
 
 [PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
 [PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
+[LED Step Sequencer Test with PICrouter and LED_PAD_16]: http://youtu.be/5rHGf42VQA8
 [LED Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
 [Multiple LED_ENC_ABS_32 Control Test from PICrouter]: http://youtu.be/imvcYX0qTLs
 
