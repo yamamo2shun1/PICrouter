@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.3 2013/05/05
+ * encoder.c,v.0.6.4 2013/05/15
  */
 
 #include "encoder.h"
@@ -636,7 +636,7 @@ void annularLedHandle(void)
             lsb = (WORD)(dwLedSequence[i][ledIntensityIndex[i]] & 0x0000FFFF);
 #else
             data = dwLedData[i];
-            for(j = 0; j < 16; j++)
+            for(j = 0; j < 32; j++)
             {
                 if(ledIntensityIndex[i] > intensity[i][j])
                     data &= ~(1 << j);

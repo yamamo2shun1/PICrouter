@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.4 2013/05/04
+ * picrouter.c,v.1.5.5 2013/05/15
  */
 
 #include "picrouter.h"
@@ -1769,7 +1769,11 @@ void receiveOSCTask(void)
                     else if(getArgumentsLength() == 21)
                     {
                         for(i = 0; i < 16; i++)
-                            setLatticeIntensity(index, i, getIntArgumentAtIndex(5 + i));
+                        {
+                            //setLatticeIntensity(index, i, getIntArgumentAtIndex(5 + i));
+                            BYTE ii = (i - (i / 4) * 4) * 4 + (i / 4);
+                            setLatticeIntensity(index, ii, getIntArgumentAtIndex(5 + i));
+                        }
                     }
                     else
                     {
