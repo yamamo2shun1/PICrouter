@@ -226,6 +226,7 @@
       </C32CPP>
       <C32Global>
         <property key="legacy-libc" value="false"/>
+        <property key="save-temps" value="true"/>
       </C32Global>
       <ICD3PlatformTool>
       </ICD3PlatformTool>
