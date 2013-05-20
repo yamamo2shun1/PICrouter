@@ -39,6 +39,7 @@ Demo
 
 * [PICrouter and MobMuPlat OSC Demo][]
 * [PICrouter and touchOSC Demo: PWM Control][]
+* [LED Step Sequencer Test with PICrouter and LED_PAD_16][]
 * [LED Intensity Control Test with PICrouter and LED_PAD_16][]
 * [Multiple LED_ENC_ABS_32 Control Test from PICrouter][]
 
@@ -46,6 +47,7 @@ Demo
 
 [PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
 [PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
+[LED Step Sequencer Test with PICrouter and LED_PAD_16]: http://youtu.be/5rHGf42VQA8
 [LED Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
 [Multiple LED_ENC_ABS_32 Control Test from PICrouter]: http://youtu.be/imvcYX0qTLs
 
@@ -127,7 +129,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.5.4) Updated 2013/05/04  
+#### PICrouter (current ver. is 1.5.5) Updated 2013/05/15  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
