@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.5 2013/05/15
+ * picrouter.c,v.1.5.7 2013/05/20
  */
 
 #include "picrouter.h"
@@ -36,11 +36,7 @@ void initIOPorts(void)
     int i = 0;
 
     for(i = 0; i < 14; i++)
-    {
-        //configAnPort(i, IO_OUT);
-        //outputAnPort(i, LOW);
         setAnPortDioType(i, IO_IN);
-    }
 
     for(i = 0; i < 4; i++)
     {
@@ -51,10 +47,7 @@ void initIOPorts(void)
     for(i = 0; i < 4; i++)
     {
         setDigitalPortDioType(i, IO_OUT);
-        //if(i == 1)
-        //    outputDigitalPort(i, HIGH);
-        //else
-           outputDigitalPort(i, LOW);
+        outputDigitalPort(i, LOW);
     }
 
     setSpiPortDioType("sck2", IO_OUT);
@@ -241,28 +234,7 @@ int main(int argc, char** argv) {
                 break;
             default:
                 break;
-        }
-        
-#if 0
-    	if(stateFlag2)
-        {
-
-        	midiData.Val = 0;
-  			midiData.CableNumber = 0;
-  			midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
-  			
-  			midiData.DATA_0 = 0x90;
-      		midiData.DATA_1 = 30;
-      		midiData.DATA_2 = (1 - currentState) * 127;
-
-      		if(!USBHandleBusy(MIDITxHandle))
-      		{
-          		MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
-          		stateFlag2 = FALSE;
-          	}
-        }
-        prevState = currentState;
-#endif
+        }        
     }
     return (EXIT_SUCCESS);
 }
@@ -3040,9 +3012,9 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 if(swState1 != swState0)
                 {
                     if(swState1)
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "si", "off", AppConfig.MyIPAddr.Val);
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
                     else
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "si", "on", AppConfig.MyIPAddr.Val);
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
                 }
                 swState0 = swState1;
 
