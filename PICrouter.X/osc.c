@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.6 2013/05/05
+ * osc.c,v.1.0.7 2013/05/20
  */
 
 #include "osc.h"
@@ -424,12 +424,9 @@ void getOSCPacket(void)
     
     if(initReceiveFlag && isOSCGetReady())
     {
-        //if(UDPGetArray(udpPacket[ringBufIndex], MAX_PACKET_SIZE) > 0)
-        if(UDPGetArray(udpPacket[ringBufIndex++], MAX_PACKET_SIZE) > 0)
-        {
-            //ringBufIndex++;
-            ringBufIndex &= (MAX_BUF_SIZE - 1);
-        }
+        UDPGetArray(udpPacket[ringBufIndex++], MAX_PACKET_SIZE);
+        ringBufIndex &= (MAX_BUF_SIZE - 1);
+
         UDPDiscard();
     }
 }
@@ -493,20 +490,16 @@ static BOOL copyOSCPacketFromUDPPacket()
             if(len == 0)
                 break;
 
-            //memcpy(oscPacket, &udpPacket[ringProcessIndex][20], len);
             for(i = 0; i < len; i++)
-            {
-                //oscPacket[i] = udpPacket[ringProcessIndex][20 + i];
                 udpPacket[ringBufIndex][i] = udpPacket[ringProcessIndex][j + 4 + i];
-            }
+
             j += (4 + len);
 
-            //ringBufIndex++;
             ringBufIndex = (ringBufIndex + 1) & (MAX_BUF_SIZE - 1);
         }
 
         memset(udpPacket[ringProcessIndex++], 0, MAX_PACKET_SIZE);
-        //ringProcessIndex++;
+
         ringProcessIndex &= (MAX_BUF_SIZE - 1);
 
     }
@@ -514,16 +507,14 @@ static BOOL copyOSCPacketFromUDPPacket()
     if(udpPacket[ringProcessIndex][0] != '/')
     {
         if(ringProcessIndex++ != ringBufIndex)
-        {
-            //ringProcessIndex++;
             ringProcessIndex &= (MAX_BUF_SIZE - 1);
-        }
+
         return FALSE;
     }
 
     memcpy(oscPacket, udpPacket[ringProcessIndex], MAX_PACKET_SIZE);
     memset(udpPacket[ringProcessIndex++], 0, MAX_PACKET_SIZE);
-    //ringProcessIndex++;
+
     ringProcessIndex &= (MAX_BUF_SIZE - 1);
 
     return TRUE;
