@@ -1804,8 +1804,13 @@ mDNSProcessIncomingRR(MDNS_RR_GROUP		tag,
 					  WORD				idxRR)
 {
 	mDNSResourceRecord res_rec;
-	BYTE name[MAX_RR_NAME_SIZE];
-	BYTE i,j;
+#if 0//syama
+        BYTE name[MAX_RR_NAME_SIZE];
+        BYTE i,j;
+#else
+        static BYTE name[MAX_RR_NAME_SIZE];
+        WORD i, j;
+#endif
 	WORD len;
 	BYTE tmp;
 	mDNSProcessCtx_common *pOwnerCtx;
