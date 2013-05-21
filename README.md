@@ -74,7 +74,7 @@ PICrouter is **Free Hardware** and **Free Software**.
 
 Specifications
 ------
-0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client) and NBNS.
+0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client).
 1. Supported Open Sound Control.
 2. Supported the multicast address(224.0.0.1 and 224.0.0.251).
 3. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI).
