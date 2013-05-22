@@ -61,7 +61,7 @@ Photographed by Kiyasu/TechnikLAB*
 
 How to buy
 ------
-We sell the PICrouter on tkrworks <a href="http://atelier.tkrworks.net/shop/index.php?main_page=product_info&cPath=2&products_id=29&language=en">online store</a>.  
+You can buy the PICrouter on <a href="http://atelier.tkrworks.net/shop/index.php?main_page=product_info&cPath=2&products_id=29&language=en">tkrworks online store</a> and <a href="http://www.switch-science.com/catalog/1338/">SWITCH SCIENCE</a>.
 The price of product is 7350JPY.
 
 Licenses
