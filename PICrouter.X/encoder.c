@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.4 2013/05/15
+ * encoder.c,v.0.6.5 2013/05/25
  */
 
 #include "encoder.h"
@@ -50,11 +50,8 @@ static BOOL reFlag[MAX_RE_NUM][2];
 static float omega[MAX_RE_NUM][2];
 static float omega_ma[MAX_RE_NUM][2][8];
 static INT8 direction[MAX_RE_NUM];
-static DWORD encCount[MAX_RE_NUM][2];
-static DWORD dt[MAX_RE_NUM];
 
 static DWORD dwLedData[MAX_RE_NUM];
-//static DWORD dwLedSequence[MAX_RE_NUM][100];
 static BYTE intensity[MAX_RE_NUM][32];
 static BOOL ledOn[MAX_RE_NUM];
 static WORD ledCount[MAX_RE_NUM];
@@ -101,7 +98,6 @@ void initEncoderVariables(void)
             reB[j][i] = 0;
             reFlag[j][i] = FALSE;
             omega[j][i] = 0.0f;
-            encCount[j][i] = 0;
         }
 
         sendEncFlag[j] = FALSE;
