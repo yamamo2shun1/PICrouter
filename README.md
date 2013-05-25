@@ -61,7 +61,7 @@ Photographed by Kiyasu/TechnikLAB*
 
 How to buy
 ------
-We sell the PICrouter on tkrworks <a href="http://atelier.tkrworks.net/shop/index.php?main_page=product_info&cPath=2&products_id=29&language=en">online store</a>.  
+You can buy the PICrouter on <a href="http://atelier.tkrworks.net/shop/index.php?main_page=product_info&cPath=2&products_id=29&language=en">tkrworks online store</a> and <a href="http://www.switch-science.com/catalog/1338/">SWITCH SCIENCE</a>.  
 The price of product is 7350JPY.
 
 Licenses
@@ -74,7 +74,7 @@ PICrouter is **Free Hardware** and **Free Software**.
 
 Specifications
 ------
-0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client) and NBNS.
+0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client).
 1. Supported Open Sound Control.
 2. Supported the multicast address(224.0.0.1 and 224.0.0.251).
 3. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI).
@@ -129,7 +129,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.5.5) Updated 2013/05/15  
+#### PICrouter (current ver. is 1.5.7) Updated 2013/05/20  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
