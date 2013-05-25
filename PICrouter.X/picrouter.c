@@ -1524,7 +1524,7 @@ void receiveOSCTask(void)
                 if(compareTypeTagAtIndex(0, 'i'))
                 {
                     line_num = getIntArgumentAtIndex(0);
-                    chars_num = sizeof(getStringArgumentAtIndex(1));
+                    chars_num = strlen(getStringArgumentAtIndex(1));
                     if(chars_num <= 20)
                         line_text = getStringArgumentAtIndex(1);
                     else
@@ -1537,11 +1537,13 @@ void receiveOSCTask(void)
                     {
                         if(compareTypeTagAtIndex(i, 's'))
                         {
-                            chars_num += sizeof(getStringArgumentAtIndex(i));
-                            if(chars_num <= 19)
+                            BYTE num = strlen(getStringArgumentAtIndex(i));
+                            chars_num += num;
+                            if(chars_num <= 20)
                             {
                                 strcat(line_text, " ");
-                                strncat(line_text, getStringArgumentAtIndex(i), chars_num - 19);
+                                chars_num++;
+                                strncat(line_text, getStringArgumentAtIndex(i), num);
                             }
                             else
                                 break;

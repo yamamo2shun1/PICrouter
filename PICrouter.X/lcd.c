@@ -335,7 +335,7 @@ void initLcd(BYTE bit_mode_num, char* rs_name, char* rw_name, char* e_name, char
         Delay10us(5);
 
         // Display on, Cursor off
-        writeLcd(0, 0x0D); //writeLcd(0, 0x0D);
+        writeLcd(0, 0x0C); //writeLcd(0, 0x0D);
         Delay10us(5);
 
         // Entry Mode Set
@@ -441,17 +441,23 @@ void eraseLcd(void)
 
 void writeLineLcd(WORD number, char* line)
 {
-    BYTE i = 0, j = 0;
-        
-    //while (number != 0 && (lcdText[j] != 0) && (j < CHARS_NUM * LINE_NUM))
-    //    j++;
+    BYTE i = 0;
+    BYTE j = number * CHARS_NUM;
 
-    j = number * CHARS_NUM;
-
-    do 
+    if(strlen(line) == 20)
     {
-        lcdText[j++] = line[i++];
-    } while ((lcdText[j - 1] != 0) && (j < CHARS_NUM * LINE_NUM - 1));
+        do
+        {
+            lcdText[j++] = line[i++];
+        } while ((lcdText[j - 1] != 0) && (i < strlen(line)));
+    }
+    else
+    {
+        do
+        {
+            lcdText[j++] = line[i++];
+        } while ((lcdText[j - 1] != 0) && (j < CHARS_NUM * LINE_NUM - 1));
+    }
     
     updateLcd();
 }
