@@ -1,46 +1,23 @@
-/********************************************************************
- FileName:     	usb_config.h
- Dependencies: 	Always: GenericTypeDefs.h, usb_device.h
-               	Situational: usb_function_hid.h, usb_function_cdc.h, usb_function_msd.h, etc.
- Processor:		PIC18 or PIC24 USB Microcontrollers
- Hardware:		The code is natively intended to be used on the following
- 				hardware platforms: PICDEM� FS USB Demo Board, 
- 				PIC18F87J50 FS USB Plug-In Module, or
- 				Explorer 16 + PIC24 USB PIM.  The firmware may be
- 				modified for use on other USB platforms by editing the
- 				HardwareProfile.h file.
- Complier:  	Microchip C18 (for PIC18) or C30 (for PIC24)
- Company:		Microchip Technology, Inc.
-
- Software License Agreement:
-
- The software supplied herewith by Microchip Technology Incorporated
- (the �Company�) for its PIC� Microcontroller is intended and
- supplied to you, the Company�s customer, for use solely and
- exclusively on Microchip PIC Microcontroller products. The
- software is owned by the Company and/or its supplier, and is
- protected under applicable copyright laws. All rights are reserved.
- Any use in violation of the foregoing restrictions may subject the
- user to criminal sanctions under applicable laws, as well as to
- civil liability for the breach of the terms and conditions of this
- license.
-
- THIS SOFTWARE IS PROVIDED IN AN �AS IS� CONDITION. NO WARRANTIES,
- WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED
- TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
- IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
- CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-
-********************************************************************
- File Description:
-
- Change History:
-  Rev   Date         Description
-  1.0   11/19/2004   Initial release
-  2.1   02/26/2007   Updated for simplicity and to use common
-                     coding style
- *******************************************************************/
+/*
+ * Copylight (C) 2012, Shunichi Yamamoto, tkrworks.net
+ *
+ * This file is part of PICrouter.
+ *
+ * PICrouter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option ) any later version.
+ *
+ * PICrouter is distributed in the hope that it will be useful,
+ * but WITHIOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
+ *
+ * usb_config.h,v.1.0.0 2013/05/25
+ */
 
 /*********************************************************************
  * Descriptor specific type definitions are defined in: usbd.h
@@ -163,7 +140,7 @@
 
 /* Host Configuration */
 #define USB_ENABLE_TRANSFER_EVENT
-#define NUM_TPL_ENTRIES 1// 2
+#define NUM_TPL_ENTRIES 4//1// 2
 #define USB_NUM_CONTROL_NAKS 200
 //test #define USB_NUM_CONTROL_NAKS 20
 #define USB_SUPPORT_INTERRUPT_TRANSFERS
