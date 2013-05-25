@@ -1509,10 +1509,10 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgSetLcdText))
             {
-                BYTE i;
-                BYTE line_num;
-                BYTE chars_num;
-                char* line_text;
+                BYTE i = 0;
+                BYTE line_num = 0;
+                BYTE chars_num = 0;
+                char line_text[20] = {0};
                 BYTE len = getArgumentsLength();
 
                 if(len < 2)
@@ -1521,12 +1521,12 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                if(compareTypeTagAtIndex(0, 'i'))
+                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's'))
                 {
                     line_num = getIntArgumentAtIndex(0);
                     chars_num = strlen(getStringArgumentAtIndex(1));
                     if(chars_num <= 20)
-                        line_text = getStringArgumentAtIndex(1);
+                        strcpy(line_text, getStringArgumentAtIndex(1));
                     else
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdText, "string_must_be_less_than_20_chars");
@@ -1537,13 +1537,12 @@ void receiveOSCTask(void)
                     {
                         if(compareTypeTagAtIndex(i, 's'))
                         {
-                            BYTE num = strlen(getStringArgumentAtIndex(i));
-                            chars_num += num;
+                            chars_num += strlen(getStringArgumentAtIndex(i));
+                            chars_num++;
                             if(chars_num <= 20)
                             {
                                 strcat(line_text, " ");
-                                chars_num++;
-                                strncat(line_text, getStringArgumentAtIndex(i), num);
+                                strcat(line_text, getStringArgumentAtIndex(i));
                             }
                             else
                                 break;
