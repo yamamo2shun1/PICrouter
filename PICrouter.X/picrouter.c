@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.7 2013/05/20
+ * picrouter.c,v.1.5.8 2013/05/25
  */
 
 #include "picrouter.h"
@@ -167,7 +167,6 @@ int main(int argc, char** argv) {
                 {
                     // Ethernet Tasks
                     StackTask();
-
                     switch(eth_state)
                     {
                         case 0:
@@ -179,7 +178,6 @@ int main(int argc, char** argv) {
                             eth_state = 0;
                             break;
                     }
-
                     receiveOSCTask();
 
                     // USB Tasks
@@ -211,7 +209,7 @@ int main(int argc, char** argv) {
                             mDNSProcess();
                             eth_state = 1;
                             break;
-                        case 3:
+                        case 1:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
@@ -1153,7 +1151,7 @@ void receiveOSCTask(void)
 
                 if(getArgumentsLength() < 5)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "si", "need_4_arguments_at_leaset", getArgumentsLength());
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, "need_4_arguments_at_leaset");
                     return;
                 }
 
@@ -1242,7 +1240,7 @@ void receiveOSCTask(void)
 
                 if(getArgumentsLength() < 4)
                 {
-                    sendOSCMessage(sysPrefix, msgError, "si", "need_4_arguments_at_leaset", getArgumentsLength());
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, "need_4_arguments_at_leaset");
                     return;
                 }
 
@@ -1426,6 +1424,175 @@ void receiveOSCTask(void)
                     sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "high");
                 else
                     sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
+            }
+            else if(compareOSCAddress(msgSetLcdConfig))
+            {
+                BYTE mode_num;
+                char* rsname;
+                char* rwname;
+                char* ename;
+                char* db0name;
+                char* db1name;
+                char* db2name;
+                char* db3name;
+                char* db4name;
+                char* db5name;
+                char* db6name;
+                char* db7name;
+
+                //if(getArgumentsLength() != 8 && getArgumentsLength() != 12)
+                if(getArgumentsLength() != 8)
+                {
+                    //sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, "need_8_or_12_arguments_at_leaset");
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, "need_8_arguments");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(0, 'i') && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 's'))
+                {
+                    mode_num = getIntArgumentAtIndex(0);
+                    rsname = getStringArgumentAtIndex(1);
+                    rwname = getStringArgumentAtIndex(2);
+                    ename = getStringArgumentAtIndex(3);
+                    switch(mode_num)
+                    {
+                        case 4:
+                            if(compareTypeTagAtIndex(4, 's') && compareTypeTagAtIndex(5, 's') && compareTypeTagAtIndex(6, 's') &&
+                               compareTypeTagAtIndex(7, 's'))
+                            {
+                                db4name = getStringArgumentAtIndex(4);
+                                db5name = getStringArgumentAtIndex(5);
+                                db6name = getStringArgumentAtIndex(6);
+                                db7name = getStringArgumentAtIndex(7);
+                            }
+                            else
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, ": wrong_argument_type");
+                                return;
+                            }
+                            initLcd(mode_num, rsname, rwname, ename, NULL, NULL, NULL, NULL, db4name, db5name, db6name, db7name);
+                            break;
+#if 0
+                        case 8:
+                            if(compareTypeTagAtIndex(4, 's') && compareTypeTagAtIndex(5, 's') && compareTypeTagAtIndex(6, 's') &&
+                               compareTypeTagAtIndex(7, 's') && compareTypeTagAtIndex(8, 's') && compareTypeTagAtIndex(9, 's') &&
+                               compareTypeTagAtIndex(10, 's') && compareTypeTagAtIndex(11, 's'))
+                            {
+                                db0name = getStringArgumentAtIndex(4);
+                                db1name = getStringArgumentAtIndex(5);
+                                db2name = getStringArgumentAtIndex(6);
+                                db3name = getStringArgumentAtIndex(7);
+                                db4name = getStringArgumentAtIndex(8);
+                                db5name = getStringArgumentAtIndex(9);
+                                db6name = getStringArgumentAtIndex(10);
+                                db7name = getStringArgumentAtIndex(11);
+                            }
+                            else
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, ": wrong_argument_type");
+                                return;
+                            }
+                            initLcd(mode_num, rsname, rwname, ename, db0name, db1name, db2name, db3name, db4name, db5name, db6name, db7name);
+                            break;
+#endif
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, ": support_only_4_bit_mode");
+                            return;
+                            break;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdConfig, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLcdText))
+            {
+                BYTE i;
+                BYTE line_num;
+                BYTE chars_num;
+                char* line_text;
+                BYTE len = getArgumentsLength();
+
+                if(len < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdText, "need_2_arguments_at_least");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(0, 'i'))
+                {
+                    line_num = getIntArgumentAtIndex(0);
+                    chars_num = sizeof(getStringArgumentAtIndex(1));
+                    if(chars_num <= 20)
+                        line_text = getStringArgumentAtIndex(1);
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdText, "string_must_be_less_than_20_chars");
+                        return;
+                    }
+
+                    for(i = 2; i < len; i++)
+                    {
+                        if(compareTypeTagAtIndex(i, 's'))
+                        {
+                            chars_num += sizeof(getStringArgumentAtIndex(i));
+                            if(chars_num <= 19)
+                            {
+                                strcat(line_text, " ");
+                                strncat(line_text, getStringArgumentAtIndex(i), chars_num - 19);
+                            }
+                            else
+                                break;
+                        }
+                        else
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdText, ": wrong_argument_type");
+                            return;
+                        }
+                    }
+                    writeLineLcd(line_num, line_text);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLcdText, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgClearLcdText))
+            {
+                BYTE line_num;
+                char* clear_all;
+                char* clear_text = " ";
+
+                if(getArgumentsLength() != 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgClearLcdText, "need_1_arguments");
+                    return;
+                }
+
+                if(compareTypeTagAtIndex(0, 'i'))
+                {
+                    line_num = getIntArgumentAtIndex(0);
+                    writeLineLcd(line_num, clear_text);
+                }
+                else if(compareTypeTagAtIndex(0, 's'))
+                {
+                    clear_all = getStringArgumentAtIndex(0);
+                    if(!strcmp(clear_all, "all"))
+                        eraseLcd();
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgClearLcdText, ": please_type_all");
+                        return;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgClearLcdText, ": wrong_argument_type");
+                    return;
+                }
             }
             else if(compareOSCAddress(msgLatticePadPinSelect))
             {
@@ -3993,15 +4160,16 @@ void convertMidiToOsc(void)
     }
 }
 
-#if 0
+#if 0 // hid
 void convertHidToOsc(void)
 {
-    App_Detect_Device();
+    //App_Detect_Device();
     switch(App_State_Mouse)
     {
         case DEVICE_NOT_CONNECTED:
             USBTasks();
-            if(USBHostHID_ApiDeviceDetect()) /* True if report descriptor is parsed with no error */
+            //if(USBHostHID_ApiDeviceDetect()) /* True if report descriptor is parsed with no error */
+            if(USBHostHIDDeviceDetect(1))
             {
                 App_State_Mouse = DEVICE_CONNECTED;
             }
@@ -4526,7 +4694,7 @@ void USBCBSendResume(void)
   Remarks:
     None
 ***************************************************************************/
-#if 0
+#if 1
 void App_Detect_Device(void)
 {
   if(!USBHostHID_ApiDeviceDetect())
@@ -4555,7 +4723,7 @@ void App_Detect_Device(void)
   Remarks:
     None
 ***************************************************************************/
-#if 0
+#if 0// hid
 void App_ProcessInputReport(void)
 {
     BYTE  data;
@@ -4620,7 +4788,7 @@ void App_ProcessInputReport(void)
     assumes that Application is aware of report format of the attached
     device.
 ***************************************************************************/
-#if 0
+#if 1
 BOOL USB_HID_DataCollectionHandler(void)
 {
   BYTE NumOfReportItem = 0;
@@ -4642,7 +4810,8 @@ BOOL USB_HID_DataCollectionHandler(void)
    for(i=0;i<NumOfReportItem;i++)
     {
        reportItem = &pitemListPtrs->reportItemList[i];
-       if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == (HIDData_Variable|HIDData_Relative))&&
+       //if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == (HIDData_Variable|HIDData_Relative))&&
+       if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == (HIDData_Variable))&&
            (reportItem->globals.usagePage==USAGE_PAGE_GEN_DESKTOP))
         {
            /* We now know report item points to modifier keys */
@@ -4847,7 +5016,7 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
             deviceHandle = NULL;
             ProcState = STATE_INITIALIZE;
             return TRUE;
-#if 0
+#if 1
         case EVENT_HID_RPT_DESC_PARSED:
             #ifdef APPL_COLLECT_PARSED_DATA
                 return(APPL_COLLECT_PARSED_DATA());

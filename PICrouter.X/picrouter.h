@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.5.7 2013/05/20
+ * picrouter.h,v.1.5.8 2013/05/25
  */
 
-#define CURRENT_VERSION "1.5.7"
+#define CURRENT_VERSION "1.5.8"
 
 #include <plib.h>
 #include <stdio.h>
@@ -34,7 +34,7 @@
 #include "USB/usb_function_hid.h"
 #include "USB/usb_function_midi.h"
 #include "USB/usb_host_midi.h"
-#if 0
+#if 1
     #include "USB/usb_host_hid_parser.h"
     #include "USB/usb_host_hid.h"
 #endif
@@ -95,7 +95,7 @@ typedef enum
 static DEVICE_MODE device_mode = MODE_DEVICE;
 //static DEVICE_MODE device_mode = MODE_HOST;
 
-#if 0//hid
+#if 1//hid
 #define MINIMUM_POLL_INTERVAL           (0x0A)        // Minimum Polling rate for HID reports is 10ms
 
 #define USAGE_PAGE_BUTTONS              (0x09)
