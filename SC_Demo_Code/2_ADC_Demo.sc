@@ -5,8 +5,8 @@
 
 thisProcess.openUDPPort(8000);// At first you should open a UDP port..
 
-// Controll ADC
-NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set",0,"on");
+// Control ADC
+NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set",0,"on"); // set adc enable of pin 0
 
 (
 OSCFunc(
@@ -18,9 +18,9 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/get");
+NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/get", 0); // get adc stateus of pin 0
 
-NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set",0,"off");
+NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set", 0, "off"); // set adc disable of pin 0
 
 
 // get ADC value
@@ -33,7 +33,7 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set",0,"on"); //on and start sending
+NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set", 0, "on"); // on and start sending
 
-NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set",0,"off"); //off and stop sending
+NetAddr("picrouter.local",8080).sendMsg("/std/adc/enable/set", 0, "off"); // off and stop sending
 

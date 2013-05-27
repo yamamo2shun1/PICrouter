@@ -16,7 +16,7 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/sys/host/ip/get");
+NetAddr("picrouter.local",8080).sendMsg("/sys/host/ip/get"); // get host ip
 
 
 // set remote ip
@@ -34,7 +34,7 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/sys/remote/ip/get");
+NetAddr("picrouter.local",8080).sendMsg("/sys/remote/ip/get"); // get remote ip
 
 // get switche
 (
@@ -48,12 +48,13 @@ OSCFunc(
 );
 )
 
+
 // LED on/off
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led",0,"on");
+NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 0, "on"); // on
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led",0,"off");
+NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 0, "off"); // off
 
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led",1,"on");
+NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 1, "on"); // on
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led",1,"off");
+NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 1, "off"); // off
