@@ -3,7 +3,9 @@
 // This content is published under CC-BY-SA 3.0 license.
 
 
-thisProcess.openUDPPort(8000);// At first you should open a UDP port..
+thisProcess.openUDPPort(8000); // At first you should open a UDP port..
+
+n = NetAddr("picrouter.local",8080); // address
 
 // get host ip
 (
@@ -16,11 +18,11 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/sys/host/ip/get"); // get host ip
+n.sendMsg("/sys/host/ip/get"); // get host ip
 
 
 // set remote ip
-NetAddr("picrouter.local",8080).sendMsg("/sys/remote/ip/set", /*"<YOUR MACHINE'S IP>"*/);
+n.sendMsg("/sys/remote/ip/set", /*"<YOUR MACHINE'S IP>"*/);
 
 
 // get remote ip
@@ -34,7 +36,7 @@ OSCFunc(
 );
 )
 
-NetAddr("picrouter.local",8080).sendMsg("/sys/remote/ip/get"); // get remote ip
+n.sendMsg("/sys/remote/ip/get"); // get remote ip
 
 // get switche
 (
@@ -50,11 +52,11 @@ OSCFunc(
 
 
 // LED on/off
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 0, "on"); // on
+n.sendMsg("/std/onboard/led", 0, "on"); // on
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 0, "off"); // off
+n.sendMsg("/std/onboard/led", 0, "off"); // off
 
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 1, "on"); // on
+n.sendMsg("/std/onboard/led", 1, "on"); // on
 
-NetAddr("picrouter.local",8080).sendMsg("/std/onboard/led", 1, "off"); // off
+n.sendMsg("/std/onboard/led", 1, "off"); // off
