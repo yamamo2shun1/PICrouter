@@ -37,6 +37,7 @@ PICrouter will be an useful with the following purpose.
 
 Demo
 
+* [Oto Devices Quick Demo][]
 * [PICrouter and MobMuPlat OSC Demo][]
 * [PICrouter and touchOSC Demo: PWM Control][]
 * [LED Step Sequencer Test with PICrouter and LED_PAD_16][]
@@ -45,6 +46,7 @@ Demo
 
 [Open Sound Control]:http://opensoundcontrol.org
 
+[Oto Devices Quick Demo]:https://vimeo.com/67548325
 [PICrouter and MobMuPlat OSC Demo]:http://www.youtube.com/watch?v=xbNTXSsHR5w
 [PICrouter and touchOSC Demo: PWM Control]:http://www.youtube.com/watch?v=srX1inH3xIY
 [LED Step Sequencer Test with PICrouter and LED_PAD_16]: http://youtu.be/5rHGf42VQA8
