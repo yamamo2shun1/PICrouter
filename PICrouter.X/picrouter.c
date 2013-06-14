@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.8 2013/05/25
+ * picrouter.c,v.1.5.9 2013/06/14
  */
 
 #include "picrouter.h"
@@ -1424,6 +1424,590 @@ void receiveOSCTask(void)
                     sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "high");
                 else
                     sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
+            }
+            // I2C
+            else if(compareOSCAddress(msgEnableI2c))
+            {
+                BYTE id;
+                char* cFlag = NULL;
+                BOOL flag = FALSE;
+
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f') && compareTypeTagAtIndex(1, 's'))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    cFlag = getStringArgumentAtIndex(1);
+                    if(!strcmp(cFlag, "true"))
+                        flag = TRUE;
+                    else if(!strcmp(cFlag, "false"))
+                        flag = FALSE;
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_string");
+                        return;
+                    }
+
+                    switch(id)
+                    {
+                        case 3:
+                            setPortIOType("b2", IO_IN);
+                            setPortIOType("b3", IO_IN);
+                            I2CEnable(I2C3, flag);
+                            break;
+                        case 4:
+                            setPortIOType("g7", IO_IN);
+                            setPortIOType("g8", IO_IN);
+                            I2CEnable(I2C4, flag);
+                            break;
+                        case 5:
+                            setPortIOType("f4", IO_IN);
+                            setPortIOType("f5", IO_IN);
+                            I2CEnable(I2C5, flag);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": out_of_range_value");
+                            break;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgSetI2cConfig))
+            {
+                BYTE id;
+                DWORD i2cFlags = 0;
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+
+                    if(getArgumentsLength() < 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_1_arguments_at_leaset");
+                        return;
+                    }
+
+                    for(i = 1; i < getArgumentsLength(); i++)
+                    {
+                        char* flag;
+                        if(compareTypeTagAtIndex(i, 's'))
+                            flag = getStringArgumentAtIndex(i);
+                        else
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+                            return;
+                        }
+
+                        if(!strcmp(flag, "enable_slave_clock_stretching"))
+                            i2cFlags |= I2C_ENABLE_SLAVE_CLOCK_STRETCHING;
+                        else if(!strcmp(flag, "enable_smb_support"))
+                            i2cFlags |= I2C_ENABLE_SMB_SUPPORT;
+                        else if(!strcmp(flag, "enable_high_speed"))
+                            i2cFlags |= I2C_ENABLE_HIGH_SPEED;
+                        else if(!strcmp(flag, "stop_in_idle"))
+                            i2cFlags |= I2C_STOP_IN_IDLE;
+                    }
+
+                    switch(id)
+                    {
+                        case 3:
+                            I2CConfigure(I2C3, i2cFlags);
+                            break;
+                        case 4:
+                            I2CConfigure(I2C4, i2cFlags);
+                            break;
+                        case 5:
+                            I2CConfigure(I2C5, i2cFlags);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
+                            return;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgSetI2cFreq))
+            {
+                BYTE id;
+                DWORD i2cFreq = 0;
+                DWORD actualFreq = 0;
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    i2cFreq = getIntArgumentAtIndex(1);
+
+                    if(getArgumentsLength() < 2)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_2_arguments_at_leaset");
+                        return;
+                    }
+
+                    switch(id)
+                    {
+                        case 3:
+                            actualFreq = I2CSetFrequency(I2C3, GetPeripheralClock(), i2cFreq);
+                            break;
+                        case 4:
+                            actualFreq = I2CSetFrequency(I2C4, GetPeripheralClock(), i2cFreq);
+                            break;
+                        case 5:
+                            actualFreq = I2CSetFrequency(I2C5, GetPeripheralClock(), i2cFreq);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
+                            return;
+                    }
+                    if((actualFreq - i2cFreq) > i2cFreq / 10)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": bad_frequency");
+                        return;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgSetI2cSlaveAddress))
+            {
+                BYTE id;
+                WORD address;
+                WORD mask;
+                DWORD slvAdrsFlags = 0;
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    address = getIntArgumentAtIndex(1);
+                    mask = getIntArgumentAtIndex(2);
+
+                    if(getArgumentsLength() < 4)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": need_4_arguments_at_leaset");
+                        return;
+                    }
+
+                    for(i = 3; i < getArgumentsLength(); i++)
+                    {
+                        char* flag;
+                        if(compareTypeTagAtIndex(i, 's'))
+                            flag = getStringArgumentAtIndex(i);
+                        else
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
+                            return;
+                        }
+
+                        if(!strcmp(flag, "use_7bit_address"))
+                            slvAdrsFlags |= I2C_USE_7BIT_ADDRESS;
+                        else if(!strcmp(flag, "use_10bit_address"))
+                            slvAdrsFlags |= I2C_USE_10BIT_ADDRESS;
+                        else if(!strcmp(flag, "enable_general_call_address"))
+                            slvAdrsFlags |= I2C_ENABLE_GENERAL_CALL_ADDRESS;
+                        else if(!strcmp(flag, "use_reserved_addresses"))
+                            slvAdrsFlags |= I2C_USE_RESERVED_ADDRESSES;
+                    }
+
+                    switch(id)
+                    {
+                        case 3:
+                            I2CSetSlaveAddress(I2C3, address, mask, slvAdrsFlags);
+                            break;
+                        case 4:
+                            I2CSetSlaveAddress(I2C4, address, mask, slvAdrsFlags);
+                            break;
+                        case 5:
+                            I2CSetSlaveAddress(I2C5, address, mask, slvAdrsFlags);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": 0:out_of_value_range");
+                            return;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgSetI2cData))
+            {
+                BYTE id;
+                BYTE chip;
+                WORD address = 0;
+                DWORD data = 0;
+                BYTE result;
+                I2C_STATUS status;
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    chip = getIntArgumentAtIndex(1);
+                    address = getIntArgumentAtIndex(2);
+                    data = getIntArgumentAtIndex(3);
+
+                    switch(id)
+                    {
+                        case 3:
+                            I2C3CONSET = _I2C3CON_SEN_MASK;
+                            if(I2C3STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = 0xA0 | (chip << 1);
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = address >> 8;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = address & 0x00FF;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = data;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C3CONSET = _I2C3CON_PEN_MASK;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            DelayMs(5);
+                            break;
+                        case 4:
+                            I2C4CONSET = _I2C4CON_SEN_MASK;
+                            if(I2C4STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = 0xA0 | (chip << 1);
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = address >> 8;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = address & 0x00FF;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = data;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C4CONSET = _I2C4CON_PEN_MASK;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            DelayMs(5);
+                            break;
+                        case 5:
+                            I2C5CONSET = _I2C5CON_SEN_MASK;
+                            if(I2C5STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = 0xA0 | (chip << 1);
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = address >> 8;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = address & 0x00FF;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = data;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C5CONSET = _I2C5CON_PEN_MASK;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            DelayMs(5);
+                            break;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cData, ": wrong_argument_type");
+            }
+            else if(compareOSCAddress(msgGetI2cData))
+            {
+                BYTE id;
+                BYTE chip = 0;
+                WORD address = 0;
+                BYTE data;
+                BYTE result;
+                I2C_STATUS status;
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    chip = getIntArgumentAtIndex(1);
+                    address = getIntArgumentAtIndex(2);
+
+                    switch(id)
+                    {
+                        case 3:
+                            I2C3CONSET = _I2C3CON_SEN_MASK;
+                            if(I2C3STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = 0xA0 | (chip << 1);
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = address >> 8;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            I2C3TRN = address & 0x00FF;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            I2C3CONSET = _I2C3CON_RSEN_MASK;
+                            while(I2C3CONbits.RSEN);
+
+                            I2C3TRN = 0xA1 | (chip << 1);
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(I2C3STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C3CONbits.RCEN = 1;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+
+                            I2C3STATbits.I2COV = 0;
+
+                            while(!I2C3STATbits.RBF);
+
+                            I2C3CONbits.ACKDT = 1;
+                            I2C3CONbits.ACKEN = 1;
+                            while(I2C3CONbits.ACKEN == 1);
+
+                            data = I2C3RCV;
+
+                            I2C3CONSET = _I2C3CON_PEN_MASK;
+                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+
+                            sendOSCMessage(getOSCPrefix(), msgI2cData, "ii", id, address, data);
+                            break;
+                        case 4:
+                            I2C4CONSET = _I2C4CON_SEN_MASK;
+                            if(I2C4STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = 0xA0 | (chip << 1);
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = address >> 8;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = address & 0x00FF;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            I2C4CONSET = _I2C4CON_RSEN_MASK;
+                            while(I2C4CONbits.RSEN);
+
+                            //while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            I2C4TRN = 0xA1 | (chip << 1);
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(I2C4STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C4CONbits.RCEN = 1;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+
+                            I2C4STATbits.I2COV = 0;
+
+                            while(!I2C4STATbits.RBF);
+
+                            I2C4CONbits.ACKDT = 1;
+                            I2C4CONbits.ACKEN = 1;
+                            while(I2C4CONbits.ACKEN == 1);
+                            
+                            data = I2C4RCV;
+
+                            I2C4CONSET = _I2C4CON_PEN_MASK;
+                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+
+                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
+                            break;
+                        case 5:
+                            I2C5CONSET = _I2C5CON_SEN_MASK;
+                            if(I2C5STATbits.BCL)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C4TRN = 0xA0 | (chip << 1);
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = address >> 8;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
+                                return;
+                            }
+
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            I2C5TRN = address & 0x00FF;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
+                                return;
+                            }
+
+                            I2C5CONSET = _I2C5CON_RSEN_MASK;
+                            while(I2C5CONbits.RSEN);
+
+                            I2C5TRN = 0xA1 | (chip << 1);
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(I2C5STATbits.ACKSTAT)
+                            {
+                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
+                                return;
+                            }
+
+                            I2C5CONbits.RCEN = 1;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+
+                            I2C5STATbits.I2COV = 0;
+
+                            while(!I2C5STATbits.RBF);
+
+                            I2C5CONbits.ACKDT = 1;
+                            I2C5CONbits.ACKEN = 1;
+                            while(I2C5CONbits.ACKEN == 1);
+
+                            data = I2C5RCV;
+
+                            I2C5CONSET = _I2C5CON_PEN_MASK;
+                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+
+                            sendOSCMessage(getOSCPrefix(), msgI2cData, "ii", id, address, data);
+                            break;
+                    }
+                }
+                else
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetI2cData, ": wrong_argument_type");
             }
             else if(compareOSCAddress(msgSetLcdConfig))
             {
@@ -4695,7 +5279,7 @@ void USBCBSendResume(void)
   Remarks:
     None
 ***************************************************************************/
-#if 1
+#if 0
 void App_Detect_Device(void)
 {
   if(!USBHostHID_ApiDeviceDetect())
@@ -4789,7 +5373,7 @@ void App_ProcessInputReport(void)
     assumes that Application is aware of report format of the attached
     device.
 ***************************************************************************/
-#if 1
+#if 0
 BOOL USB_HID_DataCollectionHandler(void)
 {
   BYTE NumOfReportItem = 0;
@@ -5017,7 +5601,7 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
             deviceHandle = NULL;
             ProcState = STATE_INITIALIZE;
             return TRUE;
-#if 1
+#if 0
         case EVENT_HID_RPT_DESC_PARSED:
             #ifdef APPL_COLLECT_PARSED_DATA
                 return(APPL_COLLECT_PARSED_DATA());

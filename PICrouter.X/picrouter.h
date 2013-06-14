@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.5.8 2013/05/25
+ * picrouter.h,v.1.5.9 2013/06/14
  */
 
-#define CURRENT_VERSION "1.5.8"
+#define CURRENT_VERSION "1.5.9"
 
 #include <plib.h>
 #include <stdio.h>
@@ -34,7 +34,7 @@
 #include "USB/usb_function_hid.h"
 #include "USB/usb_function_midi.h"
 #include "USB/usb_host_midi.h"
-#if 1
+#if 0
     #include "USB/usb_host_hid_parser.h"
     #include "USB/usb_host_hid.h"
 #endif
@@ -115,6 +115,7 @@ typedef enum _APP_STATE
     ERROR_REPORTED 
 } APP_STATE;
 
+#if 0
 typedef struct _HID_REPORT_BUFFER
 {
     WORD  Report_ID;
@@ -133,6 +134,7 @@ HID_REPORT_BUFFER  Appl_raw_report_buffer;
 
 HID_USER_DATA_SIZE Appl_Button_report_buffer[3];
 HID_USER_DATA_SIZE Appl_XY_report_buffer[3];
+#endif
 
 BYTE ErrorDriver;
 BYTE ErrorCounter;
