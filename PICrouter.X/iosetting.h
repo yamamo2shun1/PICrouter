@@ -30,6 +30,7 @@
 #include <string.h>
 #include "HardwareProfile.h"
 
+// SPI
 #define SPI_2 2
 #define SPI_4 4
 #define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
