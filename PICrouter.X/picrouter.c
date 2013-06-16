@@ -1651,28 +1651,28 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_3);
 
-                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address >> 8, 'w');
+                            setDataToI2C(I2C_3, address >> 8);
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_3, address & 0x00FF);
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
                             idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, data, 'w');
+                            setDataToI2C(I2C_3, data);
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
@@ -1687,28 +1687,28 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_4);
 
-                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address >> 8, 'w');
+                            setDataToI2C(I2C_4, address >> 8);
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_4, address & 0x00FF);
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
                             idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, data, 'w');
+                            setDataToI2C(I2C_4, data);
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
@@ -1723,28 +1723,28 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_5);
 
-                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address >> 8, 'w');
+                            setDataToI2C(I2C_5, address >> 8);
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_5, address & 0x00FF);
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
                             idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, data, 'w');
+                            setDataToI2C(I2C_5, data);
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
@@ -1781,21 +1781,21 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_3);
 
-                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address >> 8, 'w');
+                            setDataToI2C(I2C_3, address >> 8);
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_3, address & 0x00FF);
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
@@ -1803,7 +1803,7 @@ void receiveOSCTask(void)
 
                             restartI2C(I2C_3);
 
-                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'r');
+                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'r');
                             idleI2C(I2C_3);
 
                             if(!checkAckI2C(I2C_3))
@@ -1825,21 +1825,21 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_4);
 
-                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address >> 8, 'w');
+                            setDataToI2C(I2C_4, address >> 8);
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_4, address & 0x00FF);
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
@@ -1847,7 +1847,7 @@ void receiveOSCTask(void)
 
                             restartI2C(I2C_4);
 
-                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'r');
+                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'r');
                             idleI2C(I2C_4);
 
                             if(!checkAckI2C(I2C_4))
@@ -1869,21 +1869,21 @@ void receiveOSCTask(void)
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
                             idleI2C(I2C_5);
 
-                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
                             idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address >> 8, 'w');
+                            setDataToI2C(I2C_5, address >> 8);
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
                                 sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
                             idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address & 0x00FF, 'w');
+                            setDataToI2C(I2C_5, address & 0x00FF);
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
@@ -1891,7 +1891,7 @@ void receiveOSCTask(void)
 
                             restartI2C(I2C_5);
 
-                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'r');
+                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'r');
                             idleI2C(I2C_5);
 
                             if(!checkAckI2C(I2C_5))
