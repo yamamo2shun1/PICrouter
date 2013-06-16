@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.9 2013/06/14
+ * picrouter.c,v.1.5.10 2013/06/16
  */
 
 #include "picrouter.h"
@@ -1629,164 +1629,129 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(msgSetI2cData))
             {
                 BYTE id;
-                BYTE chip;
+                BYTE slave_address;
+                BYTE chip_address;
                 WORD address = 0;
                 DWORD data = 0;
-                BYTE result;
-                I2C_STATUS status;
 
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
-                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')) &&
+                   (compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
-                    chip = getIntArgumentAtIndex(1);
-                    address = getIntArgumentAtIndex(2);
-                    data = getIntArgumentAtIndex(3);
+                    slave_address = getIntArgumentAtIndex(1);
+                    chip_address = getIntArgumentAtIndex(2);
+                    address = getIntArgumentAtIndex(3);
+                    data = getIntArgumentAtIndex(4);
 
                     switch(id)
                     {
                         case 3:
-                            I2C3CONSET = _I2C3CON_SEN_MASK;
-                            if(I2C3STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_3);
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = 0xA0 | (chip << 1);
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_3);
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = address >> 8;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = address & 0x00FF;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_3);
+                            setDataToI2C(I2C_3, address >> 8, 'w');
+                            idleI2C(I2C_3);
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = data;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            I2C3CONSET = _I2C3CON_PEN_MASK;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            idleI2C(I2C_3);
+                            setDataToI2C(I2C_3, address & 0x00FF, 'w');
+                            idleI2C(I2C_3);
+
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                            idleI2C(I2C_3);
+                            setDataToI2C(I2C_3, data, 'w');
+                            idleI2C(I2C_3);
+
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                            stopI2C(I2C_3);
+                            idleI2C(I2C_3);
                             DelayMs(5);
                             break;
                         case 4:
-                            I2C4CONSET = _I2C4CON_SEN_MASK;
-                            if(I2C4STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_4);
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = 0xA0 | (chip << 1);
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_4);
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = address >> 8;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = address & 0x00FF;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_4);
+                            setDataToI2C(I2C_4, address >> 8, 'w');
+                            idleI2C(I2C_4);
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = data;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            I2C4CONSET = _I2C4CON_PEN_MASK;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            idleI2C(I2C_4);
+                            setDataToI2C(I2C_4, address & 0x00FF, 'w');
+                            idleI2C(I2C_4);
+
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                            idleI2C(I2C_4);
+                            setDataToI2C(I2C_4, data, 'w');
+                            idleI2C(I2C_4);
+
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                            stopI2C(I2C_4);
+                            idleI2C(I2C_4);
                             DelayMs(5);
                             break;
                         case 5:
-                            I2C5CONSET = _I2C5CON_SEN_MASK;
-                            if(I2C5STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_5);
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = 0xA0 | (chip << 1);
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_5);
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = address >> 8;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = address & 0x00FF;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_5);
+                            setDataToI2C(I2C_5, address >> 8, 'w');
+                            idleI2C(I2C_5);
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = data;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            I2C5CONSET = _I2C5CON_PEN_MASK;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            idleI2C(I2C_5);
+                            setDataToI2C(I2C_5, address & 0x00FF, 'w');
+                            idleI2C(I2C_5);
+
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                            idleI2C(I2C_5);
+                            setDataToI2C(I2C_5, data, 'w');
+                            idleI2C(I2C_5);
+
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                            stopI2C(I2C_5);
+                            idleI2C(I2C_5);
                             DelayMs(5);
                             break;
                     }
@@ -1797,212 +1762,151 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(msgGetI2cData))
             {
                 BYTE id;
-                BYTE chip = 0;
+                BYTE slave_address = 0;
+                BYTE chip_address = 0;
                 WORD address = 0;
                 BYTE data;
-                BYTE result;
-                I2C_STATUS status;
 
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
                 {
                     id = getIntArgumentAtIndex(0);
-                    chip = getIntArgumentAtIndex(1);
-                    address = getIntArgumentAtIndex(2);
+                    slave_address = getIntArgumentAtIndex(1);
+                    chip_address = getIntArgumentAtIndex(2);
+                    address = getIntArgumentAtIndex(3);
 
                     switch(id)
                     {
                         case 3:
-                            I2C3CONSET = _I2C3CON_SEN_MASK;
-                            if(I2C3STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_3);
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = 0xA0 | (chip << 1);
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_3);
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = address >> 8;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            I2C3TRN = address & 0x00FF;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_3);
+                            setDataToI2C(I2C_3, address >> 8, 'w');
+                            idleI2C(I2C_3);
 
-                            I2C3CONSET = _I2C3CON_RSEN_MASK;
-                            while(I2C3CONbits.RSEN);
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            I2C3TRN = 0xA1 | (chip << 1);
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
-                            if(I2C3STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            idleI2C(I2C_3);
+                            setDataToI2C(I2C_3, address & 0x00FF, 'w');
+                            idleI2C(I2C_3);
 
-                            I2C3CONbits.RCEN = 1;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
-                            I2C3STATbits.I2COV = 0;
+                            restartI2C(I2C_3);
 
-                            while(!I2C3STATbits.RBF);
+                            setDataToI2C(I2C_3, slave_address | (chip_address << 1), 'r');
+                            idleI2C(I2C_3);
 
-                            I2C3CONbits.ACKDT = 1;
-                            I2C3CONbits.ACKEN = 1;
-                            while(I2C3CONbits.ACKEN == 1);
+                            if(!checkAckI2C(I2C_3))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
 
-                            data = I2C3RCV;
+                            data = getDataFromI2C(I2C_3);
 
-                            I2C3CONSET = _I2C3CON_PEN_MASK;
-                            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+                            //I2C3CONbits.ACKDT = 1;
+                            //I2C3CONbits.ACKEN = 1;
+                            //while(I2C3CONbits.ACKEN == 1);
 
-                            sendOSCMessage(getOSCPrefix(), msgI2cData, "ii", id, address, data);
+                            stopI2C(I2C_3);
+                            idleI2C(I2C_3);
+
+                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
                             break;
                         case 4:
-                            I2C4CONSET = _I2C4CON_SEN_MASK;
-                            if(I2C4STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_4);
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = 0xA0 | (chip << 1);
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_4);
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = address >> 8;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = address & 0x00FF;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_4);
+                            setDataToI2C(I2C_4, address >> 8, 'w');
+                            idleI2C(I2C_4);
 
-                            I2C4CONSET = _I2C4CON_RSEN_MASK;
-                            while(I2C4CONbits.RSEN);
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            //while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            I2C4TRN = 0xA1 | (chip << 1);
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
-                            if(I2C4STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            idleI2C(I2C_4);
+                            setDataToI2C(I2C_4, address & 0x00FF, 'w');
+                            idleI2C(I2C_4);
 
-                            I2C4CONbits.RCEN = 1;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
-                            I2C4STATbits.I2COV = 0;
+                            restartI2C(I2C_4);
 
-                            while(!I2C4STATbits.RBF);
+                            setDataToI2C(I2C_4, slave_address | (chip_address << 1), 'r');
+                            idleI2C(I2C_4);
 
-                            I2C4CONbits.ACKDT = 1;
-                            I2C4CONbits.ACKEN = 1;
-                            while(I2C4CONbits.ACKEN == 1);
+                            if(!checkAckI2C(I2C_4))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                            data = getDataFromI2C(I2C_4);
+
+                            //I2C4CONbits.ACKDT = 1;
+                            //I2C4CONbits.ACKEN = 1;
+                            //while(I2C4CONbits.ACKEN == 1);
                             
-                            data = I2C4RCV;
-
-                            I2C4CONSET = _I2C4CON_PEN_MASK;
-                            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+                            stopI2C(I2C_4);
+                            idleI2C(I2C_4);
 
                             sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
                             break;
                         case 5:
-                            I2C5CONSET = _I2C5CON_SEN_MASK;
-                            if(I2C5STATbits.BCL)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 0:", result);
-                                return;
-                            }
+                            if(!startI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                            idleI2C(I2C_5);
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C4TRN = 0xA0 | (chip << 1);
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 1:", result);
-                                return;
-                            }
+                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                            idleI2C(I2C_5);
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = address >> 8;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 2:", result);
-                                return;
-                            }
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
 
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            I2C5TRN = address & 0x00FF;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 3:", result);
-                                return;
-                            }
+                            idleI2C(I2C_5);
+                            setDataToI2C(I2C_5, address >> 8, 'w');
+                            idleI2C(I2C_5);
 
-                            I2C5CONSET = _I2C5CON_RSEN_MASK;
-                            while(I2C5CONbits.RSEN);
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
 
-                            I2C5TRN = 0xA1 | (chip << 1);
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
-                            if(I2C5STATbits.ACKSTAT)
-                            {
-                                sendOSCMessage(sysPrefix, msgError, "si", "I2C Error 4:", result);
-                                return;
-                            }
+                            idleI2C(I2C_5);
+                            setDataToI2C(I2C_5, address & 0x00FF, 'w');
+                            idleI2C(I2C_5);
 
-                            I2C5CONbits.RCEN = 1;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
 
-                            I2C5STATbits.I2COV = 0;
+                            restartI2C(I2C_5);
 
-                            while(!I2C5STATbits.RBF);
+                            setDataToI2C(I2C_5, slave_address | (chip_address << 1), 'r');
+                            idleI2C(I2C_5);
 
-                            I2C5CONbits.ACKDT = 1;
-                            I2C5CONbits.ACKEN = 1;
-                            while(I2C5CONbits.ACKEN == 1);
+                            if(!checkAckI2C(I2C_5))
+                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
 
-                            data = I2C5RCV;
+                            data = getDataFromI2C(I2C_5);
 
-                            I2C5CONSET = _I2C5CON_PEN_MASK;
-                            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+                            //I2C5CONbits.ACKDT = 1;
+                            //I2C5CONbits.ACKEN = 1;
+                            //while(I2C5CONbits.ACKEN == 1);
 
-                            sendOSCMessage(getOSCPrefix(), msgI2cData, "ii", id, address, data);
+                            stopI2C(I2C_5);
+                            idleI2C(I2C_5);
+
+                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
                             break;
                     }
                 }
