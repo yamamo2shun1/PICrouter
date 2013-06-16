@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.7.4 2013/05/04
+  * iosetting.c,v.0.7.5 2013/06/16
  */
 
 #include "iosetting.h"
@@ -797,4 +797,168 @@ unsigned int getcSPI4(void)
 {
     while(!DataRdySPI4());
     return ReadSPI4();
+}
+
+void idleI2C(BYTE i2c_id)
+{
+    switch(i2c_id)
+    {
+        case I2C_3:
+            while(I2C3CONbits.SEN || I2C3CONbits.PEN || I2C3CONbits.RCEN || I2C3CONbits.ACKEN || I2C3STATbits.TRSTAT);
+            break;
+        case I2C_4:
+            while(I2C4CONbits.SEN || I2C4CONbits.PEN || I2C4CONbits.RCEN || I2C4CONbits.ACKEN || I2C4STATbits.TRSTAT);
+            break;
+        case I2C_5:
+            while(I2C5CONbits.SEN || I2C5CONbits.PEN || I2C5CONbits.RCEN || I2C5CONbits.ACKEN || I2C5STATbits.TRSTAT);
+            break;
+    }
+}
+
+BOOL startI2C(BYTE i2c_id)
+{
+    BOOL errflag;
+
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3CONSET = _I2C3CON_SEN_MASK;
+            if(I2C3STATbits.BCL)
+                errflag = FALSE;
+            else
+                errflag = TRUE;
+            break;
+        case I2C_4:
+            I2C4CONSET = _I2C4CON_SEN_MASK;
+            if(I2C4STATbits.BCL)
+                errflag = FALSE;
+            else
+                errflag = TRUE;
+            break;
+        case I2C_5:
+            I2C5CONSET = _I2C5CON_SEN_MASK;
+            if(I2C5STATbits.BCL)
+                errflag = FALSE;
+            else
+                errflag = TRUE;
+            break;
+    }
+    return errflag;
+}
+
+void setDataToI2C(BYTE i2c_id, BYTE data, char chflag)
+{
+    if(chflag == 'r')
+        data |= 0x01;
+    else if(chflag == 'w')
+        data |= 0x00;
+    else
+        return;
+
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3TRN = data;
+            break;
+        case I2C_4:
+            I2C4TRN = data;
+            break;
+        case I2C_5:
+            I2C5TRN = data;
+            break;
+    }
+}
+
+BOOL checkAckI2C(BYTE i2c_id)
+{
+    BOOL ackflag;
+
+    switch(i2c_id)
+    {
+        case I2C_3:
+            if(I2C3STATbits.ACKSTAT)
+                ackflag = FALSE;
+            else
+                ackflag = TRUE;
+            break;
+        case I2C_4:
+            if(I2C4STATbits.ACKSTAT)
+                ackflag = FALSE;
+            else
+                ackflag = TRUE;
+            break;
+        case I2C_5:
+            if(I2C5STATbits.ACKSTAT)
+                ackflag = FALSE;
+            else
+                ackflag = TRUE;
+            break;
+    }
+    return ackflag;
+}
+
+void restartI2C(BYTE i2c_id)
+{
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3CONSET = _I2C3CON_RSEN_MASK;
+            while(I2C3CONbits.RSEN);
+            break;
+        case I2C_4:
+            I2C4CONSET = _I2C4CON_RSEN_MASK;
+            while(I2C4CONbits.RSEN);
+            break;
+        case I2C_5:
+            I2C5CONSET = _I2C5CON_RSEN_MASK;
+            while(I2C5CONbits.RSEN);
+            break;
+    }
+}
+
+void stopI2C(BYTE i2c_id)
+{
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3CONSET = _I2C3CON_PEN_MASK;
+            break;
+        case I2C_4:
+            I2C4CONSET = _I2C4CON_PEN_MASK;
+            break;
+        case I2C_5:
+            I2C5CONSET = _I2C5CON_PEN_MASK;
+            break;
+    }
+}
+
+BYTE getDataFromI2C(BYTE i2c_id)
+{
+    BYTE data = 0;
+    
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3CONbits.RCEN = 1;
+            idleI2C(I2C_3);
+            I2C3STATbits.I2COV = 0;
+            while(!I2C3STATbits.RBF);
+            data = I2C3RCV;
+            break;
+        case I2C_4:
+            I2C4CONbits.RCEN = 1;
+            idleI2C(I2C_4);
+            I2C4STATbits.I2COV = 0;
+            while(!I2C4STATbits.RBF);
+            data = I2C4RCV;
+            break;
+        case I2C_5:
+            I2C5CONbits.RCEN = 1;
+            idleI2C(I2C_5);
+            I2C5STATbits.I2COV = 0;
+            while(!I2C5STATbits.RBF);
+            data = I2C5RCV;
+            break;
+    }
+    return data;
 }

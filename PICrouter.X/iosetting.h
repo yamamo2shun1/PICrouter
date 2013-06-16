@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.7.4 2013/05/04
+ * iosetting.h,v.0.7.5 2013/06/16
  */
 
 #ifndef IOSETTING_H
@@ -36,6 +36,11 @@
 #define putcSPI4(data_out)  do{while(!SPI4STATbits.SPITBE); SPI4BUF=(data_out); }while(0)
 #define DataRdySPI4() (SPI4STATbits.SPIRBF)
 #define	ReadSPI4()	(SPI4BUF)
+
+// I2C
+#define I2C_3 3
+#define I2C_4 4
+#define I2C_5 5
 
 #define AN_NUM  14
 #define PWM_NUM 4
@@ -85,6 +90,14 @@ void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DW
 WORD receiveSpiOneWord(BYTE spi_id, DWORD usec);
 
 unsigned int getcSPI4(void);
+
+void idleI2C(BYTE i2c_id);
+BOOL startI2C(BYTE i2c_id);
+void setDataToI2C(BYTE i2c_id, BYTE data, char chflag);
+BOOL checkAckI2C(BYTE i2c_id);
+void restartI2C(BYTE i2c_id);
+void stopI2C(BYTE i2c_id);
+BYTE getDataFromI2C(BYTE i2c_id);
 
 #endif	/* IOSETTING_H */
 
