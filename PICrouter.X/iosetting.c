@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.7.5 2013/06/16
+  * iosetting.c,v.0.7.6 2013/06/16
  */
 
 #include "iosetting.h"
@@ -846,7 +846,7 @@ BOOL startI2C(BYTE i2c_id)
     return errflag;
 }
 
-void setDataToI2C(BYTE i2c_id, BYTE data, char chflag)
+void setAddressToI2C(BYTE i2c_id, BYTE data, char chflag)
 {
     if(chflag == 'r')
         data |= 0x01;
@@ -855,6 +855,22 @@ void setDataToI2C(BYTE i2c_id, BYTE data, char chflag)
     else
         return;
 
+    switch(i2c_id)
+    {
+        case I2C_3:
+            I2C3TRN = data;
+            break;
+        case I2C_4:
+            I2C4TRN = data;
+            break;
+        case I2C_5:
+            I2C5TRN = data;
+            break;
+    }
+}
+
+void setDataToI2C(BYTE i2c_id, BYTE data)
+{
     switch(i2c_id)
     {
         case I2C_3:
