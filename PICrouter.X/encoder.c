@@ -517,12 +517,14 @@ static void calculateEncoderPosition(BYTE index)
 
             for(i = 0; i < reMatchCount[index]; i++)
             {
-                if(rePosData[index][i] <= 10)
+                //if(rePosData[index][i] <= 10)
+                if(rePosData[index][i] <= 200)
                 {
                     raap_min += rePosData[index][i];
                     startBoundaryCount++;
                 }
-                else if(rePosData[index][i] >= 1013)
+                //else if(rePosData[index][i] >= 1013)
+                else if(rePosData[index][i] >= 800)
                 {
                     raap_max += rePosData[index][i];
                     endBoundaryCount++;
@@ -568,7 +570,9 @@ static void calculateEncoderVelocity(BYTE index)
                 if(reVelAvgIndex[index] >= 8)
                     reVelAvgIndex[index] = 0;
 
-                if(fabs(reAbsAnglePos[index] - reAbsAnglePos0[index]) > 700.0)
+                //if(fabs(reAbsAnglePos[index] - reAbsAnglePos0[index]) > 700.0)
+                if((reAbsAnglePos[index] > 600 && reAbsAnglePos0[index] < 400) ||
+                   (reAbsAnglePos[index] < 400 && reAbsAnglePos0[index] > 600))
                 {
                     if(reAbsAnglePos[index] - reAbsAnglePos0[index] < 0.0)
                         diff = (reAbsAnglePos[index] + 1023.0) - reAbsAnglePos0[index];
