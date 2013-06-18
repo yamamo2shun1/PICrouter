@@ -3410,14 +3410,15 @@ void receiveOSCTask(void)
                 {
                     srcName = getStringArgumentAtIndex(0);
                     np = strstr(srcName, ".local");
-                    if(np == NULL)
+                    if(np != NULL)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": wrong_argument_string");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": please_delete_.local");
                         return;
                     }
 
-                    len = np - srcName;
-                    if(len >= 32)
+                    //len = np - srcName;
+                    //if(len >= 32)
+                    if(strlen(srcName) >= 32)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": too_long_string");
                         return;
