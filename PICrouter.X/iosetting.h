@@ -48,7 +48,7 @@
 #define SPI_NUM 6
 
 #define TIMER4_COUNT 500
-#define TIMER5_COUNT 2000
+#define TIMER5_COUNT 1000 // 2000
 
 extern BYTE ioAnPort[14];
 extern BYTE ioPwmPort[4];
