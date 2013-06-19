@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * encoder.c,v.0.6.5 2013/05/25
+ * encoder.c,v.0.6.6 2013/06/19
  */
 
 #include "encoder.h"
@@ -69,6 +69,7 @@ static WORD rePosData[MAX_RE_NUM][AVG_NUM];
 static float reAbsAnglePosLast[MAX_RE_NUM];
 static float reAbsAnglePos0[MAX_RE_NUM];
 static float reAbsAnglePos[MAX_RE_NUM];
+static int reDirectionLast[MAX_RE_NUM];
 static int reDirection[MAX_RE_NUM];
 static DWORD reCounting[MAX_RE_NUM];
 static float reCounted[MAX_RE_NUM];
@@ -110,6 +111,7 @@ void initEncoderVariables(void)
         reAbsAnglePosLast[j] = 0;
         reAbsAnglePos[j] = 0;
         reDirection[j] = 0;
+        reDirectionLast[j] = 0;
         reCounting[j] = 0;
         reCounted[j] = 0;
 
@@ -614,6 +616,14 @@ static void smoothingEncoderVelocity(BYTE index)
             reCounting[index] = 0;
             sendEncFlag[index] = TRUE;
         }
+        else
+        {
+            if(reDirectionLast[index] != 0)
+            {
+                reDirection[index] = 0;
+                sendEncFlag[index] = TRUE;
+            }
+        }
         reAvgIndex[index] = 0;
     }
 }
@@ -672,14 +682,16 @@ void sendEncAbs32(BYTE index)
         //debug sendOSCMessage(TxSocket, prefix, msgRotaryEnc, "fiiiiiiiii", reAbsAnglePos, reMatchCount, rePosData[0], rePosData[1], rePosData[2], rePosData[3], rePosData[4], rePosData[5], rePosData[6], rePosData[7]);
         if(reAbsAnglePos[index] > reAbsAnglePosLast[index])
         {
-            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] > 1000)
+            //if(reAbsAnglePos[index] - reAbsAnglePosLast[index] > 1000)
+            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] > 700)
                 reDirection[index] = -1;
             else
                 reDirection[index] = 1;
         }
         else if(reAbsAnglePos[index] < reAbsAnglePosLast[index])
         {
-            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] < -1000)
+            //if(reAbsAnglePos[index] - reAbsAnglePosLast[index] < -1000)
+            if(reAbsAnglePos[index] - reAbsAnglePosLast[index] < -700)
                 reDirection[index] = 1;
             else
                 reDirection[index] = -1;
@@ -691,5 +703,6 @@ void sendEncAbs32(BYTE index)
         sendEncFlag[index] = FALSE;
         reMatchCount[index] = 0;
         reAbsAnglePosLast[index] = reAbsAnglePos[index];
+        reDirectionLast[index] = reDirection[index];
     }
 }
