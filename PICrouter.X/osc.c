@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.0.9 2013/06/14
+ * osc.c,v.1.1.0 2013/06/20
  */
 
 #include "osc.h"
@@ -153,7 +153,7 @@ const char msgSetLcdConfig[] = "/lcd/config/set";
 const char msgSetLcdText[]   = "/lcd/text/set";
 const char msgClearLcdText[] = "/lcd/text/clear";
 
-//OSC Messages converted from MIDI Message (15)
+//OSC Messages converted from MIDI Messages (15)
 const char midiPrefix[] = "/midi";
 const char msgSetNote[] = "/note/set";
 const char msgNote[]    = "/note";
@@ -169,6 +169,11 @@ const char msgSetCp[]   = "/cp/set";
 const char msgCp[]      = "/cp";
 const char msgSetPb[]   = "/pb/set";
 const char msgPb[]      = "/pb";
+
+// OSC Messages converted from CDC Messages (2)
+const char cdcPrefix[]  = "/cdc";
+const char msgSetData[] = "/data/set";
+const char msgData[]    = "/data";
 
 //System OSC Messages for Network Settings (25)
 const char sysPrefix[]        = "/sys";
