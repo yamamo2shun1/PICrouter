@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_config.h,v.1.0.0 2013/05/25
+ * usb_config.h,v.1.1.0 2013/06/19
  */
 
 /*********************************************************************
@@ -120,27 +120,35 @@
 
 #define USB_NUM_STRING_DESCRIPTORS 3
 
-#define USB_ENABLE_ALL_HANDLER//hid
-
 /** DEVICE CLASS USAGE *********************************************/
-#define USB_USE_HID//hid
+//hid #define USB_USE_HID//hid
+#define USB_USE_CDC // cdc
 #define USB_USE_AUDIO_MIDI
 
 /** ENDPOINTS ALLOCATION *******************************************/
 #define MIDI_EP             1
 
-/* HID */
+/* For HID Device */
+#define USB_ENABLE_ALL_HANDLER
+
 #define HID_INTF_ID          0x00
 #define HID_EP               2
 #define HID_INT_OUT_EP_SIZE  3
 #define HID_INT_IN_EP_SIZE   3
 #define HID_NUM_OF_DSC       1
 #define HID_RPT01_SIZE       29
+
 /** DEFINITIONS ****************************************************/
 
 /* Host Configuration */
 #define USB_ENABLE_TRANSFER_EVENT
-#define NUM_TPL_ENTRIES 4//1// 2
+#if defined(USB_USE_HID)
+  #define NUM_TPL_ENTRIES 4
+#elif defined(USB_USE_CDC)
+  #define NUM_TPL_ENTRIES 3
+#else
+  #define NUM_TPL_ENTRIES 1
+#endif
 #define USB_NUM_CONTROL_NAKS 200
 //test #define USB_NUM_CONTROL_NAKS 20
 #define USB_SUPPORT_INTERRUPT_TRANSFERS
@@ -156,23 +164,35 @@
 #define USB_MAX_MIDI_DEVICES 1
 
 // Host HID Client Driver Configuration
-#if 0
+#if defined(USB_USE_HID)
     #define USB_MAX_HID_DEVICES 1
     #define HID_MAX_DATA_FIELD_SIZE 8
     #define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
+#elif defined(USB_USE_CDC)
+    #define USB_MAX_CDC_DEVICES  1
+    #define USB_CDC_BAUDRATE_SUPPORTED 19200L
+    #define USB_CDC_PARITY_TYPE 0
+    #define USB_CDC_STOP_BITS 0
+    #define USB_CDC_NO_OF_DATA_BITS 8
 #endif
 
-#if 0
-#define USBTasks()               \
-{                                \
-    USBHostTasks();              \
-    USBHostHIDTasks();           \
-}
+#if defined(USB_USE_HID)
+    #define USBTasks()               \
+    {                                \
+        USBHostTasks();              \
+        USBHostHIDTasks();           \
+    }
+#elif defined(USB_USE_CDC)
+    #define USBTasks()               \
+    {                                \
+        USBHostTasks();              \
+        USBHostCDCTasks();           \
+    }
 #else
-#define USBTasks()               \
-{                                \
-    USBHostTasks();              \
-}
+    #define USBTasks()               \
+    {                                \
+        USBHostTasks();              \
+    }
 #endif
 
 #define USBInitialize(x)        \
