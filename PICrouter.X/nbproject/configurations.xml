@@ -35,6 +35,8 @@
           <itemPath>Include/USB/usb_host_midi.h</itemPath>
           <itemPath>Include/USB/usb_host_hid.h</itemPath>
           <itemPath>Include/USB/usb_host_hid_parser.h</itemPath>
+          <itemPath>Include/USB/usb_host_cdc.h</itemPath>
+          <itemPath>Include/USB/usb_host_cdc_interface.h</itemPath>
         </logicalFolder>
         <itemPath>Include/Compiler.h</itemPath>
         <itemPath>Include/GenericTypeDefs.h</itemPath>
@@ -88,6 +90,8 @@
         <itemPath>USB/usb_host_midi.c</itemPath>
         <itemPath>USB/usb_host_hid.c</itemPath>
         <itemPath>USB/usb_host_hid_parser.c</itemPath>
+        <itemPath>USB/usb_host_cdc.c</itemPath>
+        <itemPath>USB/usb_host_cdc_interface.c</itemPath>
       </logicalFolder>
       <itemPath>usb_descriptors.c</itemPath>
       <itemPath>picrouter.c</itemPath>
@@ -108,6 +112,7 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>Include</Elem>
+    <Elem>USB</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
