@@ -160,7 +160,7 @@ extern const char msgSetKp[];
 extern const char msgKp[];
 extern const char msgSetCp[];
 extern const char msgCp[];
-extern const char msgGetPb[];
+extern const char msgSetPb[];
 extern const char msgPb[];
 
 // OSC Messages converted from CDC Messages
