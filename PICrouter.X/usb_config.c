@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_config.c,v.1.1.0 2013/06/19
+ * usb_config.c,v.1.1.0 2013/06/24
  */
 
 #include "GenericTypeDefs.h"
@@ -35,6 +35,12 @@
 
 CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 {
+    {
+        USBHostMIDIInit,
+        USBHostMIDIEventHandler,
+        0
+    }
+    ,
 #if defined(USB_USE_HID)
     {
         USBHostHIDInitialize,
@@ -46,19 +52,15 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
     {
         USBHostCDCInitialize,
         USBHostCDCEventHandler,
+        0
     }
     ,
     {
         USBHostCDCInitialize,
         USBHostCDCEventHandler,
-    }
-    ,
-#endif
-    {
-        USBHostMIDIInit,
-        USBHostMIDIEventHandler,
         0
     }
+#endif
 };
 
 // *****************************************************************************
@@ -67,15 +69,15 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 
 USB_TPL usbTPL[] =
 {
+    { INIT_CL_SC_P( 0x01ul, 0x03ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }, // MIDI Audio Subclass
 #if defined(USB_USE_HID)
     { INIT_CL_SC_P( 0x03ul, 0x01ul, 0x02ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
     { INIT_CL_SC_P( 0x03ul, 0x01ul, 0x01ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
     { INIT_CL_SC_P( 0x03ul, 0x00ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
 #elif defined(USB_USE_CDC)
-    { INIT_CL_SC_P( 2ul, 2ul, 1ul ), 0, 0, {TPL_CLASS_DRV} }, // Communication Interface
+    { INIT_CL_SC_P( 0x02ul, 0x02ul, 0x01ul ), 0, 1, {TPL_CLASS_DRV} }, // Communication Interface
 	 // Communication Device/Interface Class , Abstract Control Mode , Common AT Commands
-    { INIT_CL_SC_P( 0x0Aul, 0ul, 0ul ), 0, 0, {TPL_CLASS_DRV} },  // Data Interface
+    { INIT_CL_SC_P( 0x0Aul, 0x00ul, 0x00ul ), 0, 1, {TPL_CLASS_DRV} }  // Data Interface
 #endif
-    { INIT_CL_SC_P( 0x01ul, 0x03ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }  // MIDI Audio Subclass
 };
 

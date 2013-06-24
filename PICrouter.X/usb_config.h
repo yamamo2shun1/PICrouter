@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_config.h,v.1.1.0 2013/06/19
+ * usb_config.h,v.1.1.0 2013/06/24
  */
 
 /*********************************************************************
@@ -162,6 +162,7 @@
 
 // Host MIDI Configuration
 #define USB_MAX_MIDI_DEVICES 1
+#define USB_MAX_CDC_DEVICES  1
 
 // Host HID Client Driver Configuration
 #if defined(USB_USE_HID)
@@ -169,7 +170,6 @@
     #define HID_MAX_DATA_FIELD_SIZE 8
     #define APPL_COLLECT_PARSED_DATA USB_HID_DataCollectionHandler
 #elif defined(USB_USE_CDC)
-    #define USB_MAX_CDC_DEVICES  1
     #define USB_CDC_BAUDRATE_SUPPORTED 19200L
     #define USB_CDC_PARITY_TYPE 0
     #define USB_CDC_STOP_BITS 0
