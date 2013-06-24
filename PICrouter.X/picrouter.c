@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.5.10 2013/06/16
+ * picrouter.c,v.1.6.0 2013/06/24
  */
 
 #include "picrouter.h"
@@ -219,9 +219,22 @@ int main(int argc, char** argv) {
                     if(bUsbHostInitialized)
                     {
                         USBTasks();
+
                         convertMidiToOsc();
-#if 0
+
+#if defined(USB_USE_HID)
                         convertHidToOsc();
+#elif defined(USB_USE_CDC)
+                        USB_CDC_RxTxHandler();
+
+                        if(cdcReceiveInterval < 16384)
+                            cdcReceiveInterval++;
+                        else if(cdcReceiveInterval == 16384)
+                        {
+                            if(APPL_CDC_State == READY_TO_TX_RX)
+                                APPL_CDC_State = GET_IN_DATA;
+                            cdcReceiveInterval = 0;
+                        }
 #endif
                     }
                     else
@@ -3306,6 +3319,191 @@ void receiveOSCTask(void)
                 T2CONbits.TON = 1;
             }
         }
+        // MIDI
+        else if(compareOSCPrefix(midiPrefix))
+        {
+            if(compareOSCAddress(msgSetNote)) // Note On/Off
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE num = getIntArgumentAtIndex(1);
+                BYTE vel = getIntArgumentAtIndex(2);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_NOTE_ON;
+                OSCTranslatedToUSB.DATA_0 = 0x90 + ch;
+                OSCTranslatedToUSB.DATA_1 = num;
+                OSCTranslatedToUSB.DATA_2 = vel;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+            else if(compareOSCAddress(msgSetCc)) // Control Change
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE num = getIntArgumentAtIndex(1);
+                BYTE val = getIntArgumentAtIndex(2);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+                OSCTranslatedToUSB.DATA_0 = 0xB0 + ch;
+                OSCTranslatedToUSB.DATA_1 = num;
+                OSCTranslatedToUSB.DATA_2 = val;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+            else if(compareOSCAddress(msgSetKp)) // Polyphonic Key Pressure
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE num = getIntArgumentAtIndex(1);
+                BYTE prs = getIntArgumentAtIndex(2);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_POLY_KEY_PRESS;
+                OSCTranslatedToUSB.DATA_0 = 0xA0 + ch;
+                OSCTranslatedToUSB.DATA_1 = num;
+                OSCTranslatedToUSB.DATA_2 = prs;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+            else if(compareOSCAddress(msgSetPc)) // Program Change
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE pnum = getIntArgumentAtIndex(1);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PROGRAM_CHANGE;
+                OSCTranslatedToUSB.DATA_0 = 0xC0 + ch;
+                OSCTranslatedToUSB.DATA_1 = pnum;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+            else if(compareOSCAddress(msgSetCp)) // Channel Pressure
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE prs = getIntArgumentAtIndex(1);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CHANNEL_PREASURE;
+                OSCTranslatedToUSB.DATA_0 = 0xD0 + ch;
+                OSCTranslatedToUSB.DATA_1 = prs;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+            else if(compareOSCAddress(msgSetPb)) // Pitch Bend
+            {
+                BYTE currentEndpoint;
+
+                BYTE ch = getIntArgumentAtIndex(0);
+                BYTE msb = getIntArgumentAtIndex(1);
+                BYTE lsb = getIntArgumentAtIndex(2);
+
+                OSCTranslatedToUSB.Val = 0;
+                OSCTranslatedToUSB.CableNumber = 0;
+                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PITCH_BEND_CHANGE;
+                OSCTranslatedToUSB.DATA_0 = 0xE0 + ch;
+                OSCTranslatedToUSB.DATA_1 = msb;
+                OSCTranslatedToUSB.DATA_2 = lsb;
+
+                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+                {
+                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
+                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
+
+                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
+                    {
+                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
+                    }
+                    break;
+                }
+            }
+        }
+        // CDC
+#if defined(USB_USE_CDC)
+        else if(compareOSCPrefix(cdcPrefix))
+        {
+            if(compareOSCAddress(msgSetData))
+            {
+                cdcOutDataLength = getArgumentsLength();
+                if(cdcOutDataLength >= MAX_NO_OF_OUT_BYTES)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": too_many_arguments");
+                    return;
+                }
+
+                for(i = 0; i < cdcOutDataLength; i++)
+                    USB_CDC_OUT_Data_Array[i] = getIntArgumentAtIndex(i);
+
+                cdcSendFlag = TRUE;
+                APPL_CDC_State = READY_TO_TX_RX;
+
+                //_USBHostCDC_TerminateTransfer(USB_SUCCESS);
+            }
+        }
+#endif
         else if(compareOSCPrefix(sysPrefix))
         {
             // System Setting
@@ -4643,6 +4841,7 @@ void convertMidiToOsc(void)
             }
             break;
         case STATE_ERROR:
+            LED_2_On();
             break;
         default:
             ProcState = STATE_INITIALIZE;
@@ -4650,7 +4849,7 @@ void convertMidiToOsc(void)
     }
 }
 
-#if 0 // hid
+#if defined(USB_USE_HID) // hid
 void convertHidToOsc(void)
 {
     //App_Detect_Device();
@@ -4723,6 +4922,103 @@ void convertHidToOsc(void)
             break;
         default:
             break;       
+    }
+}
+#endif
+
+#if defined(USB_USE_CDC)
+void USBHostCDC_Clear_Out_DATA_Array(void)
+{
+    BYTE i;
+
+    for(i = 0; i < MAX_NO_OF_OUT_BYTES; i++)
+        USB_CDC_OUT_Data_Array[i] = 0;
+}
+
+void USB_CDC_RxTxHandler(void)
+{
+    BYTE i;
+
+    if(!USBHostCDC_ApiDeviceDetect()) /* TRUE if device is enumerated without error */
+    {
+       APPL_CDC_State = DEVICE_NOT_CONNECTED;
+    }
+
+    switch(APPL_CDC_State)
+    {
+        case DEVICE_NOT_CONNECTED:
+            USBTasks();
+            if(USBHostCDC_ApiDeviceDetect()) /* TRUE if device is enumerated without error */
+            {
+                APPL_CDC_State = DEVICE_CONNECTED;
+            }
+            break;
+        case DEVICE_CONNECTED:
+            APPL_CDC_State = READY_TO_TX_RX;
+            break;
+        case GET_IN_DATA:
+            if(USBHostCDC_Api_Get_IN_Data(MAX_NO_OF_IN_BYTES, USB_CDC_IN_Data_Array))
+            {
+                APPL_CDC_State = GET_IN_DATA_WAIT;
+            }
+            else
+            {
+                APPL_CDC_State = READY_TO_TX_RX;
+            }
+            break;
+        case GET_IN_DATA_WAIT:
+            if(USBHostCDC_ApiTransferIsComplete(&ErrorDriver, &NumOfBytesRcvd))
+            {
+                if(!ErrorDriver)
+                {
+                    if(NumOfBytesRcvd > 0)
+                    {
+                        for(i = 0; i < NumOfBytesRcvd; i++)
+                        {
+                            sendOSCMessage(cdcPrefix, msgData, "iii", i, NumOfBytesRcvd, USB_CDC_IN_Data_Array[i]);
+                        }
+                    }
+                    APPL_CDC_State = READY_TO_TX_RX;
+                }
+                else
+                {
+                    APPL_CDC_State = READY_TO_TX_RX;
+                }
+            }
+            break;
+        case SEND_OUT_DATA:
+            if(USBHostCDC_Api_Send_OUT_Data(cdcOutDataLength, USB_CDC_OUT_Data_Array))
+            {
+                APPL_CDC_State = SEND_OUT_DATA_WAIT;
+            }
+            else
+            {
+                APPL_CDC_State = READY_TO_TX_RX;
+            }
+            break;
+        case SEND_OUT_DATA_WAIT:
+            if(USBHostCDC_ApiTransferIsComplete(&ErrorDriver, &NumOfBytesRcvd))
+            {
+                USBHostCDC_Clear_Out_DATA_Array();
+                APPL_CDC_State = READY_TO_TX_RX;
+
+                cdcSendFlag = FALSE;
+            }
+            break;
+        case READY_TO_TX_RX:
+
+            if(cdcSendFlag)
+            {
+                APPL_CDC_State = SEND_OUT_DATA;
+                //cdcSendFlag = FALSE;
+            }
+            else
+            {
+                APPL_CDC_State = READY_TO_TX_RX;
+            }
+            break;
+        default :
+            break;
     }
 }
 #endif
@@ -5184,7 +5480,7 @@ void USBCBSendResume(void)
   Remarks:
     None
 ***************************************************************************/
-#if 0
+#if defined(USB_USE_HID)
 void App_Detect_Device(void)
 {
   if(!USBHostHID_ApiDeviceDetect())
@@ -5213,7 +5509,7 @@ void App_Detect_Device(void)
   Remarks:
     None
 ***************************************************************************/
-#if 0// hid
+#if defined(USB_USE_HID)
 void App_ProcessInputReport(void)
 {
     BYTE  data;
@@ -5278,7 +5574,7 @@ void App_ProcessInputReport(void)
     assumes that Application is aware of report format of the attached
     device.
 ***************************************************************************/
-#if 0
+#if defined(USB_USE_HID)
 BOOL USB_HID_DataCollectionHandler(void)
 {
   BYTE NumOfReportItem = 0;
@@ -5452,6 +5748,43 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
     // Handle specific events.
     switch ((INT)event)
     {
+        case EVENT_VBUS_REQUEST_POWER:
+        case EVENT_VBUS_RELEASE_POWER:
+        case EVENT_HUB_ATTACH:
+        case EVENT_UNSUPPORTED_DEVICE:
+        case EVENT_CANNOT_ENUMERATE:
+        case EVENT_CLIENT_INIT_ERROR:
+        case EVENT_OUT_OF_MEMORY:
+        case EVENT_UNSPECIFIED_ERROR:   // This should never be generated.
+        case EVENT_SUSPEND:
+        case EVENT_DETACH:
+        case EVENT_RESUME:
+        case EVENT_BUS_ERROR:
+            return TRUE;
+            break;
+#if defined(USB_USE_HID)
+        case EVENT_HID_RPT_DESC_PARSED:
+            #ifdef APPL_COLLECT_PARSED_DATA
+                return(APPL_COLLECT_PARSED_DATA());
+            #else
+                return TRUE;
+            #endif
+            break;
+#elif defined(USB_USE_CDC)
+        case EVENT_CDC_NONE:
+        case EVENT_CDC_ATTACH:
+        case EVENT_CDC_COMM_READ_DONE:
+        case EVENT_CDC_COMM_WRITE_DONE:
+        case EVENT_CDC_DATA_READ_DONE:
+        case EVENT_CDC_DATA_WRITE_DONE:
+        case EVENT_CDC_RESET:
+            return TRUE;
+            break;
+        case EVENT_CDC_NAK_TIMEOUT:
+                APPL_CDC_State = READY_TO_TX_RX;
+                return TRUE;
+            break;
+#endif
         case EVENT_MIDI_ATTACH:
             deviceHandle = data;
             ProcState = STATE_READY;
@@ -5491,6 +5824,7 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
             }    
 
             return TRUE;
+            break;
         case EVENT_MIDI_DETACH:
             for( currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++ )
             {
@@ -5506,28 +5840,8 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
             deviceHandle = NULL;
             ProcState = STATE_INITIALIZE;
             return TRUE;
-#if 0
-        case EVENT_HID_RPT_DESC_PARSED:
-            #ifdef APPL_COLLECT_PARSED_DATA
-                return(APPL_COLLECT_PARSED_DATA());
-            #else
-                return TRUE;
-            #endif
             break;
-#endif
         case EVENT_MIDI_TRANSFER_DONE:  // The main state machine will poll the driver.
-        case EVENT_VBUS_REQUEST_POWER:
-        case EVENT_VBUS_RELEASE_POWER:
-        case EVENT_HUB_ATTACH:
-        case EVENT_UNSUPPORTED_DEVICE:
-        case EVENT_CANNOT_ENUMERATE:
-        case EVENT_CLIENT_INIT_ERROR:
-        case EVENT_OUT_OF_MEMORY:
-        case EVENT_UNSPECIFIED_ERROR:   // This should never be generated.
-        case EVENT_SUSPEND:
-        case EVENT_DETACH:
-        case EVENT_RESUME:
-        case EVENT_BUS_ERROR:
             return TRUE;
             break;
         default:

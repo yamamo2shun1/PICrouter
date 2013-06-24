@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.5.10 2013/06/16
+ * picrouter.h,v.1.6.0 2013/06/24
  */
 
-#define CURRENT_VERSION "1.5.10"
+#define CURRENT_VERSION "1.6.0"
 
 #include <plib.h>
 #include <stdio.h>
@@ -34,9 +34,13 @@
 #include "USB/usb_function_hid.h"
 #include "USB/usb_function_midi.h"
 #include "USB/usb_host_midi.h"
-#if 0
+#if defined(USB_USE_HID) // hid host
     #include "USB/usb_host_hid_parser.h"
     #include "USB/usb_host_hid.h"
+#endif
+#if defined(USB_USE_CDC) // cdc host
+    #include "USB/usb_host_cdc.h"
+    #include "USB/usb_host_cdc_interface.h"
 #endif
 
 #include "TCPIP Stack/TCPIP.h"
@@ -92,10 +96,10 @@ typedef enum
     MODE_UNKNOWN
 } DEVICE_MODE;
 
-static DEVICE_MODE device_mode = MODE_DEVICE;
-//static DEVICE_MODE device_mode = MODE_HOST;
+//static DEVICE_MODE device_mode = MODE_DEVICE;
+static DEVICE_MODE device_mode = MODE_HOST;
 
-#if 1//hid
+#if defined(USB_USE_HID)//hid
 #define MINIMUM_POLL_INTERVAL           (0x0A)        // Minimum Polling rate for HID reports is 10ms
 
 #define USAGE_PAGE_BUTTONS              (0x09)
@@ -142,6 +146,26 @@ BYTE NumOfBytesRcvd;
 
 BOOL ReportBufferUpdated;
 
+#elif defined(USB_USE_CDC)
+    typedef enum _APPL_STATE
+    {
+        DEVICE_NOT_CONNECTED,
+        DEVICE_CONNECTED, /* Device Enumerated  - Report Descriptor Parsed */
+        READY_TO_TX_RX,
+        GET_IN_DATA,
+        GET_IN_DATA_WAIT,
+        SEND_OUT_DATA,
+        SEND_OUT_DATA_WAIT,
+        ERROR_REPORTED      /* need to add application states for data interface */
+    } APPL_STATE;
+
+    #define MAX_NO_OF_IN_BYTES  64
+    #define MAX_NO_OF_OUT_BYTES 64
+
+    volatile APPL_STATE  APPL_CDC_State;
+
+    BYTE USB_CDC_IN_Data_Array[MAX_NO_OF_IN_BYTES];
+    BYTE USB_CDC_OUT_Data_Array[MAX_NO_OF_OUT_BYTES];
 #endif
 
 
@@ -220,8 +244,17 @@ void sendNote(void);
 void sendControlChange(void);
 void receiveMIDIDatas(void);
 
-#if 0//hid
+#if defined(USB_USE_HID)
 void App_Detect_Device(void);
 void App_ProcessInputReport(void);
 BOOL USB_HID_DataCollectionHandler(void);
+#elif defined(USB_USE_CDC)
+BOOL cdcSendFlag = FALSE;
+WORD cdcReceiveInterval = 0;
+BYTE cdcOutDataLength;
+BYTE ErrorDriver;
+BYTE NumOfBytesRcvd;
+
+void USBHostCDC_Clear_Out_DATA_Array(void);
+void USB_CDC_RxTxHandler(void);
 #endif
