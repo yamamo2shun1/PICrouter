@@ -49,6 +49,9 @@
 #define GetInstructionClock()	(GetSystemClock()/1)	// Normally GetSystemClock()/4 for PIC18, GetSystemClock()/2 for PIC24/dsPIC, and GetSystemClock()/1 for PIC32.  Might need changing if using Doze modes.
 #define GetPeripheralClock()	(GetSystemClock()/1)	// Normally GetSystemClock()/4 for PIC18, GetSystemClock()/2 for PIC24/dsPIC, and GetSystemClock()/1 for PIC32.  Divisor may be different if using a PIC32 since it's configurable.
 
+// using the PIC32 internal MAC interface
+//#define TCPIP_IF_PIC32INT
+
 // External National PHY configuration
 #define	PHY_RMII				// external PHY runs in RMII mode
 //#define	PHY_CONFIG_ALTERNATE	// alternate configuration used
