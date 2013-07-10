@@ -4,7 +4,7 @@
 		"appversion" : 		{
 			"major" : 6,
 			"minor" : 1,
-			"revision" : 0,
+			"revision" : 2,
 			"architecture" : "x86"
 		}
 ,
@@ -329,9 +329,9 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 2,
-					"outlettype" : [ "int", "" ],
-					"patching_rect" : [ 513.375, 161.201172, 143.25, 20.0 ],
-					"text" : "unpack i s"
+					"outlettype" : [ "int", "int" ],
+					"patching_rect" : [ 513.375, 161.201172, 61.0, 20.0 ],
+					"text" : "unpack i i"
 				}
 
 			}
@@ -344,7 +344,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 513.375, 132.201172, 115.0, 20.0 ],
+					"patching_rect" : [ 513.375, 110.201172, 115.0, 20.0 ],
 					"text" : "route /std/pwm/duty"
 				}
 
@@ -358,7 +358,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 513.375, 103.0, 90.0, 20.0 ],
+					"patching_rect" : [ 513.375, 81.0, 90.0, 20.0 ],
 					"text" : "receive rcvOsc"
 				}
 
@@ -1547,14 +1547,14 @@
 		"dependency_cache" : [ 			{
 				"name" : "License.maxpat",
 				"bootpath" : "/Users/shun/MPLABXProjects/PICrouter/Max_Demo_Patches",
-				"patcherrelativepath" : "./",
+				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "OSC_Comm.maxpat",
 				"bootpath" : "/Users/shun/MPLABXProjects/PICrouter/Max_Demo_Patches",
-				"patcherrelativepath" : "./",
+				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
