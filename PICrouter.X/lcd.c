@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * lcd.c,v.0.1.0 2013/05/23
+ * lcd.c,v.0.1.1 2013/07/10
  */
 
 #define __LCD_C
@@ -44,134 +44,742 @@ static char pin_db5[4] = {0};
 static char pin_db6[4] = {0};
 static char pin_db7[4] = {0};
 
+/*******************************************************************************
+  Function:
+    void setLcdInitFlag(BOOL flag)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BOOL flag
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdInitFlag(BOOL flag)
 {
     initLcdFlag = flag;
 }
+
+/*******************************************************************************
+  Function:
+    BOOL getLcdInitFlag(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BOOL getLcdInitFlag(void)
 {
     return initLcdFlag;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdBitMode(BYTE num)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE num
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdBitMode(BYTE num)
 {
     bit_mode = num;
 }
+
+/*******************************************************************************
+  Function:
+    BYTE getLcdBitMode(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getLcdBitMode(void)
 {
     return bit_mode;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortRsName(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortRsName(char* name)
 {
     memset(pin_rs, 0, sizeof(pin_rs));
     strcpy(pin_rs, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortRsName()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortRsName()
 {
     return pin_rs;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortRwName(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+    None
+
+  Parameters:
+    char* name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortRwName(char* name)
 {
     memset(pin_rw, 0, sizeof(pin_rw));
     strcpy(pin_rw, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortRwName(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortRwName(void)
 {
     return pin_rw;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortEName(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortEName(char* name)
 {
     memset(pin_e, 0, sizeof(pin_e));
     strcpy(pin_e, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortEName()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortEName()
 {
     return pin_e;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb0Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb0Name(char* name)
 {
     memset(pin_db0, 0, sizeof(pin_db0));
     strcpy(pin_db0, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb0Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb0Name()
 {
     return pin_db0;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb1Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb1Name(char* name)
 {
     memset(pin_db1, 0, sizeof(pin_db1));
     strcpy(pin_db1, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb1Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb1Name()
 {
     return pin_db1;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb2Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb2Name(char* name)
 {
     memset(pin_db2, 0, sizeof(pin_db2));
     strcpy(pin_db2, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb2Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb2Name()
 {
     return pin_db2;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb3Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb3Name(char* name)
 {
     memset(pin_db3, 0, sizeof(pin_db3));
     strcpy(pin_db3, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb3Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb3Name()
 {
     return pin_db3;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb4Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb4Name(char* name)
 {
     memset(pin_db4, 0, sizeof(pin_db4));
     strcpy(pin_db4, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb4Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb4Name()
 {
     return pin_db4;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb5Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb5Name(char* name)
 {
     memset(pin_db5, 0, sizeof(pin_db5));
     strcpy(pin_db5, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb5Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb5Name()
 {
     return pin_db5;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb6Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb6Name(char* name)
 {
     memset(pin_db6, 0, sizeof(pin_db6));
     strcpy(pin_db6, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb6Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb6Name()
 {
     return pin_db6;
 }
 
+/*******************************************************************************
+  Function:
+    void setLcdPortDb7Name(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setLcdPortDb7Name(char* name)
 {
     memset(pin_db7, 0, sizeof(pin_db7));
     strcpy(pin_db7, name);
 }
+
+/*******************************************************************************
+  Function:
+    char* getLcdPortDb7Name()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 char* getLcdPortDb7Name()
 {
     return pin_db7;
 }
 
+/*******************************************************************************
+  Function:
+    static void writeLcd(BYTE rs_state, BYTE data)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE rs_state
+    BYTE data
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 static void writeLcd(BYTE rs_state, BYTE data)
 {
         if(bit_mode == 8)
@@ -271,6 +879,39 @@ static void writeLcd(BYTE rs_state, BYTE data)
         setPortIOType(pin_rw, IO_IN);
 }
 
+/*******************************************************************************
+  Function:
+    void initLcd(BYTE bit_mode_num, char* rs_name, char* rw_name, char* e_name, char* db0_name, char* db1_name, char* db2_name, char* db3_name, char* db4_name, char* db5_name, char* db6_name, char* db7_name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE bit_mode_num
+    char* rs_name
+    char* rw_name
+    char* e_name
+    char* db0_name
+    char* db1_name
+    char* db2_name
+    char* db3_name
+    char* db4_name
+    char* db5_name
+    char* db6_name
+    char* db7_name
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void initLcd(BYTE bit_mode_num, char* rs_name, char* rw_name, char* e_name, char* db0_name, char* db1_name, char* db2_name, char* db3_name, char* db4_name, char* db5_name, char* db6_name, char* db7_name)
 {
 	BYTE i;
@@ -350,6 +991,28 @@ void initLcd(BYTE bit_mode_num, char* rs_name, char* rw_name, char* e_name, char
         //Delay10us(2);
 }
 
+/*******************************************************************************
+  Function:
+    void updateLcd(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void updateLcd(void)
 {
     BYTE i, j;
@@ -427,6 +1090,28 @@ void updateLcd(void)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void eraseLcd(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void eraseLcd(void)
 {
     // Clear display
@@ -437,8 +1122,29 @@ void eraseLcd(void)
     memset(lcdText, ' ', CHARS_NUM * LINE_NUM);
 }
 
+/*******************************************************************************
+  Function:
+    void writeLineLcd(WORD number, char* line)
+
+  Precondition:
 
 
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    WORD number
+    char* lin
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void writeLineLcd(WORD number, char* line)
 {
     BYTE i = 0;
