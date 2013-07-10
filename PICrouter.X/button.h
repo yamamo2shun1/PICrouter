@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.6 2013/05/04
+ * button.h,v.0.7 2013/07/10
  */
 
 #ifndef BUTTON_H
@@ -30,6 +30,7 @@
 
 #define MAX_PAD_NUM 4
 
+#define MAX_RGB_LAYER 3
 #define MAX_BTN_ROW 4//1 // 2
 #define MAX_BTN_COL 4//16 // 2
 #define MAX_BTN_NUM 16
@@ -45,13 +46,11 @@ void setLatticePadPortQhName(BYTE index, char* name);
 char* getLatticePadPortQhName(BYTE index);
 void setLatticePadPortLoadName(char* name);
 char* getLatticePadPortLoadName(void);
+
 void setInitLatticeLedDrvFlag(BOOL flag);
 BOOL getInitLatticeLedDrvFlag(void);
 void setLatticeLedDriverSpiNumber(BYTE num);
 BYTE getLatticeLedDriverSpiNumber(void);
-void setLatticeLed(BYTE index, WORD data);
-WORD getLatticeLed(BYTE index);
-
 void setLatticeLed(BYTE index, WORD data);
 WORD getLatticeLed(BYTE index);
 void setLatticeIntensity(BYTE index0, BYTE index1, BYTE value);
@@ -59,9 +58,21 @@ BYTE getLatticeIntensity(BYTE index0, BYTE index1);
 void setLatticeLedOn(BYTE index, BOOL flag);
 BOOL getLatticeLedOn(BYTE index);
 
+void setInitLatticeRgbDrvFlag(BOOL flag);
+BOOL getInitLatticeRgbDrvFlag(void);
+void setLatticeRgbDriverSpiNumber(BYTE num);
+BYTE getLatticeRgbDriverSpiNumber(void);
+void setLatticeRgb(BYTE index, BYTE layer, WORD data);
+WORD getLatticeRgb(BYTE index, BYTE layer);
+void setLatticeRgbIntensity(BYTE index0, BYTE layer, BYTE index1, BYTE value);
+BYTE getLatticeRgbIntensity(BYTE index0, BYTE layer, BYTE index1);
+void setLatticeRgbOn(BYTE index, BYTE layer, BOOL flag);
+BOOL getLatticeRgbOn(BYTE index, BYTE layer);
+
 void buttonInit(void);
 BOOL buttonCheck(BYTE row, BYTE index);
 void sendPad16(void);
 void latticeLedHandle(void);
+void latticeRgbHandle(void);
 
 #endif	/* BUTTON_H */
