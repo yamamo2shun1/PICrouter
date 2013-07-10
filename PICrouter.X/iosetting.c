@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.7.6 2013/06/16
+  * iosetting.c,v.0.7.7 2013/07/10
  */
 
 #include "iosetting.h"
@@ -26,6 +26,29 @@ BYTE ioPwmPort[4] = {0};
 BYTE ioDPort[4] = {0};
 BYTE ioSpiPort[6] = {0};
 
+/*******************************************************************************
+  Function:
+    void setPortIOType(char* port_name, BYTE io)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* port_name
+    BYTE io
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setPortIOType(char* port_name, BYTE io)
 {
     if(!strcmp(port_name, "b0"))
@@ -86,6 +109,28 @@ void setPortIOType(char* port_name, BYTE io)
         setSpiPortDioType("sdo2", io);
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getPortIOType(char* port_name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* port_name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getPortIOType(char* port_name)
 {
     if(!strcmp(port_name, "b0"))
@@ -146,6 +191,29 @@ BYTE getPortIOType(char* port_name)
         return getSpiPortDioType("sdo2");
 }
 
+/*******************************************************************************
+  Function:
+    void outputPort(char* port_name, BYTE state)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* port_name
+    BYTE state
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void outputPort(char* port_name, BYTE state)
 {
     if(!strcmp(port_name, "b0"))
@@ -206,6 +274,28 @@ void outputPort(char* port_name, BYTE state)
         outputSpiPort("sdo2", state);
 }
 
+/*******************************************************************************
+  Function:
+    BYTE inputPort(char* port_name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* port_name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE inputPort(char* port_name)
 {
     if(!strcmp(port_name, "b0"))
@@ -268,6 +358,28 @@ BYTE inputPort(char* port_name)
         return 0;
 }
 
+/*******************************************************************************
+  Function:
+    BOOL comparePortNameAtIndex(char* port_name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* port_name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BOOL comparePortNameAtIndex(char* port_name)
 {
     if(!strcmp(port_name, "b0"))
@@ -330,6 +442,29 @@ BOOL comparePortNameAtIndex(char* port_name)
         return FALSE;
 }
 
+/*******************************************************************************
+  Function:
+    void setAnPortDioType(BYTE id, BYTE io)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE io
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setAnPortDioType(BYTE id, BYTE io)
 {
     ioAnPort[id] = io;
@@ -380,11 +515,56 @@ void setAnPortDioType(BYTE id, BYTE io)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getAnPortDioType(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getAnPortDioType(BYTE id)
 {
     return ioAnPort[id];
 }
 
+/*******************************************************************************
+  Function:
+ void outputAnPort(BYTE id, BYTE state)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE state
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void outputAnPort(BYTE id, BYTE state)
 {
     switch(id)
@@ -434,6 +614,28 @@ void outputAnPort(BYTE id, BYTE state)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE inputAnPort(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE inputAnPort(BYTE id)
 {
     BYTE state = LOW;
@@ -485,6 +687,29 @@ BYTE inputAnPort(BYTE id)
     return state;
 }
 
+/*******************************************************************************
+  Function:
+    void setPwmPortDioType(BYTE id, BYTE io)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE io
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setPwmPortDioType(BYTE id, BYTE io)
 {
     ioPwmPort[id] = io;
@@ -505,11 +730,56 @@ void setPwmPortDioType(BYTE id, BYTE io)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getPwmPortDioType(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getPwmPortDioType(BYTE id)
 {
     return ioPwmPort[id];
 }
 
+/*******************************************************************************
+  Function:
+    void outputPwmPort(BYTE id, BYTE state)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE stat
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void outputPwmPort(BYTE id, BYTE state)
 {
     switch(id)
@@ -529,6 +799,28 @@ void outputPwmPort(BYTE id, BYTE state)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE inputPwmPort(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE inputPwmPort(BYTE id)
 {
     BYTE state = LOW;
@@ -551,6 +843,29 @@ BYTE inputPwmPort(BYTE id)
     return state;
 }
 
+/*******************************************************************************
+  Function:
+    void setDigitalPortDioType(BYTE id, BYTE io)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE io
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setDigitalPortDioType(BYTE id, BYTE io)
 {
     ioDPort[id] = io;
@@ -571,11 +886,56 @@ void setDigitalPortDioType(BYTE id, BYTE io)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getDigitalPortDioType(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getDigitalPortDioType(BYTE id)
 {
     return ioDPort[id];
 }
 
+/*******************************************************************************
+  Function:
+    void outputDigitalPort(BYTE id, BYTE state)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+    BYTE stat
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void outputDigitalPort(BYTE id, BYTE state)
 {
     switch(id)
@@ -595,6 +955,28 @@ void outputDigitalPort(BYTE id, BYTE state)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE inputDigitalPort(BYTE id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE inputDigitalPort(BYTE id)
 {
     BYTE state = LOW;
@@ -616,6 +998,29 @@ BYTE inputDigitalPort(BYTE id)
     return state;
 }
 
+/*******************************************************************************
+  Function:
+    void setSpiPortDioType(char* name, BYTE io)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+    BYTE io
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setSpiPortDioType(char* name, BYTE io)
 {
     if(!strcmp(name, "sck4"))
@@ -650,6 +1055,28 @@ void setSpiPortDioType(char* name, BYTE io)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getSpiPortDioType(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getSpiPortDioType(char* name)
 {
     if(!strcmp(name, "sck4"))
@@ -666,6 +1093,29 @@ BYTE getSpiPortDioType(char* name)
         return ioSpiPort[5];
 }
 
+/*******************************************************************************
+  Function:
+    void outputSpiPort(char* name, BYTE state)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+    BYTE state
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void outputSpiPort(char* name, BYTE state)
 {
     if(!strcmp(name, "sck4"))
@@ -694,6 +1144,28 @@ void outputSpiPort(char* name, BYTE state)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE inputSpiPort(char* name)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    char* name
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE inputSpiPort(char* name)
 {
     BYTE state = LOW;
@@ -724,6 +1196,30 @@ BYTE inputSpiPort(char* name)
     return state;
 }
 
+/*******************************************************************************
+  Function:
+    void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE spi_id
+    WORD msb
+    DWORD usec
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
 {
     switch(spi_id)
@@ -739,6 +1235,31 @@ void sendSpiOneWord(BYTE spi_id, WORD msb, DWORD usec)
     //Delay10us(usec);
 }
 
+/*******************************************************************************
+  Function:
+    void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE spi_id
+    WORD msb
+    WORD lsb
+    DWORD usec
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
 {
     switch(spi_id)
@@ -756,6 +1277,77 @@ void sendSpiTwoWord(BYTE spi_id, WORD msb, WORD lsb, DWORD usec)
     //Delay10us(usec);
 }
 
+/*******************************************************************************
+  Function:
+    void sendSpiThreeWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, DWORD usec)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE spi_id
+    WORD msb0
+    WORD lsb0
+    WORD msb1
+    DWORD usec
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
+void sendSpiThreeWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, DWORD usec)
+{
+    switch(spi_id)
+    {
+        case SPI_2:
+            putcSPI2(msb1);
+            putcSPI2(lsb0);
+            putcSPI2(msb0);
+            break;
+        case SPI_4:
+            putcSPI4(msb1);
+            putcSPI4(lsb0);
+            putcSPI4(msb0);
+            break;
+    }
+    Nop();
+}
+
+/*******************************************************************************
+  Function:
+    void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE spi_id
+    WORD msb0
+    WORD lsb0
+    WORD msb1
+    WORD lsb1
+    DWORD usec
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DWORD usec)
 {
     switch(spi_id)
@@ -776,6 +1368,29 @@ void sendSpiFourWord(BYTE spi_id, WORD msb0, WORD lsb0, WORD msb1, WORD lsb1, DW
     Nop();
 }
 
+/*******************************************************************************
+  Function:
+    WORD receiveSpiOneWord(BYTE spi_id, DWORD usec)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE spi_id
+    DWORD use
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 WORD receiveSpiOneWord(BYTE spi_id, DWORD usec)
 {
     WORD data = 0;
@@ -793,12 +1408,56 @@ WORD receiveSpiOneWord(BYTE spi_id, DWORD usec)
     return data;
 }
 
+/*******************************************************************************
+  Function:
+    unsigned int getcSPI4(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 unsigned int getcSPI4(void)
 {
     while(!DataRdySPI4());
     return ReadSPI4();
 }
 
+/*******************************************************************************
+  Function:
+    void idleI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void idleI2C(BYTE i2c_id)
 {
     switch(i2c_id)
@@ -815,6 +1474,28 @@ void idleI2C(BYTE i2c_id)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BOOL startI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BOOL startI2C(BYTE i2c_id)
 {
     BOOL errflag;
@@ -846,6 +1527,30 @@ BOOL startI2C(BYTE i2c_id)
     return errflag;
 }
 
+/*******************************************************************************
+  Function:
+    void setAddressToI2C(BYTE i2c_id, BYTE data, char chflag)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+    BYTE data
+    char chflag
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setAddressToI2C(BYTE i2c_id, BYTE data, char chflag)
 {
     if(chflag == 'r')
@@ -869,6 +1574,29 @@ void setAddressToI2C(BYTE i2c_id, BYTE data, char chflag)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void setDataToI2C(BYTE i2c_id, BYTE data)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+    BYTE data
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void setDataToI2C(BYTE i2c_id, BYTE data)
 {
     switch(i2c_id)
@@ -885,6 +1613,28 @@ void setDataToI2C(BYTE i2c_id, BYTE data)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BOOL checkAckI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BOOL checkAckI2C(BYTE i2c_id)
 {
     BOOL ackflag;
@@ -913,6 +1663,28 @@ BOOL checkAckI2C(BYTE i2c_id)
     return ackflag;
 }
 
+/*******************************************************************************
+  Function:
+    void restartI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void restartI2C(BYTE i2c_id)
 {
     switch(i2c_id)
@@ -932,6 +1704,28 @@ void restartI2C(BYTE i2c_id)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void stopI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void stopI2C(BYTE i2c_id)
 {
     switch(i2c_id)
@@ -948,6 +1742,28 @@ void stopI2C(BYTE i2c_id)
     }
 }
 
+/*******************************************************************************
+  Function:
+    BYTE getDataFromI2C(BYTE i2c_id)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE i2c_id
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
 BYTE getDataFromI2C(BYTE i2c_id)
 {
     BYTE data = 0;
