@@ -9,18 +9,20 @@
           <itemPath>Include/TCPIP Stack/ARP.h</itemPath>
           <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhy.h</itemPath>
           <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyDP83848.h</itemPath>
+          <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyRegs.h</itemPath>
           <itemPath>Include/TCPIP Stack/Helpers.h</itemPath>
           <itemPath>Include/TCPIP Stack/ICMP.h</itemPath>
           <itemPath>Include/TCPIP Stack/IP.h</itemPath>
           <itemPath>Include/TCPIP Stack/MAC.h</itemPath>
+          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
           <itemPath>Include/TCPIP Stack/StackTsk.h</itemPath>
           <itemPath>Include/TCPIP Stack/TCPIP.h</itemPath>
           <itemPath>Include/TCPIP Stack/Tick.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyRegs.h</itemPath>
-          <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
           <itemPath>Include/TCPIP Stack/UDP.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
+          <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
+          <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
           <itemPath>Include/USB/usb.h</itemPath>
@@ -69,19 +71,21 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="TCP/IP Stack" projectFiles="true">
         <itemPath>TCPIP Stack/ARP.c</itemPath>
+        <itemPath>TCPIP Stack/DHCP.c</itemPath>
+        <itemPath>TCPIP Stack/DHCPs.c</itemPath>
         <itemPath>TCPIP Stack/ETHPIC32ExtPhy.c</itemPath>
         <itemPath>TCPIP Stack/ETHPIC32ExtPhyDP83848.c</itemPath>
         <itemPath>TCPIP Stack/ETHPIC32IntMac.c</itemPath>
         <itemPath>TCPIP Stack/Helpers.c</itemPath>
         <itemPath>TCPIP Stack/ICMP.c</itemPath>
         <itemPath>TCPIP Stack/IP.c</itemPath>
+        <itemPath>TCPIP Stack/NBNS.c</itemPath>
         <itemPath>TCPIP Stack/StackTsk.c</itemPath>
         <itemPath>TCPIP Stack/Tick.c</itemPath>
-        <itemPath>TCPIP Stack/DHCP.c</itemPath>
         <itemPath>TCPIP Stack/UDP.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
-        <itemPath>TCPIP Stack/DHCPs.c</itemPath>
+        <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
@@ -113,6 +117,8 @@
   <sourceRootList>
     <Elem>Include</Elem>
     <Elem>USB</Elem>
+    <Elem>TCPIP Stack</Elem>
+    <Elem>TCPIP</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -153,7 +159,7 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value="./;./Include;./USB"/>
+        <property key="extra-include-directories" value="./;./Include;./USB;./TCPIP"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
@@ -194,7 +200,7 @@
         <property key="extra-lib-directories" value=""/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-cross-reference-file" value="false"/>
-        <property key="heap-size" value="12800"/>
+        <property key="heap-size" value="15200"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value=""/>
