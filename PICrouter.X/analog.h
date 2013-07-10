@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * analog.h,v.0.7.4 2013/04/23
+ * analog.h,v.0.7.5 2013/07/10
  */
 
 #ifndef ANALOG_H
@@ -29,38 +29,22 @@
 #include "iosetting.h"
 
 typedef enum {
-	MIDI_FADER     =  0,
-	MIDI_VOLUME,
-	MIDI_ORIGINAL,
-	LONG_FADER,
-	LONG_VOLUME,
-	LONG_ORIGINAL
+	BYTE_FADER =  0,
+	BYTE_VOLUME,
+	BYTE_ORIGINAL,
+	WORD_FADER,
+	WORD_VOLUME,
+	WORD_ORIGINAL
 } TYPE_AN_VAL;
 
-#define FLTR_ADC_CNT 8
+#define FLTR_ADC_CNT 16
 
-BOOL analogEnable[AN_NUM];
-BOOL analogSendFlag[AN_NUM];
-BYTE count[AN_NUM];
-LONG analog[AN_NUM][FLTR_ADC_CNT];
-LONG currentAnalog[AN_NUM];
-LONG prevAnalog[AN_NUM];
-
-// for Infinium or CF-X2
-int currentValue[AN_NUM];// = {0};
-int prevValue[AN_NUM];// = {0};
-int boundaryValue[AN_NUM];// = {0};
-int currentDirectionValue[AN_NUM];// = {0};
-int currentPosition;// = 0;
-int currentPosition1;// = 0;
-int prevPosition;// = 0;
-int boundaryPosition[AN_NUM];// = {0};
-int centerPosition;// = 0;
-int currentSection;// = 0;
-int prevSection;// = 0;
-int currentDirection;// = 0;
-int currentDirection1;// = 0;
-int prevDirection;// = 0;
+void setAnalogEnable(BYTE port, BOOL flag);
+BOOL getAnalogEnable(BYTE port);
+void setAnalogType(BYTE port, BYTE type);
+BYTE getAnalogType(BYTE port);
+void setAnalogCurve(BYTE port, float curve);
+float getAnalogCurve(BYTE port);
 
 void initAnalogVariables(void);
 void resetAnalogFlag(BYTE port);
