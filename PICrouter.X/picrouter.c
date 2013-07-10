@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.6.0 2013/06/24
+ * picrouter.c,v.1.7.0 2013/07/10
  */
 
 #include "picrouter.h"
@@ -29,39 +29,6 @@ void _general_exception_handler(unsigned cause, unsigned status)
 {
     Nop();
     Nop();
-}
-
-void initIOPorts(void)
-{
-    int i = 0;
-
-    for(i = 0; i < 14; i++)
-        setAnPortDioType(i, IO_IN);
-
-    for(i = 0; i < 4; i++)
-    {
-        setPwmPortDioType(i, IO_OUT);
-        outputPwmPort(i, LOW);
-    }
-
-    for(i = 0; i < 4; i++)
-    {
-        setDigitalPortDioType(i, IO_OUT);
-        outputDigitalPort(i, LOW);
-    }
-
-    setSpiPortDioType("sck2", IO_OUT);
-    setSpiPortDioType("sdi2", IO_OUT);
-    setSpiPortDioType("sdo2", IO_OUT);
-    setSpiPortDioType("sck4", IO_OUT);
-    setSpiPortDioType("sdi4", IO_OUT);
-    setSpiPortDioType("sdo4", IO_OUT);
-    outputSpiPort("sck2", LOW);
-    outputSpiPort("sdi2", LOW);
-    outputSpiPort("sdo2", LOW);
-    outputSpiPort("sck4", LOW);
-    outputSpiPort("sdi4", LOW);
-    outputSpiPort("sdo4", LOW);
 }
 
 int main(int argc, char** argv) {
@@ -122,6 +89,7 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
+    ZeroconfLLInitialize();
     mDNSInitialize(DEFAULT_HOST_NAME);
     mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
                         "_oscit._udp.local",       // type of the service
@@ -170,14 +138,28 @@ int main(int argc, char** argv) {
                     switch(eth_state)
                     {
                         case 0:
-                            mDNSProcess();
+                            NBNSTask();
                             eth_state = 1;
                             break;
                         case 1:
+                            ZeroconfLLProcess();
+                            eth_state = 2;
+                            break;
+                        case 2:
+                            mDNSProcess();
+                            eth_state = 3;
+                            break;
+                        case 3:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
                     }
+                    if(dwLastIP != AppConfig.MyIPAddr.Val)
+                    {
+                        dwLastIP = AppConfig.MyIPAddr.Val;
+                        mDNSFillHostRecord();
+                    }
+                    
                     receiveOSCTask();
 
                     // USB Tasks
@@ -206,14 +188,28 @@ int main(int argc, char** argv) {
                     switch(eth_state)
                     {
                         case 0:
-                            mDNSProcess();
+                            NBNSTask();
                             eth_state = 1;
                             break;
                         case 1:
+                            ZeroconfLLProcess();
+                            eth_state = 2;
+                            break;
+                        case 2:
+                            mDNSProcess();
+                            eth_state = 3;
+                            break;
+                        case 3:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
                     }
+                    if(dwLastIP != AppConfig.MyIPAddr.Val)
+                    {
+                        dwLastIP = AppConfig.MyIPAddr.Val;
+                        mDNSFillHostRecord();
+                    }
+
                     receiveOSCTask();
 
                     if(bUsbHostInitialized)
@@ -253,6 +249,83 @@ int main(int argc, char** argv) {
 /**********************************************
 *  OSC Generic I/O Processing Part
 **********************************************/
+/*******************************************************************************
+  Function:
+    void initIOPorts(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
+void initIOPorts(void)
+{
+    int i = 0;
+
+    for(i = 0; i < 14; i++)
+        setAnPortDioType(i, IO_IN);
+
+    for(i = 0; i < 4; i++)
+    {
+        setPwmPortDioType(i, IO_OUT);
+        outputPwmPort(i, LOW);
+    }
+
+    for(i = 0; i < 4; i++)
+    {
+        setDigitalPortDioType(i, IO_OUT);
+        outputDigitalPort(i, LOW);
+    }
+
+    setSpiPortDioType("sck2", IO_OUT);
+    setSpiPortDioType("sdi2", IO_OUT);
+    setSpiPortDioType("sdo2", IO_OUT);
+    setSpiPortDioType("sck4", IO_OUT);
+    setSpiPortDioType("sdi4", IO_OUT);
+    setSpiPortDioType("sdo4", IO_OUT);
+    outputSpiPort("sck2", LOW);
+    outputSpiPort("sdi2", LOW);
+    outputSpiPort("sdo2", LOW);
+    outputSpiPort("sck4", LOW);
+    outputSpiPort("sdi4", LOW);
+    outputSpiPort("sdo4", LOW);
+}
+
+/*******************************************************************************
+  Function:
+    void receiveOSCTask(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void receiveOSCTask(void)
 {
     BYTE index;
@@ -416,9 +489,9 @@ void receiveOSCTask(void)
                 BYTE state = inputPort(port_name);
 
                 if(state)
-                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "ss", port_name, "high");
+                    sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "high");
                 else
-                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "ss", port_name, "low");
+                    sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "low");
             }
             // A/D
             else if(compareOSCAddress(msgSetAdcEnable))
@@ -446,7 +519,7 @@ void receiveOSCTask(void)
 
                 if(!strcmp(state, "on"))
                 {
-                    analogEnable[id] = TRUE;
+                    setAnalogEnable(id, TRUE);
                     setAnPortDioType(id, IO_IN);
 
                     AD1PCFG &= ~(0x0001 << id);
@@ -454,7 +527,7 @@ void receiveOSCTask(void)
                 }
                 else if(!strcmp(state, "off"))
                 {
-                    analogEnable[id] = FALSE;
+                    setAnalogEnable(id, FALSE);
                     setAnPortDioType(id, IO_IN);
 
                     AD1PCFG |= (0x0001 << id);
@@ -469,7 +542,7 @@ void receiveOSCTask(void)
                 anum = 0;
                 for(i = 0; i < AN_NUM; i++)
                 {
-                    if(analogEnable[i])
+                    if(getAnalogEnable(i))
                         anum++;
                 }
 
@@ -511,10 +584,91 @@ void receiveOSCTask(void)
                     return;
                 }
 
-                if(analogEnable[id])
+                if(getAnalogEnable(id))
                     sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "on");
                 else
                     sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "off");
+            }
+            else if(compareOSCAddress(msgSetAdcType))
+            {
+                BYTE id;
+                char* type = NULL;
+
+                if(getArgumentsLength() != 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_2_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+                {
+                    id = getIntArgumentAtIndex(0);
+
+                    if(id > AN_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": out_of_value_range");
+                        return;
+                    }
+
+                    type = getStringArgumentAtIndex(1);
+
+                    if(!strcmp(type, "8bit"))
+                    {
+                        setAnalogType(id, BYTE_ORIGINAL);
+                    }
+                    else if(!strcmp(type, "10bit"))
+                    {
+                        setAnalogType(id, WORD_ORIGINAL);
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_8bit_or_10bit");
+                        return;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetAdcType))
+            {
+                BYTE id;
+
+                if(getArgumentsLength() != 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": must_be_1_argument");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+                {
+                    id = getIntArgumentAtIndex(0);
+                    if(id > AN_NUM - 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": out_of_value_range");
+                        return;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": wrong_argument_type");
+                    return;
+                }
+
+                switch(getAnalogType(id))
+                {
+                    case BYTE_ORIGINAL:
+                        sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "8bit");
+                        break;
+                    case WORD_ORIGINAL:
+                        sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "10bit");
+                        break;
+                    default:
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": may_be_other_setting");
+                        break;
+                }
             }
             else if(compareOSCAddress(msgSetAdcDio))
             {
@@ -1359,7 +1513,7 @@ void receiveOSCTask(void)
             {
                 char* name;
 
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+                if(compareTypeTagAtIndex(0, 's'))
                 {
                     name = getStringArgumentAtIndex(0);
                     if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
@@ -1376,9 +1530,9 @@ void receiveOSCTask(void)
                 }
 
                 if(getSpiPortDioType(name))
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", name, "in");
+                    sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "in");
                 else
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", name, "out");
+                    sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "out");
             }
             else if(compareOSCAddress(msgSetSpiDo))
             {
@@ -2511,6 +2665,413 @@ void receiveOSCTask(void)
                     return;
                 }
             }
+            else if(compareOSCAddress(msgLatticePadPinSelect))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && compareTypeTagAtIndex(3, 's'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    char* name_clk = getStringArgumentAtIndex(1);
+                    char* name_shld = getStringArgumentAtIndex(2);
+                    char* name_qh = getStringArgumentAtIndex(3);
+
+                    if(strlen(name_clk) > 3 || strlen(name_shld) > 3 || strlen(name_qh) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLatticePadPortClkName(index, name_clk);
+                    setPortIOType(getLatticePadPortClkName(index), IO_OUT);
+                    setLatticePadPortShLdName(index, name_shld);
+                    setPortIOType(getLatticePadPortShLdName(index), IO_OUT);
+                    setLatticePadPortQhName(index, name_qh);
+                    setPortIOType(getLatticePadPortQhName(index), IO_IN);
+
+                    setInitPadFlag(TRUE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticePadPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgLatticeRgbDrvPinSelect))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+                {
+                    BYTE num = getIntArgumentAtIndex(0);
+                    char* name_load = getStringArgumentAtIndex(1);
+
+                    if(strlen(name_load) > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLatticePadPortLoadName(name_load);
+                    setPortIOType(name_load, IO_OUT);
+                    outputPort(name_load, LOW);
+
+                    switch(num)
+                    {
+                        case 2:
+                            setLatticeRgbDriverSpiNumber(2);
+                            SpiChnClose(2);
+                            SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 4);
+                            setInitLatticeRgbDrvFlag(TRUE);
+                            break;
+                        case 4:
+                            setLatticeRgbDriverSpiNumber(4);
+                            SpiChnClose(4);
+                            SpiChnOpen(SPI_CHANNEL4, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 4);
+                            setInitLatticeRgbDrvFlag(TRUE);
+                            break;
+                        default:
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": out_of_range_value");
+                            return;
+                            break;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeRgb))
+            {
+                if(getArgumentsLength() < 5)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')) &&
+                   (compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    BYTE x = getIntArgumentAtIndex(2);
+                    BYTE y = getIntArgumentAtIndex(3);
+                    BYTE state = getIntArgumentAtIndex(4);
+                    BYTE intensity;
+                    WORD pos = (1 << y) << (x * 4);
+
+                    if(x > 3 || y > 3 || state > 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": out_of_range_value");
+                        return;
+                    }
+
+                    if(getArgumentsLength() == 5)
+                        setLatticeRgbIntensity(index, layer, y + (x * 4), 100);
+                    else if(getArgumentsLength() == 6)
+                    {
+                        if(compareTypeTagAtIndex(5, 'i') || compareTypeTagAtIndex(5, 'f'))
+                        {
+                            intensity = getIntArgumentAtIndex(5);
+                            if(intensity > 100)
+                                intensity = 100;
+                            setLatticeRgbIntensity(index, layer, y + (x * 4), intensity);
+                        }
+                        else
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": wrong_argument_type");
+                            return;
+                        }
+                    }
+
+                    if(state)
+                        setLatticeRgb(index, layer, getLatticeRgb(index, layer) | pos);
+                    else
+                        setLatticeRgb(index, layer, getLatticeRgb(index, layer) & ~pos);
+
+                    if(getLatticeRgb(index, layer) != 0)
+                        setLatticeRgbOn(index, layer, TRUE);
+                    else
+                        setLatticeRgbOn(index, layer, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeRgbColumn))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    BYTE column = getIntArgumentAtIndex(2);
+                    BYTE data = getIntArgumentAtIndex(3);
+
+                    if(column > 3 || data > 15)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": out_of_range_value");
+                        return;
+                    }
+
+                    setLatticeRgb(index, layer, getLatticeRgb(index, layer) & ~(0x000F << (column * 4)));
+                    setLatticeRgb(index, layer, getLatticeRgb(index, layer) | (data << (column * 4)));
+
+                    if(getArgumentsLength() == 4)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeRgbIntensity(index, layer, i + (column * 4), 100);
+                    }
+                    else if(getArgumentsLength() == 8)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeRgbIntensity(index, layer, i + (column * 4), getIntArgumentAtIndex(4 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeRgb(index, layer) != 0)
+                        setLatticeRgbOn(index, layer, TRUE);
+                    else
+                        setLatticeRgbOn(index, layer, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeRgbRow))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    BYTE row = getIntArgumentAtIndex(2);
+                    BYTE data = getIntArgumentAtIndex(3);
+                    WORD data1 = 0;
+
+                    if(row > 3 || data > 15)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": out_of_range_value");
+                        return;
+                    }
+
+                    for(i = 0; i < 4; i++)
+                    {
+                        if((data >> i) & 0x01)
+                            data1 |= (1 << (i * 4));
+                    }
+                    setLatticeRgb(index, layer, getLatticeRgb(index, layer) & ~(0x1111 << row));
+                    setLatticeRgb(index, layer, getLatticeRgb(index, layer) | (data1 << row));
+
+                    if(getArgumentsLength() == 4)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeRgbIntensity(index, layer, row + (i * 4), 100);
+                    }
+                    else if(getArgumentsLength() == 8)
+                    {
+                        for(i = 0; i < 4; i++)
+                            setLatticeRgbIntensity(index, layer, row + (i * 4), getIntArgumentAtIndex(4 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeRgb(index, layer) != 0)
+                        setLatticeRgbOn(index, layer, TRUE);
+                    else
+                        setLatticeRgbOn(index, layer, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgSetLatticeRgbAll))
+            {
+                if(getArgumentsLength() < 6)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    BYTE data = 0;
+                    WORD data1;
+
+                    for(i = 0; i < 4; i++)
+                    {
+                        data = getIntArgumentAtIndex(i + 2);
+                        if(data > 15)
+                        {
+                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": out_of_range_value");
+                            return;
+                        }
+
+                        data1 = 0;
+                        for(j = 0; j < 4; j++)
+                        {
+                            if((data >> j) & 0x01)
+                                data1 |= (1 << (j * 4));
+                        }
+                        setLatticeRgb(index, layer, getLatticeRgb(index, layer) & ~(0x1111 << i));
+                        setLatticeRgb(index, layer, getLatticeRgb(index, layer) | (data1 << i));
+                    }
+
+                    if(getArgumentsLength() == 6)
+                    {
+                        for(i = 0; i < 16; i++)
+                            setLatticeRgbIntensity(index, layer, i, 100);
+                    }
+                    else if(getArgumentsLength() == 22)
+                    {
+                        for(i = 0; i < 16; i++)
+                        {
+                            //setLatticeIntensity(index, i, getIntArgumentAtIndex(5 + i));
+                            BYTE ii = (i - (i / 4) * 4) * 4 + (i / 4);
+                            setLatticeRgbIntensity(index, layer, ii, getIntArgumentAtIndex(6 + i));
+                        }
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": too_few_intensity_value");
+                        return;
+                    }
+
+                    if(getLatticeRgb(index, layer) != 0)
+                        setLatticeRgbOn(index, layer, TRUE);
+                    else
+                        setLatticeRgbOn(index, layer, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgLatticeRgbClear))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbClear, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    setLatticeRgb(index, layer, 0);
+                    setLatticeRgbOn(index, layer, FALSE);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbClear, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeRgbIntensity))
+            {
+                if(getArgumentsLength() < 4)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) &&
+                   (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+                    BYTE x = getIntArgumentAtIndex(2);
+                    BYTE y = getIntArgumentAtIndex(3);
+
+                    if(x > 3 || y > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": out_of_range_value");
+                        return;
+                    }
+
+                    sendOSCMessage(getOSCPrefix(), msgLatticeRgbIntensity, "iiii", index, x, y, getLatticeRgbIntensity(index, layer, y + (x * 4)));
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeRgbIntensityAll))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": too_few_arguments");
+                    return;
+                }
+
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) &&
+                   (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE layer = getIntArgumentAtIndex(1);
+
+                    sendOSCMessage(getOSCPrefix(), msgLatticeRgbIntensity, "iiiiiiiiiiiiiiiii", index,
+                                   getLatticeRgbIntensity(index, layer, 0), getLatticeRgbIntensity(index, layer, 1),
+                                   getLatticeRgbIntensity(index, layer, 2), getLatticeRgbIntensity(index, layer, 3),
+                                   getLatticeRgbIntensity(index, layer, 4), getLatticeRgbIntensity(index, layer, 5),
+                                   getLatticeRgbIntensity(index, layer, 6), getLatticeRgbIntensity(index, layer, 7),
+                                   getLatticeRgbIntensity(index, layer, 8), getLatticeRgbIntensity(index, layer, 9),
+                                   getLatticeRgbIntensity(index, layer, 10), getLatticeRgbIntensity(index, layer, 11),
+                                   getLatticeRgbIntensity(index, layer, 12), getLatticeRgbIntensity(index, layer, 13),
+                                   getLatticeRgbIntensity(index, layer, 14), getLatticeRgbIntensity(index, layer, 15));
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": wrong_argument_type");
+                    return;
+                }
+            }
             else if(compareOSCAddress(msgRotaryIncEncPinSelect))
             {
                 if(getArgumentsLength() < 4)
@@ -3487,6 +4048,7 @@ void receiveOSCTask(void)
         {
             if(compareOSCAddress(msgSetData))
             {
+                WORD data = 0;
                 cdcOutDataLength = getArgumentsLength();
                 if(cdcOutDataLength >= MAX_NO_OF_OUT_BYTES)
                 {
@@ -3495,7 +4057,15 @@ void receiveOSCTask(void)
                 }
 
                 for(i = 0; i < cdcOutDataLength; i++)
-                    USB_CDC_OUT_Data_Array[i] = getIntArgumentAtIndex(i);
+                {
+                    data = getIntArgumentAtIndex(i);
+                    if(data > 255)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": out_of_range_value");
+                        return;
+                    }
+                    USB_CDC_OUT_Data_Array[i] = (BYTE)data;
+                }
 
                 cdcSendFlag = TRUE;
                 APPL_CDC_State = READY_TO_TX_RX;
@@ -3634,16 +4204,19 @@ void receiveOSCTask(void)
                     return;
                 }
 
+                mDNSServiceDeRegister();
+
                 mDNSInitialize(getOSCHostName());
                 mDNSServiceRegister((const char *)getOSCHostName(), // base name of the service
                                     "_oscit._udp.local",    // type of the service
                                     8080,                   // TCP or UDP port, at which this service is available
                                     ((const BYTE *)""),     // TXT info
-                                    0,                      // auto rename the service when if needed
+                                    1,                      // auto rename the service when if needed
                                     NULL,                   // no callback function
                                     NULL                    // no application context
                     );
                 mDNSMulticastFilterRegister();
+                dwLastIP = 0;
                 sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
             }
             else if(compareOSCAddress(msgGetHostName))
@@ -3818,6 +4391,28 @@ void receiveOSCTask(void)
     //mT5IntEnable(1);
 }
 
+/*******************************************************************************
+  Function:
+    void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
 {
     static BYTE led_state = 0;
@@ -3834,6 +4429,12 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
             if(getInitLatticeLedDrvFlag())
                 latticeLedHandle();
             
+            led_state = 2;
+            break;
+        case 2:
+            if(getInitLatticeRgbDrvFlag())
+                latticeRgbHandle();
+
             led_state = 0;
             break;
         default:
@@ -3844,6 +4445,28 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
     mT4ClearIntFlag();
 }
 
+/*******************************************************************************
+  Function:
+    void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
@@ -3879,7 +4502,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 j = 0;
                 for(i = 0; i < AN_NUM; i++)
                 {
-                    if(analogEnable[i])
+                    if(getAnalogEnable(i))
                     {
                         analogInHandle(i, (LONG)ReadADC10(j));
                         j++;
@@ -3924,6 +4547,28 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
     mT5ClearIntFlag();
 }
 
+/*******************************************************************************
+  Function:
+    void USBControlTask()
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void USBControlTask()
 {
     HIDControlTask();
@@ -3932,6 +4577,28 @@ void USBControlTask()
     //receiveMIDIDatas();
 }
 
+/*******************************************************************************
+  Function:
+    void HIDControlTask(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void HIDControlTask(void)
 {
     BYTE u8Data[128] = {0};
@@ -3964,13 +4631,13 @@ void HIDControlTask(void)
                         return;
 
                     if(state == 1)
-                        analogEnable[id] = TRUE;
+                        setAnalogEnable(id, TRUE);
                     else if(state == 0)
-                        analogEnable[id] = FALSE;
+                        setAnalogEnable(id, FALSE);
 
                     for(i = 0; i < AN_NUM; i++)
                     {
-                        if(analogEnable[i])
+                        if(getAnalogEnable(i))
                             anum++;
                     }
                     setAnPortDioType(id, IO_IN);
@@ -4015,8 +4682,8 @@ void HIDControlTask(void)
                     ToSendHidDataBuffer[0] = 0x80;
                     ToSendHidDataBuffer[1] = 3;
                     ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = analogEnable[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[4] = getAnalogByte(ReceivedHidDataBuffer[2], MIDI_ORIGINAL);
+                    ToSendHidDataBuffer[3] = getAnalogEnable(ReceivedHidDataBuffer[2]);
+                    ToSendHidDataBuffer[4] = getAnalogByte(ReceivedHidDataBuffer[2], BYTE_ORIGINAL);
                     ToSendHidDataBuffer[5] = 0x00;
 
                     if(!USBHandleBusy(HIDTxHandle))
@@ -4645,6 +5312,28 @@ void HIDControlTask(void)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void sendNote(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 #if 0
 void sendNote(void)
 {
@@ -4674,6 +5363,28 @@ void sendNote(void)
 }
 #endif
 
+/*******************************************************************************
+  Function:
+    void sendControlChange(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void sendControlChange(void)
 {
     int i;
@@ -4681,7 +5392,7 @@ void sendControlChange(void)
 
     for(i = 0; i < AN_NUM; i++)
     {
-        if(analogEnable[i])
+        if(getAnalogEnable(i))
         {
             analogInHandle(i, (LONG)ReadADC10(i));
 
@@ -4692,7 +5403,7 @@ void sendControlChange(void)
                 midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
                 midiData.DATA_0 = 0xB0;
 
-                value = getAnalogByte(i, MIDI_ORIGINAL);
+                value = getAnalogByte(i, BYTE_ORIGINAL);
                 
                 midiData.DATA_1 = i;
                 midiData.DATA_2 = value;
@@ -4708,6 +5419,28 @@ void sendControlChange(void)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void receiveMIDIDatas(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void receiveMIDIDatas(void)
 {
     int i;
@@ -4748,6 +5481,28 @@ void receiveMIDIDatas(void)
     }
 }
 
+/*******************************************************************************
+  Function:
+    void convertMidiToOsc(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void convertMidiToOsc(void)
 {
     BYTE currentEndpoint;
@@ -4850,6 +5605,28 @@ void convertMidiToOsc(void)
 }
 
 #if defined(USB_USE_HID) // hid
+/*******************************************************************************
+  Function:
+    void convertHidToOsc(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void convertHidToOsc(void)
 {
     //App_Detect_Device();
@@ -4927,6 +5704,28 @@ void convertHidToOsc(void)
 #endif
 
 #if defined(USB_USE_CDC)
+/*******************************************************************************
+  Function:
+    void USBHostCDC_Clear_Out_DATA_Array(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void USBHostCDC_Clear_Out_DATA_Array(void)
 {
     BYTE i;
@@ -4935,6 +5734,28 @@ void USBHostCDC_Clear_Out_DATA_Array(void)
         USB_CDC_OUT_Data_Array[i] = 0;
 }
 
+/*******************************************************************************
+  Function:
+    void USB_CDC_RxTxHandler(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
 void USB_CDC_RxTxHandler(void)
 {
     BYTE i;

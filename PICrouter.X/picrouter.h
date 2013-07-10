@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.6.0 2013/06/24
+ * picrouter.h,v.1.7.0 2013/07/10
  */
 
-#define CURRENT_VERSION "1.6.0"
+#define CURRENT_VERSION "1.7.0"
 
 #include <plib.h>
 #include <stdio.h>
@@ -233,6 +233,9 @@ BYTE currentState;
 BYTE prevState;
 BOOL stateFlag = FALSE;
 BOOL stateFlag2 = FALSE;//midi
+DWORD dwLastIP = 0;
+
+void initIOPorts(void);
 
 void receiveOSCTask(void);
 
