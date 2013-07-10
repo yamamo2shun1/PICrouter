@@ -1,5 +1,5 @@
 #N canvas 410 30 1348 863 10;
-#X obj 34 618 popup 124 25 #ffffff oc0 oc0 oc2 oc3 oc4;
+#X obj 34 618 popup 124 25 #ffffff oc1 oc1 oc3 oc4 oc5;
 #X obj 187 617 popup 124 25 #ffffff in in out;
 #X obj 310 725 t b s;
 #N canvas 317 94 450 300 OSC_Comm 0;
@@ -50,8 +50,8 @@
 #X msg 32 214 options off on;
 #X msg 71 269 name off;
 #X obj 51 296 send adcState;
-#X msg 27 44 options oc0 oc2 oc3 oc4;
-#X msg 66 113 name oc0;
+#X msg 27 44 options oc1 oc3 oc4 oc5;
+#X msg 66 113 name oc1;
 #X connect 0 0 7 0;
 #X connect 1 0 0 0;
 #X connect 1 1 7 0;
@@ -81,10 +81,10 @@
 #X connect 22 0 14 0;
 #X connect 23 0 15 0;
 #X restore 109 38 pd initPopup;
-#X msg 237 752 1;
+#X msg 237 752 0;
 #X msg 304 569 out;
 #X obj 247 449 receive rcvOsc;
-#X obj 472 617 popup 124 25 #ffffff oc0 oc0 oc2 oc3 oc4;
+#X obj 472 617 popup 124 25 #ffffff oc1 oc1 oc3 oc4 oc5;
 #X obj 625 616 popup 124 25 #ffffff low low high;
 #X obj 748 725 t b s;
 #X msg 675 754 0;
@@ -106,7 +106,7 @@
 #X msg 304 673 1;
 #X obj 742 648 t b s;
 #X obj 304 650 t b s;
-#X obj 74 197 popup 124 25 #ffffff oc0 oc0 oc2 oc3 oc4;
+#X obj 74 197 popup 124 25 #ffffff oc1 oc1 oc3 oc4 oc5;
 #X obj 227 196 popup 124 25 #ffffff off off on;
 #X obj 350 303 t b s;
 #X msg 294 334 0;
@@ -160,7 +160,7 @@
 #X floatatom 1116 326 5 0 0 0 - - -;
 #X obj 1116 377 myprepend2 send /std/pwm/freq/set;
 #X obj 1116 351 int;
-#X obj 536 191 popup 124 25 #ffffff oc0 oc0 oc2 oc3 oc4;
+#X obj 536 191 popup 124 25 #ffffff oc1 oc1 oc3 oc4 oc5;
 #X msg 744 328 0;
 #X obj 705 133 receive rcvOsc;
 #X obj 536 169 receive portName;
