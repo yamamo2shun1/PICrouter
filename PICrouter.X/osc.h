@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.1.0 2013/06/20
+ * osc.h,v.1.2.0 2013/07/10
  */
 
 #ifndef OSC_H
@@ -56,6 +56,18 @@ extern const char msgGetLatticeLedIntensity[];
 extern const char msgLatticeLedIntensityAll[];
 extern const char msgGetLatticeLedIntensityAll[];
 
+// for RGB_PAD_16
+extern const char msgLatticeRgbDrvPinSelect[];
+extern const char msgSetLatticeRgb[];
+extern const char msgSetLatticeRgbColumn[];
+extern const char msgSetLatticeRgbRow[];
+extern const char msgSetLatticeRgbAll[];
+extern const char msgLatticeRgbClear[];
+extern const char msgLatticeRgbIntensity[];
+extern const char msgGetLatticeRgbIntensity[];
+extern const char msgLatticeRgbIntensityAll[];
+extern const char msgGetLatticeRgbIntensityAll[];
+
 // for LED_ENC_32 or LED_ENC_ABS_32
 extern const char msgRotaryLedDrvPinSelect[];
 //extern const char msgRotaryLedStep[];
@@ -92,6 +104,12 @@ extern const char msgAdc[];
 extern const char msgAdcEnable[];
 extern const char msgSetAdcEnable[];
 extern const char msgGetAdcEnable[];
+extern const char msgAdcType[];
+extern const char msgSetAdcType[];
+extern const char msgGetAdcType[];
+extern const char msgAdcCurve[];
+extern const char msgSetAdcCurve[];
+extern const char msgGetAdcCurve[];
 extern const char msgAdcDio[];
 extern const char msgSetAdcDio[];
 extern const char msgGetAdcDio[];
