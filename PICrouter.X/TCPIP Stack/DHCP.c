@@ -1083,7 +1083,7 @@ UDPInvalid:
 ***************************************************************************/
 static void _DHCPSend(BYTE messageType, BOOL bRenewing)
 {
-	BYTE i;
+	BYTE i, j;
 	IP_ADDR	MyIP;
 
 
@@ -1178,6 +1178,11 @@ static void _DHCPSend(BYTE messageType, BOOL bRenewing)
 	}
 
 	// Add any new paramter request here.
+        UDPPut(DHCP_HOST_NAME);                 // syama
+        for(j = 0; j < 16; j++)                 // syama
+            if(AppConfig.NetBIOSName[j] == ' ') // syama
+                break;                          //syama 
+        UDPPut(j);                              // syama
 
 	// End of Options.
 	UDPPut(DHCP_END_OPTION);
