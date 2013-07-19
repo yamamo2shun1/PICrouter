@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.7.0 2013/07/10
+ * picrouter.c,v.1.7.1 2013/07/19
  */
 
 #include "picrouter.h"
@@ -138,18 +138,20 @@ int main(int argc, char** argv) {
                     switch(eth_state)
                     {
                         case 0:
+#if 0
                             NBNSTask();
                             eth_state = 1;
                             break;
                         case 1:
+#endif
                             ZeroconfLLProcess();
-                            eth_state = 2;
+                            eth_state = 1;// 2;
                             break;
-                        case 2:
+                        case 1:// 2:
                             mDNSProcess();
-                            eth_state = 3;
+                            eth_state = 2;// 3;
                             break;
-                        case 3:
+                        case 2:// 3:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
@@ -188,19 +190,21 @@ int main(int argc, char** argv) {
                     switch(eth_state)
                     {
                         case 0:
+#if 0
                             NBNSTask();
                             eth_state = 1;
                             break;
                         case 1:
+#endif
                             ZeroconfLLProcess();
-                            eth_state = 2;
+                            eth_state = 1;// 2;
                             break;
-                        case 2:
+                        case 1:// 2:
                             mDNSProcess();
-                            eth_state = 3;
+                            eth_state = 2;// 3;
                             break;
-                        case 3:
-                            DHCPServerTask();
+                        case 2:// 3:
+                            //DHCPServerTask();
                             eth_state = 0;
                             break;
                     }
