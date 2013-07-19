@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.2.0 2013/07/10
+ * osc.c,v.1.2.1 2013/07/19
  */
 
 #include "osc.h"
@@ -299,8 +299,8 @@ void InitAppConfig(void)
     AppConfig.PrimaryDNSServer.Val = MY_DEFAULT_PRIMARY_DNS_BYTE1 | MY_DEFAULT_PRIMARY_DNS_BYTE2<<8ul | MY_DEFAULT_PRIMARY_DNS_BYTE3<<16ul  | MY_DEFAULT_PRIMARY_DNS_BYTE4<<24ul;
     AppConfig.SecondaryDNSServer.Val = MY_DEFAULT_SECONDARY_DNS_BYTE1 | MY_DEFAULT_SECONDARY_DNS_BYTE2<<8ul | MY_DEFAULT_SECONDARY_DNS_BYTE3<<16ul  | MY_DEFAULT_SECONDARY_DNS_BYTE4<<24ul;
 
-    memcpypgm2ram(AppConfig.NetBIOSName, (ROM void*)DEFAULT_HOST_NAME, 16);
-    FormatNetBIOSName(AppConfig.NetBIOSName);
+    //memcpypgm2ram(AppConfig.NetBIOSName, (ROM void*)DEFAULT_HOST_NAME, 16);
+    //FormatNetBIOSName(AppConfig.NetBIOSName);
 }
 
 /*******************************************************************************
