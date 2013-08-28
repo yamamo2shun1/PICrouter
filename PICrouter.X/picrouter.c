@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.7.1 2013/07/19
+ * picrouter.c,v.1.8.0 2013/08/01
  */
 
 #include "picrouter.h"
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
                             eth_state = 2;// 3;
                             break;
                         case 2:// 3:
-                            //DHCPServerTask();
+                            DHCPServerTask();
                             eth_state = 0;
                             break;
                     }
@@ -2725,6 +2725,7 @@ void receiveOSCTask(void)
                     setLatticePadPortLoadName(name_load);
                     setPortIOType(name_load, IO_OUT);
                     outputPort(name_load, LOW);
+                    //setLatticeRgbLedNumber(num, lnum);
 
                     switch(num)
                     {
@@ -2752,6 +2753,84 @@ void receiveOSCTask(void)
                     return;
                 }
             }
+            else if(compareOSCAddress(msgSetLatticeRgbConnectedNum))
+            {
+                if(getArgumentsLength() < 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbConnectedNum, ": too_few_arguments");
+                    return;
+                }
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    int num = getIntArgumentAtIndex(0);
+                    if(num < 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbConnectedNum, ": out_of_range_value");
+                        return;
+                    }
+                    setNumConnectedLatticeRgb(num);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbConnectedNum, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeRgbConnectedNum))
+            {
+                sendOSCMessage(getOSCPrefix(), msgLatticeRgbConnectedNum, "i", getNumConnectedLatticeRgb());
+            }
+            else if(compareOSCAddress(msgSetLatticeRgbSize))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbSize, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+                    BYTE size = getIntArgumentAtIndex(1);
+
+                    if(index > 3 || !(size == 8 || size == 16))
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    setLatticeRgbLedNumber(index, size);
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbSize, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgGetLatticeRgbSize))
+            {
+                if(getArgumentsLength() < 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbSize, ": too_few_arguments");
+                    return;
+                }
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    BYTE index = getIntArgumentAtIndex(0);
+
+                    if(index > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": too_long_string_length");
+                        return;
+                    }
+
+                    sendOSCMessage(getOSCPrefix(), msgLatticeRgbSize, "ii", index, getLatticeRgbLedNumber(index));
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbSize, ": wrong_argument_type");
+                    return;
+                }
+            }
             else if(compareOSCAddress(msgSetLatticeRgb))
             {
                 if(getArgumentsLength() < 5)
@@ -2773,6 +2852,7 @@ void receiveOSCTask(void)
                     BYTE intensity;
                     WORD pos = (1 << y) << (x * 4);
 
+
                     if(x > 3 || y > 3 || state > 1)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": out_of_range_value");
@@ -2788,6 +2868,7 @@ void receiveOSCTask(void)
                             intensity = getIntArgumentAtIndex(5);
                             if(intensity > 100)
                                 intensity = 100;
+
                             setLatticeRgbIntensity(index, layer, y + (x * 4), intensity);
                         }
                         else
