@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.8.0 2013/08/01
+ * picrouter.h,v.1.9.0 2013/08/28
  */
 
-#define CURRENT_VERSION "1.8.0"
+#define CURRENT_VERSION "1.9.0"
 
 #include <plib.h>
 #include <stdio.h>
@@ -100,51 +100,50 @@ typedef enum
 static DEVICE_MODE device_mode = MODE_HOST;
 
 #if defined(USB_USE_HID)//hid
-#define MINIMUM_POLL_INTERVAL           (0x0A)        // Minimum Polling rate for HID reports is 10ms
+    #define MINIMUM_POLL_INTERVAL           (0x0A)        // Minimum Polling rate for HID reports is 10ms
 
-#define USAGE_PAGE_BUTTONS              (0x09)
+    #define USAGE_PAGE_BUTTONS              (0x09)
 
-#define USAGE_PAGE_GEN_DESKTOP          (0x01)
+    #define USAGE_PAGE_GEN_DESKTOP          (0x01)
 
+    #define MAX_ERROR_COUNTER               (10)
 
-#define MAX_ERROR_COUNTER               (10)
+    typedef enum _APP_STATE
+    {
+        DEVICE_NOT_CONNECTED,
+        DEVICE_CONNECTED, /* Device Enumerated  - Report Descriptor Parsed */
+        READY_TO_TX_RX_REPORT,
+        GET_INPUT_REPORT, /* perform operation on received report */
+        INPUT_REPORT_PENDING,
+        ERROR_REPORTED
+    } APP_STATE;
 
-typedef enum _APP_STATE
-{
-    DEVICE_NOT_CONNECTED,
-    DEVICE_CONNECTED, /* Device Enumerated  - Report Descriptor Parsed */
-    READY_TO_TX_RX_REPORT,
-    GET_INPUT_REPORT, /* perform operation on received report */
-    INPUT_REPORT_PENDING,
-    ERROR_REPORTED 
-} APP_STATE;
+    #if 0
+    typedef struct _HID_REPORT_BUFFER
+    {
+        WORD  Report_ID;
+        WORD  ReportSize;
+        //BYTE* ReportData;
+        BYTE  ReportData[4];
+        WORD  ReportPollRate;
+    }   HID_REPORT_BUFFER;
 
-#if 0
-typedef struct _HID_REPORT_BUFFER
-{
-    WORD  Report_ID;
-    WORD  ReportSize;
-//    BYTE* ReportData;
-    BYTE  ReportData[4];
-    WORD  ReportPollRate;
-}   HID_REPORT_BUFFER;
+    APP_STATE App_State_Mouse = DEVICE_NOT_CONNECTED;
 
-APP_STATE App_State_Mouse = DEVICE_NOT_CONNECTED;
+    HID_DATA_DETAILS Appl_Mouse_Buttons_Details;
+    HID_DATA_DETAILS Appl_XY_Axis_Details;
 
-HID_DATA_DETAILS Appl_Mouse_Buttons_Details;
-HID_DATA_DETAILS Appl_XY_Axis_Details;
+    HID_REPORT_BUFFER  Appl_raw_report_buffer;
 
-HID_REPORT_BUFFER  Appl_raw_report_buffer;
+    HID_USER_DATA_SIZE Appl_Button_report_buffer[3];
+    HID_USER_DATA_SIZE Appl_XY_report_buffer[3];
+    #endif
 
-HID_USER_DATA_SIZE Appl_Button_report_buffer[3];
-HID_USER_DATA_SIZE Appl_XY_report_buffer[3];
-#endif
+    BYTE ErrorDriver;
+    BYTE ErrorCounter;
+    BYTE NumOfBytesRcvd;
 
-BYTE ErrorDriver;
-BYTE ErrorCounter;
-BYTE NumOfBytesRcvd;
-
-BOOL ReportBufferUpdated;
+    BOOL ReportBufferUpdated;
 
 #elif defined(USB_USE_CDC)
     typedef enum _APPL_STATE
@@ -248,16 +247,16 @@ void sendControlChange(void);
 void receiveMIDIDatas(void);
 
 #if defined(USB_USE_HID)
-void App_Detect_Device(void);
-void App_ProcessInputReport(void);
-BOOL USB_HID_DataCollectionHandler(void);
+    void App_Detect_Device(void);
+    void App_ProcessInputReport(void);
+    BOOL USB_HID_DataCollectionHandler(void);
 #elif defined(USB_USE_CDC)
-BOOL cdcSendFlag = FALSE;
-WORD cdcReceiveInterval = 0;
-BYTE cdcOutDataLength;
-BYTE ErrorDriver;
-BYTE NumOfBytesRcvd;
+    BOOL cdcSendFlag = FALSE;
+    WORD cdcReceiveInterval = 0;
+    BYTE cdcOutDataLength;
+    BYTE ErrorDriver;
+    BYTE NumOfBytesRcvd;
 
-void USBHostCDC_Clear_Out_DATA_Array(void);
-void USB_CDC_RxTxHandler(void);
+    void USBHostCDC_Clear_Out_DATA_Array(void);
+    void USB_CDC_RxTxHandler(void);
 #endif

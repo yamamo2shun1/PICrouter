@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.8.0 2013/08/01
+ * picrouter.c,v.1.9.0 2013/08/28
  */
 
 #include "picrouter.h"
@@ -4410,6 +4410,81 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgUsbMode, "s", "device");
                 else if(device_mode == MODE_HOST)
                     sendOSCMessage(sysPrefix, msgUsbMode, "s", "host");
+            }
+            else if(compareOSCAddress(msgWriteNvmData))
+            {
+                if(getArgumentsLength() < 2)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": too_few_arguments");
+                    return;
+                }
+                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+                {
+                    WORD address = getIntArgumentAtIndex(0);
+                    WORD data = getIntArgumentAtIndex(1);
+
+                    if(address >= 1 && address <=7)
+                    {
+                        if(!NVMWriteWord((void*)(NVM_DATA + 512 * address), data))
+                            sendOSCMessage(sysPrefix, msgNvmData, "s", "write:succeeded");
+                        else
+                            sendOSCMessage(sysPrefix, msgNvmData, "s", "write:failed");
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": out_of_range_address");
+                        return;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgReadNvmData))
+            {
+                if(getArgumentsLength() < 1)
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": too_few_arguments");
+                    return;
+                }
+                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+                {
+                    DWORD tmpData = 0;
+                    WORD address = getIntArgumentAtIndex(0);
+
+
+                    if(address >= 1 && address <=7)
+                    {
+                        tmpData = *(DWORD *)(NVM_DATA + 512 * address);
+                        sendOSCMessage(sysPrefix, msgNvmData, "ii", address, tmpData);
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": out_of_range_address");
+                        return;
+                    }
+                }
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": wrong_argument_type");
+                    return;
+                }
+            }
+            else if(compareOSCAddress(msgClearNvmData))
+            {
+                BYTE index, checkstate = 0;
+                NVMErasePage((void *)NVM_DATA);
+                for(index = 1; index <= 7; index++)
+                {
+                    checkstate += NVMWriteWord((void*)(NVM_DATA + 512 * index), 0);
+                    DelayMs(1);
+                }
+                if(!checkstate)
+                    sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:succeeded");
+                else
+                    sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:failed");
             }
             else if(compareOSCAddress(msgSoftReset))
             {
