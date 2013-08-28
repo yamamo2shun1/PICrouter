@@ -44,6 +44,7 @@ Demo
 * [LED Intensity Control Test with PICrouter and LED_PAD_16][]
 * [Multiple LED_ENC_ABS_32 Control Test from PICrouter][]
 * [Intensity Control Test of RGB_PAD_16 from PICrouter][]
+* [RGB Step Sequencer Test][]
 
 [Open Sound Control]:http://opensoundcontrol.org
 
@@ -54,6 +55,7 @@ Demo
 [LED Intensity Control Test with PICrouter and LED_PAD_16]: http://youtu.be/yXPXuEcpFhE
 [Multiple LED_ENC_ABS_32 Control Test from PICrouter]: http://youtu.be/imvcYX0qTLs
 [Intensity Control Test of RGB_PAD_16 from PICrouter]: https://vimeo.com/70006217
+[RGB Step Sequencer Test]: https://vimeo.com/73281314
 
 <div align="center">
 <a href="http://www.flickr.com/photos/yamamo2/8369607593/" title="PICrouter v1.0 TOP VIEW by tkrworks, on Flickr"><img src="http://farm9.staticflickr.com/8214/8369607593_3c1b5055e1_z.jpg" width="640" height="206" alt="PICrouter v1.0 TOP VIEW"></a>  
