@@ -14,7 +14,6 @@
           <itemPath>Include/TCPIP Stack/ICMP.h</itemPath>
           <itemPath>Include/TCPIP Stack/IP.h</itemPath>
           <itemPath>Include/TCPIP Stack/MAC.h</itemPath>
-          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
           <itemPath>Include/TCPIP Stack/StackTsk.h</itemPath>
           <itemPath>Include/TCPIP Stack/TCPIP.h</itemPath>
           <itemPath>Include/TCPIP Stack/Tick.h</itemPath>
@@ -23,6 +22,7 @@
           <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
           <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
           <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
+          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
           <itemPath>Include/USB/usb.h</itemPath>
@@ -79,13 +79,13 @@
         <itemPath>TCPIP Stack/Helpers.c</itemPath>
         <itemPath>TCPIP Stack/ICMP.c</itemPath>
         <itemPath>TCPIP Stack/IP.c</itemPath>
-        <itemPath>TCPIP Stack/NBNS.c</itemPath>
         <itemPath>TCPIP Stack/StackTsk.c</itemPath>
         <itemPath>TCPIP Stack/Tick.c</itemPath>
         <itemPath>TCPIP Stack/UDP.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
         <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
+        <itemPath>TCPIP Stack/NBNS.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
         <itemPath>USB/usb_device.c</itemPath>
@@ -200,7 +200,7 @@
         <property key="extra-lib-directories" value=""/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-cross-reference-file" value="false"/>
-        <property key="heap-size" value="15200"/>
+        <property key="heap-size" value="15000"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value=""/>
