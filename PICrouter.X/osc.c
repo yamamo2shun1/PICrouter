@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.2.1 2013/07/19
+ * osc.c,v.1.3.0 2013/08/01
  */
 
 #include "osc.h"
@@ -62,8 +62,14 @@ const char msgGetLatticeLedIntensity[]    = "/lattice/led/intensity/get";
 const char msgLatticeLedIntensityAll[]    = "/lattice/led/intensity/all";
 const char msgGetLatticeLedIntensityAll[] = "/lattice/led/intensity/all/get";
 
-// for RGB_PAD_16
+// for RGB_PAD_16/RGB_PAD_8
 const char msgLatticeRgbDrvPinSelect[]    = "/lattice/rgb/driver/pin/select";
+const char msgLatticeRgbConnectedNum[]    = "/lattice/rgb/num";
+const char msgSetLatticeRgbConnectedNum[] = "/lattice/rgb/num/set";
+const char msgGetLatticeRgbConnectedNum[] = "/lattice/rgb/num/get";
+const char msgLatticeRgbSize[]            = "/lattice/rgb/size";
+const char msgSetLatticeRgbSize[]         = "/lattice/rgb/size/set";
+const char msgGetLatticeRgbSize[]         = "/lattice/rgb/size/get";
 const char msgSetLatticeRgb[]             = "/lattice/rgb/set";
 const char msgSetLatticeRgbColumn[]       = "/lattice/rgb/col/set";
 const char msgSetLatticeRgbRow[]          = "/lattice/rgb/row/set";

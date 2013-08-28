@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.2.1 2013/07/19
+ * osc.h,v.1.3.0 2013/08/01
  */
 
 #ifndef OSC_H
@@ -56,8 +56,14 @@ extern const char msgGetLatticeLedIntensity[];
 extern const char msgLatticeLedIntensityAll[];
 extern const char msgGetLatticeLedIntensityAll[];
 
-// for RGB_PAD_16
+// for RGB_PAD_16/RGB_PAD_8
 extern const char msgLatticeRgbDrvPinSelect[];
+extern const char msgLatticeRgbConnectedNum[];
+extern const char msgSetLatticeRgbConnectedNum[];
+extern const char msgGetLatticeRgbConnectedNum[];
+extern const char msgLatticeRgbSize[];
+extern const char msgSetLatticeRgbSize[];
+extern const char msgGetLatticeRgbSize[];
 extern const char msgSetLatticeRgb[];
 extern const char msgSetLatticeRgbColumn[];
 extern const char msgSetLatticeRgbRow[];
