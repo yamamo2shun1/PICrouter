@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.c,v.0.7 2013/07/10
+ * button.c,v.0.8 2013/08/02
  */
 
 #include "button.h"
@@ -28,10 +28,10 @@ static char pin_shld[MAX_PAD_NUM][4] = {0};
 static char pin_qh[MAX_PAD_NUM][4] = {0};
 static char pin_load[4] = {0};
 
-static WORD btnCurrent[MAX_BTN_ROW] = {0};
-static WORD btnLast[MAX_BTN_ROW] = {0};
-static WORD btnState[MAX_BTN_ROW] = {0};
-static WORD btnDebounceCount[MAX_BTN_ROW][MAX_BTN_COL] = {0};
+static WORD btnCurrent[MAX_PAD_NUM][MAX_BTN_ROW] = {0};
+static WORD btnLast[MAX_PAD_NUM][MAX_BTN_ROW] = {0};
+static WORD btnState[MAX_PAD_NUM][MAX_BTN_ROW] = {0};
+static WORD btnDebounceCount[MAX_PAD_NUM][MAX_BTN_ROW][MAX_BTN_COL] = {0};
 
 static BOOL initLatticeLedDrvFlag = FALSE;
 static BYTE latticeLedDrvSpiNum = 2;
@@ -41,7 +41,9 @@ static BOOL latticeLedOn[MAX_PAD_NUM] = {FALSE};
 static BYTE latticeLedIntensityIndex[MAX_PAD_NUM] = {0};
 
 static BOOL initLatticeRgbDrvFlag = FALSE;
+static BYTE numConnectedLatticeRgb = 1;
 static BYTE latticeRgbDrvSpiNum = 2;
+static BYTE latticeRgbLedNum[MAX_PAD_NUM] = {16, 16, 16, 16};
 static WORD latticeRgb[MAX_PAD_NUM][MAX_RGB_LAYER] = {0};
 static BYTE latticeRgbIntensity[MAX_PAD_NUM][MAX_RGB_LAYER][MAX_BTN_NUM] = {0};
 static BOOL latticeRgbOn[MAX_PAD_NUM][MAX_RGB_LAYER] = {FALSE};
@@ -689,6 +691,60 @@ BOOL getInitLatticeRgbDrvFlag(void)
 
 /*******************************************************************************
   Function:
+    void setNumConnectedLatticeRgb(BYTE num)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE num
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
+void setNumConnectedLatticeRgb(BYTE num)
+{
+    numConnectedLatticeRgb = num;
+}
+
+/*******************************************************************************
+  Function:
+    BYTE getNumConnectedLatticeRgb(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
+BYTE getNumConnectedLatticeRgb(void)
+{
+    return numConnectedLatticeRgb;
+}
+
+/*******************************************************************************
+  Function:
     void setLatticeRgbDriverSpiNumber(BYTE num)
 
   Precondition:
@@ -739,6 +795,61 @@ void setLatticeRgbDriverSpiNumber(BYTE num)
 BYTE getLatticeRgbDriverSpiNumber(void)
 {
     return latticeRgbDrvSpiNum;
+}
+
+/*******************************************************************************
+  Function:
+    void setLatticeRgbLedNumber(BYTE index, BYTE num)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE index
+    BYTE num
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
+void setLatticeRgbLedNumber(BYTE index, BYTE num)
+{
+    latticeRgbLedNum[index] = num;
+}
+
+/*******************************************************************************
+  Function:
+    BYTE getLatticeRgbLedNumber(BYTE index)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    BYTE index
+
+  Return Values:
+
+
+  Remarks:
+    None
+*******************************************************************************/
+BYTE getLatticeRgbLedNumber(BYTE index)
+{
+    return latticeRgbLedNum[index];
 }
 
 /*******************************************************************************
@@ -937,21 +1048,24 @@ BOOL getLatticeRgbOn(BYTE index, BYTE layer)
 *******************************************************************************/
 void buttonInit(void)
 {
-  int i, j;
-  for(i = 0; i < MAX_BTN_ROW; i++)
+  int i, j, k;
+  for(k = 0; k < MAX_PAD_NUM; k++)
   {
-    btnCurrent[i] = 0x00;
-    btnLast[i] = 0x00;
-    btnState[i] = 0x00;
+      for(i = 0; i < MAX_BTN_ROW; i++)
+      {
+        btnCurrent[k][i] = 0x00;
+        btnLast[k][i] = 0x00;
+        btnState[k][i] = 0x00;
 
-    for(j = 0; j < MAX_BTN_COL; j++)
-      btnDebounceCount[i][j] = 0;
+        for(j = 0; j < MAX_BTN_COL; j++)
+          btnDebounceCount[k][i][j] = 0;
+      }
   }
 }
 
 /*******************************************************************************
   Function:
-    BOOL buttonCheck(BYTE row, BYTE index)
+    BOOL buttonCheck(BYTE index0, BYTE row, BYTE index)
 
   Precondition:
 
@@ -963,6 +1077,7 @@ void buttonInit(void)
 
 
   Parameters:
+    BYTE index0
     BYTE row
     BYTE index
 
@@ -973,20 +1088,20 @@ void buttonInit(void)
   Remarks:
     None
 *******************************************************************************/
-BOOL buttonCheck(BYTE row, BYTE index)
+BOOL buttonCheck(BYTE index0, BYTE row, BYTE index)
 {
   BOOL flag = FALSE;
 
-  if(((btnCurrent[row] ^ btnLast[row]) & (1 << index)) && ((btnCurrent[row] ^ btnState[row]) & (1 << index)))
-    btnDebounceCount[row][index] = 0;
-  else if (((btnCurrent[row] ^ btnLast[row]) & (1 << index)) == 0 && ((btnCurrent[row] ^ btnState[row]) & (1 << index)))
+  if(((btnCurrent[index0][row] ^ btnLast[index0][row]) & (1 << index)) && ((btnCurrent[index0][row] ^ btnState[index0][row]) & (1 << index)))
+    btnDebounceCount[index0][row][index] = 0;
+  else if (((btnCurrent[index0][row] ^ btnLast[index0][row]) & (1 << index)) == 0 && ((btnCurrent[index0][row] ^ btnState[index0][row]) & (1 << index)))
   {
-    if(btnDebounceCount[row][index] < 4 && ++btnDebounceCount[row][index] == 4)
+    if(btnDebounceCount[index0][row][index] < 4 && ++btnDebounceCount[index0][row][index] == 4)
     {
-      if(btnCurrent[row] & (1 << index))
-        btnState[row] |= (1 << index);
+      if(btnCurrent[index0][row] & (1 << index))
+        btnState[index0][row] |= (1 << index);
       else
-        btnState[row] &= ~(1 << index);
+        btnState[index0][row] &= ~(1 << index);
       flag = TRUE;
     }
   }
@@ -1018,7 +1133,7 @@ BOOL buttonCheck(BYTE row, BYTE index)
 // for LED_PAD_16
 void sendPad16(void)
 {
-    int i, j, k, l;
+    int i, j, k, l, m;
 
     if(getInitSendFlag())
     {
@@ -1028,47 +1143,50 @@ void sendPad16(void)
         outputPort(pin_shld, HIGH);
         //SR_SL(1);
 
-        for(i = 0; i < MAX_BTN_ROW; i++)
-            btnLast[i] = btnCurrent[i];
-
-        for(i = 0; i < MAX_BTN_ROW; i++)
+        for(m = 0; m < MAX_PAD_NUM; m++)
         {
-            switch(i)
-            {
-                case 0:
-                    l = 1;
-                    break;
-                case 1:
-                    l = 0;
-                    break;
-                case 2:
-                    l = 3;
-                    break;
-                case 3:
-                    l = 2;
-                    break;
-            }
-            for(j = 0; j < MAX_BTN_COL; j++)
-            {
-                k = 3 - j;
+            for(i = 0; i < MAX_BTN_ROW; i++)
+                btnLast[m][i] = btnCurrent[m][i];
 
-                //if(SR_QH())
-                if(inputPort(pin_qh))
+            for(i = 0; i < MAX_BTN_ROW; i++)
+            {
+                switch(i)
                 {
-                    btnCurrent[l] &= ~(1 << k);
+                    case 0:
+                        l = 1;
+                        break;
+                    case 1:
+                        l = 0;
+                        break;
+                    case 2:
+                        l = 3;
+                        break;
+                    case 3:
+                        l = 2;
+                        break;
                 }
-                else
+                for(j = 0; j < MAX_BTN_COL; j++)
                 {
-                    btnCurrent[l] |= (1 << k);
-                }
-                //SR_CLK(1);
-                outputPort(pin_clk, HIGH);
-                //SR_CLK(0);
-                outputPort(pin_clk, LOW);
+                    k = 3 - j;
 
-                if(buttonCheck(l, k))
-                {
-                    sendOSCMessage(getOSCPrefix(), msgLatticePad, "iii", l, k, (btnCurrent[l] & (1 << k)) ? 1 : 0);
+                    //if(SR_QH())
+                    if(inputPort(pin_qh))
+                    {
+                        btnCurrent[m][l] &= ~(1 << k);
+                    }
+                    else
+                    {
+                        btnCurrent[m][l] |= (1 << k);
+                    }
+                    //SR_CLK(1);
+                    outputPort(pin_clk, HIGH);
+                    //SR_CLK(0);
+                    outputPort(pin_clk, LOW);
+
+                    if(buttonCheck(m, l, k))
+                    {
+                        sendOSCMessage(getOSCPrefix(), msgLatticePad, "iiii", m, l, k, (btnCurrent[m][l] & (1 << k)) ? 1 : 0);
+                    }
                 }
             }
         }
@@ -1160,40 +1278,112 @@ void latticeRgbHandle(void)
 {
     int i, j, k;
     BOOL sendSpiFlag = FALSE;
-    WORD data[MAX_RGB_LAYER] = {0};
-    static WORD data0[MAX_RGB_LAYER] = {0xFFFF};
+    WORD data[MAX_PAD_NUM][MAX_RGB_LAYER] = {0};
+    static WORD data0[MAX_PAD_NUM][MAX_RGB_LAYER] = {0xFFFF};
 
     outputPort(pin_load, HIGH);
 
-    for(i = numConnectedLatticePad - 1; i >= 0; i--)
+    for(i = numConnectedLatticeRgb - 1; i >= 0; i--)
     {
-        for(k = 0; k < MAX_RGB_LAYER; k++)
+        switch(latticeRgbLedNum[i])
         {
-            if(latticeRgbOn[i][k])
-            {
-                data[k] = latticeRgb[i][k];
-                for(j = 0; j < 16; j++)
+            case 8:
+                for(k = MAX_RGB_LAYER - 1; k >= 0; k--)
                 {
-                    if(latticeRgbIntensityIndex[i][k] > latticeRgbIntensity[i][k][j])
-                        data[k] &= ~(1 << j);
+                    if(latticeRgbOn[i][k])
+                    {
+                        switch(k)
+                        {
+                            case 0:
+                                data[i][0] &= 0xFF00;
+                                data[i][0] |= latticeRgb[i][0] & 0x00FF;
+                                break;
+                            case 1:
+                                data[i][0] &= 0x00FF;
+                                data[i][0] |= ((latticeRgb[i][1] & 0x00FF) << 8);
+                                break;
+                            case 2:
+                                data[i][1] &= 0x0000;
+                                data[i][1] |= latticeRgb[i][2] & 0x00FF;
+                                break;
+                        }
+
+                        for(j = 7; j >= 0; j--)
+                        {
+                            if(latticeRgbIntensityIndex[i][k] > latticeRgbIntensity[i][k][j])
+                            {
+                                switch(k)
+                                {
+                                    case 0:
+                                        data[i][0] &= ~(1 << j);
+                                        break;
+                                    case 1:
+                                        data[i][0] &= ~(1 << (j + 8));
+                                        break;
+                                    case 2:
+                                        data[i][1] &= ~(1 << j);
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    if(data[i][k] != data0[i][k])
+                    {
+                        sendSpiFlag = TRUE;
+                        data0[i][k] = data[i][k];
+                    }
+
+                    latticeRgbIntensityIndex[i][k]++;
+                    if(latticeRgbIntensityIndex[i][k] >= 100)
+                        latticeRgbIntensityIndex[i][k] = 0;
                 }
-            }
-            else
-                data[k] = 0;
+                break;
+            case 16:
+                for(k = MAX_RGB_LAYER - 1; k >= 0; k--)
+                {
+                    if(latticeRgbOn[i][k])
+                    {
+                        data[i][k] = latticeRgb[i][k];
+                        for(j = 15; j >= 0; j--)
+                        {
+                            if(latticeRgbIntensityIndex[i][k] > latticeRgbIntensity[i][k][j])
+                                data[i][k] &= ~(1 << j);
+                        }
+                    }
 
-            if(data[k] != data0[k])
-            {
-                sendSpiFlag = TRUE;
-                data0[k] = data[k];
-            }
+                    if(data[i][k] != data0[i][k])
+                    {
+                        sendSpiFlag = TRUE;
+                        data0[i][k] = data[i][k];
+                    }
 
-            latticeRgbIntensityIndex[i][k]++;
-            if(latticeRgbIntensityIndex[i][k] >= 100)
-                latticeRgbIntensityIndex[i][k] = 0;
+                    latticeRgbIntensityIndex[i][k]++;
+                    if(latticeRgbIntensityIndex[i][k] >= 100)
+                        latticeRgbIntensityIndex[i][k] = 0;
+                }
+                break;
+            default:
+                break;
         }
+    }
 
-        if(sendSpiFlag)
-            sendSpiThreeWord(latticeRgbDrvSpiNum, data[0], data[1], data[2], 1);
+    if(sendSpiFlag)
+    {
+        for(i = numConnectedLatticeRgb - 1; i >= 0; i--)
+        {
+            switch(latticeRgbLedNum[i])
+            {
+                case 8:
+                    sendSpiTwoWord(latticeRgbDrvSpiNum, data[i][0], data[i][1], 1);
+                    break;
+                case 16:
+                    sendSpiThreeWord(latticeRgbDrvSpiNum, data[i][0], data[i][1], data[i][2], 1);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     outputPort(pin_load, LOW);

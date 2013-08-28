@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.7 2013/07/10
+ * button.h,v.0.8 2013/08/02
  */
 
 #ifndef BUTTON_H
@@ -60,8 +60,12 @@ BOOL getLatticeLedOn(BYTE index);
 
 void setInitLatticeRgbDrvFlag(BOOL flag);
 BOOL getInitLatticeRgbDrvFlag(void);
+void setNumConnectedLatticeRgbPad(BYTE num);
+BYTE getNumConnectedLatticeRgbPad(void);
 void setLatticeRgbDriverSpiNumber(BYTE num);
 BYTE getLatticeRgbDriverSpiNumber(void);
+void setLatticeRgbLedNumber(BYTE index, BYTE num);
+BYTE getLatticeRgbLedNumber(BYTE index);
 void setLatticeRgb(BYTE index, BYTE layer, WORD data);
 WORD getLatticeRgb(BYTE index, BYTE layer);
 void setLatticeRgbIntensity(BYTE index0, BYTE layer, BYTE index1, BYTE value);
@@ -70,7 +74,7 @@ void setLatticeRgbOn(BYTE index, BYTE layer, BOOL flag);
 BOOL getLatticeRgbOn(BYTE index, BYTE layer);
 
 void buttonInit(void);
-BOOL buttonCheck(BYTE row, BYTE index);
+BOOL buttonCheck(BYTE index0, BYTE row, BYTE index);
 void sendPad16(void);
 void latticeLedHandle(void);
 void latticeRgbHandle(void);
