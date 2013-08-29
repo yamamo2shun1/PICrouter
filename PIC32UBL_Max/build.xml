@@ -8,7 +8,7 @@
     <path id="hidapi.classpath">
         <pathelement location="bin"/>
         <pathelement location="${ANT_HOME}"/>
-        <pathelement location="/Applications/Max6/Cycling '74/java/lib/max.jar"/>
+        <pathelement location="/Applications/Max 6.1/Cycling '74/java/lib/max.jar"/>
     </path>
 
     <target name="init">
