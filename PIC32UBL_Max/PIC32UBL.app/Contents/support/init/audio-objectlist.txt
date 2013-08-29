@@ -1,8 +1,11 @@
+max oblist "MSP Analysis" average~;
+max oblist "MSP Analysis" avg~;
 max oblist "MSP Analysis" capture~;
 max oblist "MSP Analysis" change~;
 max oblist "MSP Analysis" count~;
 max oblist "MSP Analysis" edge~;
 max oblist "MSP Analysis" filterdetail;
+max oblist "MSP Analysis" fzero~;
 max oblist "MSP Analysis" maximum~;
 max oblist "MSP Analysis" minimum~;
 max oblist "MSP Analysis" minmax~;

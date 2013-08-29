@@ -51,6 +51,14 @@
       "Right-to-Left"
     ]
   },
+  "b": {
+    "digest": "Output a bang from many outlets",
+    "module": "max",
+    "category": [
+      "Right-to-Left"
+    ],
+    "alias": "bangbang"
+  },
   "bendin": {
     "digest": "Output MIDI pitch bend values",
     "module": "max",
@@ -186,6 +194,14 @@
       "Data"
     ]
   },
+  "f": {
+    "digest": "Store a decimal number",
+    "module": "max",
+    "category": [
+      "Data"
+    ],
+    "alias": "float"
+  },
   "follow": {
     "digest": "Compare a live performance to a recorded performance",
     "module": "max",
@@ -264,6 +280,14 @@
     "category": [
       "Data"
     ]
+  },
+  "i": {
+    "digest": "Store an integer value",
+    "module": "max",
+    "category": [
+      "Data"
+    ],
+    "alias": "int"
   },
   "jbox": {
     "digest": "Common Box Attributes",
@@ -466,6 +490,15 @@
       "Patching"
     ]
   },
+  "p": {
+    "digest": "Create a subpatch within a patch",
+    "module": "max",
+    "category": [
+      "Control",
+      "Patching"
+    ],
+    "alias": "patcher"
+  },
   "pcontrol": {
     "digest": "Open and close subwindows",
     "module": "max",
@@ -552,6 +585,14 @@
       "Messages"
     ]
   },
+  "r": {
+    "digest": "Receive messages without patch cords",
+    "module": "max",
+    "category": [
+      "Messages"
+    ],
+    "alias": "receive"
+  },
   "route": {
     "digest": "Select outlet based on input matching",
     "module": "max",
@@ -580,12 +621,28 @@
       "Control"
     ]
   },
+  "sel": {
+    "digest": "Output bangs based on input matching",
+    "module": "max",
+    "category": [
+      "Control"
+    ],
+    "alias": "select"
+  },
   "send": {
     "digest": "Send messages without patch cords",
     "module": "max",
     "category": [
       "Messages"
     ]
+  },
+  "s": {
+    "digest": "Send messages without patch cords",
+    "module": "max",
+    "category": [
+      "Messages"
+    ],
+    "alias": "send"
   },
   "seq": {
     "digest": "Sequencer for recording and playing MIDI data",
@@ -673,6 +730,15 @@
       "Right-to-Left"
     ]
   },
+  "t": {
+    "digest": "Send input to many places",
+    "module": "max",
+    "category": [
+      "Control",
+      "Right-to-Left"
+    ],
+    "alias": "trigger"
+  },
   "unpack": {
     "digest": "Break a list into individual messages",
     "module": "max",
@@ -686,6 +752,14 @@
     "category": [
       "Data"
     ]
+  },
+  "v": {
+    "digest": "Share a number with other objects",
+    "module": "max",
+    "category": [
+      "Data"
+    ],
+    "alias": "value"
   },
   "absolutepath": {
     "digest": "Convert a file name to an absolute path",
@@ -1894,6 +1968,13 @@
       "Notes"
     ]
   },
+  "pong": {
+    "digest": "Range limiting",
+    "module": "max",
+    "category": [
+      "Math"
+    ]
+  },
   "pow": {
     "digest": "Computes input to the nth power",
     "module": "max",
@@ -2276,7 +2357,7 @@
     }
   },
   "thresh": {
-    "digest": "Combine messages when received close together",
+    "digest": "Combine numbers and lists when received close together",
     "module": "max",
     "category": [
       "Lists",
@@ -6286,7 +6367,7 @@
     ]
   },
   "jit.rgb2hsl": {
-    "digest": "Convert HSL to RGB",
+    "digest": "Convert RGB to HSL",
     "module": "jit",
     "category": [
       "Jitter Colorspace"
@@ -6840,10 +6921,10 @@
     ]
   },
   "live.toggle": {
-    "digest": "TEXT_HERE",
-    "module": "MissingModule",
+    "digest": "Switch between off and on (0/1)",
+    "module": "m4l",
     "category": [
-      "MissingCategory"
+      "M4L U/I"
     ]
   },
   "midiselect": {

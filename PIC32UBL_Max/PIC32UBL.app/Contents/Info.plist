@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>10K549</string>
+	<string>12D78</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDocumentTypes</key>
@@ -146,6 +146,23 @@
 			<string>Viewer</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>au</string>
+				<string>snd</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>AIFF.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>AU audio file</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>ULAW</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
 			<key>CFBundleTypeIconFile</key>
 			<string>Collective.icns</string>
 			<key>CFBundleTypeName</key>
@@ -265,26 +282,6 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>amxd</string>
-			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>LiveAMP.icns</string>
-			<key>CFBundleTypeName</key>
-			<string>Max device file</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>amxd</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSTypeIsPackage</key>
-			<false/>
-			<key>NSPersistentStoreTypeKey</key>
-			<string>XML</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -482,11 +479,53 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>json</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>JSON File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>JSON</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>yaml</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>YAML File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>YAML</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>yml</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>YAML File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>YAML</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>PIC32UBL</string>
 	<key>CFBundleGetInfoString</key>
-	<string>6.0.7, Copyright 2012 Cycling '74</string>
+	<string>6.1.3, Copyright 2012 Cycling '74</string>
 	<key>CFBundleIconFile</key>
 	<string>Max.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -494,30 +533,37 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
-	<string>Max Runtime 6.0.7 (build a1f899e), Copyright 2012 Cycling '74</string>
+	<string>Max Runtime 6.1.3 (build ac9dafd), Copyright 2012 Cycling '74</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>6.0.7 (a1f899e)</string>
+	<string>6.1.3 (ac9dafd)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>6.0.7</string>
+	<string>6.1.3</string>
 	<key>CSResourcesFileMapped</key>
 	<false/>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvmgcc42</string>
 	<key>DTPlatformBuild</key>
-	<string>10M2518</string>
+	<string>4H1003</string>
 	<key>DTPlatformVersion</key>
-	<string>PG</string>
+	<string>GM</string>
 	<key>DTSDKBuild</key>
-	<string>9L31a</string>
-	<key>DTSDKName</key>
-	<string>macosx10.5</string>
-	<key>DTXcode</key>
-	<string>0400</string>
-	<key>DTXcodeBuild</key>
 	<string>10M2518</string>
+	<key>DTSDKName</key>
+	<string>macosx10.6</string>
+	<key>DTXcode</key>
+	<string>0462</string>
+	<key>DTXcodeBuild</key>
+	<string>4H1003</string>
+	<key>LSArchitecturePriority</key>
+	<array>
+		<string>i386</string>
+		<string>x86_64</string>
+	</array>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 </dict>
 </plist>

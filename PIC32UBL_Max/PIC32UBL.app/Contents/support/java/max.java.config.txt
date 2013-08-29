@@ -57,5 +57,7 @@ max.jvm.option -Xmx256m
 ; max.jvm.option -Xrunjdwp:transport=dt_socket\,address=8074\,server=y\,suspend=n ; 
 ; max.jvm.option -XX:-UseSharedSpaces ;
 
-
-
+; 1 = compatible mode (default in 64bit) ;
+; 2 = hi performance mode (default in 32bit) ;
+; hi performance mode for 64 bit is only supported with a JavaVM > 6u33 (where -XX:+UseCompressedOops is default) ;
+; mxj.msp.mode 2 ;

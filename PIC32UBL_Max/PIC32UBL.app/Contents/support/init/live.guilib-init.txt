@@ -1,4 +1,4 @@
-max startmaxserver mfl2;
+max startmaxserver;
 max objectfile live.arrows live.guilib live.arrows;
 max db.object_addinternal live.arrows;
 max objectfile live.button live.guilib live.button;

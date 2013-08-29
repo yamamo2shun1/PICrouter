@@ -132,6 +132,7 @@ max db.addvirtual alias r receive;
 max db.addvirtual alias del delay;
 max db.addvirtual alias sel select;
 max db.addvirtual alias qmetro metro;
+max db.addvirtual alias qlim speedlim;
 max db.addvirtual alias clocker metro;
 max db.addvirtual alias ggate gswitch2;
 

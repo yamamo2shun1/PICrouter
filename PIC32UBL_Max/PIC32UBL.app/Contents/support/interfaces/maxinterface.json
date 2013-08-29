@@ -2217,7 +2217,7 @@
 			"commands_windows" : [ "minimizeall", "restoreall", "sendwindowtoback", "hidesubs", "-", "bringalltofront", "-", "maxwindow", "magnifier", "showclue", "window" ],
 			"commands_mac" : [ "minimize", "zoomwindow", "sendwindowtoback", "hidesubs", "-", "bringalltofront", "-", "maxwindow", "magnifier", "showclue", "window" ],
 			"commands_runtime_windows" : [ "minimizeall", "restoreall", "sendwindowtoback", "-", "bringalltofront", "-", "maxwindow", "window" ],
-			"commands_runtime_mac" : [ "minimize", "zoomwindow", "sendwindowtoback", "hidesubs", "-", "bringalltofront", "-", "maxwindow", "window" ] 
+			"commands_runtime_mac" : [ "minimize", "zoomwindow", "sendwindowtoback", "-", "bringalltofront", "-", "maxwindow", "window" ] 
 		},
 		{
 			"id" : "extrasmenu",

@@ -915,6 +915,10 @@
         "name": "poly",
         "digest": "Allocate notes to different voices"
       },
+      "pong.maxref.xml": {
+        "name": "pong",
+        "digest": "Range limiting"
+      },
       "pow.maxref.xml": {
         "name": "pow",
         "digest": "Computes input to the nth power"
@@ -1101,7 +1105,7 @@
       },
       "thresh.maxref.xml": {
         "name": "thresh",
-        "digest": "Combine messages when received close together"
+        "digest": "Combine numbers and lists when received close together"
       },
       "timepoint.maxref.xml": {
         "name": "timepoint",
@@ -2669,7 +2673,7 @@
       },
       "jit.rgb2hsl.maxref.xml": {
         "name": "jit.rgb2hsl",
-        "digest": "Convert HSL to RGB"
+        "digest": "Convert RGB to HSL"
       },
       "jit.rgb2luma.maxref.xml": {
         "name": "jit.rgb2luma",
@@ -2927,7 +2931,7 @@
       },
       "live.toggle.maxref.xml": {
         "name": "live.toggle",
-        "digest": "TEXT_HERE"
+        "digest": "Switch between off and on (0/1)"
       },
       "midiselect.maxref.xml": {
         "name": "midiselect",
@@ -4050,6 +4054,9 @@
       "files.maxvig.xml": {
         "name": "File Browser and Search Path"
       },
+      "filetypes.maxvig.xml": {
+        "name": "Filetypes Recognized in Max"
+      },
       "find.maxvig.xml": {
         "name": "Finding Objects in a Patcher"
       },
@@ -4231,7 +4238,7 @@
         "name": "Max for Live Abstractions"
       },
       "live_resources_exampledevices.maxvig.xml": {
-        "name": "Big Three Example Devices"
+        "name": "Max For Live Example Devices"
       },
       "live_resources_pluggo.maxvig.xml": {
         "name": "Pluggo for Live Devices"
@@ -4262,6 +4269,9 @@
       },
       "matrix_probe.maxvig.xml": {
         "name": "Matrix Probe"
+      },
+      "max_64_limitations.maxvig.xml": {
+        "name": "64-bit Issues and Limitations"
       },
       "max_alphabetical.maxvig.xml": {
         "name": "Max Object Alphabetical Listing"
@@ -4371,11 +4381,38 @@
       "presentation_mode.maxvig.xml": {
         "name": "Presentation Mode"
       },
-      "project_window.maxvig.xml": {
-        "name": "The Project Window"
-      },
       "projects.maxvig.xml": {
         "name": "About Projects"
+      },
+      "projects_addingfiles.maxvig.xml": {
+        "name": "Adding and Removing Files to/from Projects"
+      },
+      "projects_anatomy.maxvig.xml": {
+        "name": "Anatomy of the Project Window"
+      },
+      "projects_consolidate.maxvig.xml": {
+        "name": "The Manage Project Menu"
+      },
+      "projects_creating.maxvig.xml": {
+        "name": "Creating a Project"
+      },
+      "projects_devices.maxvig.xml": {
+        "name": "Max for Live Device Projects"
+      },
+      "projects_editingfiles.maxvig.xml": {
+        "name": "Editing Files in a Project"
+      },
+      "projects_openactions.maxvig.xml": {
+        "name": "Project Open Actions"
+      },
+      "projects_searchpath.maxvig.xml": {
+        "name": "Project Search Paths"
+      },
+      "projects_searchpath2.maxvig.xml": {
+        "name": "Project Search Path Example"
+      },
+      "projects_settings.maxvig.xml": {
+        "name": "Project Settings"
       },
       "prototypes.maxvig.xml": {
         "name": "Prototypes"
@@ -4585,6 +4622,10 @@
         "name": "Eigen license",
         "category": "Unlisted"
       },
+      "license-gle.maxvig.xml": {
+        "name": "GLE license",
+        "category": "Unlisted"
+      },
       "license-llvm.maxvig.xml": {
         "name": "LLVM license",
         "category": "Unlisted"
@@ -4599,6 +4640,10 @@
       },
       "license-openexr.maxvig.xml": {
         "name": "OpenEXR license",
+        "category": "Unlisted"
+      },
+      "license-utf8proc.maxvig.xml": {
+        "name": "utf8proc license",
         "category": "Unlisted"
       },
       "license-zlib.maxvig.xml": {
