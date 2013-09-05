@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.4.0 2013/08/28
+ * osc.h,v.1.5.0 2013/09/05
  */
 
 #ifndef OSC_H
@@ -222,6 +222,8 @@ extern const char msgReadNvmData[];
 extern const char msgClearNvmData[];
 extern const char msgSoftReset[];
 extern const char msgConfiguration[];
+extern const char msgDiscoverDevices[];
+extern const char msgDiscoveredDevice[];
 extern const char msgDebug[];
 extern const char msgError[];
 extern const char msgVersion[];
@@ -249,6 +251,8 @@ void setInitReceiveFlag(BOOL flag);
 BOOL getInitReceiveFlag(void);
 void setInitSendFlag(BOOL flag);
 BOOL getInitSendFlag(void);
+void setInitDiscoverFlag(BOOL flag);
+BOOL getInitDiscoverFlag(void);
 void setChCompletedFlag(BOOL flag);
 BOOL getChCompletedFlag(void);
 
@@ -268,13 +272,17 @@ char* getOSCHostName(void);
 void clearOSCHostName(void);
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number);
 BOOL openOSCReceivePort(WORD localPort);
+BOOL openDiscoverPort(void);
 BOOL isOSCSendPortOpened(void);
 BOOL isOSCReceivePortOpened(void);
+BOOL isDiscoverPortOpend(void);
 void closeOSCSendPort(void);
 void closeOSCReceivePort(void);
+void closeDiscoverPort(void);
 
 BOOL isOSCGetReady(void);
 BOOL isOSCPutReady(void);
+BOOL isDiscoverPutReady(void);
 
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
