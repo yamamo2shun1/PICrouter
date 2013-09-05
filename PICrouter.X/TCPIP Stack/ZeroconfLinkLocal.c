@@ -988,7 +988,7 @@ void ZeroconfLLProcess(void)
 #else
 				temp_IP_addr.Val = swapl(AppConfig.DefaultIPAddr.Val); 
 #endif
-				bDefaultIPTried = TRUE;
+                             bDefaultIPTried = TRUE;
 			}
 			else
 			{
