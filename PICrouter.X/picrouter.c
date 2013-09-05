@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.9.0 2013/08/28
+ * picrouter.c,v.1.10.0 2013/09/05
  */
 
 #include "picrouter.h"
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
     TickInit();
     InitAppConfig();
     StackInit();
-    ZeroconfLLInitialize();
+    //syama ZeroconfLLInitialize();
     mDNSInitialize(DEFAULT_HOST_NAME);
     mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
                         "_oscit._udp.local",       // type of the service
@@ -143,15 +143,15 @@ int main(int argc, char** argv) {
                             eth_state = 1;
                             break;
                         case 1:
-#endif
                             ZeroconfLLProcess();
                             eth_state = 1;// 2;
                             break;
                         case 1:// 2:
+#endif
                             mDNSProcess();
-                            eth_state = 2;// 3;
+                            eth_state = 1;// 3;
                             break;
-                        case 2:// 3:
+                        case 1:// 3:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
@@ -195,15 +195,15 @@ int main(int argc, char** argv) {
                             eth_state = 1;
                             break;
                         case 1:
-#endif
                             ZeroconfLLProcess();
                             eth_state = 1;// 2;
                             break;
                         case 1:// 2:
+#endif
                             mDNSProcess();
-                            eth_state = 2;// 3;
+                            eth_state = 1;// 3;
                             break;
-                        case 2:// 3:
+                        case 1:// 3:
                             DHCPServerTask();
                             eth_state = 0;
                             break;
@@ -4374,6 +4374,28 @@ void receiveOSCTask(void)
             else if(compareOSCAddress(msgGetPrefix))
             {
                 sendOSCMessage(sysPrefix, msgPrefix, "s", getOSCPrefix());
+            }
+            else if(compareOSCAddress(msgDiscoverDevices))
+            {
+                char hip[15], rip[15];
+
+                mT5IntEnable(0);
+
+                closeOSCSendPort();
+
+                sprintf(hip, "%d.%d.%d.%d", AppConfig.MyIPAddr.Val & 0xFF, (AppConfig.MyIPAddr.Val >> 8) & 0xFF, (AppConfig.MyIPAddr.Val >> 16) & 0xFF, (AppConfig.MyIPAddr.Val >> 24) & 0xFF);
+                sprintf(rip, "%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
+
+                while(!getInitDiscoverFlag())
+                    setInitDiscoverFlag(openDiscoverPort());
+
+                while(!isDiscoverPutReady());
+
+                sendOSCMessage(sysPrefix, msgDiscoveredDevice, "ssii", hip, rip, getLocalPort(), getRemotePort());
+
+                closeDiscoverPort();
+
+                mT5IntEnable(1);
             }
             else if(compareOSCAddress(msgSwitchUsbMode))
             {
