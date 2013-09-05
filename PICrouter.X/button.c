@@ -1276,14 +1276,21 @@ void latticeLedHandle(void)
 *******************************************************************************/
 void latticeRgbHandle(void)
 {
-    int i, j, k;
+#if 0
+    int i, j, k, l;
     BOOL sendSpiFlag = FALSE;
-    WORD data[MAX_PAD_NUM][MAX_RGB_LAYER] = {0};
+#else
+    static int i = -100;
+    int j, k, l;
+    static BOOL sendSpiFlag = FALSE;
+#endif
+
+    static WORD data[MAX_PAD_NUM][MAX_RGB_LAYER] = {0};
     static WORD data0[MAX_PAD_NUM][MAX_RGB_LAYER] = {0xFFFF};
 
-    outputPort(pin_load, HIGH);
-
+#if 0
     for(i = numConnectedLatticeRgb - 1; i >= 0; i--)
+#endif
     {
         switch(latticeRgbLedNum[i])
         {
@@ -1368,23 +1375,66 @@ void latticeRgbHandle(void)
         }
     }
 
+#if 0
     if(sendSpiFlag)
     {
-        for(i = numConnectedLatticeRgb - 1; i >= 0; i--)
+        outputPort(pin_load, HIGH);
+
+        for(l = numConnectedLatticeRgb - 1; l >= 0; l--)
         {
-            switch(latticeRgbLedNum[i])
+            switch(latticeRgbLedNum[l])
             {
                 case 8:
-                    sendSpiTwoWord(latticeRgbDrvSpiNum, data[i][0], data[i][1], 1);
+                    sendSpiTwoWord(latticeRgbDrvSpiNum, data[l][0], data[l][1], 1);
                     break;
                 case 16:
-                    sendSpiThreeWord(latticeRgbDrvSpiNum, data[i][0], data[i][1], data[i][2], 1);
+                    sendSpiThreeWord(latticeRgbDrvSpiNum, data[l][0], data[l][1], data[l][2], 1);
                     break;
                 default:
                     break;
             }
         }
+        outputPort(pin_load, LOW);
     }
+#endif
 
-    outputPort(pin_load, LOW);
+#if 1
+    if(i <= 0)
+#endif
+    {
+#if 1
+        if(sendSpiFlag)
+        {
+            outputPort(pin_load, HIGH);
+
+            for(l = numConnectedLatticeRgb - 1; l >= 0; l--)
+            {
+                switch(latticeRgbLedNum[l])
+                {
+                    case 8:
+                        sendSpiTwoWord(latticeRgbDrvSpiNum, data[l][0], data[l][1], 1);
+                        break;
+                    case 16:
+                        sendSpiThreeWord(latticeRgbDrvSpiNum, data[l][0], data[l][1], data[l][2], 1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            outputPort(pin_load, LOW);
+        }
+#endif
+
+#if 1
+        i = numConnectedLatticeRgb - 1;
+        sendSpiFlag = FALSE;
+        for(j = MAX_PAD_NUM - 1; j >= 0; j--)
+            for(k = MAX_RGB_LAYER - 1; k >= 0; k--)
+                data[j][k] = 0;
+#endif
+    }
+#if 1
+    else
+        i--;
+#endif
 }
