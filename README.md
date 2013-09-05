@@ -112,7 +112,7 @@ Development
 Bootloader Application
 ------
 * PIC32UBL.exe (Win / Download is [here][an1388])
-* PIC32UBL_Max.app (Mac / See the folder "PICrouter/PIC32UBL_Max")
+* PIC32UBL.maxpat (Mac / See the readme.txt in the folder "PICrouter/PIC32UBL_Max")
 
 Schematic and Board (current ver. is 1.00)
 --------------------------------
