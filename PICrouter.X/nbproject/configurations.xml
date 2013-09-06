@@ -160,11 +160,11 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories" value=".;.\Include;.\USB"/>
-        <property key="generate-16-bit-code" value="false"/>
-        <property key="isolate-each-function" value="false"/>
+        <property key="generate-16-bit-code" value="true"/>
+        <property key="isolate-each-function" value="true"/>
         <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value="-O3"/>
-        <property key="place-data-into-section" value="false"/>
+        <property key="place-data-into-section" value="true"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
         <property key="preprocessor-macros" value=""/>
@@ -190,7 +190,7 @@
         <property key="omit-forms" value="false"/>
         <property key="preprocessor-macros" value=""/>
         <property key="warning-level" value=""/>
-        <appendMe value="-gdwarf-2 "/>
+        <appendMe value="-gdwarf-2"/>
       </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
@@ -198,7 +198,7 @@
         <property key="exclude-floating-point-library" value="false"/>
         <property key="exclude-standard-libraries" value="false"/>
         <property key="extra-lib-directories" value=""/>
-        <property key="generate-16-bit-code" value="false"/>
+        <property key="generate-16-bit-code" value="true"/>
         <property key="generate-cross-reference-file" value="false"/>
         <property key="heap-size" value="15000"/>
         <property key="input-libraries" value=""/>
@@ -208,7 +208,7 @@
         <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value="-O3"/>
         <property key="preprocessor-macros" value=""/>
-        <property key="remove-unused-sections" value="false"/>
+        <property key="remove-unused-sections" value="true"/>
         <property key="report-memory-usage" value="false"/>
         <property key="stack-size" value="2048"/>
         <property key="symbol-stripping" value=""/>
@@ -226,7 +226,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exceptions" value="true"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value=""/>
+        <property key="extra-include-directories" value=".;Include;USB"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
@@ -243,6 +243,7 @@
       <C32Global>
         <property key="legacy-libc" value="false"/>
         <property key="save-temps" value="true"/>
+        <property key="wpo-lto" value="false"/>
       </C32Global>
       <ICD3PlatformTool>
         <property key="ADC 1" value="true"/>
@@ -302,6 +303,7 @@
         <property key="programoptions.preserveprogramrange.end" value="0x1d07ffff"/>
         <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
         <property key="programoptions.preserveuserid" value="false"/>
+        <property key="programoptions.testmodeentrymethod" value="VPPFirst"/>
         <property key="programoptions.usehighvoltageonmclr" value="false"/>
         <property key="programoptions.uselvpprogramming" value="false"/>
         <property key="voltagevalue" value="3.25"/>
