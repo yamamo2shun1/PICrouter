@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.5.0 2013/09/05
+ * osc.c,v.1.5.1 2013/09/06
  */
 
 #include "osc.h"
@@ -29,7 +29,7 @@ static BOOL initReceiveFlag = FALSE;
 static BOOL initSendFlag = FALSE;
 static BOOL initDiscoverFlag = FALSE;
 static BOOL chCompletedFlag = FALSE;
-static char* hostName = NULL;
+static char hostName[17] = "picrouter";
 static char* stdPrefix = NULL;
 
 // Remote IP Address Initialization
@@ -831,8 +831,13 @@ void clearOSCPrefix(void)
 *******************************************************************************/
 void setOSCHostName(char* host_name)
 {
-    hostName = (char *)calloc(strlen(host_name), sizeof(char));
-    memcpy(hostName, host_name, strlen(host_name));
+    BYTE hnlen = strlen(host_name);
+    //hostName = (char *)calloc(strlen(host_name), sizeof(char));
+    memset(hostName, 0, MAX_HOST_NAME_LEN + 1);
+    if(hnlen <= MAX_HOST_NAME_LEN)
+        memcpy(hostName, host_name, hnlen);
+    else
+        memcpy(hostName, host_name, MAX_HOST_NAME_LEN);
 }
 
 /*******************************************************************************
@@ -886,8 +891,9 @@ char* getOSCHostName(void)
 *******************************************************************************/
 void clearOSCHostName(void)
 {
-    free(hostName);
-    hostName = NULL;
+    memset(hostName, 0, MAX_HOST_NAME_LEN + 1);
+    //free(hostName);
+    //hostName = NULL;
 }
 
 /*******************************************************************************
@@ -1622,8 +1628,8 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
     char* fchar = NULL;
     char* cstr = NULL;
     int cstr_len = 0;
-    char str[128];
-    memset(str, 0, 128);
+    char str[MAX_MESSAGE_LEN];
+    memset(str, 0, MAX_MESSAGE_LEN);
 
     if(isOSCPutReady() || isDiscoverPutReady())
     {
@@ -1768,8 +1774,8 @@ void appendOSCMessageToBundle(const char* prefix, const char* command, const cha
     char* fchar = NULL;
     char* cstr = NULL;
     int cstr_len = 0;
-    char str[128];
-    memset(str, 0, 128);
+    char str[MAX_MESSAGE_LEN];
+    memset(str, 0, MAX_MESSAGE_LEN);
 
     sprintf(str, "%s%s", prefix, command);
 
