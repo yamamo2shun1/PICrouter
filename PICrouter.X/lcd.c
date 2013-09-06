@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * lcd.c,v.0.1.1 2013/07/10
+ * lcd.c,v.0.1.2 2013/09/06
  */
 
 #define __LCD_C
 
-#include <string.h>
-#include "Compiler.h"
-#include "GenericTypeDefs.h"
-#include "HardwareProfile.h"
+//#include <string.h>
+//#include "Compiler.h"
+//#include "GenericTypeDefs.h"
+//#include "HardwareProfile.h"
 #include "lcd.h"
-#include "iosetting.h"
+//#include "iosetting.h"
 
 BYTE lcdText[CHARS_NUM * LINE_NUM + 1];
 

@@ -16,11 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * lcd.h,v.0.1.1 2013/07/10
+ * lcd.h,v.0.1.2 2013/09/06
  */
 
 #ifndef __LCD_H
 #define __LCD_H
+
+#include <string.h>
+
+#include "Compiler.h"
+#include "GenericTypeDefs.h"
+#include "HardwareProfile.h"
+#include "iosetting.h"
 
 #define CHARS_NUM 20
 #define LINE_NUM 4
