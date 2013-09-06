@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.10.0 2013/09/05
+ * picrouter.c,v.1.10.1 2013/09/06
  */
 
 #include "picrouter.h"
@@ -71,11 +71,16 @@ int main(int argc, char** argv) {
     // PWM
     freq = 10000; // 10kHz
     width = GetSystemClock() / freq;
+#if 0//c99
+    for(int i0 = 0; i0 < PWM_NUM; i0++)
+        duty[i0] = 50;
+#else
     for(i = 0; i < PWM_NUM; i++)
         duty[i] = 50;
+#endif
 
     setOSCPrefix("/std");
-    setOSCHostName(DEFAULT_HOST_NAME);
+    setOSCHostName(getOSCHostName());
 
     // USB Initialization
     #if defined(USE_USB_BUS_SENSE_IO)
@@ -90,8 +95,8 @@ int main(int argc, char** argv) {
     InitAppConfig();
     StackInit();
     //syama ZeroconfLLInitialize();
-    mDNSInitialize(DEFAULT_HOST_NAME);
-    mDNSServiceRegister((const char *)DEFAULT_HOST_NAME, // base name of the service
+    mDNSInitialize(getOSCHostName());
+    mDNSServiceRegister((const char *)getOSCHostName(), // base name of the service
                         "_oscit._udp.local",       // type of the service
                         8080,                      // TCP or UDP port, at which this service is available
                         ((const BYTE *)""),        // TXT info
@@ -4322,8 +4327,8 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgGetHostMac))
             {
-                char macaddr[17] = {0};
-                sprintf(macaddr, "%X:%X:%X:%X:%X:%X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
+                char macaddr[18] = {0};
+                sprintf(macaddr, "%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
                 sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
             }
             else if(compareOSCAddress(msgSetHostPort))
@@ -4377,21 +4382,24 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgDiscoverDevices))
             {
-                char hip[15], rip[15];
+                char hip[22], rip[24], macaddr[26], hport[14], rport[16];
 
                 mT5IntEnable(0);
 
                 closeOSCSendPort();
 
-                sprintf(hip, "%d.%d.%d.%d", AppConfig.MyIPAddr.Val & 0xFF, (AppConfig.MyIPAddr.Val >> 8) & 0xFF, (AppConfig.MyIPAddr.Val >> 16) & 0xFF, (AppConfig.MyIPAddr.Val >> 24) & 0xFF);
-                sprintf(rip, "%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
+                sprintf(hip, "HostIP=%d.%d.%d.%d", AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], AppConfig.MyIPAddr.v[2], AppConfig.MyIPAddr.v[3]);
+                sprintf(rip, "RemoteIP=%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
+                sprintf(macaddr, "HostMAC=%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
+                sprintf(hport, "HostPort=%d", getLocalPort());
+                sprintf(rport, "RemotePort=%d", getRemotePort());
 
                 while(!getInitDiscoverFlag())
                     setInitDiscoverFlag(openDiscoverPort());
 
                 while(!isDiscoverPutReady());
 
-                sendOSCMessage(sysPrefix, msgDiscoveredDevice, "ssii", hip, rip, getLocalPort(), getRemotePort());
+                sendOSCMessage(sysPrefix, msgDiscoveredDevice, "sssss", hip, macaddr, hport, rip, rport);
 
                 closeDiscoverPort();
 
