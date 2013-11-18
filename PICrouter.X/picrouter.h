@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.10.1 2013/09/06
+ * picrouter.h,v.1.11.0 2013/11/18
  */
 
-#define CURRENT_VERSION "1.10.1"
+#define CURRENT_VERSION "1.11.0"
 
 #include <plib.h>
 #include <stdio.h>
@@ -51,6 +51,12 @@
 #include "analog.h"
 #include "encoder.h"
 #include "osc.h"
+
+//#define USE_SPI_SRAM
+#ifdef USE_SPI_SRAM
+#include "sram.h"
+#endif
+
 
 /** CONFIGURATION **************************************************/
 #pragma config UPLLEN    = ON       // USB PLL Enabled
@@ -222,7 +228,7 @@ BYTE midiVal  = 0;
 USB_VOLATILE BYTE msCounter;
 
 //PWM
-BOOL onTimer23 = FALSE;
+BOOL onTimer2 = FALSE;
 BOOL onSquare[PWM_NUM];
 LONG freq;
 LONG width;

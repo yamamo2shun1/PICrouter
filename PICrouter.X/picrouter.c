@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.10.1 2013/09/06
+ * picrouter.c,v.1.11.0 2013/11/18
  */
 
 #include "picrouter.h"
@@ -55,7 +55,11 @@ int main(int argc, char** argv) {
     initIOPorts();
     initAnalogVariables();
     initEncoderVariables();
-    
+
+#ifdef USE_SPI_SRAM
+    initSPI2ForSRAM();
+#endif
+
     initSW();
     initLEDs();
     buttonInit();
@@ -112,7 +116,7 @@ int main(int argc, char** argv) {
     LED_1_Off();
     LED_2_Off();
     DelayMs(200);
-
+    
     while(1)
     {
         currentState = SW_State();
@@ -813,24 +817,25 @@ void receiveOSCTask(void)
                 if(strcmp(state, "on") == 0)
                 {
                     LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer23)
+                    if(!onTimer2)
                     {
-                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                        onTimer23 = TRUE;
+                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                        ConfigIntTimer2(T2_INT_ON | T2_INT_PRIOR_2);//syama0
+                        onTimer2 = TRUE;
                     }
                     switch(index)
                     {
                         case 0:
-                            OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                            OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                             break;
                         case 1:
-                            OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                            OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                             break;
                         case 2:
-                            OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                            OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                             break;
                         case 3:
-                            OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                            OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                             break;
                     }
                     onSquare[index] = TRUE;
@@ -838,10 +843,10 @@ void receiveOSCTask(void)
                 else if(strcmp(state, "off") == 0)
                 {
                     onSquare[index] = FALSE;
-                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                     {
-                        CloseTimer23();
-                        onTimer23 = FALSE;
+                        CloseTimer2();
+                        onTimer2 = FALSE;
                     }
                     switch(index)
                     {
@@ -883,6 +888,9 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgSetPwmFreq))
             {
+                WORD index;
+                WORD period;//syama0
+
                 if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
                     freq = getIntArgumentAtIndex(0);
                 else
@@ -895,17 +903,28 @@ void receiveOSCTask(void)
                 {
                     freq = 20;
                 }
-                else if(freq > 44100)
+                else if(freq > 20000)
                 {
-                    freq = 44100;
+                    freq = 20000;
                 }
                 T2CONbits.TON = 0;
                 TMR2 = 0;
                 OC1CONbits.OCM = 0b000;
+                OC3CONbits.OCM = 0b000;
+                OC4CONbits.OCM = 0b000;
+                OC5CONbits.OCM = 0b000;
+
                 width = GetSystemClock() / freq;
                 PR2 = width;
                 OC1RS = width / 2;
+                OC3RS = width / 2;
+                OC4RS = width / 2;
+                OC5RS = width / 2;
+
                 OC1CONbits.OCM = 0b110;
+                OC3CONbits.OCM = 0b110;
+                OC4CONbits.OCM = 0b110;
+                OC5CONbits.OCM = 0b110;
                 T2CONbits.TON = 1;
             }
             else if(compareOSCAddress(msgGetPwmFreq))
@@ -2822,9 +2841,9 @@ void receiveOSCTask(void)
                 {
                     BYTE index = getIntArgumentAtIndex(0);
 
-                    if(index > 3)
+                    if(index > 4)
                     {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgLatticeRgbDrvPinSelect, ": too_long_string_length");
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbSize, ": too_long_string_length");
                         return;
                     }
 
@@ -3635,21 +3654,21 @@ void receiveOSCTask(void)
                 if(getIntArgumentAtIndex(0))
                 {
                     LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer23)
+                    if(!onTimer2)
                     {
-                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                        onTimer23 = TRUE;
+                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                        onTimer2 = TRUE;
                     }
-                    OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                     onSquare[0] = TRUE;
                 }
                 else
                 {
                     onSquare[0] = FALSE;
-                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                     {
-                        CloseTimer23();
-                        onTimer23 = FALSE;
+                        CloseTimer2();
+                        onTimer2 = FALSE;
                     }
                     CloseOC1();
                 }
@@ -3659,21 +3678,21 @@ void receiveOSCTask(void)
                 if(getIntArgumentAtIndex(0))
                 {
                     LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer23)
+                    if(!onTimer2)
                     {
-                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                        onTimer23 = TRUE;
+                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                        onTimer2 = TRUE;
                     }
-                    OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                     onSquare[1] = TRUE;
                 }
                 else
                 {
                     onSquare[1] = FALSE;
-                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                     {
-                        CloseTimer23();
-                        onTimer23 = FALSE;
+                        CloseTimer2();
+                        onTimer2 = FALSE;
                     }
                     CloseOC3();
                 }
@@ -3683,21 +3702,21 @@ void receiveOSCTask(void)
                 if(getIntArgumentAtIndex(0))
                 {
                     LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer23)
+                    if(!onTimer2)
                     {
-                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                        onTimer23 = TRUE;
+                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                        onTimer2 = TRUE;
                     }
-                    OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                     onSquare[2] = TRUE;
                 }
                 else
                 {
                     onSquare[2] = FALSE;
-                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                     {
-                        CloseTimer23();
-                        onTimer23 = FALSE;
+                        CloseTimer2();
+                        onTimer2 = FALSE;
                     }
                     CloseOC4();
                 }
@@ -3707,21 +3726,21 @@ void receiveOSCTask(void)
                 if(getIntArgumentAtIndex(0))
                 {
                     LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer23)
+                    if(!onTimer2)
                     {
-                        OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                        onTimer23 = TRUE;
+                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                        onTimer2 = TRUE;
                     }
-                    OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                    OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                     onSquare[3] = TRUE;
                 }
                 else
                 {
                     onSquare[3] = FALSE;
-                    if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                     {
-                        CloseTimer23();
-                        onTimer23 = FALSE;
+                        CloseTimer2();
+                        onTimer2 = FALSE;
                     }
                     CloseOC5();
                 }
@@ -3740,17 +3759,26 @@ void receiveOSCTask(void)
                 {
                     freq = 20;
                 }
-                else if(freq > 44100)
+                else if(freq > 20000)
                 {
-                    freq = 44100;
+                    freq = 20000;
                 }
                 T2CONbits.TON = 0;
                 TMR2 = 0;
                 OC1CONbits.OCM = 0b000;
+                OC3CONbits.OCM = 0b000;
+                OC4CONbits.OCM = 0b000;
+                OC5CONbits.OCM = 0b000;
                 width = GetSystemClock() / freq;
                 PR2 = width;
                 OC1RS = width / 2;
+                OC3RS = width / 2;
+                OC4RS = width / 2;
+                OC5RS = width / 2;
                 OC1CONbits.OCM = 0b110;
+                OC3CONbits.OCM = 0b110;
+                OC4CONbits.OCM = 0b110;
+                OC5CONbits.OCM = 0b110;
                 T2CONbits.TON = 1;
             }
             else if(compareOSCAddress(msgSetPwmDuty1))
@@ -4942,24 +4970,24 @@ void HIDControlTask(void)
                     if(ReceivedHidDataBuffer[3] == 1)
                     {
                         LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        if(!onTimer23)
+                        if(!onTimer2)
                         {
-                            OpenTimer23(T23_ON | T23_SOURCE_INT | T23_PS_1_1, width);
-                            onTimer23 = TRUE;
+                            OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                            onTimer2 = TRUE;
                         }
                         switch(index)
                         {
                             case 0:
-                                OpenOC1(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                                 break;
                             case 1:
-                                OpenOC3(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                                 break;
                             case 2:
-                                OpenOC4(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                                 break;
                             case 3:
-                                OpenOC5(OC_ON | OC_TIMER_MODE32 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                                OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
                                 break;
                         }
                         onSquare[index] = TRUE;
@@ -4967,10 +4995,10 @@ void HIDControlTask(void)
                     else if(ReceivedHidDataBuffer[3] == 0)
                     {
                         onSquare[index] = FALSE;
-                        if(onTimer23 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+                        if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
                         {
-                            CloseTimer23();
-                            onTimer23 = FALSE;
+                            CloseTimer2();
+                            onTimer2 = FALSE;
                         }
                         switch(index)
                         {
@@ -5013,9 +5041,9 @@ void HIDControlTask(void)
                     {
                         freq = 20;
                     }
-                    else if(freq > 44100)
+                    else if(freq > 20000)
                     {
-                        freq = 44100;
+                        freq = 20000;
                     }
                     T2CONbits.TON = 0;
                     TMR2 = 0;
@@ -6033,6 +6061,7 @@ void USB_CDC_RxTxHandler(void)
     }
 }
 #endif
+
 
 // ******************************************************************************************************
 // ************** USB Callback Functions ****************************************************************
