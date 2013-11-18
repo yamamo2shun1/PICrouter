@@ -6,60 +6,61 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="Include" projectFiles="true">
         <logicalFolder name="f1" displayName="TCP/IP Stack" projectFiles="true">
-          <itemPath>Include/TCPIP Stack/ARP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhy.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyDP83848.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ETHPIC32ExtPhyRegs.h</itemPath>
-          <itemPath>Include/TCPIP Stack/Helpers.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ICMP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/IP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/MAC.h</itemPath>
-          <itemPath>Include/TCPIP Stack/StackTsk.h</itemPath>
-          <itemPath>Include/TCPIP Stack/TCPIP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/Tick.h</itemPath>
-          <itemPath>Include/TCPIP Stack/UDP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
-          <itemPath>Include/TCPIP Stack/DHCP.h</itemPath>
-          <itemPath>Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
-          <itemPath>Include/TCPIP Stack/NBNS.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ARP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/DHCP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ETHPIC32ExtPhy.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ETHPIC32ExtPhyDP83848.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ETHPIC32ExtPhyRegs.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/Helpers.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ICMP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/IP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/MAC.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/NBNS.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/StackTsk.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/TCPIP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/Tick.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/UDP.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ZeroconfHelper.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ZeroconfLinkLocal.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/TCPIP Stack/ZeroconfMulticastDNS.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="USB" projectFiles="true">
-          <itemPath>Include/USB/usb.h</itemPath>
-          <itemPath>Include/USB/usb_ch9.h</itemPath>
-          <itemPath>Include/USB/usb_common.h</itemPath>
-          <itemPath>Include/USB/usb_device.h</itemPath>
-          <itemPath>Include/USB/usb_function_midi.h</itemPath>
-          <itemPath>Include/USB/usb_hal.h</itemPath>
-          <itemPath>Include/USB/usb_hal_pic32.h</itemPath>
-          <itemPath>Include/USB/usb_function_hid.h</itemPath>
-          <itemPath>Include/USB/usb_host.h</itemPath>
-          <itemPath>Include/USB/usb_host_midi.h</itemPath>
-          <itemPath>Include/USB/usb_host_hid.h</itemPath>
-          <itemPath>Include/USB/usb_host_hid_parser.h</itemPath>
-          <itemPath>Include/USB/usb_host_cdc.h</itemPath>
-          <itemPath>Include/USB/usb_host_cdc_interface.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_ch9.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_common.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_device.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_function_hid.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_function_midi.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_hal.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_hal_pic32.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host_cdc.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host_cdc_interface.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host_hid.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host_hid_parser.h</itemPath>
+          <itemPath>../tkrworks-libs/Include/USB/usb_host_midi.h</itemPath>
         </logicalFolder>
-        <itemPath>Include/Compiler.h</itemPath>
-        <itemPath>Include/GenericTypeDefs.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/Compiler.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/GenericTypeDefs.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/analog.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/button.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/encoder.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/HardwareProfile.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/iosetting.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/lcd.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/osc.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/sram.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/TCPIPConfig.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/TimeDelay.h</itemPath>
+        <itemPath>../tkrworks-libs/Include/usb_config.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="USB" projectFiles="true">
-        <itemPath>USB/usb_device_local.h</itemPath>
-        <itemPath>USB/usb_hal_local.h</itemPath>
-        <itemPath>USB/usb_pic32.h</itemPath>
-        <itemPath>USB/usb_host_local.h</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_device_local.h</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_hal_local.h</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_local.h</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_pic32.h</itemPath>
       </logicalFolder>
-      <itemPath>HardwareProfile.h</itemPath>
-      <itemPath>TCPIPConfig.h</itemPath>
-      <itemPath>usb_config.h</itemPath>
       <itemPath>picrouter.h</itemPath>
-      <itemPath>button.h</itemPath>
-      <itemPath>analog.h</itemPath>
-      <itemPath>osc.h</itemPath>
-      <itemPath>iosetting.h</itemPath>
-      <itemPath>encoder.h</itemPath>
-      <itemPath>TimeDelay.h</itemPath>
-      <itemPath>lcd.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -69,44 +70,48 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f3" displayName="Common" projectFiles="true">
+        <itemPath>../tkrworks-libs/Common/analog.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/button.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/encoder.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/iosetting.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/lcd.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/osc.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/sram.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/TimeDelay.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/usb_config.c</itemPath>
+        <itemPath>../tkrworks-libs/Common/usb_descriptors.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="TCP/IP Stack" projectFiles="true">
-        <itemPath>TCPIP Stack/ARP.c</itemPath>
-        <itemPath>TCPIP Stack/DHCP.c</itemPath>
-        <itemPath>TCPIP Stack/DHCPs.c</itemPath>
-        <itemPath>TCPIP Stack/ETHPIC32ExtPhy.c</itemPath>
-        <itemPath>TCPIP Stack/ETHPIC32ExtPhyDP83848.c</itemPath>
-        <itemPath>TCPIP Stack/ETHPIC32IntMac.c</itemPath>
-        <itemPath>TCPIP Stack/Helpers.c</itemPath>
-        <itemPath>TCPIP Stack/ICMP.c</itemPath>
-        <itemPath>TCPIP Stack/IP.c</itemPath>
-        <itemPath>TCPIP Stack/StackTsk.c</itemPath>
-        <itemPath>TCPIP Stack/Tick.c</itemPath>
-        <itemPath>TCPIP Stack/UDP.c</itemPath>
-        <itemPath>TCPIP Stack/ZeroconfHelper.c</itemPath>
-        <itemPath>TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
-        <itemPath>TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
-        <itemPath>TCPIP Stack/NBNS.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ARP.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/DHCP.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/DHCPs.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhy.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhyDP83848.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ETHPIC32IntMac.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/Helpers.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ICMP.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/IP.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/NBNS.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/StackTsk.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/Tick.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/UDP.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ZeroconfHelper.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ZeroconfLinkLocal.c</itemPath>
+        <itemPath>../tkrworks-libs/TCPIP Stack/ZeroconfMulticastDNS.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB" projectFiles="true">
-        <itemPath>USB/usb_device.c</itemPath>
-        <itemPath>USB/usb_function_hid.c</itemPath>
-        <itemPath>USB/usb_host.c</itemPath>
-        <itemPath>USB/usb_host_midi.c</itemPath>
-        <itemPath>USB/usb_host_hid.c</itemPath>
-        <itemPath>USB/usb_host_hid_parser.c</itemPath>
-        <itemPath>USB/usb_host_cdc.c</itemPath>
-        <itemPath>USB/usb_host_cdc_interface.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_device.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_function_hid.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_cdc.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_cdc_interface.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_hid.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_hid_parser.c</itemPath>
+        <itemPath>../tkrworks-libs/USB/usb_host_midi.c</itemPath>
       </logicalFolder>
-      <itemPath>usb_descriptors.c</itemPath>
+      <itemPath>test.c</itemPath>
       <itemPath>picrouter.c</itemPath>
-      <itemPath>button.c</itemPath>
-      <itemPath>analog.c</itemPath>
-      <itemPath>osc.c</itemPath>
-      <itemPath>iosetting.c</itemPath>
-      <itemPath>encoder.c</itemPath>
-      <itemPath>usb_config.c</itemPath>
-      <itemPath>TimeDelay.c</itemPath>
-      <itemPath>lcd.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -119,6 +124,13 @@
     <Elem>USB</Elem>
     <Elem>TCPIP Stack</Elem>
     <Elem>TCPIP</Elem>
+    <Elem>../mruby-master/include</Elem>
+    <Elem>../mruby-master/src</Elem>
+    <Elem>../mruby-master/build/PICrouter/mrblib</Elem>
+    <Elem>../tkrworks-libs/Include</Elem>
+    <Elem>../tkrworks-libs/USB</Elem>
+    <Elem>../tkrworks-libs/Common</Elem>
+    <Elem>../tkrworks-libs/TCPIP Stack</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -130,12 +142,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.21</languageToolchainVersion>
+        <languageToolchainVersion>1.22</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibFileItem>../mruby-master/build/PICrouter/lib/libmruby.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <loading>
@@ -159,7 +172,8 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value=".;.\Include;.\USB"/>
+        <property key="extra-include-directories"
+                  value=".;..\tkrworks-libs\Include;..\tkrworks-libs\USB"/>
         <property key="generate-16-bit-code" value="true"/>
         <property key="isolate-each-function" value="true"/>
         <property key="make-warnings-into-errors" value="false"/>
@@ -171,6 +185,7 @@
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="use-cci" value="false"/>
+        <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
       </C32>
       <C32-AS>
@@ -200,7 +215,7 @@
         <property key="extra-lib-directories" value=""/>
         <property key="generate-16-bit-code" value="true"/>
         <property key="generate-cross-reference-file" value="false"/>
-        <property key="heap-size" value="15000"/>
+        <property key="heap-size" value="16000"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value=""/>
@@ -238,6 +253,7 @@
         <property key="rtti" value="true"/>
         <property key="strict-ansi" value="false"/>
         <property key="use-cci" value="false"/>
+        <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
       </C32CPP>
       <C32Global>
