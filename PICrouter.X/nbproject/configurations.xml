@@ -148,7 +148,6 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>../mruby-master/build/PICrouter/lib/libmruby.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <loading>
