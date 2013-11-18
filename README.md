@@ -103,7 +103,7 @@ Pin Assign
 Development
 ------
 * Microchip [MPLABX] v1.85
-* Microchip [MPLAB XC32 Compiler] v1.21  
+* Microchip [MPLAB XC32 Compiler] v1.22  
   *To develop application, you can use free version.*
 
 [MPLABX]: http://www.microchip.com/pagehandler/en-us/family/mplabx/
@@ -135,7 +135,7 @@ Application Projects
 
 [AN1388]: http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836 "AN1388"
 
-#### PICrouter (current ver. is 1.10.1) Updated 2013/09/06  
+#### PICrouter (current ver. is 1.11.0) Updated 2013/11/18  
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
