@@ -29,7 +29,7 @@
 #include "TCPIP Stack/TCPIP.h"
 #include "HardwareProfile.h"
 
-//#define USE_SPI_SRAM
+#define USE_SPI_SRAM
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
