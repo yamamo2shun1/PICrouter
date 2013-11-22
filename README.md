@@ -34,6 +34,7 @@ PICrouter will be an useful with the following purpose.
 * Develop an OSC/MIDI/HID controller for music or visual.
 * Study a PIC32 microcontroller.
 * Study a communication with usb and ethernet.
+* Study a mruby(Support ONLY PIC32MX795F512H version)
 
 Demo
 
@@ -80,16 +81,17 @@ PICrouter is **Free Hardware** and **Free Software**.
 
 Specifications
 ------
-0. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client).
-1. Supported Open Sound Control.
-2. Supported the multicast address(224.0.0.1 and 224.0.0.251).
-3. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI & CDC composite).
-4. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
-5. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K)
-6. A/D port x14
-7. PWM output x4
-8. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
-9. 100mm x 33.5mm, 4-layers board
+0. Supported mruby(ONLY PIC32MX795F512H version)
+1. Supported mDNS(Bonjour on Mac OS X), DHCP(both server and client).
+2. Supported Open Sound Control.
+3. Supported the multicast address(224.0.0.1 and 224.0.0.251).
+4. Supported USB dual role function(DEVICE:MIDI & HID composite / HOST:MIDI & CDC composite).
+5. Supported [USB HID bootloader][an1388] on Mac OS X and Windows.
+6. PIC32MX675F512H(Freq:80MHz / FLASH:512K / RAM:64K) or PIC32MX795F512H(Freq:80MHz / FLASH:512K / RAM:128K)
+7. A/D port x14
+8. PWM output x4
+9. SPI x2, I2C x3, UART x1, JTAG x1 and CAN x1
+10. 100mm x 33.5mm, 4-layers board
 
 [an1388]:http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1824&appnote=en554836
 
@@ -139,6 +141,10 @@ Application Projects
   PICrouter is for Open Sound Control and USB Dual Role.  
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
+
+#### PICrouter for mruby (current ver. is 0.1.0) Updated 2013/11/22  
+  PICrouter for mruby supports mruby, Open Sound Control and USB Dual Role.  
+  PICrouter_795_mrb.X is this project folder.
   
 Tutorial (JP)
 --------------------------------
