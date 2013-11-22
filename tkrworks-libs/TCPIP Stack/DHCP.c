@@ -79,6 +79,7 @@
 *								untested Host Name option to DHCP request
 * Howard Schlunder		1/09/06	Fixed a DHCP renewal not renewing lease time bug
 * Howard Schlunder		3/16/07 Rewrote DHCP state machine
+*                       6/14/13 Increased DHCP_TIMEOUT to random exponential back-off.
 ********************************************************************/
 #define __DHCP_C
 
@@ -89,7 +90,7 @@
 #include "TCPIP Stack/TCPIP.h"
 
 // Defines how long to wait before a DHCP request times out
-#define DHCP_TIMEOUT				(2ul*TICK_SECOND)
+#define DHCP_BASE_TIMEOUT                (2ul)
 
 // Unique variables per interface
 typedef struct
@@ -109,6 +110,7 @@ typedef struct
 	    BYTE val;
 	} flags;
 	DWORD 				dwTimer;		// Tick timer value used for triggering future events after a certain wait period.
+	DWORD                dwBaseTime;        // Base timer for timeouts in seconds
 	DWORD				dwLeaseTime;	// DHCP lease time remaining, in seconds
 	DWORD				dwServerID;		// DHCP Server ID cache
 	IP_ADDR				tempIPAddress;	// Temporary IP address to use when no DHCP lease
@@ -237,6 +239,7 @@ void DHCPInit(BYTE vInterface)
 	}
 
 	// Reset state machine and flags to default values
+    DHCPClient.dwBaseTime = DHCP_BASE_TIMEOUT;
 	DHCPClient.smState = SM_DHCP_GET_SOCKET;
 	DHCPClient.flags.val = 0;
 	DHCPClient.flags.bits.bUseUnicastMode = TRUE;	// This flag toggles before use, so this statement actually means to start out using broadcast mode.
@@ -314,6 +317,7 @@ void DHCPEnable(BYTE vInterface)
 
 	if(DHCPClient.smState == SM_DHCP_DISABLED)
 	{
+        DHCPClient.dwBaseTime = DHCP_BASE_TIMEOUT;
 		DHCPClient.smState = SM_DHCP_GET_SOCKET;
 		DHCPClient.flags.bits.bIsBound = FALSE;
 	}
@@ -554,7 +558,7 @@ void DHCPTask(void)
 				_DHCPSend(DHCP_DISCOVER_MESSAGE, FALSE);
 	
 				// Start a timer and begin looking for a response
-				DHCPClient.dwTimer = TickGet();
+                DHCPClient.dwTimer = TickGet() + ((DHCPClient.dwBaseTime * TICK_SECOND) + (LFSRRand() % TICK_SECOND));
 				DHCPClient.smState = SM_DHCP_GET_OFFER;
 				break;
 	
@@ -562,9 +566,16 @@ void DHCPTask(void)
 				// Check to see if a packet has arrived
 				if(UDPIsGetReady(DHCPClient.hDHCPSocket) < 250u)
 				{
-					// Go back and transmit a new discovery if we didn't get an offer after 2 seconds
-					if(TickGet() - DHCPClient.dwTimer >= DHCP_TIMEOUT)
-						DHCPClient.smState = SM_DHCP_SEND_DISCOVERY;
+					// Go back and transmit a new discovery if we didn't get an offer after the timeout
+                    if((long)(TickGet() - DHCPClient.dwTimer) > 0)
+                    {
+                        // Double the backoff time
+                        if (DHCPClient.dwBaseTime < 64ul)
+                        {
+                            DHCPClient.dwBaseTime <<= 1;
+                        }
+                        DHCPClient.smState = SM_DHCP_SEND_DISCOVERY;
+                    }
 					break;
 				}
 	
@@ -598,7 +609,7 @@ void DHCPTask(void)
 				// putrsUART("DHCPTask: SM_DHCP_SEND_REQUEST \r\n");	 
 				
 				// Start a timer and begin looking for a response
-				DHCPClient.dwTimer = TickGet();
+                DHCPClient.dwTimer = TickGet() + ((DHCPClient.dwBaseTime * TICK_SECOND) + (LFSRRand() % TICK_SECOND));;
 				DHCPClient.smState = SM_DHCP_GET_REQUEST_ACK;
 				break;
 	
@@ -606,9 +617,15 @@ void DHCPTask(void)
 				// Check to see if a packet has arrived
 				if(UDPIsGetReady(DHCPClient.hDHCPSocket) < 250u)
 				{
-					// Go back and transmit a new discovery if we didn't get an ACK after 2 seconds
-					if(TickGet() - DHCPClient.dwTimer >= DHCP_TIMEOUT)
-						DHCPClient.smState = SM_DHCP_SEND_DISCOVERY;
+					// Go back and transmit a new discovery if we didn't get an ACK after the timeout
+					if((long)(TickGet() - DHCPClient.dwTimer) > 0)
+                    {
+                        if (DHCPClient.dwBaseTime < 64)
+                        {
+                            DHCPClient.dwBaseTime <<= 1;
+                        }
+                        DHCPClient.smState = SM_DHCP_SEND_DISCOVERY;
+                    }
 					break;
 				}
 	
@@ -666,7 +683,7 @@ void DHCPTask(void)
 	
 				// Check to see if our lease is still valid, if so, decrement lease 
 				// time
-				if(DHCPClient.dwLeaseTime >= 2ul)
+                if(DHCPClient.dwLeaseTime > (DHCPClient.dwBaseTime * 3))
 				{
 					DHCPClient.dwTimer += TICK_SECOND;
 					DHCPClient.dwLeaseTime--;
@@ -701,7 +718,7 @@ void DHCPTask(void)
 				DHCPClient.flags.bits.bOfferReceived = FALSE;
 	
 				// Start a timer and begin looking for a response
-				DHCPClient.dwTimer = TickGet();
+                DHCPClient.dwTimer = TickGet() + ((DHCPClient.dwBaseTime * TICK_SECOND) + (LFSRRand() % TICK_SECOND));
 				DHCPClient.smState++;
 				break;
 	
@@ -711,8 +728,8 @@ void DHCPTask(void)
 				// Check to see if a packet has arrived
 				if(UDPIsGetReady(DHCPClient.hDHCPSocket) < 250u)
 				{
-					// Go back and transmit a new discovery if we didn't get an ACK after 2 seconds
-					if(TickGet() - DHCPClient.dwTimer >=  DHCP_TIMEOUT)
+                    // Go back and transmit a new discovery if we didn't get an ACK after the timeout
+                    if((long)(TickGet() - DHCPClient.dwTimer) > 0)
 					{
 						if(++DHCPClient.smState > SM_DHCP_GET_RENEW_ACK3)
 						{

@@ -593,6 +593,8 @@ static void DHCPServerInit(void)
 	{
 		DhcpIpPool[i].isUsed = FALSE;
 		DhcpIpPool[i].Client_Lease_Time = 0; //   1 hour
+
+#if defined(WF_CS_TRIS)
 		#if  (MY_DEFAULT_NETWORK_TYPE == WF_SOFT_AP  )        
 		{
 			DhcpIpPool[i].Client_Addr.v[0] = 192;
@@ -600,21 +602,26 @@ static void DHCPServerInit(void)
 		}
 		#elif (MY_DEFAULT_NETWORK_TYPE == WF_ADHOC)
 		{
-                        DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
-                        DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
+        	DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
+            DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
 
 		}
 		#elif (MY_DEFAULT_NETWORK_TYPE == WF_INFRASTRUCTURE)
 		{
-                        DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
-                        DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
+        	DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
+            DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
 		}
-    #else
-    {
-                        DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
-                        DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
+    	#else
+    	{
+            DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169
+            DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
 		}     
 		#endif
+#else
+	DhcpIpPool[i].Client_Addr.v[0] = MY_DEFAULT_IP_ADDR_BYTE1;   //default - 169    
+    DhcpIpPool[i].Client_Addr.v[1] = MY_DEFAULT_IP_ADDR_BYTE2;   //default - 254
+#endif
+
 		DhcpIpPool[i].Client_Addr.v[2] = 1;//syama 0;
 		DhcpIpPool[i].Client_Addr.v[3] = 100+i;
 		DhcpIpPool[i].ClientMAC.v[0]=0;
