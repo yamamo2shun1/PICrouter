@@ -96,7 +96,7 @@
 //#define STACK_USE_TCP_PERFORMANCE_TEST       // Module for testing TCP TX performance characteristics
 //#define STACK_USE_DYNAMICDNS_CLIENT          // Dynamic DNS client updater module
 //#define STACK_USE_BERKELEY_API               // Berekely Sockets APIs are available
-//#define STACK_USE_ZEROCONF_LINK_LOCAL          // Zeroconf IPv4 Link-Local Addressing
+#define STACK_USE_ZEROCONF_LINK_LOCAL          // Zeroconf IPv4 Link-Local Addressing
 #define STACK_USE_ZEROCONF_MDNS_SD             // Zeroconf mDNS and mDNS service discovery
 
 
@@ -162,7 +162,7 @@
 #define MY_DEFAULT_IP_ADDR_BYTE1        (192ul)
 #define MY_DEFAULT_IP_ADDR_BYTE2        (168ul)
 #define MY_DEFAULT_IP_ADDR_BYTE3        (1ul)
-#define MY_DEFAULT_IP_ADDR_BYTE4        (2ul)
+#define MY_DEFAULT_IP_ADDR_BYTE4        (101ul)
 
 #define MY_DEFAULT_MASK_BYTE1           (255ul)
 #define MY_DEFAULT_MASK_BYTE2           (255ul)
