@@ -10,6 +10,7 @@
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects>
                 <make-dep-project>../PICrouter.X</make-dep-project>
+                <make-dep-project>../PICrouter_795_mrb.X</make-dep-project>
             </make-dep-projects>
         </data>
     </configuration>
