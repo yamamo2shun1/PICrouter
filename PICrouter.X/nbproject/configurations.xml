@@ -110,7 +110,6 @@
         <itemPath>../tkrworks-libs/USB/usb_host_hid_parser.c</itemPath>
         <itemPath>../tkrworks-libs/USB/usb_host_midi.c</itemPath>
       </logicalFolder>
-      <itemPath>test.c</itemPath>
       <itemPath>picrouter.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
