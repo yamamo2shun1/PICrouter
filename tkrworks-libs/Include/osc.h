@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.5.1 2013/09/06
+ * osc.h,v.1.5.2 2013/11/23
  */
 
 #ifndef OSC_H
@@ -29,14 +29,19 @@
 #include "TCPIP Stack/TCPIP.h"
 #include "HardwareProfile.h"
 
-#define USE_SPI_SRAM
+//#define USE_SPI_SRAM
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
 
 #define MAX_HOST_NAME_LEN 16
+#if defined(USE_SPI_SRAM)
 #define MAX_BUF_SIZE    64
 #define MAX_PACKET_SIZE 320// 1024
+#else
+#define MAX_BUF_SIZE    48
+#define MAX_PACKET_SIZE 192// 1024
+#endif
 #define MAX_MESSAGE_LEN 160
 #define MAX_ADDRESS_LEN 64
 #define MAX_ARGS_LEN 40

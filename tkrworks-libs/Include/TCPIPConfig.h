@@ -202,7 +202,11 @@
 #define EMAC_TX_DESCRIPTORS 2           // number of the TX descriptors to be created
 #define EMAC_RX_DESCRIPTORS 16// 8     // number of the RX descriptors and RX buffers to be created
 
+#if defined(USE_SPI_SRAM)
 #define	EMAC_RX_BUFF_SIZE   512//1024// 1536 // size of a RX buffer. should be multiple of 16
+#else
+#define EMAC_RX_BUFF_SIZE   256
+#endif
                                         // this is the size of all receive buffers processed by the ETHC
                                         // The size should be enough to accomodate any network received packet
                                         // If the packets are larger, they will have to take multiple RX buffers
