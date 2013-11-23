@@ -22,7 +22,7 @@
       </runprofile>
     </conf>
     <conf name="795F512H" type="2">
-      <platformToolSN>:=MPLABCommUSB:=04D8:=9009:=0100:=Microchip Technology, Inc. (www.microchip.com):=MPLAB ICD3 tm (www.microchip.com):=JIT114110402:=x:=b:=en</platformToolSN>
+      <platformToolSN></platformToolSN>
       <languageToolchainDir>C:\Program Files (x86)\Microchip\xc32\v1.22\bin</languageToolchainDir>
       <mdbdebugger version="1">
         <placeholder1>place holder 1</placeholder1>
