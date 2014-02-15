@@ -173,6 +173,7 @@
         <property key="extra-include-directories"
                   value=".;..\tkrworks-libs\Include;..\tkrworks-libs\USB"/>
         <property key="generate-16-bit-code" value="true"/>
+        <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
         <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value="-O3"/>
@@ -213,6 +214,7 @@
         <property key="extra-lib-directories" value=""/>
         <property key="generate-16-bit-code" value="true"/>
         <property key="generate-cross-reference-file" value="false"/>
+        <property key="generate-micro-compressed-code" value="false"/>
         <property key="heap-size" value="16000"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
@@ -241,6 +243,7 @@
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories" value=".;Include;USB"/>
         <property key="generate-16-bit-code" value="false"/>
+        <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
         <property key="optimization-level" value=""/>
