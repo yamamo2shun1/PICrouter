@@ -95,199 +95,199 @@ ${OBJECTDIR}/_ext/454704213/analog.o: ../tkrworks-libs/Common/analog.c  nbprojec
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/analog.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/analog.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/analog.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/analog.o.d" -o ${OBJECTDIR}/_ext/454704213/analog.o ../tkrworks-libs/Common/analog.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/analog.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/analog.o.d" -o ${OBJECTDIR}/_ext/454704213/analog.o ../tkrworks-libs/Common/analog.c   
 	
 ${OBJECTDIR}/_ext/454704213/iosetting.o: ../tkrworks-libs/Common/iosetting.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/iosetting.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/iosetting.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/iosetting.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/iosetting.o.d" -o ${OBJECTDIR}/_ext/454704213/iosetting.o ../tkrworks-libs/Common/iosetting.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/iosetting.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/iosetting.o.d" -o ${OBJECTDIR}/_ext/454704213/iosetting.o ../tkrworks-libs/Common/iosetting.c   
 	
 ${OBJECTDIR}/_ext/454704213/TimeDelay.o: ../tkrworks-libs/Common/TimeDelay.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/TimeDelay.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/TimeDelay.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/TimeDelay.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/TimeDelay.o.d" -o ${OBJECTDIR}/_ext/454704213/TimeDelay.o ../tkrworks-libs/Common/TimeDelay.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/TimeDelay.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/TimeDelay.o.d" -o ${OBJECTDIR}/_ext/454704213/TimeDelay.o ../tkrworks-libs/Common/TimeDelay.c   
 	
 ${OBJECTDIR}/_ext/454704213/usb_config.o: ../tkrworks-libs/Common/usb_config.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/usb_config.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/usb_config.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/usb_config.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/usb_config.o.d" -o ${OBJECTDIR}/_ext/454704213/usb_config.o ../tkrworks-libs/Common/usb_config.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/usb_config.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/usb_config.o.d" -o ${OBJECTDIR}/_ext/454704213/usb_config.o ../tkrworks-libs/Common/usb_config.c   
 	
 ${OBJECTDIR}/_ext/454704213/usb_descriptors.o: ../tkrworks-libs/Common/usb_descriptors.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/usb_descriptors.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/usb_descriptors.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/usb_descriptors.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/usb_descriptors.o.d" -o ${OBJECTDIR}/_ext/454704213/usb_descriptors.o ../tkrworks-libs/Common/usb_descriptors.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/usb_descriptors.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/usb_descriptors.o.d" -o ${OBJECTDIR}/_ext/454704213/usb_descriptors.o ../tkrworks-libs/Common/usb_descriptors.c   
 	
 ${OBJECTDIR}/_ext/454704213/osc.o: ../tkrworks-libs/Common/osc.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/osc.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/osc.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/osc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/osc.o.d" -o ${OBJECTDIR}/_ext/454704213/osc.o ../tkrworks-libs/Common/osc.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/osc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/osc.o.d" -o ${OBJECTDIR}/_ext/454704213/osc.o ../tkrworks-libs/Common/osc.c   
 	
 ${OBJECTDIR}/_ext/454704213/sram.o: ../tkrworks-libs/Common/sram.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/454704213 
 	@${RM} ${OBJECTDIR}/_ext/454704213/sram.o.d 
 	@${RM} ${OBJECTDIR}/_ext/454704213/sram.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/sram.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/sram.o.d" -o ${OBJECTDIR}/_ext/454704213/sram.o ../tkrworks-libs/Common/sram.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/454704213/sram.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/454704213/sram.o.d" -o ${OBJECTDIR}/_ext/454704213/sram.o ../tkrworks-libs/Common/sram.c   
 	
 ${OBJECTDIR}/_ext/1340694758/ARP.o: ../tkrworks-libs/TCPIP\ Stack/ARP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ARP.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ARP.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ARP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ARP.o.d" -o ${OBJECTDIR}/_ext/1340694758/ARP.o "../tkrworks-libs/TCPIP Stack/ARP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ARP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ARP.o.d" -o ${OBJECTDIR}/_ext/1340694758/ARP.o "../tkrworks-libs/TCPIP Stack/ARP.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/DHCP.o: ../tkrworks-libs/TCPIP\ Stack/DHCP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/DHCP.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/DHCP.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/DHCP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/DHCP.o.d" -o ${OBJECTDIR}/_ext/1340694758/DHCP.o "../tkrworks-libs/TCPIP Stack/DHCP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/DHCP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/DHCP.o.d" -o ${OBJECTDIR}/_ext/1340694758/DHCP.o "../tkrworks-libs/TCPIP Stack/DHCP.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/DHCPs.o: ../tkrworks-libs/TCPIP\ Stack/DHCPs.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/DHCPs.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/DHCPs.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/DHCPs.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/DHCPs.o.d" -o ${OBJECTDIR}/_ext/1340694758/DHCPs.o "../tkrworks-libs/TCPIP Stack/DHCPs.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/DHCPs.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/DHCPs.o.d" -o ${OBJECTDIR}/_ext/1340694758/DHCPs.o "../tkrworks-libs/TCPIP Stack/DHCPs.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o: ../tkrworks-libs/TCPIP\ Stack/ETHPIC32ExtPhy.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o "../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhy.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhy.o "../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhy.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o: ../tkrworks-libs/TCPIP\ Stack/ETHPIC32ExtPhyDP83848.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o "../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhyDP83848.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32ExtPhyDP83848.o "../tkrworks-libs/TCPIP Stack/ETHPIC32ExtPhyDP83848.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o: ../tkrworks-libs/TCPIP\ Stack/ETHPIC32IntMac.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o "../tkrworks-libs/TCPIP Stack/ETHPIC32IntMac.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o.d" -o ${OBJECTDIR}/_ext/1340694758/ETHPIC32IntMac.o "../tkrworks-libs/TCPIP Stack/ETHPIC32IntMac.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/Helpers.o: ../tkrworks-libs/TCPIP\ Stack/Helpers.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/Helpers.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/Helpers.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/Helpers.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/Helpers.o.d" -o ${OBJECTDIR}/_ext/1340694758/Helpers.o "../tkrworks-libs/TCPIP Stack/Helpers.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/Helpers.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/Helpers.o.d" -o ${OBJECTDIR}/_ext/1340694758/Helpers.o "../tkrworks-libs/TCPIP Stack/Helpers.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ICMP.o: ../tkrworks-libs/TCPIP\ Stack/ICMP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ICMP.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ICMP.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ICMP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ICMP.o.d" -o ${OBJECTDIR}/_ext/1340694758/ICMP.o "../tkrworks-libs/TCPIP Stack/ICMP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ICMP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ICMP.o.d" -o ${OBJECTDIR}/_ext/1340694758/ICMP.o "../tkrworks-libs/TCPIP Stack/ICMP.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/IP.o: ../tkrworks-libs/TCPIP\ Stack/IP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/IP.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/IP.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/IP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/IP.o.d" -o ${OBJECTDIR}/_ext/1340694758/IP.o "../tkrworks-libs/TCPIP Stack/IP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/IP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/IP.o.d" -o ${OBJECTDIR}/_ext/1340694758/IP.o "../tkrworks-libs/TCPIP Stack/IP.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/NBNS.o: ../tkrworks-libs/TCPIP\ Stack/NBNS.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/NBNS.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/NBNS.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/NBNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/NBNS.o.d" -o ${OBJECTDIR}/_ext/1340694758/NBNS.o "../tkrworks-libs/TCPIP Stack/NBNS.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/NBNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/NBNS.o.d" -o ${OBJECTDIR}/_ext/1340694758/NBNS.o "../tkrworks-libs/TCPIP Stack/NBNS.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/StackTsk.o: ../tkrworks-libs/TCPIP\ Stack/StackTsk.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/StackTsk.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/StackTsk.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/StackTsk.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/StackTsk.o.d" -o ${OBJECTDIR}/_ext/1340694758/StackTsk.o "../tkrworks-libs/TCPIP Stack/StackTsk.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/StackTsk.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/StackTsk.o.d" -o ${OBJECTDIR}/_ext/1340694758/StackTsk.o "../tkrworks-libs/TCPIP Stack/StackTsk.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/Tick.o: ../tkrworks-libs/TCPIP\ Stack/Tick.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/Tick.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/Tick.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/Tick.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/Tick.o.d" -o ${OBJECTDIR}/_ext/1340694758/Tick.o "../tkrworks-libs/TCPIP Stack/Tick.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/Tick.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/Tick.o.d" -o ${OBJECTDIR}/_ext/1340694758/Tick.o "../tkrworks-libs/TCPIP Stack/Tick.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/UDP.o: ../tkrworks-libs/TCPIP\ Stack/UDP.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/UDP.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/UDP.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/UDP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/UDP.o.d" -o ${OBJECTDIR}/_ext/1340694758/UDP.o "../tkrworks-libs/TCPIP Stack/UDP.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/UDP.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/UDP.o.d" -o ${OBJECTDIR}/_ext/1340694758/UDP.o "../tkrworks-libs/TCPIP Stack/UDP.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o: ../tkrworks-libs/TCPIP\ Stack/ZeroconfHelper.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o "../tkrworks-libs/TCPIP Stack/ZeroconfHelper.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfHelper.o "../tkrworks-libs/TCPIP Stack/ZeroconfHelper.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o: ../tkrworks-libs/TCPIP\ Stack/ZeroconfLinkLocal.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o "../tkrworks-libs/TCPIP Stack/ZeroconfLinkLocal.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfLinkLocal.o "../tkrworks-libs/TCPIP Stack/ZeroconfLinkLocal.c"   
 	
 ${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o: ../tkrworks-libs/TCPIP\ Stack/ZeroconfMulticastDNS.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1340694758 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o "../tkrworks-libs/TCPIP Stack/ZeroconfMulticastDNS.c"   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o.d" -o ${OBJECTDIR}/_ext/1340694758/ZeroconfMulticastDNS.o "../tkrworks-libs/TCPIP Stack/ZeroconfMulticastDNS.c"   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_device.o: ../tkrworks-libs/USB/usb_device.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_device.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_device.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_device.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_device.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_device.o ../tkrworks-libs/USB/usb_device.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_device.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_device.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_device.o ../tkrworks-libs/USB/usb_device.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_function_hid.o: ../tkrworks-libs/USB/usb_function_hid.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_function_hid.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_function_hid.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_function_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_function_hid.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_function_hid.o ../tkrworks-libs/USB/usb_function_hid.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_function_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_function_hid.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_function_hid.o ../tkrworks-libs/USB/usb_function_hid.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host.o: ../tkrworks-libs/USB/usb_host.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host.o ../tkrworks-libs/USB/usb_host.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host.o ../tkrworks-libs/USB/usb_host.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o: ../tkrworks-libs/USB/usb_host_cdc.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o ../tkrworks-libs/USB/usb_host_cdc.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_cdc.o ../tkrworks-libs/USB/usb_host_cdc.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o: ../tkrworks-libs/USB/usb_host_cdc_interface.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o ../tkrworks-libs/USB/usb_host_cdc_interface.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_cdc_interface.o ../tkrworks-libs/USB/usb_host_cdc_interface.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host_hid.o: ../tkrworks-libs/USB/usb_host_hid.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_hid.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_hid.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_hid.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_hid.o ../tkrworks-libs/USB/usb_host_hid.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_hid.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_hid.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_hid.o ../tkrworks-libs/USB/usb_host_hid.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o: ../tkrworks-libs/USB/usb_host_hid_parser.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o ../tkrworks-libs/USB/usb_host_hid_parser.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_hid_parser.o ../tkrworks-libs/USB/usb_host_hid_parser.c   
 	
 ${OBJECTDIR}/_ext/1798056102/usb_host_midi.o: ../tkrworks-libs/USB/usb_host_midi.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/_ext/1798056102 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_midi.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1798056102/usb_host_midi.o 
-	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_midi.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_midi.o ../tkrworks-libs/USB/usb_host_midi.c   
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1798056102/usb_host_midi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/_ext/1798056102/usb_host_midi.o.d" -o ${OBJECTDIR}/_ext/1798056102/usb_host_midi.o ../tkrworks-libs/USB/usb_host_midi.c   
 	
 ${OBJECTDIR}/picrouter.o: picrouter.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/picrouter.o.d 
 	@${RM} ${OBJECTDIR}/picrouter.o 
-	@${FIXDEPS} "${OBJECTDIR}/picrouter.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/picrouter.o.d" -o ${OBJECTDIR}/picrouter.o picrouter.c   
+	@${FIXDEPS} "${OBJECTDIR}/picrouter.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/picrouter.o.d" -o ${OBJECTDIR}/picrouter.o picrouter.c   
 	
 ${OBJECTDIR}/mrb_picrouter.o: mrb_picrouter.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/mrb_picrouter.o.d 
 	@${RM} ${OBJECTDIR}/mrb_picrouter.o 
-	@${FIXDEPS} "${OBJECTDIR}/mrb_picrouter.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_ICD3=1 -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/mrb_picrouter.o.d" -o ${OBJECTDIR}/mrb_picrouter.o mrb_picrouter.c   
+	@${FIXDEPS} "${OBJECTDIR}/mrb_picrouter.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION) -ffunction-sections -fdata-sections -mips16 -O1 -I"../mruby-master/include" -I"../tkrworks-libs/Include" -I"../tkrworks-libs/USB" -I"." -MMD -MF "${OBJECTDIR}/mrb_picrouter.o.d" -o ${OBJECTDIR}/mrb_picrouter.o mrb_picrouter.c   
 	
 else
 ${OBJECTDIR}/_ext/454704213/analog.o: ../tkrworks-libs/Common/analog.c  nbproject/Makefile-${CND_CONF}.mk
@@ -501,7 +501,7 @@ endif
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_795_mrb.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk  ../mruby-master/build/PICrouter/lib/libmruby.a  Linker/app_32MX795F512H.ld
 	@${MKDIR} dist/${CND_CONF}/${IMAGE_TYPE} 
-	${MP_CC} $(MP_EXTRA_LD_PRE)  -mdebugger -D__MPLAB_DEBUGGER_ICD3=1 -mprocessor=$(MP_PROCESSOR_OPTION) -O1 -mips16 -o dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_795_mrb.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}    ..\mruby-master\build\PICrouter\lib\libmruby.a      -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__ICD2RAM=1,--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,--defsym=__MPLAB_DEBUGGER_ICD3=1,--defsym=_min_heap_size=102400,--defsym=_min_stack_size=1136,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"
+	${MP_CC} $(MP_EXTRA_LD_PRE)    -mprocessor=$(MP_PROCESSOR_OPTION) -O1 -mips16 -o dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_795_mrb.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}    ..\mruby-master\build\PICrouter\lib\libmruby.a      -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,--defsym=_min_heap_size=102400,--defsym=_min_stack_size=1136,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"
 	
 else
 dist/${CND_CONF}/${IMAGE_TYPE}/PICrouter_795_mrb.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk  ../mruby-master/build/PICrouter/lib/libmruby.a Linker/app_32MX795F512H.ld
