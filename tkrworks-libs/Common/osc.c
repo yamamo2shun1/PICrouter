@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.5.1 2013/09/06
+ * osc.c,v.1.6.0 2014/02/15
  */
 
 #include "osc.h"
@@ -31,6 +31,9 @@ static BOOL initDiscoverFlag = FALSE;
 static BOOL chCompletedFlag = FALSE;
 static char hostName[17] = "picrouter";
 static char* stdPrefix = NULL;
+
+static INT32 oscTotalSize;
+static char sndOSCData[MAX_MESSAGE_LEN];
 
 // Remote IP Address Initialization
 static BYTE remoteIP[] = {224ul, 0ul, 0ul, 1ul};
@@ -308,28 +311,6 @@ static void clearUdpPackets(WORD bufferIndex)
 }
 #endif
 
-/*******************************************************************************
-  Function:
-    void InitAppConfig(void)
-
-  Precondition:
-
-
-  Summary:
-    Network Setting Initialization(IP Address, MAC Address and so on)
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void InitAppConfig(void)
 {
     AppConfig.Flags.bIsDHCPEnabled = TRUE;
@@ -347,517 +328,98 @@ void InitAppConfig(void)
     //FormatNetBIOSName(AppConfig.NetBIOSName);
 }
 
-/*******************************************************************************
-  Function:
-    void setInitReceiveFlag(BOOL flag)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BOOL flag
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setInitReceiveFlag(BOOL flag)
 {
     initReceiveFlag = flag;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL getInitReceiveFlag(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL getInitReceiveFlag(void)
 {
     return initReceiveFlag;
 }
 
-/*******************************************************************************
-  Function:
-    void setInitSendFlag(BOOL flag)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BOOL flag
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setInitSendFlag(BOOL flag)
 {
     initSendFlag = flag;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL getInitSendFlag(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL getInitSendFlag(void)
 {
     return initSendFlag;
 }
 
-/*******************************************************************************
-  Function:
-    void setInitDiscoverFlag(BOOL flag)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BOOL flag
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setInitDiscoverFlag(BOOL flag)
 {
     initDiscoverFlag = flag;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL getInitDiscoverFlag(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL getInitDiscoverFlag(void)
 {
     return initDiscoverFlag;
 }
 
-/*******************************************************************************
-  Function:
-    void setChCompletedFlag(BOOL flag)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BOOL flag
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setChCompletedFlag(BOOL flag)
 {
     chCompletedFlag = flag;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL getChCompletedFlag(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL getChCompletedFlag(void)
 {
     return chCompletedFlag;
 }
 
-/*******************************************************************************
-  Function:
-    void setRemoteIpAtIndex(BYTE index, BYTE number)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BYTE index
-    BYTE number
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setRemoteIpAtIndex(BYTE index, BYTE number)
 {
     remoteIP[index] = number;
 }
 
-/*******************************************************************************
-  Function:
-    BYTE getRemoteIpAtIndex(BYTE index)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BYTE index
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BYTE getRemoteIpAtIndex(BYTE index)
 {
     return remoteIP[index];
 }
 
-/*******************************************************************************
-  Function:
-    BYTE* getRemoteIp(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BYTE* getRemoteIp(void)
 {
     return remoteIP;
 }
 
-/*******************************************************************************
-  Function:
-    void setRemotePort(WORD number)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    WORD number
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setRemotePort(WORD number)
 {
     remotePort = number;
 }
 
-/*******************************************************************************
-  Function:
-    WORD getRemotePort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 WORD getRemotePort(void)
 {
     return remotePort;
 }
 
-/*******************************************************************************
-  Function:
-    void setLocalPort(WORD number)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    WORD number
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setLocalPort(WORD number)
 {
     localPort = number;
 }
 
-/*******************************************************************************
-  Function:
-    WORD getLocalPort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 WORD getLocalPort(void)
 {
     return localPort;
 }
 
-/*******************************************************************************
-  Function:
-    void setOSCPrefix(char* prefix_string)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    char* prefix_string
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setOSCPrefix(char* prefix_string)
 {
     stdPrefix = (char *)calloc(strlen(prefix_string), sizeof(char));
     memcpy(stdPrefix, prefix_string, strlen(prefix_string));
 }
 
-/*******************************************************************************
-  Function:
-    char* getOSCPrefix(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 char* getOSCPrefix(void)
 {
     return stdPrefix;
 }
 
-/*******************************************************************************
-  Function:
-    void clearOSCPrefix(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void clearOSCPrefix(void)
 {
     free(stdPrefix);
     stdPrefix = NULL;
 }
 
-/*******************************************************************************
-  Function:
-    void setOSCHostName(char* host_name)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    char* host_name
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void setOSCHostName(char* host_name)
 {
     BYTE hnlen = strlen(host_name);
@@ -869,55 +431,11 @@ void setOSCHostName(char* host_name)
         memcpy(hostName, host_name, MAX_HOST_NAME_LEN);
 }
 
-/*******************************************************************************
-  Function:
-    char* getOSCHostName(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 char* getOSCHostName(void)
 {
     return hostName;
 }
 
-/*******************************************************************************
-  Function:
-    void clearOSCHostName(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void clearOSCHostName(void)
 {
     memset(hostName, 0, MAX_HOST_NAME_LEN + 1);
@@ -925,29 +443,6 @@ void clearOSCHostName(void)
     //hostName = NULL;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    BYTE* ip_address
-    WORD port_numbe
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
 {
     if(ip_address[0] == 224 && ip_address[1] == 0 && ip_address[2] == 0)
@@ -979,28 +474,6 @@ BOOL openOSCSendPort(BYTE* ip_address, WORD port_number)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL openOSCReceivePort(WORD port_number)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    WORD port_number
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL openOSCReceivePort(WORD port_number)
 {
     RxSocket = UDPOpen(port_number, NULL, 0);
@@ -1011,28 +484,6 @@ BOOL openOSCReceivePort(WORD port_number)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL openDiscoverPort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL openDiscoverPort(void)
 {
     DiscoverSocket = UDPOpenEx(0, UDP_OPEN_SERVER, 2860, 30303);
@@ -1042,109 +493,21 @@ BOOL openDiscoverPort(void)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isOSCSendPortOpened(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isOSCSendPortOpened(void)
 {
     return UDPIsOpened(TxSocket);
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isOSCReceivePortOpened(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isOSCReceivePortOpened(void)
 {
     return UDPIsOpened(RxSocket);
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isDiscoverPortOpened(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isDiscoverPortOpened(void)
 {
     return UDPIsOpened(DiscoverSocket);
 }
 
-/*******************************************************************************
-  Function:
-    void closeOSCSendPort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void closeOSCSendPort(void)
 {
     initSendFlag = FALSE;
@@ -1152,28 +515,6 @@ void closeOSCSendPort(void)
     TxSocket = 0;
 }
 
-/*******************************************************************************
-  Function:
-    void closeOSCReceivePort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void closeOSCReceivePort(void)
 {
     initReceiveFlag = FALSE;
@@ -1181,28 +522,6 @@ void closeOSCReceivePort(void)
     RxSocket = 0;
 }
 
-/*******************************************************************************
-  Function:
-    void closeDiscoverPort(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void closeDiscoverPort(void)
 {
     initDiscoverFlag = FALSE;
@@ -1210,28 +529,6 @@ void closeDiscoverPort(void)
     DiscoverSocket = 0;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isOSCGetReady(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isOSCGetReady(void)
 {
     if(!UDPIsGetReady(RxSocket))
@@ -1240,28 +537,6 @@ BOOL isOSCGetReady(void)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isOSCPutReady(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isOSCPutReady(void)
 {
     if(!UDPIsPutReady(TxSocket))
@@ -1270,28 +545,6 @@ BOOL isOSCPutReady(void)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL isDiscoverPutReady(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL isDiscoverPutReady(void)
 {
     if(!UDPIsPutReady(DiscoverSocket))
@@ -1300,29 +553,6 @@ BOOL isDiscoverPutReady(void)
     return TRUE;
 }
 
-
-/*******************************************************************************
-  Function:
-    void getOSCPacket(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void getOSCPacket(void)
 {
     if(!initReceiveFlag)
@@ -1344,28 +574,6 @@ void getOSCPacket(void)
     }
 }
 
-/*******************************************************************************
-  Function:
-    BOOL processOSCPacket(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL processOSCPacket(void)
 {
     switch(state_index)
@@ -1403,28 +611,6 @@ BOOL processOSCPacket(void)
     return FALSE;
 }
 
-/*******************************************************************************
-  Function:
-    static BOOL copyOSCPacketFromUDPPacket()
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 static BOOL copyOSCPacketFromUDPPacket()
 {
     int i, j;
@@ -1504,28 +690,6 @@ static BOOL copyOSCPacketFromUDPPacket()
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    static BOOL extractAddressFromOSCPacket()
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 static BOOL extractAddressFromOSCPacket()
 {
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
@@ -1543,28 +707,6 @@ static BOOL extractAddressFromOSCPacket()
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    static BOOL extractTypeTagFromOSCPacket()
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 static BOOL extractTypeTagFromOSCPacket()
 {
     while(oscPacket[indexA] != ',')
@@ -1588,28 +730,6 @@ static BOOL extractTypeTagFromOSCPacket()
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    static BOOL extractArgumentsFromOSCPacket()
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 static BOOL extractArgumentsFromOSCPacket()
 {
     INT16 i = 0, n = 0, u = 0, length = 0;
@@ -1653,31 +773,6 @@ static BOOL extractArgumentsFromOSCPacket()
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const char* prefix
-    const char* command
-    const char* type
-    ...
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...)
 {
     va_list list;
@@ -1763,28 +858,86 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
     }
 }
 
-/*******************************************************************************
-  Function:
-    void clearOSCBundle(void)
+void setOSCAddress(const char* prefix, const char* command)
+{
+    INT32 prefixSize = strchr(prefix, 0) - prefix;
+    INT32 commandSize = strchr(command, 0) - command;
+    INT32 addressSize = prefixSize + commandSize;
+    INT32 zeroSize = 0;
 
-  Precondition:
+    memset(sndOSCData, 0, MAX_MESSAGE_LEN);
+    oscTotalSize = 0;
 
+    sprintf(sndOSCData, "%s%s", prefix, command);
 
-  Summary:
+    zeroSize = (addressSize ^ ((addressSize >> 3) << 3)) == 0 ? 0 : 8 - (addressSize ^ ((addressSize >> 3) << 3));
+    if(zeroSize == 0)
+        zeroSize = 4;
+    else if(zeroSize > 4 && zeroSize < 8)
+        zeroSize -= 4;
 
+    oscTotalSize = (addressSize + zeroSize);
+}
 
-  Description:
+void setOSCTypeTag(const char* type)
+{
+    INT32 typeSize = strchr(type, 0) - type;
+    INT32 zeroSize = 0;
 
+    sprintf((sndOSCData + oscTotalSize), ",%s", type);
 
-  Parameters:
-    None
+    typeSize++;
+    zeroSize = (typeSize ^ ((typeSize >> 2) << 2)) == 0 ? 0 : 4 - (typeSize ^ ((typeSize >> 2) << 2));
+    if(zeroSize == 0)
+        zeroSize = 4;
+        
+    oscTotalSize += (typeSize + zeroSize);
+}
 
-  Return Values:
-    None
+void addOSCIntArgument(int value)
+{
+    sndOSCData[oscTotalSize++] = (value >> 24) & 0xFF;
+    sndOSCData[oscTotalSize++] = (value >> 16) & 0xFF;
+    sndOSCData[oscTotalSize++] = (value >> 8) & 0xFF;
+    sndOSCData[oscTotalSize++] = (value >> 0) & 0xFF;
+}
 
-  Remarks:
-    None
-*******************************************************************************/
+void addOSCFloatArgument(float value)
+{
+    char* fchar = NULL;
+    fchar = (char *)&value;
+    sndOSCData[oscTotalSize++] = fchar[3] & 0xFF;
+    sndOSCData[oscTotalSize++] = fchar[2] & 0xFF;
+    sndOSCData[oscTotalSize++] = fchar[1] & 0xFF;
+    sndOSCData[oscTotalSize++] = fchar[0] & 0xFF;
+}
+
+void addOSCStringArgument(char* str)
+{
+    int cstr_len = 0;
+    while(*str)
+    {
+        sndOSCData[oscTotalSize + cstr_len] = *(str++) & 0xFF;
+        cstr_len++;
+    }
+    oscTotalSize += ((cstr_len / 4) + 1) * 4;
+}
+
+void clearOSCMessage(void)
+{
+    memset(sndOSCData, 0, MAX_MESSAGE_LEN);
+    oscTotalSize = 0;
+}
+
+void flushOSCMessage(void)
+{
+    if(isOSCPutReady() || isDiscoverPutReady())
+    {
+        UDPPutArray((BYTE *)sndOSCData, oscTotalSize);
+        UDPFlush();
+    }
+}
+
 void clearOSCBundle(void)
 {
     memset(bundleData, 0, sizeof(bundleData));
@@ -1799,31 +952,6 @@ void clearOSCBundle(void)
     bundleAppendIndex = 16;
 }
 
-/*******************************************************************************
-  Function:
-    void appendOSCMessageToBundle(const char* prefix, const char* command, const char* type, ...)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const char* prefix
-    const char* command
-    const char* type
-    ...
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void appendOSCMessageToBundle(const char* prefix, const char* command, const char* type, ...)
 {
     va_list list;
@@ -1906,28 +1034,6 @@ void appendOSCMessageToBundle(const char* prefix, const char* command, const cha
     bundleAppendIndex += totalSize;
 }
 
-/*******************************************************************************
-  Function:
-    void sendOSCBundle(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void sendOSCBundle(void)
 {
     if(isOSCPutReady())
@@ -1937,28 +1043,6 @@ void sendOSCBundle(void)
     }
 }
 
-/*******************************************************************************
-  Function:
-    BOOL compareOSCPrefix(const char* prefix)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const char* prefix
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL compareOSCPrefix(const char* prefix)
 {
     int i = 0;
@@ -1979,28 +1063,6 @@ BOOL compareOSCPrefix(const char* prefix)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL compareOSCAddress(const char* address)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const char* address
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL compareOSCAddress(const char* address)
 {
     int i = rcvPrefixLength, j = 0;
@@ -2022,29 +1084,6 @@ BOOL compareOSCAddress(const char* address)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const UINT16 index
-    const char typetag
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
 {
     if(index >= rcvArgumentsLength - 1 || rcvArgsTypeArray[index] != typetag)
@@ -2053,55 +1092,11 @@ BOOL compareTypeTagAtIndex(const UINT16 index, const char typetag)
     return TRUE;
 }
 
-/*******************************************************************************
-  Function:
-    WORD getArgumentsLength(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 WORD getArgumentsLength(void)
 {
     return rcvArgumentsLength - 1;
 }
 
-/*******************************************************************************
-  Function:
-    INT32 getIntArgumentAtIndex(const UINT16 index)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const UINT16 index
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 INT32 getIntArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
@@ -2149,28 +1144,6 @@ INT32 getIntArgumentAtIndex(const UINT16 index)
     return lvalue;
 }
 
-/*******************************************************************************
-  Function:
-    float getFloatArgumentAtIndex(const UINT16 index)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const UINT16 index
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 float getFloatArgumentAtIndex(const UINT16 index)
 {
     INT16 s = 0;
@@ -2218,28 +1191,6 @@ float getFloatArgumentAtIndex(const UINT16 index)
     return fvalue;
 }
 
-/*******************************************************************************
-  Function:
-    char* getStringArgumentAtIndex(const UINT16 index)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const UINT16 index
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 char* getStringArgumentAtIndex(const UINT16 index)
 {
     if(index >= rcvArgumentsLength - 1)
@@ -2258,28 +1209,6 @@ char* getStringArgumentAtIndex(const UINT16 index)
     return "error";
 }
 
-/*******************************************************************************
-  Function:
-    BOOL getBooleanArgumentAtIndex(const UINT16 index)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    const UINT16 index
-
-  Return Values:
-
-
-  Remarks:
-    None
-*******************************************************************************/
 BOOL getBooleanArgumentAtIndex(const UINT16 index)
 {
     BOOL flag = FALSE;
