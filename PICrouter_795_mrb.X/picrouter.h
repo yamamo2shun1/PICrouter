@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.0.1.0 2013/11/13
+ * picrouter.h,v.0.2.0 2014/02/15
  */
 
 #ifndef PICROUTER_H
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define CURRENT_VERSION "0.1.0"
+#define CURRENT_VERSION "0.2.0"
 
 #include <plib.h>
 #include <stdlib.h>
@@ -58,22 +58,21 @@ extern "C" {
 #include "mruby/string.h"
 #include "mruby/value.h"
 
-
 /** CONFIGURATIONS **************************************************/
-#pragma config UPLLEN    = ON       // USB PLL Enabled
-#pragma config FPLLMUL   = MUL_20   // PLL Multiplier
-#pragma config UPLLIDIV  = DIV_5    // USB PLL Input Divider
-#pragma config FPLLIDIV  = DIV_5    // PLL Input Divider
-#pragma config FPLLODIV  = DIV_1    // PLL Output Divider
-#pragma config FPBDIV    = DIV_1    // Peripheral Clock divisor
-#pragma config FWDTEN    = OFF      // Watchdog Timer
-#pragma config POSCMOD   = HS       // Primary Oscillator
-#pragma config FSOSCEN   = OFF      // Secondary Oscillator Enable (KLO was off)
-#pragma config FNOSC     = PRIPLL   // Oscillator Selection
-#pragma config FVBUSONIO = OFF
-#pragma config ICESEL    = ICS_PGx1 // ICE/ICD Comm Channel Select
-#pragma config FMIIEN    = OFF      // external PHY in RMII/default configuration
-#pragma config FETHIO    = ON
+//#pragma config UPLLEN    = ON       // USB PLL Enabled
+//#pragma config FPLLMUL   = MUL_20   // PLL Multiplier
+//#pragma config UPLLIDIV  = DIV_5    // USB PLL Input Divider
+//#pragma config FPLLIDIV  = DIV_5    // PLL Input Divider
+//#pragma config FPLLODIV  = DIV_1    // PLL Output Divider
+//#pragma config FPBDIV    = DIV_1    // Peripheral Clock divisor
+//#pragma config FWDTEN    = OFF      // Watchdog Timer
+//#pragma config POSCMOD   = HS       // Primary Oscillator
+//#pragma config FSOSCEN   = OFF      // Secondary Oscillator Enable (KLO was off)
+//#pragma config FNOSC     = PRIPLL   // Oscillator Selection
+//#pragma config FVBUSONIO = OFF
+//#pragma config ICESEL    = ICS_PGx1 // ICE/ICD Comm Channel Select
+//#pragma config FMIIEN    = OFF      // external PHY in RMII/default configuration
+//#pragma config FETHIO    = ON
 
 /** DEFINITIONS ****************************************************/
 //#define NVM_PROGRAM_PAGE 0xbd006000
@@ -223,6 +222,21 @@ mrb_value mrb_input_port(mrb_state* mrb, mrb_value self);
 mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self);
 mrb_value mrb_network_tasks(mrb_state* mrb, mrb_value self);
 mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self);
+mrb_value mrb_set_osc_address(mrb_state* mrb, mrb_value self);
+mrb_value mrb_set_osc_typetag(mrb_state* mrb, mrb_value self);
+mrb_value mrb_add_osc_int_arg(mrb_state* mrb, mrb_value self);
+mrb_value mrb_add_osc_float_arg(mrb_state* mrb, mrb_value self);
+mrb_value mrb_add_osc_string_arg(mrb_state* mrb, mrb_value self);
+mrb_value mrb_clear_osc_message(mrb_state* mrb, mrb_value self);
+mrb_value mrb_flush_osc_message(mrb_state* mrb, mrb_value self);
+mrb_value mrb_get_osc_packet(mrb_state* mrb, mrb_value self);
+mrb_value mrb_process_osc_packet(mrb_state* mrb, mrb_value self);
+mrb_value mrb_compare_osc_prefix(mrb_state* mrb, mrb_value self);
+mrb_value mrb_compare_osc_address(mrb_state* mrb, mrb_value self);
+mrb_value mrb_compare_typetag_at_index(mrb_state* mrb, mrb_value self);
+mrb_value mrb_get_int_arg_at_index(mrb_state* mrb, mrb_value self);
+mrb_value mrb_get_float_arg_at_index(mrb_state* mrb, mrb_value self);
+mrb_value mrb_get_string_arg_at_index(mrb_state* mrb, mrb_value self);
 
 // USB Device
 mrb_value mrb_usb_device_init(mrb_state* mrb, mrb_value self);

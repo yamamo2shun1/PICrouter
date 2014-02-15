@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.1.0 2013/11/13
+ * picrouter.c,v.0.2.0 2014/02/15
  */
 
 #include "picrouter.h"
@@ -63,9 +63,6 @@ void _general_exception_handler(unsigned cause, unsigned status)
     Nop();
 }
 
-/*
- * 
- */
 int main(int argc, char** argv) {
     BYTE i;
 
@@ -129,29 +126,6 @@ int main(int argc, char** argv) {
     return (EXIT_SUCCESS);
 }
 
-
-/*******************************************************************************
-  Function:
-    mrb_init_define_methods(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void mrb_init_define_methods(void)
 {
     // Basic
@@ -170,6 +144,21 @@ void mrb_init_define_methods(void)
     mrb_define_method(mrb, mrb->object_class, "init_osc_config", mrb_init_osc_config, ARGS_REQ(3));
     mrb_define_method(mrb, mrb->object_class, "network_tasks", mrb_network_tasks, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "receive_osc_task", mrb_receive_osc_task, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "set_osc_address", mrb_set_osc_address, ARGS_REQ(2));
+    mrb_define_method(mrb, mrb->object_class, "set_osc_typetag", mrb_set_osc_typetag, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "add_osc_int_arg", mrb_add_osc_int_arg, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "add_osc_float_arg", mrb_add_osc_float_arg, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "add_osc_string_arg", mrb_add_osc_string_arg, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "clear_osc_message", mrb_clear_osc_message, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "flush_osc_message", mrb_flush_osc_message, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "get_osc_packet", mrb_get_osc_packet, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "process_osc_packet", mrb_process_osc_packet, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "compare_osc_prefix", mrb_compare_osc_prefix, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "compare_osc_address", mrb_compare_osc_address, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "compare_typetag_at_index", mrb_compare_typetag_at_index, ARGS_REQ(2));
+    mrb_define_method(mrb, mrb->object_class, "get_int_arg_at_index", mrb_get_int_arg_at_index, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "get_float_arg_at_index", mrb_get_float_arg_at_index, ARGS_REQ(1));
+    mrb_define_method(mrb, mrb->object_class, "get_string_arg_at_index", mrb_get_string_arg_at_index, ARGS_REQ(1));
 
     // USB Device
     mrb_define_method(mrb, mrb->object_class, "usb_device_init", mrb_usb_device_init, ARGS_NONE());
@@ -196,29 +185,6 @@ void mrb_init_define_methods(void)
 #endif
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_delay_10us(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_delay_10us(mrb_state* mrb, mrb_value self)
 {
     mrb_int t;
@@ -229,29 +195,6 @@ mrb_value mrb_delay_10us(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_delay_1ms(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_delay_1ms(mrb_state* mrb, mrb_value self)
 {
     mrb_int t;
@@ -262,29 +205,6 @@ mrb_value mrb_delay_1ms(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
 {
     mrb_int id;
@@ -319,29 +239,6 @@ mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_init_io_ports(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_init_io_ports(mrb_state* mrb, mrb_value self)
 {
     BYTE i = 0;
@@ -377,29 +274,6 @@ mrb_value mrb_init_io_ports(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_set_port_io_type(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_set_port_io_type(mrb_state* mrb, mrb_value self)
 {
     mrb_value name;
@@ -415,29 +289,6 @@ mrb_value mrb_set_port_io_type(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_get_port_io_type(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_get_port_io_type(mrb_state* mrb, mrb_value self)
 {
     mrb_value name;
@@ -455,29 +306,6 @@ mrb_value mrb_get_port_io_type(mrb_state* mrb, mrb_value self)
     return str_type;
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_output_port(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_output_port(mrb_state* mrb, mrb_value self)
 {
     mrb_value name;
@@ -493,29 +321,6 @@ mrb_value mrb_output_port(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_input_port(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_input_port(mrb_state* mrb, mrb_value self)
 {
     mrb_value name;
@@ -536,30 +341,6 @@ mrb_value mrb_input_port(mrb_state* mrb, mrb_value self)
 /**********************************************
 *  OSC Generic I/O Processing Part
 **********************************************/
-
-/*******************************************************************************
-  Function:
-    mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self)
 {
     mrb_value osc_prefix;
@@ -598,29 +379,6 @@ mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_network_tasks(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_network_tasks(mrb_state* mrb, mrb_value self)
 {
     mrb_int eth_state;
@@ -665,37 +423,11 @@ mrb_value mrb_network_tasks(mrb_state* mrb, mrb_value self)
     return mrb_fixnum_value(eth_state);
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
 {
     BYTE index;
     int i, j, k;
     //debug static BYTE testNum = 0;
-
-    //mT4IntEnable(0);
-    //mT5IntEnable(0);
 
     getOSCPacket();
 
@@ -4771,9 +4503,9 @@ mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
 
                 LED_1_On();
 
-                //test mT5IntEnable(0);
+                mT5IntEnable(0);
 
-                //test closeOSCSendPort();
+                closeOSCSendPort();
 
                 sprintf(hip, "HostIP=%d.%d.%d.%d", AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], AppConfig.MyIPAddr.v[2], AppConfig.MyIPAddr.v[3]);
                 sprintf(rip, "RemoteIP=%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
@@ -4781,16 +4513,16 @@ mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
                 sprintf(hport, "HostPort=%d", getLocalPort());
                 sprintf(rport, "RemotePort=%d", getRemotePort());
 
-                //test while(!getInitDiscoverFlag())
-                //test     setInitDiscoverFlag(openDiscoverPort());
+                while(!getInitDiscoverFlag())
+                    setInitDiscoverFlag(openDiscoverPort());
 
-                //test while(!isDiscoverPutReady());
+                while(!isDiscoverPutReady());
 
                 sendOSCMessage(sysPrefix, msgDiscoveredDevice, "sssss", hip, macaddr, hport, rip, rport);
 
-                //test closeDiscoverPort();
+                closeDiscoverPort();
 
-                //test mT5IntEnable(1);
+                mT5IntEnable(1);
 
                 LED_1_Off();
             }
@@ -4972,31 +4704,181 @@ mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
+mrb_value mrb_set_osc_address(mrb_state* mrb, mrb_value self)
+{
+    mrb_value prefix;
+    mrb_value address;
 
-  Precondition:
+    mrb_get_args(mrb, "SS", &prefix, &address);
 
+    setOSCAddress(RSTRING_PTR(prefix), RSTRING_PTR(address));
+    return mrb_nil_value();
+}
 
-  Summary:
+mrb_value mrb_set_osc_typetag(mrb_state* mrb, mrb_value self)
+{
+    mrb_value typetag;
 
+    mrb_get_args(mrb, "S", &typetag);
 
-  Description:
+    setOSCTypeTag(RSTRING_PTR(typetag));
+    return mrb_nil_value();
+}
 
+mrb_value mrb_add_osc_int_arg(mrb_state* mrb, mrb_value self)
+{
+    mrb_int value;
 
-  Parameters:
-    None
+    mrb_get_args(mrb, "i", &value);
 
-  Return Values:
-    None
+    addOSCIntArgument(value);
+    return mrb_nil_value();
+}
 
-  Remarks:
-    None
-*******************************************************************************/
+mrb_value mrb_add_osc_float_arg(mrb_state* mrb, mrb_value self)
+{
+    mrb_float value;
+
+    mrb_get_args(mrb, "f", &value);
+
+    addOSCFloatArgument(value);
+    return mrb_nil_value();
+}
+
+mrb_value mrb_add_osc_string_arg(mrb_state* mrb, mrb_value self)
+{
+    mrb_value str;
+
+    mrb_get_args(mrb, "S", &str);
+
+    addOSCStringArgument(RSTRING_PTR(str));
+    return mrb_nil_value();
+}
+
+mrb_value mrb_clear_osc_message(mrb_state* mrb, mrb_value self)
+{
+    clearOSCMessage();
+    return mrb_nil_value();
+}
+
+mrb_value mrb_flush_osc_message(mrb_state* mrb, mrb_value self)
+{
+    flushOSCMessage();
+    return mrb_nil_value();
+}
+
+mrb_value mrb_get_osc_packet(mrb_state* mrb, mrb_value self)
+{
+    getOSCPacket();
+    return mrb_nil_value();
+}
+
+mrb_value mrb_process_osc_packet(mrb_state* mrb, mrb_value self)
+{
+    mrb_value mflag;
+    BOOL cflag = FALSE;
+    cflag = processOSCPacket();
+    if(cflag)
+        mflag = mrb_true_value();
+    else
+        mflag = mrb_false_value();
+    return mflag;
+}
+
+mrb_value mrb_compare_osc_prefix(mrb_state* mrb, mrb_value self)
+{
+    mrb_value prefix;
+    mrb_value mflag;
+    BOOL cflag = FALSE;
+
+    mrb_get_args(mrb, "S", &prefix);
+
+    cflag = compareOSCPrefix(RSTRING_PTR(prefix));
+    if(cflag)
+        mflag = mrb_true_value();
+    else
+        mflag = mrb_false_value();
+    return mflag;
+}
+
+mrb_value mrb_compare_osc_address(mrb_state* mrb, mrb_value self)
+{
+    mrb_value address;
+    mrb_value mflag;
+    BOOL cflag = FALSE;
+
+    mrb_get_args(mrb, "S", &address);
+
+    cflag = compareOSCAddress(RSTRING_PTR(address));
+    if(cflag)
+        mflag = mrb_true_value();
+    else
+        mflag = mrb_false_value();
+    return mflag;
+}
+
+mrb_value mrb_compare_typetag_at_index(mrb_state* mrb, mrb_value self)
+{
+    mrb_int index;
+    mrb_value typetag;
+    mrb_value mflag;
+    BOOL cflag = FALSE;
+    char* ttstr;
+
+    mrb_get_args(mrb, "iS", &index, &typetag);
+    ttstr = RSTRING_PTR(typetag);
+    cflag = compareTypeTagAtIndex(index, ttstr[0]);
+    if(cflag)
+        mflag = mrb_true_value();
+    else
+        mflag = mrb_false_value();
+    return mflag;
+}
+
+mrb_value mrb_get_int_arg_at_index(mrb_state* mrb, mrb_value self)
+{
+    mrb_int index;
+    mrb_value mvalue;
+    int value;
+
+    mrb_get_args(mrb, "i", &index);
+
+    value = getIntArgumentAtIndex(index);
+
+    return mrb_fixnum_value(value);
+}
+
+mrb_value mrb_get_float_arg_at_index(mrb_state* mrb, mrb_value self)
+{
+    mrb_int index;
+    mrb_value mvalue;
+    float value;
+
+    mrb_get_args(mrb, "i", &index);
+
+    value = getFloatArgumentAtIndex(index);
+
+    return mrb_fixnum_value(value);
+}
+
+mrb_value mrb_get_string_arg_at_index(mrb_state* mrb, mrb_value self)
+{
+    mrb_int index;
+    mrb_value mvalue;
+    char* str;
+
+    mrb_get_args(mrb, "i", &index);
+
+    str = getStringArgumentAtIndex(index);
+
+    return mrb_str_new_cstr(mrb, str);
+}
+
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
+
+    static unsigned int count = 0;
 
     if(!getInitSendFlag())
     {
@@ -5014,6 +4896,23 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
         {
             case 0:
                 swState1 = SW_State();
+
+#if 0//debug
+                if(count == 100)
+                {
+                    if(swState1)
+                    {
+                        LED_1_Toggle();
+                    }
+                    else
+                    {
+                        LED_2_Toggle();
+                    }
+                    count = 0;
+                }
+                count++;
+#endif//debug
+
                 if(swState1 != swState0)
                 {
                     if(swState1)
@@ -5079,30 +4978,6 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
     mT5ClearIntFlag();
 }
 
-
-/*******************************************************************************
-  Function:
-    mrb_value mrb_usb_device_init(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_usb_device_init(mrb_state* mrb, mrb_value self)
 {
     USBDeviceInit();
@@ -5110,29 +4985,6 @@ mrb_value mrb_usb_device_init(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_usb_device_tasks(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_usb_device_tasks(mrb_state* mrb, mrb_value self)
 {
     USBDeviceTasks();
@@ -5140,29 +4992,6 @@ mrb_value mrb_usb_device_tasks(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
 {
     BYTE u8Data[128] = {0};
@@ -5880,29 +5709,6 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
 {
     mrb_int num, vel, ch;
@@ -5923,29 +5729,6 @@ mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
 {
     mrb_int num, val, ch;
@@ -5967,29 +5750,6 @@ mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_receive_midi_datas(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_receive_midi_datas(mrb_state* mrb, mrb_value self)
 {
     int i;
@@ -6032,29 +5792,6 @@ mrb_value mrb_receive_midi_datas(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_usb_host_init(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_usb_host_init(mrb_state* mrb, mrb_value self)
 {
     mrb_int bUsbHostInitialized;
@@ -6064,29 +5801,6 @@ mrb_value mrb_usb_host_init(mrb_state* mrb, mrb_value self)
     return mrb_fixnum_value(bUsbHostInitialized);
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_usb_host_tasks(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_usb_host_tasks(mrb_state* mrb, mrb_value self)
 {
     USBTasks();
@@ -6094,29 +5808,6 @@ mrb_value mrb_usb_host_tasks(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
 {
     BYTE currentEndpoint;
@@ -6221,28 +5912,6 @@ mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
 }
 
 #if defined(USB_USE_CDC)
-/*******************************************************************************
-  Function:
-    void USBHostCDC_Clear_Out_DATA_Array(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
 void USBHostCDC_Clear_Out_DATA_Array(void)
 {
     BYTE i;
@@ -6251,29 +5920,6 @@ void USBHostCDC_Clear_Out_DATA_Array(void)
         USB_CDC_OUT_Data_Array[i] = 0;
 }
 
-/*******************************************************************************
-  Function:
-    mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    mrb_state* mrb
-    mrb_value self
-
-  Return Values:
-    mrb_value
-
-  Remarks:
-    None
-*******************************************************************************/
 mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
 {
     BYTE i;
@@ -6453,8 +6099,8 @@ void USBCBSuspend(void)
  * Side Effects:    None
  *
  * Overview:        This function is called when the USB interrupt bit is set
- *					In this example the interrupt is only used when the device
- *					goes to sleep when it receives a USB suspend command
+ *                  In this example the interrupt is only used when the device
+ *                  goes to sleep when it receives a USB suspend command
  *
  * Note:            None
  *****************************************************************************/
@@ -6488,25 +6134,25 @@ void __attribute__ ((interrupt)) _USB1Interrupt(void)
  * Side Effects:    None
  *
  * Overview:        The host may put USB peripheral devices in low power
- *					suspend mode (by "sending" 3+ms of idle).  Once in suspend
- *					mode, the host may wake the device back up by sending non-
- *					idle state signalling.
+ *                  suspend mode (by "sending" 3+ms of idle).  Once in suspend
+ *                  mode, the host may wake the device back up by sending non-
+ *                  idle state signalling.
  *
- *					This call back is invoked when a wakeup from USB suspend
- *					is detected.
+ *                  This call back is invoked when a wakeup from USB suspend
+ *                  is detected.
  *
  * Note:            None
  *****************************************************************************/
 void USBCBWakeFromSuspend(void)
 {
-	// If clock switching or other power savings measures were taken when
-	// executing the USBCBSuspend() function, now would be a good time to
-	// switch back to normal full power run mode conditions.  The host allows
-	// a few milliseconds of wakeup time, after which the device must be
-	// fully back to normal, and capable of receiving and processing USB
-	// packets.  In order to do this, the USB module must receive proper
-	// clocking (IE: 48MHz clock must be available to SIE for full speed USB
-	// operation).
+    // If clock switching or other power savings measures were taken when
+    // executing the USBCBSuspend() function, now would be a good time to
+    // switch back to normal full power run mode conditions.  The host allows
+    // a few milliseconds of wakeup time, after which the device must be
+    // fully back to normal, and capable of receiving and processing USB
+    // packets.  In order to do this, the USB module must receive proper
+    // clocking (IE: 48MHz clock must be available to SIE for full speed USB
+    // operation).
 }
 
 /********************************************************************
@@ -6560,21 +6206,21 @@ void USBCBErrorHandler(void)
     // No need to clear UEIR to 0 here.
     // Callback caller is already doing that.
 
-	// Typically, user firmware does not need to do anything special
-	// if a USB error occurs.  For example, if the host sends an OUT
-	// packet to your device, but the packet gets corrupted (ex:
-	// because of a bad connection, or the user unplugs the
-	// USB cable during the transmission) this will typically set
-	// one or more USB error interrupt flags.  Nothing specific
-	// needs to be done however, since the SIE will automatically
-	// send a "NAK" packet to the host.  In response to this, the
-	// host will normally retry to send the packet again, and no
-	// data loss occurs.  The system will typically recover
-	// automatically, without the need for application firmware
-	// intervention.
-
-	// Nevertheless, this callback function is provided, such as
-	// for debugging purposes.
+    // Typically, user firmware does not need to do anything special
+    // if a USB error occurs.  For example, if the host sends an OUT
+    // packet to your device, but the packet gets corrupted (ex:
+    // because of a bad connection, or the user unplugs the
+    // USB cable during the transmission) this will typically set
+    // one or more USB error interrupt flags.  Nothing specific
+    // needs to be done however, since the SIE will automatically
+    // send a "NAK" packet to the host.  In response to this, the
+    // host will normally retry to send the packet again, and no
+    // data loss occurs.  The system will typically recover
+    // automatically, without the need for application firmware
+    // intervention.
+    
+    // Nevertheless, this callback function is provided, such as
+    // for debugging purposes.
 }
 
 
@@ -6590,19 +6236,19 @@ void USBCBErrorHandler(void)
  * Side Effects:    None
  *
  * Overview:        When SETUP packets arrive from the host, some
- * 					firmware must process the request and respond
- *					appropriately to fulfill the request.  Some of
- *					the SETUP packets will be for standard
- *					USB "chapter 9" (as in, fulfilling chapter 9 of
- *					the official USB specifications) requests, while
- *					others may be specific to the USB device class
- *					that is being implemented.  For example, a HID
- *					class device needs to be able to respond to
- *					"GET REPORT" type of requests.  This
- *					is not a standard USB chapter 9 request, and
- *					therefore not handled by usb_device.c.  Instead
- *					this request should be handled by class specific
- *					firmware, such as that contained in usb_function_hid.c.
+ *                  firmware must process the request and respond
+ *                  appropriately to fulfill the request.  Some of
+ *                  the SETUP packets will be for standard
+ *                  USB "chapter 9" (as in, fulfilling chapter 9 of
+ *                  the official USB specifications) requests, while
+ *                  hers may be specific to the USB device class
+ *                  that is being implemented.  For example, a HID
+ *                  class device needs to be able to respond to
+ *                  "GET REPORT" type of requests.  This
+ *                  is not a standard USB chapter 9 request, and
+ *                  therefore not handled by usb_device.c.  Instead
+ *                  this request should be handled by class specific
+ *                  irmware, such as that contained in usb_function_hid.c.
  *
  * Note:            None
  *******************************************************************/
@@ -6624,10 +6270,10 @@ void USBCBCheckOtherReq(void)
  * Side Effects:    None
  *
  * Overview:        The USBCBStdSetDscHandler() callback function is
- *					called when a SETUP, bRequest: SET_DESCRIPTOR request
- *					arrives.  Typically SET_DESCRIPTOR requests are
- *					not used in most applications, and it is
- *					optional to support this type of request.
+ *                  called when a SETUP, bRequest: SET_DESCRIPTOR request
+ *                  arrives.  Typically SET_DESCRIPTOR requests are
+ *                  not used in most applications, and it is
+ *                  optional to support this type of request.
  *
  * Note:            None
  *******************************************************************/
@@ -6650,10 +6296,10 @@ void USBCBStdSetDscHandler(void)
  *
  * Overview:        This function is called when the device becomes
  *                  initialized, which occurs after the host sends a
- * 					SET_CONFIGURATION (wValue not = 0) request.  This
- *					callback function should initialize the endpoints
- *					for the device's usage according to the current
- *					configuration.
+ *                  SET_CONFIGURATION (wValue not = 0) request.  This
+ *                  callback function should initialize the endpoints
+ *                  for the device's usage according to the current
+ *                  configuration.
  *
  * Note:            None
  *******************************************************************/
@@ -6683,31 +6329,31 @@ void USBCBInitEP(void)
  * Side Effects:    None
  *
  * Overview:        The USB specifications allow some types of USB
- * 					peripheral devices to wake up a host PC (such
- *					as if it is in a low power suspend to RAM state).
- *					This can be a very useful feature in some
- *					USB applications, such as an Infrared remote
- *					control	receiver.  If a user presses the "power"
- *					button on a remote control, it is nice that the
- *					IR receiver can detect this signalling, and then
- *					send a USB "command" to the PC to wake up.
+ *                  peripheral devices to wake up a host PC (such
+ *                  as if it is in a low power suspend to RAM state).
+ *                  This can be a very useful feature in some
+ *                  USB applications, such as an Infrared remote
+ *                  control	receiver.  If a user presses the "power"
+ *                  button on a remote control, it is nice that the
+ *                  IR receiver can detect this signalling, and then
+ *                  send a USB "command" to the PC to wake up.
  *
- *					The USBCBSendResume() "callback" function is used
- *					to send this special USB signalling which wakes
- *					up the PC.  This function may be called by
- *					application firmware to wake up the PC.  This
- *					function will only be able to wake up the host if
+ *                  USBCBSendResume() "callback" function is used
+ *                  to send this special USB signalling which wakes
+ *                  up the PC.  This function may be called by
+ *                  application firmware to wake up the PC.  This
+ *                  function will only be able to wake up the host if
  *                  all of the below are true:
  *
- *					1.  The USB driver used on the host PC supports
- *						the remote wakeup capability.
- *					2.  The USB configuration descriptor indicates
- *						the device is remote wakeup capable in the
- *						bmAttributes field.
- *					3.  The USB host PC is currently sleeping,
- *						and has previously sent your device a SET
- *						FEATURE setup packet which "armed" the
- *						remote wakeup capability.
+ *                  1.  The USB driver used on the host PC supports
+ *                      the remote wakeup capability.
+ *                  2.  The USB configuration descriptor indicates
+ *                      the device is remote wakeup capable in the
+ *                      bmAttributes field.
+ *                  3.  The USB host PC is currently sleeping,
+ *                      and has previously sent your device a SET
+ *                      FEATURE setup packet which "armed" the
+ *                      remote wakeup capability.
  *
  *                  If the host has not armed the device to perform remote wakeup,
  *                  then this function will return without actually performing a
@@ -6716,7 +6362,7 @@ void USBCBInitEP(void)
  *                  wakeup must not drive remote wakeup signalling onto the bus;
  *                  doing so will cause USB compliance testing failure.
  *
- *					This callback should send a RESUME signal that
+ *                  This callback should send a RESUME signal that
  *                  has the period of 1-15ms.
  *
  * Note:            This function does nothing and returns quickly, if the USB
