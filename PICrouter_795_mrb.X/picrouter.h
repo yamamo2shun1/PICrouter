@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.0.2.0 2014/02/15
+ * picrouter.h,v.0.2.1 2014/02/17
  */
 
 #ifndef PICROUTER_H
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define CURRENT_VERSION "0.2.0"
+#define CURRENT_VERSION "0.2.1"
 
 #include <plib.h>
 #include <stdlib.h>

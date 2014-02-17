@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.2.0 2014/02/15
+ * picrouter.c,v.0.2.1 2014/02/17
  */
 
 #include "picrouter.h"
@@ -141,7 +141,7 @@ void mrb_init_define_methods(void)
     mrb_define_method(mrb, mrb->object_class, "input_port", mrb_input_port, ARGS_REQ(1));
 
     // OSC
-    mrb_define_method(mrb, mrb->object_class, "init_osc_config", mrb_init_osc_config, ARGS_REQ(3));
+    mrb_define_method(mrb, mrb->object_class, "init_osc_config", mrb_init_osc_config, ARGS_REQ(4));
     mrb_define_method(mrb, mrb->object_class, "network_tasks", mrb_network_tasks, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "receive_osc_task", mrb_receive_osc_task, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "set_osc_address", mrb_set_osc_address, ARGS_REQ(2));
@@ -343,17 +343,18 @@ mrb_value mrb_input_port(mrb_state* mrb, mrb_value self)
 **********************************************/
 mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self)
 {
+    mrb_value osc_host_name;
     mrb_value osc_prefix;
     mrb_int local_port;
     mrb_int remote_port;
 
-    mrb_get_args(mrb, "Sii", &osc_prefix, &local_port, &remote_port);
+    mrb_get_args(mrb, "SSii", &osc_host_name, &osc_prefix, &local_port, &remote_port);
     
     setOSCPrefix(RSTRING_PTR(osc_prefix));
     setLocalPort(local_port);
     setRemotePort(remote_port);
 
-    setOSCHostName(getOSCHostName());
+    setOSCHostName(RSTRING_PTR(osc_host_name));
 
     TickInit();
     InitAppConfig();
