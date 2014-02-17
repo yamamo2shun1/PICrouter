@@ -1,63 +1,98 @@
+##
+# Copylight (C) 2013, Shunichi Yamamoto, tkrworks.net
+#
+# This file is part of PICrouter.
+#
+# PICrouter is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option ) any later version.
+#
+# PICrouter is distributed in the hope that it will be useful,
+# but WITHIOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
+#
+# mrb_picrouter.rb,v.0.2.1 2014/02/17
+#
+
 current_usb_mode = 'HOST'
 
 led_state = 0
 eth_state = 0
 host_initialized = 0
 
-o = Object.new
-
 # Port I/O Initialization
-o.init_io_ports
-
-# Open Sound Control Initalization
-o.init_osc_config('/std', 8080, 8000)
+init_io_ports
 
 case current_usb_mode
 when 'DEVICE'
   3.times do
-    o.onboard_led(1, 'on')
-    o.delay_1ms(200)
-    o.onboard_led(1, 'off')
-    o.delay_1ms(200)
+    onboard_led(1, 'on')
+    delay_1ms(200)
+    onboard_led(1, 'off')
+    delay_1ms(200)
   end
 
   # USB Device Initialization
-  o.usb_device_init
+  usb_device_init
 when 'HOST'
   3.times do
-    o.onboard_led(2, 'on')
-    o.delay_1ms(200)
-    o.onboard_led(2, 'off')
-    o.delay_1ms(200)
+    onboard_led(2, 'on')
+    delay_1ms(200)
+    onboard_led(2, 'off')
+    delay_1ms(200)
   end
 end
 
-loop do
-  # Test code to check mruby's operation
-  if led_state == 0
-    o.output_port('c14', 'high')
-    led_state = 1
-    #o.delay_10us(1)
-  else
-    o.output_port('c14', 'low')
-    led_state = 0
-    #o.delay_10us(1)
-  end
+# Open Sound Control Initalization
+init_osc_config('picrouter', '/std', 8080, 8000)
 
-  eth_state = o.network_tasks(eth_state)
-  o.receive_osc_task
+loop do
+  eth_state = network_tasks(eth_state)
+
+  receive_osc_task
+=begin
+  get_osc_packet
+  if process_osc_packet
+    if compare_osc_prefix('/std')
+      if compare_osc_address('/onboard/led')
+        index = get_int_arg_at_index(0)
+        state = get_string_arg_at_index(1)
+        onboard_led(index + 1, state)
+      end
+    elsif compare_osc_prefix('/sys')
+      if compare_osc_address('/print')
+        value = get_int_arg_at_index(0)
+
+        set_osc_address('/sys', '/print/return')
+        set_osc_typetag('ifisf')
+        add_osc_int_arg(value)
+        add_osc_float_arg(3.14)
+        add_osc_int_arg(15)
+        add_osc_string_arg('mruby')
+        add_osc_float_arg(0.2)
+
+        flush_osc_message
+      end
+    end
+  end
+=end
 
   case current_usb_mode
   when 'DEVICE'
-    o.usb_device_tasks
-    o.hid_ctrl_task
+    usb_device_tasks
+    hid_ctrl_task
   when 'HOST'
     if host_initialized == 0
-      host_initialized = o.usb_host_init
+      host_initialized = usb_host_init
     else
-      o.usb_host_tasks
-      o.convert_midi_to_osc
-      o.usb_cdc_rxtx_handler
+      usb_host_tasks
+      convert_midi_to_osc
+      usb_cdc_rxtx_handler
     end
   end
 end
