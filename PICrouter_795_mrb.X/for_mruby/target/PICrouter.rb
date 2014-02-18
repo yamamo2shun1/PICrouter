@@ -4,6 +4,10 @@
 # Requires MPLABX and XC32 Compiler v1.22
 #
 #
+
+  # include some GEMs for PICrouter
+  conf.gembox 'picrouter'
+
 MRuby::CrossBuild.new("PICrouter") do |conf|
   toolchain :gcc
 
@@ -33,14 +37,6 @@ MRuby::CrossBuild.new("PICrouter") do |conf|
 
   #do not build test executable
   conf.build_mrbtest_lib_only
-
-  #gems from core
-  conf.gem :core => "mruby-print"
-  conf.gem :core => "mruby-math"
-  conf.gem :core => "mruby-enum-ext"
-
-  #light-weight regular expression
-  #conf.gem :github => "masamitsu-murase/mruby-hs-regexp", :branch => "master" 
 
  end
 
