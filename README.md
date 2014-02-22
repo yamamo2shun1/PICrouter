@@ -104,7 +104,7 @@ Pin Assign
 
 Development
 ------
-* Microchip [MPLABX] v1.95
+* Microchip [MPLABX] v2.00
 * Microchip [MPLAB XC32 Compiler] v1.22  
   *To develop application, you can use free version.*
 
@@ -142,7 +142,7 @@ Application Projects
   PICrouter.X is this project folder.  
   The Max6 demo patches are in Max_Demo_Patchexs folder.  
 
-#### PICrouter for mruby (current ver. is 0.1.0) Updated 2013/11/22  
+#### PICrouter for mruby (current ver. is 0.2.1) Updated 2014/02/18  
   PICrouter for mruby supports mruby, Open Sound Control and USB Dual Role.  
   PICrouter_795_mrb.X is this project folder.
   
