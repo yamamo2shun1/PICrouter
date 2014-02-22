@@ -16,8 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
 #
-# mrb_picrouter.rb,v.0.2.1 2014/02/17
+# mrb_picrouter.rb,v.0.2.3 2014/02/22
 #
+
+def send_osc_task
+  onboard_led(1, 'toggle')
+end
 
 current_usb_mode = 'HOST'
 
@@ -28,22 +32,21 @@ host_initialized = 0
 # Port I/O Initialization
 init_io_ports
 
+# Timer5 Initialization
+config_timer5(8000)
+
 case current_usb_mode
 when 'DEVICE'
-  3.times do
-    onboard_led(1, 'on')
-    delay_1ms(200)
-    onboard_led(1, 'off')
+  6.times do
+    onboard_led(1, 'toggle')
     delay_1ms(200)
   end
 
   # USB Device Initialization
   usb_device_init
 when 'HOST'
-  3.times do
-    onboard_led(2, 'on')
-    delay_1ms(200)
-    onboard_led(2, 'off')
+  6.times do
+    onboard_led(2, 'toggle')
     delay_1ms(200)
   end
 end
@@ -54,18 +57,22 @@ init_osc_config('picrouter', '/std', 8080, 8000)
 loop do
   eth_state = network_tasks(eth_state)
 
-  receive_osc_task
-=begin
   get_osc_packet
   if process_osc_packet
     if compare_osc_prefix('/std')
+      process_standard_messages
+    elsif compare_osc_prefix('/midi')
+      process_midi_messages
+    elsif compare_osc_prefix('/cdc')
+      process_cdc_messages
+    elsif compare_osc_prefix('/sys')
+      process_system_messages
+=begin
       if compare_osc_address('/onboard/led')
         index = get_int_arg_at_index(0)
         state = get_string_arg_at_index(1)
         onboard_led(index + 1, state)
-      end
-    elsif compare_osc_prefix('/sys')
-      if compare_osc_address('/print')
+      elsif compare_osc_address('/print')
         value = get_int_arg_at_index(0)
 
         set_osc_address('/sys', '/print/return')
@@ -78,9 +85,9 @@ loop do
 
         flush_osc_message
       end
+=end
     end
   end
-=end
 
   case current_usb_mode
   when 'DEVICE'
