@@ -188,29 +188,29 @@
 //   PIC32MX7XX/6XX MAC Layer Options
 //   If not using a PIC32MX7XX/6XX device, ignore this section.
 // =======================================================================
-#define	ETH_CFG_LINK        1           // set to 1 if you need to config the link to specific following parameters
-                                        // otherwise the default connection will be attempted
-                                        // depending on the selected PHY
-#define	ETH_CFG_AUTO        1           // use auto negotiation
-#define	ETH_CFG_10          1           // use/advertise 10 Mbps capability
-#define	ETH_CFG_100         1           // use/advertise 100 Mbps capability
-#define	ETH_CFG_HDUPLEX     1           // use/advertise half duplex capability
-#define	ETH_CFG_FDUPLEX     1           // use/advertise full duplex capability
-#define	ETH_CFG_AUTO_MDIX   1           // use/advertise auto MDIX capability
-#define	ETH_CFG_SWAP_MDIX   1           // use swapped MDIX. else normal MDIX
+#define ETH_CFG_LINK        1       // set to 1 if you need to config the link to specific following parameters
+                                    // otherwise the default connection will be attempted
+                                    // depending on the selected PHY
+#define ETH_CFG_AUTO        1       // use auto negotiation
+#define ETH_CFG_10          1       // use/advertise 10 Mbps capability
+#define ETH_CFG_100         1       // use/advertise 100 Mbps capability
+#define ETH_CFG_HDUPLEX     1       // use/advertise half duplex capability
+#define ETH_CFG_FDUPLEX     1       // use/advertise full duplex capability
+#define ETH_CFG_AUTO_MDIX   1       // use/advertise auto MDIX capability
+#define ETH_CFG_SWAP_MDIX   1       // use swapped MDIX. else normal MDIX
 
-#define EMAC_TX_DESCRIPTORS 2           // number of the TX descriptors to be created
-#define EMAC_RX_DESCRIPTORS 16// 8     // number of the RX descriptors and RX buffers to be created
+#define EMAC_TX_DESCRIPTORS 2       // number of the TX descriptors to be created
+#define EMAC_RX_DESCRIPTORS 16// 8  // number of the RX descriptors and RX buffers to be created
 
 #if defined(USE_SPI_SRAM)
-#define	EMAC_RX_BUFF_SIZE   512//1024// 1536 // size of a RX buffer. should be multiple of 16
+#define EMAC_RX_BUFF_SIZE   512//1024// 1536 // size of a RX buffer. should be multiple of 16
 #else
 #define EMAC_RX_BUFF_SIZE   512//384//256
 #endif
-                                        // this is the size of all receive buffers processed by the ETHC
-                                        // The size should be enough to accomodate any network received packet
-                                        // If the packets are larger, they will have to take multiple RX buffers
-                                        // The current implementation does not handle this situation right now and the packet is discarded.
+                                    // this is the size of all receive buffers processed by the ETHC
+                                    // The size should be enough to accomodate any network received packet
+                                    // If the packets are larger, they will have to take multiple RX buffers
+                                    // The current implementation does not handle this situation right now and the packet is discarded.
 
 
 // =======================================================================
