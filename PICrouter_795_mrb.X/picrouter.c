@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.2.1 2014/02/17
+ * picrouter.c,v.0.2.3 2014/02/22
  */
 
 #include "picrouter.h"
@@ -120,6 +120,21 @@ int main(int argc, char** argv) {
         mrb = mrb_open();
         mrb_init_define_methods();
         mrb_load_irep(mrb, bytecode);
+
+#if 0
+        mrb_funcall(mrb, mrb_top_self(mrb), "send_osc_task", 0);
+        DelayMs(500);
+
+        mrb_funcall(mrb, mrb_top_self(mrb), "send_osc_task", 0);
+        DelayMs(500);
+        
+        mrb_funcall(mrb, mrb_top_self(mrb), "send_osc_task", 0);
+        DelayMs(500);
+        
+        mrb_funcall(mrb, mrb_top_self(mrb), "send_osc_task", 0);
+        DelayMs(500);
+#endif
+
         mrb_close(mrb);
     #endif
 
@@ -128,12 +143,15 @@ int main(int argc, char** argv) {
 
 void mrb_init_define_methods(void)
 {
+    int ai = mrb_gc_arena_save(mrb);
+
     // Basic
     mrb_define_method(mrb, mrb->object_class, "delay_10us", mrb_delay_10us, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "delay_1ms", mrb_delay_1ms, ARGS_REQ(1));
-    mrb_define_method(mrb, mrb->object_class, "onboard_led", mrb_onboard_led, ARGS_REQ(2));
+    mrb_define_method(mrb, mrb->object_class, "config_timer5", mrb_config_timer5, ARGS_REQ(1));
 
     // I/O Port
+    mrb_define_method(mrb, mrb->object_class, "onboard_led", mrb_onboard_led, ARGS_REQ(2));
     mrb_define_method(mrb, mrb->object_class, "init_io_ports", mrb_init_io_ports, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "set_port_io_type", mrb_set_port_io_type, ARGS_REQ(2));
     mrb_define_method(mrb, mrb->object_class, "get_port_io_type", mrb_get_port_io_type, ARGS_REQ(1));
@@ -144,6 +162,10 @@ void mrb_init_define_methods(void)
     mrb_define_method(mrb, mrb->object_class, "init_osc_config", mrb_init_osc_config, ARGS_REQ(4));
     mrb_define_method(mrb, mrb->object_class, "network_tasks", mrb_network_tasks, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "receive_osc_task", mrb_receive_osc_task, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "process_standard_messages", mrb_process_standard_messages, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "process_midi_messages", mrb_process_midi_messages, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "process_cdc_messages", mrb_process_cdc_messages, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "process_system_messages", mrb_process_system_messages, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "set_osc_address", mrb_set_osc_address, ARGS_REQ(2));
     mrb_define_method(mrb, mrb->object_class, "set_osc_typetag", mrb_set_osc_typetag, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "add_osc_int_arg", mrb_add_osc_int_arg, ARGS_REQ(1));
@@ -183,6 +205,8 @@ void mrb_init_define_methods(void)
 #if defined(USB_USE_CDC)
     mrb_define_method(mrb, mrb->object_class, "usb_cdc_rxtx_handler", mrb_usb_cdc_rxtx_handler, ARGS_NONE());
 #endif
+
+    mrb_gc_arena_restore(mrb, ai);
 }
 
 mrb_value mrb_delay_10us(mrb_state* mrb, mrb_value self)
@@ -205,6 +229,17 @@ mrb_value mrb_delay_1ms(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
+mrb_value mrb_config_timer5(mrb_state* mrb, mrb_value self)
+{
+    mrb_int timer_interval;
+    mrb_get_args(mrb, "i", &timer_interval);
+
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, timer_interval);
+    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
+
+    return mrb_nil_value();
+}
+
 mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
 {
     mrb_int id;
@@ -223,6 +258,10 @@ mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
         {
             LED_1_Off();
         }
+        else if(!strcmp(RSTRING_PTR(state), "toggle"))
+        {
+            LED_1_Toggle();
+        }
         break;
     case 2:
         if(!strcmp(RSTRING_PTR(state), "on"))
@@ -232,6 +271,10 @@ mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
         else if(!strcmp(RSTRING_PTR(state), "off"))
         {
             LED_2_Off();
+        }
+        else if(!strcmp(RSTRING_PTR(state), "toggle"))
+        {
+            LED_2_Toggle();
         }
         break;
     }
@@ -371,8 +414,8 @@ mrb_value mrb_init_osc_config(mrb_state* mrb, mrb_value self)
                         );
     mDNSMulticastFilterRegister();
 
-    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
-    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
+    //OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
+    //ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
 
     // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
@@ -438,1758 +481,6 @@ mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
 
         if(compareOSCPrefix(getOSCPrefix()))
         {
-            if(compareOSCAddress(msgOnboardLed))
-            {
-                if(!(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || !compareTypeTagAtIndex(1, 's'))
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getIntArgumentAtIndex(0) == 0)
-                {
-                    if(!strcmp(getStringArgumentAtIndex(1), "on"))
-                    {
-                        LED_1_On();
-                    }
-                    else if(!strcmp(getStringArgumentAtIndex(1), "off"))
-                    {
-                        LED_1_Off();
-                    }
-                    else
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
-                }
-                else if(getIntArgumentAtIndex(0) == 1)
-                {
-                    if(!strcmp(getStringArgumentAtIndex(1), "on"))
-                    {
-                        LED_2_On();
-                    }
-                    else if(!strcmp(getStringArgumentAtIndex(1), "off"))
-                    {
-                        LED_2_Off();
-                    }
-                    else
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_value");
-            }
-            // Port
-            else if(compareOSCAddress(msgSetPortIO))
-            {
-                char* port_name;
-                char* type;
- 
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
-                {
-                    port_name = getStringArgumentAtIndex(0);
-                    if(!comparePortNameAtIndex(port_name))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrang_argument_string");
-                        return mrb_nil_value();
-                    }
-                    type = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(type, "in"))
-                {
-                    setPortIOType(port_name, IO_IN);
-                }
-                else if(!strcmp(type, "out"))
-                {
-                    setPortIOType(port_name, IO_OUT);
-                    outputPort(port_name, LOW);
-                }
-            }
-            else if(compareOSCAddress(msgGetPortIO))
-            {
-                char* port_name;
-
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    port_name = getStringArgumentAtIndex(0);
-                    if(!comparePortNameAtIndex(port_name))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrang_argument_string");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getPortIOType(port_name))
-                    sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "in");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "out");
-            }
-            else if(compareOSCAddress(msgSetPortOut))
-            {
-                char* port_name;
-                char* state;
-
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
-                {
-                    port_name = getStringArgumentAtIndex(0);
-                    if(!comparePortNameAtIndex(port_name))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrang_argument_string");
-                        return mrb_nil_value();
-                    }
-                    state = getStringArgumentAtIndex(1);
-                    if(strcmp(state, "high") && strcmp(state, "low"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "high"))
-                    outputPort(port_name, HIGH);
-                else if(!strcmp(state, "low"))
-                    outputPort(port_name, LOW);
-            }
-            else if(compareOSCAddress(msgGetPortIn))
-            {
-                char* port_name;
-
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    port_name = getStringArgumentAtIndex(0);
-                    if(!comparePortNameAtIndex(port_name))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrang_argument_string");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                BYTE state = inputPort(port_name);
-
-                if(state)
-                    sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "high");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "low");
-            }
-            // A/D
-            else if(compareOSCAddress(msgSetAdcEnable))
-            {
-                AD1CON1bits.ON = 0;
-
-                BYTE id, anum;
-                char* state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    state = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "on"))
-                {
-                    setAnalogEnable(id, TRUE);
-                    setAnPortDioType(id, IO_IN);
-
-                    AD1PCFG &= ~(0x0001 << id);
-                    AD1CSSL |= (0x0001 << id);
-                }
-                else if(!strcmp(state, "off"))
-                {
-                    setAnalogEnable(id, FALSE);
-                    setAnPortDioType(id, IO_IN);
-
-                    AD1PCFG |= (0x0001 << id);
-                    AD1CSSL &= ~(0x0001 << id);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-
-                anum = 0;
-                for(i = 0; i < AN_NUM; i++)
-                {
-                    if(getAnalogEnable(i))
-                        anum++;
-                }
-
-                if(anum > 0)
-                {
-                    AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0100 0000
-                    AD1CON2 |= ((anum - 1) << 2);
-                    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
-                    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-                    AD1CON1 = 0x000080E6;// 0000 0000 0000 0000 1000 0000 1110 0110
-                }
-                else
-                {
-                    AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
-                    AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-
-                    AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-                    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
-                    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
-                    AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
-                }
-            }
-            else if(compareOSCAddress(msgGetAdcEnable))
-            {
-                BYTE id;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getAnalogEnable(id))
-                    sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "on");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "off");
-            }
-            else if(compareOSCAddress(msgSetAdcType))
-            {
-                BYTE id;
-                char* type = NULL;
-
-                if(getArgumentsLength() != 2)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_2_arguments");
-                    return mrb_nil_value();
-                }
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    type = getStringArgumentAtIndex(1);
-
-                    if(!strcmp(type, "8bit"))
-                    {
-                        setAnalogType(id, BYTE_ORIGINAL);
-                    }
-                    else if(!strcmp(type, "10bit"))
-                    {
-                        setAnalogType(id, WORD_ORIGINAL);
-                    }
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_8bit_or_10bit");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-            }
-            else if(compareOSCAddress(msgGetAdcType))
-            {
-                BYTE id;
-
-                if(getArgumentsLength() != 1)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": must_be_1_argument");
-                    return mrb_nil_value();
-                }
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                switch(getAnalogType(id))
-                {
-                    case BYTE_ORIGINAL:
-                        sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "8bit");
-                        break;
-                    case WORD_ORIGINAL:
-                        sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "10bit");
-                        break;
-                    default:
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": may_be_other_setting");
-                        break;
-                }
-            }
-            else if(compareOSCAddress(msgSetAdcDio))
-            {
-                BYTE id;
-                char* type;
- 
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    type = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(type, "in"))
-                {
-                    setAnPortDioType(id, IO_IN);
-                }
-                else if(!strcmp(type, "out"))
-                {
-                    setAnPortDioType(id, IO_OUT);
-                    outputAnPort(id, 0);
-                }
-            }
-            else if(compareOSCAddress(msgGetAdcDio))
-            {
-                BYTE id;
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getAnPortDioType(id))
-                    sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "in");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "out");
-            }
-            else if(compareOSCAddress(msgSetAdcDo))
-            {
-                BYTE id;
-                char* state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    state = getStringArgumentAtIndex(1);
-                    if(strcmp(state, "high") && strcmp(state, "low"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "high"))
-                    outputAnPort(id, HIGH);
-                else if(!strcmp(state, "low"))
-                    outputAnPort(id, LOW);
-            }
-            else if(compareOSCAddress(msgGetAdcDi))
-            {
-                BYTE id;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > AN_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                BYTE state = inputAnPort(id);
-
-                if(state)
-                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "high");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "low");
-            }
-            // PWM
-            else if(compareOSCAddress(msgSetPwmEnable))
-            {
-                char* state;
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    index = getIntArgumentAtIndex(0);
-                    if(index > 3)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    state = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(strcmp(state, "on") == 0)
-                {
-                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer2)
-                    {
-                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        ConfigIntTimer2(T2_INT_ON | T2_INT_PRIOR_2);//syama0
-                        onTimer2 = TRUE;
-                    }
-                    switch(index)
-                    {
-                        case 0:
-                            OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                            break;
-                        case 1:
-                            OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                            break;
-                        case 2:
-                            OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                            break;
-                        case 3:
-                            OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                            break;
-                    }
-                    onSquare[index] = TRUE;
-                }
-                else if(strcmp(state, "off") == 0)
-                {
-                    onSquare[index] = FALSE;
-                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
-                    {
-                        CloseTimer2();
-                        onTimer2 = FALSE;
-                    }
-                    switch(index)
-                    {
-                        case 0:
-                            CloseOC1();
-                            break;
-                        case 1:
-                            CloseOC3();
-                            break;
-                        case 2:
-                            CloseOC4();
-                            break;
-                        case 3:
-                            CloseOC5();
-                            break;
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetPwmEnable))
-            {
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    index = getIntArgumentAtIndex(0);
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                sendOSCMessage(getOSCPrefix(), msgPwmEnable, "is", index, onSquare[index] ? "on" : "off");
-            }
-            else if(compareOSCAddress(msgSetPwmFreq))
-            {
-                WORD index;
-                WORD period;//syama0
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                    freq = getIntArgumentAtIndex(0);
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(freq < 20)
-                {
-                    freq = 20;
-                }
-                else if(freq > 20000)
-                {
-                    freq = 20000;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                OC1CONbits.OCM = 0b000;
-                OC3CONbits.OCM = 0b000;
-                OC4CONbits.OCM = 0b000;
-                OC5CONbits.OCM = 0b000;
-
-                width = GetSystemClock() / freq;
-                PR2 = width;
-                OC1RS = width / 2;
-                OC3RS = width / 2;
-                OC4RS = width / 2;
-                OC5RS = width / 2;
-
-                OC1CONbits.OCM = 0b110;
-                OC3CONbits.OCM = 0b110;
-                OC4CONbits.OCM = 0b110;
-                OC5CONbits.OCM = 0b110;
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgGetPwmFreq))
-            {
-                sendOSCMessage(getOSCPrefix(), msgPwmFreq, "i", freq);
-            }
-            else if(compareOSCAddress(msgSetPwmDuty))
-            {
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
-                {
-                    index = getIntArgumentAtIndex(0);
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    duty[index] = getIntArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(duty[index] < 0)
-                {
-                    duty[index] = 0;
-                }
-                else if(duty[index] > 100)
-                {
-                    duty[index] = 100;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                switch(index)
-                {
-                    case 0:
-                        OC1CONbits.OCM = 0b000;
-                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC1CONbits.OCM = 0b110;
-                        break;
-                    case 1:
-                        OC3CONbits.OCM = 0b000;
-                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC3CONbits.OCM = 0b110;
-                        break;
-                    case 2:
-                        OC4CONbits.OCM = 0b000;
-                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC4CONbits.OCM = 0b110;
-                        break;
-                    case 3:
-                        OC5CONbits.OCM = 0b000;
-                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC5CONbits.OCM = 0b110;
-                        break;
-                }
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgGetPwmDuty))
-            {
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    index = getIntArgumentAtIndex(0);
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                sendOSCMessage(getOSCPrefix(), msgPwmDuty, "ii", index, duty[index]);
-            }
-            else if(compareOSCAddress(msgSetPwmDio))
-            {
-                BYTE id;
-                char* type;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    type = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(type, "in"))
-                    setPwmPortDioType(id, IO_IN);
-                else if(!strcmp(type, "out"))
-                {
-                    setPwmPortDioType(id, IO_OUT);
-                    outputPwmPort(id, LOW);
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetPwmDio))
-            {
-                BYTE id;
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getPwmPortDioType(id))
-                    sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "in");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "out");
-            }
-            else if(compareOSCAddress(msgSetPwmDo))
-            {
-                BYTE id;
-                char* state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    state = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "high"))
-                    outputPwmPort(id, HIGH);
-                else if(!strcmp(state, "low"))
-                    outputPwmPort(id, LOW);
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetPwmDi))
-            {
-                BYTE id;
-                BYTE state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    state = inputPwmPort(id);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(state)
-                    sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "high");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "low");
-            }
-            // D/IO
-            else if(compareOSCAddress(msgSetDigitalDio))
-            {
-                BYTE id;
-                char* type;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > D_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    type = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(type, "in"))
-                    setDigitalPortDioType(id, IO_IN);
-                else if(!strcmp(type, "out"))
-                {
-                    setDigitalPortDioType(id, IO_OUT);
-                    outputDigitalPort(id, LOW);
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetDigitalDio))
-            {
-                BYTE id;
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > D_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getDigitalPortDioType(id))
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "in");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "out");
-            }
-            else if(compareOSCAddress(msgSetDigitalDo))
-            {
-                BYTE id;
-                char* state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id > D_NUM - 1)
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": out_of_value_range");
-
-                    state = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "high"))
-                    outputDigitalPort(id, HIGH);
-                else if(!strcmp(state, "low"))
-                    outputDigitalPort(id, LOW);
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetDigitalDi))
-            {
-                BYTE id;
-                BYTE state;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id >= D_NUM)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    state = inputDigitalPort(id);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(state)
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "high");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "low");
-            }
-            // SPI
-            else if(compareOSCAddress(msgSetSpiConfig))
-            {
-                BYTE id;
-                DWORD bitrate0 = 0;
-                WORD bitrate = 0;
-                DWORD spiFlags = 0;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    bitrate0 = getIntArgumentAtIndex(1);
-                    if(bitrate0 >= 2 && bitrate0 <= 1024)
-                    {
-                        if((bitrate0 % 2) == 0)
-                            bitrate = (WORD)bitrate0;
-                        else
-                        {
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:not_even_number");
-                            return mrb_nil_value();
-                        }
-                    }
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    if(getArgumentsLength() < 3)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": need_3_arguments_at_leaset");
-                        return mrb_nil_value();
-                    }
-
-                    for(i = 2; i < getArgumentsLength(); i++)
-                    {
-                        char* flag;
-                        if(compareTypeTagAtIndex(i, 's'))
-                            flag = getStringArgumentAtIndex(i);
-
-                        if(!strcmp(flag, "msten"))
-                            spiFlags |= SPICON_MSTEN;
-                        else if(!strcmp(flag, "ckp"))
-                            spiFlags |= SPICON_CKP;
-                        else if(!strcmp(flag, "ssen"))
-                            spiFlags |= SPICON_SSEN;
-                        else if(!strcmp(flag, "cke"))
-                            spiFlags |= SPICON_CKE;
-                        else if(!strcmp(flag, "smp"))
-                            spiFlags |= SPICON_SMP;
-                        else if(!strcmp(flag, "mode16"))
-                            spiFlags |= SPICON_MODE16;
-                        else if(!strcmp(flag, "mode32"))
-                            spiFlags |= SPICON_MODE32;
-                        else if(!strcmp(flag, "dissdo"))
-                            spiFlags |= SPICON_DISSDO;
-                        else if(!strcmp(flag, "sidl"))
-                            spiFlags |= SPICON_SIDL;
-                        else if(!strcmp(flag, "frz"))
-                            spiFlags |= SPICON_FRZ;
-                        else if(!strcmp(flag, "on"))
-                            spiFlags |= SPICON_ON;
-                        else if(!strcmp(flag, "spife"))
-                            spiFlags |= SPICON_SPIFE;
-                        else if(!strcmp(flag, "frmpol"))
-                            spiFlags |= SPICON_FRMPOL;
-                        else if(!strcmp(flag, "frmsync"))
-                            spiFlags |= SPICON_FRMSYNC;
-                        else if(!strcmp(flag, "frmen"))
-                            spiFlags |= SPICON_FRMEN;
-                    }
-
-                    switch(id)
-                    {
-                    case 2:
-                        SpiChnClose(2);
-                        SpiChnOpen(SPI_CHANNEL2, spiFlags, bitrate);
-                        break;
-                    case 4:
-                        SpiChnClose(4);
-                        SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
-                        break;
-                    default:
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 0:out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgDisableSpi))
-            {
-                BYTE id;
-
-                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    switch(id)
-                    {
-                        case 2:
-                            SpiChnClose(2);
-                            break;
-                        case 4:
-                            SpiChnClose(4);
-                            break;
-                        default:
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": out_of_range_value");
-                            break;
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetSpiData))
-            {
-                BYTE id = 0;
-                char* load_port;
-                char* active_state;
-                BYTE byte_num = 0;
-                WORD data[4] = {0};
-                //DWORD usec = 0;
-
-                if(getArgumentsLength() < 5)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, "need_4_arguments_at_leaset");
-                    return mrb_nil_value();
-                }
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id != 2 && id != 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 0:wrong_argument_value");
-                        return mrb_nil_value();
-                    }
-
-                    load_port = getStringArgumentAtIndex(1);
-                    if(!comparePortNameAtIndex(load_port))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 1:wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    active_state = getStringArgumentAtIndex(2);
-                    if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 2:wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    byte_num = getIntArgumentAtIndex(3);
-                    if(byte_num != 1 && byte_num != 2 && byte_num != 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 3:wrong_argument_value");
-                        return mrb_nil_value();
-                    }
-
-                    if(getArgumentsLength() < byte_num + 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": too_few_arguments");
-                        return mrb_nil_value();
-                    }
-
-                    for(i = 0; i < byte_num; i++)
-                    {
-                        if(!(compareTypeTagAtIndex(i + 4, 'i') || compareTypeTagAtIndex(i + 4, 'f')))
-                        {
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 4:wrong_argument_type");
-                            return mrb_nil_value();
-                        }
-
-                        data[i] = getIntArgumentAtIndex(i + 4);
-                    }
-
-                    if(getPortIOType(load_port) == IO_IN)
-                        setPortIOType(load_port, IO_OUT);
-
-                    if(!strcmp(active_state, "HL"))
-                        outputPort(load_port, HIGH);
-                    else if(!strcmp(active_state, "LH"))
-                        outputPort(load_port, LOW);
-                    switch(byte_num)
-                    {
-                    case 1:
-                        sendSpiOneWord(id, data[0], 1);
-                        break;
-                    case 2:
-                        sendSpiTwoWord(id, data[0], data[1], 1);
-                        break;
-                    case 4:
-                        sendSpiFourWord(id, data[0], data[1], data[2], data[3], 1);
-                        break;
-                    }
-                    if(!strcmp(active_state, "HL"))
-                        outputPort(load_port, LOW);
-                    else if(!strcmp(active_state, "LH"))
-                        outputPort(load_port, HIGH);
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgGetSpiData))
-            {
-                BYTE id = 0;
-                char* load_port;
-                char* active_state;
-                BYTE byte_num = 0;
-                WORD data[4] = {0};
-                //DWORD usec = 0;
-
-                if(getArgumentsLength() < 4)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, "need_4_arguments_at_leaset");
-                    return mrb_nil_value();
-                }
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    if(id != 2 && id != 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 0:wrong_argument_value");
-                        return mrb_nil_value();
-                    }
-
-                    load_port = getStringArgumentAtIndex(1);
-                    if(!comparePortNameAtIndex(load_port))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 1:wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    active_state = getStringArgumentAtIndex(2);
-                    if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 2:wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    byte_num = getIntArgumentAtIndex(3);
-                    if(byte_num != 1 && byte_num != 2 && byte_num != 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 3:wrong_argument_value");
-                        return mrb_nil_value();
-                    }
-
-                    if((compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
-                    {
-                        data[0] = getIntArgumentAtIndex(4);
-                    }
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 4:wrong_argument_type");
-                        return mrb_nil_value();
-                    }
-
-                    if(!strcmp(active_state, "HL"))
-                        outputPort(load_port, HIGH);
-                    else if(!strcmp(active_state, "LH"))
-                        outputPort(load_port, LOW);
-                    switch(byte_num)
-                    {
-                    case 1:
-                        sendSpiOneWord(id, data[0], 1);
-                        data[0] = receiveSpiOneWord(id, 1);
-                        sendOSCMessage(getOSCPrefix(), msgSpiData, "ii", id, data[0]);
-                        break;
-                    case 2:
-                        //data = receiveSpiTwoWord(id, 8);
-                        break;
-                    case 4:
-                        //data = receiveSpiFourWord(id, 8);
-                        break;
-                    }
-                    if(!strcmp(active_state, "HL"))
-                        outputPort(load_port, LOW);
-                    else if(!strcmp(active_state, "LH"))
-                        outputPort(load_port, HIGH);
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetSpiDio))
-            {
-                char* name;
-                char* type;
-
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
-                {
-                    name = getStringArgumentAtIndex(0);
-                    if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
-                       strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-                    type = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(type, "in"))
-                    setSpiPortDioType(name, IO_IN);
-                else if(!strcmp(type, "out"))
-                {
-                    setSpiPortDioType(name, IO_OUT);
-                    outputSpiPort(name, LOW);
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetSpiDio))
-            {
-                char* name;
-
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    name = getStringArgumentAtIndex(0);
-                    if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
-                       strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(getSpiPortDioType(name))
-                    sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "in");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "out");
-            }
-            else if(compareOSCAddress(msgSetSpiDo))
-            {
-                char* name;
-                char* state;
-
-                if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
-                {
-                    name = getStringArgumentAtIndex(0);
-                    if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
-                       strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    state = getStringArgumentAtIndex(1);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(state, "high"))
-                    outputSpiPort(name, HIGH);
-                else if(!strcmp(state, "low"))
-                    outputSpiPort(name, LOW);
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
-            }
-            else if(compareOSCAddress(msgGetSpiDi))
-            {
-                char* name;
-                BYTE state;
-
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    name = getStringArgumentAtIndex(0);
-                    if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
-                       strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    state = inputSpiPort(name);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(state)
-                    sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "high");
-                else
-                    sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
-            }
-            // I2C
-            else if(compareOSCAddress(msgEnableI2c))
-            {
-                BYTE id;
-                char* cFlag = NULL;
-                BOOL flag = FALSE;
-
-                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f') && compareTypeTagAtIndex(1, 's'))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    cFlag = getStringArgumentAtIndex(1);
-                    if(!strcmp(cFlag, "true"))
-                        flag = TRUE;
-                    else if(!strcmp(cFlag, "false"))
-                        flag = FALSE;
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_string");
-                        return mrb_nil_value();
-                    }
-
-                    switch(id)
-                    {
-                        case 3:
-                            setPortIOType("b2", IO_IN);
-                            setPortIOType("b3", IO_IN);
-                            I2CEnable(I2C3, flag);
-                            break;
-                        case 4:
-                            setPortIOType("g7", IO_IN);
-                            setPortIOType("g8", IO_IN);
-                            I2CEnable(I2C4, flag);
-                            break;
-                        case 5:
-                            setPortIOType("f4", IO_IN);
-                            setPortIOType("f5", IO_IN);
-                            I2CEnable(I2C5, flag);
-                            break;
-                        default:
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": out_of_range_value");
-                            break;
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetI2cConfig))
-            {
-                BYTE id;
-                DWORD i2cFlags = 0;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-
-                    if(getArgumentsLength() < 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_1_arguments_at_leaset");
-                        return mrb_nil_value();
-                    }
-
-                    for(i = 1; i < getArgumentsLength(); i++)
-                    {
-                        char* flag;
-                        if(compareTypeTagAtIndex(i, 's'))
-                            flag = getStringArgumentAtIndex(i);
-                        else
-                        {
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
-                            return mrb_nil_value();
-                        }
-
-                        if(!strcmp(flag, "enable_slave_clock_stretching"))
-                            i2cFlags |= I2C_ENABLE_SLAVE_CLOCK_STRETCHING;
-                        else if(!strcmp(flag, "enable_smb_support"))
-                            i2cFlags |= I2C_ENABLE_SMB_SUPPORT;
-                        else if(!strcmp(flag, "enable_high_speed"))
-                            i2cFlags |= I2C_ENABLE_HIGH_SPEED;
-                        else if(!strcmp(flag, "stop_in_idle"))
-                            i2cFlags |= I2C_STOP_IN_IDLE;
-                    }
-
-                    switch(id)
-                    {
-                        case 3:
-                            I2CConfigure(I2C3, i2cFlags);
-                            break;
-                        case 4:
-                            I2CConfigure(I2C4, i2cFlags);
-                            break;
-                        case 5:
-                            I2CConfigure(I2C5, i2cFlags);
-                            break;
-                        default:
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
-                            return mrb_nil_value();
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetI2cFreq))
-            {
-                BYTE id;
-                DWORD i2cFreq = 0;
-                DWORD actualFreq = 0;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    i2cFreq = getIntArgumentAtIndex(1);
-
-                    if(getArgumentsLength() < 2)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_2_arguments_at_leaset");
-                        return mrb_nil_value();
-                    }
-
-                    switch(id)
-                    {
-                        case 3:
-                            actualFreq = I2CSetFrequency(I2C3, GetPeripheralClock(), i2cFreq);
-                            break;
-                        case 4:
-                            actualFreq = I2CSetFrequency(I2C4, GetPeripheralClock(), i2cFreq);
-                            break;
-                        case 5:
-                            actualFreq = I2CSetFrequency(I2C5, GetPeripheralClock(), i2cFreq);
-                            break;
-                        default:
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
-                            return mrb_nil_value();
-                    }
-                    if((actualFreq - i2cFreq) > i2cFreq / 10)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": bad_frequency");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetI2cSlaveAddress))
-            {
-                BYTE id;
-                WORD address;
-                WORD mask;
-                DWORD slvAdrsFlags = 0;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    address = getIntArgumentAtIndex(1);
-                    mask = getIntArgumentAtIndex(2);
-
-                    if(getArgumentsLength() < 4)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": need_4_arguments_at_leaset");
-                        return mrb_nil_value();
-                    }
-
-                    for(i = 3; i < getArgumentsLength(); i++)
-                    {
-                        char* flag;
-                        if(compareTypeTagAtIndex(i, 's'))
-                            flag = getStringArgumentAtIndex(i);
-                        else
-                        {
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
-                            return mrb_nil_value();
-                        }
-
-                        if(!strcmp(flag, "use_7bit_address"))
-                            slvAdrsFlags |= I2C_USE_7BIT_ADDRESS;
-                        else if(!strcmp(flag, "use_10bit_address"))
-                            slvAdrsFlags |= I2C_USE_10BIT_ADDRESS;
-                        else if(!strcmp(flag, "enable_general_call_address"))
-                            slvAdrsFlags |= I2C_ENABLE_GENERAL_CALL_ADDRESS;
-                        else if(!strcmp(flag, "use_reserved_addresses"))
-                            slvAdrsFlags |= I2C_USE_RESERVED_ADDRESSES;
-                    }
-
-                    switch(id)
-                    {
-                        case 3:
-                            I2CSetSlaveAddress(I2C3, address, mask, slvAdrsFlags);
-                            break;
-                        case 4:
-                            I2CSetSlaveAddress(I2C4, address, mask, slvAdrsFlags);
-                            break;
-                        case 5:
-                            I2CSetSlaveAddress(I2C5, address, mask, slvAdrsFlags);
-                            break;
-                        default:
-                            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": 0:out_of_value_range");
-                            return mrb_nil_value();
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgSetI2cData))
-            {
-                BYTE id;
-                BYTE slave_address;
-                BYTE chip_address;
-                WORD address = 0;
-                DWORD data = 0;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
-                   (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')) &&
-                   (compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    slave_address = getIntArgumentAtIndex(1);
-                    chip_address = getIntArgumentAtIndex(2);
-                    address = getIntArgumentAtIndex(3);
-                    data = getIntArgumentAtIndex(4);
-
-                    switch(id)
-                    {
-                        case 3:
-                            if(!startI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_3);
-
-                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address >> 8);
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address & 0x00FF);
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, data);
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            stopI2C(I2C_3);
-                            idleI2C(I2C_3);
-                            DelayMs(5);
-                            break;
-                        case 4:
-                            if(!startI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_4);
-
-                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address >> 8);
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address & 0x00FF);
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, data);
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            stopI2C(I2C_4);
-                            idleI2C(I2C_4);
-                            DelayMs(5);
-                            break;
-                        case 5:
-                            if(!startI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_5);
-
-                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address >> 8);
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address & 0x00FF);
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, data);
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            stopI2C(I2C_5);
-                            idleI2C(I2C_5);
-                            DelayMs(5);
-                            break;
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cData, ": wrong_argument_type");
-            }
-            else if(compareOSCAddress(msgGetI2cData))
-            {
-                BYTE id;
-                BYTE slave_address = 0;
-                BYTE chip_address = 0;
-                WORD address = 0;
-                BYTE data;
-
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
-                {
-                    id = getIntArgumentAtIndex(0);
-                    slave_address = getIntArgumentAtIndex(1);
-                    chip_address = getIntArgumentAtIndex(2);
-                    address = getIntArgumentAtIndex(3);
-
-                    switch(id)
-                    {
-                        case 3:
-                            if(!startI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_3);
-
-                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address >> 8);
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_3);
-                            setDataToI2C(I2C_3, address & 0x00FF);
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            restartI2C(I2C_3);
-
-                            setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'r');
-                            idleI2C(I2C_3);
-
-                            if(!checkAckI2C(I2C_3))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            data = getDataFromI2C(I2C_3);
-
-                            //I2C3CONbits.ACKDT = 1;
-                            //I2C3CONbits.ACKEN = 1;
-                            //while(I2C3CONbits.ACKEN == 1);
-
-                            stopI2C(I2C_3);
-                            idleI2C(I2C_3);
-
-                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
-                            break;
-                        case 4:
-                            if(!startI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_4);
-
-                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address >> 8);
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_4);
-                            setDataToI2C(I2C_4, address & 0x00FF);
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            restartI2C(I2C_4);
-
-                            setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'r');
-                            idleI2C(I2C_4);
-
-                            if(!checkAckI2C(I2C_4))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            data = getDataFromI2C(I2C_4);
-
-                            //I2C4CONbits.ACKDT = 1;
-                            //I2C4CONbits.ACKEN = 1;
-                            //while(I2C4CONbits.ACKEN == 1);
-                            
-                            stopI2C(I2C_4);
-                            idleI2C(I2C_4);
-
-                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
-                            break;
-                        case 5:
-                            if(!startI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
-                            idleI2C(I2C_5);
-
-                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
-
-                            idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address >> 8);
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
-
-                            idleI2C(I2C_5);
-                            setDataToI2C(I2C_5, address & 0x00FF);
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
-
-                            restartI2C(I2C_5);
-
-                            setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'r');
-                            idleI2C(I2C_5);
-
-                            if(!checkAckI2C(I2C_5))
-                                sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
-
-                            data = getDataFromI2C(I2C_5);
-
-                            //I2C5CONbits.ACKDT = 1;
-                            //I2C5CONbits.ACKEN = 1;
-                            //while(I2C5CONbits.ACKEN == 1);
-
-                            stopI2C(I2C_5);
-                            idleI2C(I2C_5);
-
-                            sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
-                            break;
-                    }
-                }
-                else
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetI2cData, ": wrong_argument_type");
-            }
 #if defined(USE_LCD)
             else if(compareOSCAddress(msgSetLcdConfig))
             {
@@ -3710,997 +2001,2312 @@ mrb_value mrb_receive_osc_task(mrb_state* mrb, mrb_value self)
             }
 #endif // #if defined(USE_LED_ENC)
         }
-#if defined(USE_TOUCH_OSC)
-        else if(compareOSCPrefix(toscPrefix))
-        {
-            // touchOSC
-            if(compareOSCAddress(msgOnboardLed1) && compareTypeTagAtIndex(0, 'f'))
-            {
-                switch(getIntArgumentAtIndex(0))
-                {
-                    case 0:
-                        LED_1_Off();
-                        break;
-                    case 1:
-                        LED_1_On();
-                        break;
-                }
-            }
-            else if(compareOSCAddress(msgOnboardLed2) && compareTypeTagAtIndex(0, 'f'))
-            {
-                switch(getIntArgumentAtIndex(0))
-                {
-                    case 0:
-                        LED_2_Off();
-                        break;
-                    case 1:
-                        LED_2_On();
-                        break;
-                }
-            }
-            else if(compareOSCAddress(msgSetPwmEnable1) && compareTypeTagAtIndex(0, 'f'))
-            {
-                if(getIntArgumentAtIndex(0))
-                {
-                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer2)
-                    {
-                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        onTimer2 = TRUE;
-                    }
-                    OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                    onSquare[0] = TRUE;
-                }
-                else
-                {
-                    onSquare[0] = FALSE;
-                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
-                    {
-                        CloseTimer2();
-                        onTimer2 = FALSE;
-                    }
-                    CloseOC1();
-                }
-            }
-            else if(compareOSCAddress(msgSetPwmEnable2) && compareTypeTagAtIndex(0, 'f'))
-            {
-                if(getIntArgumentAtIndex(0))
-                {
-                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer2)
-                    {
-                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        onTimer2 = TRUE;
-                    }
-                    OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                    onSquare[1] = TRUE;
-                }
-                else
-                {
-                    onSquare[1] = FALSE;
-                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
-                    {
-                        CloseTimer2();
-                        onTimer2 = FALSE;
-                    }
-                    CloseOC3();
-                }
-            }
-            else if(compareOSCAddress(msgSetPwmEnable3) && compareTypeTagAtIndex(0, 'f'))
-            {
-                if(getIntArgumentAtIndex(0))
-                {
-                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer2)
-                    {
-                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        onTimer2 = TRUE;
-                    }
-                    OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                    onSquare[2] = TRUE;
-                }
-                else
-                {
-                    onSquare[2] = FALSE;
-                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
-                    {
-                        CloseTimer2();
-                        onTimer2 = FALSE;
-                    }
-                    CloseOC4();
-                }
-            }
-            else if(compareOSCAddress(msgSetPwmEnable4) && compareTypeTagAtIndex(0, 'f'))
-            {
-                if(getIntArgumentAtIndex(0))
-                {
-                    LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                    if(!onTimer2)
-                    {
-                        OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        onTimer2 = TRUE;
-                    }
-                    OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
-                    onSquare[3] = TRUE;
-                }
-                else
-                {
-                    onSquare[3] = FALSE;
-                    if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
-                    {
-                        CloseTimer2();
-                        onTimer2 = FALSE;
-                    }
-                    CloseOC5();
-                }
-            }
-            else if(compareOSCAddress(msgSetPwmFreq))
-            {
-                if(compareTypeTagAtIndex(0, 'f'))
-                    freq = getIntArgumentAtIndex(0);
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(freq < 20)
-                {
-                    freq = 20;
-                }
-                else if(freq > 20000)
-                {
-                    freq = 20000;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                OC1CONbits.OCM = 0b000;
-                OC3CONbits.OCM = 0b000;
-                OC4CONbits.OCM = 0b000;
-                OC5CONbits.OCM = 0b000;
-                width = GetSystemClock() / freq;
-                PR2 = width;
-                OC1RS = width / 2;
-                OC3RS = width / 2;
-                OC4RS = width / 2;
-                OC5RS = width / 2;
-                OC1CONbits.OCM = 0b110;
-                OC3CONbits.OCM = 0b110;
-                OC4CONbits.OCM = 0b110;
-                OC5CONbits.OCM = 0b110;
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgSetPwmDuty1))
-            {
-                if(compareTypeTagAtIndex(0, 'f'))
-                {
-                    index = 0;
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    duty[index] = getIntArgumentAtIndex(0);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(duty[index] < 0)
-                {
-                    duty[index] = 0;
-                }
-                else if(duty[index] > 100)
-                {
-                    duty[index] = 100;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                switch(index)
-                {
-                    case 0:
-                        OC1CONbits.OCM = 0b000;
-                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC1CONbits.OCM = 0b110;
-                        break;
-                    case 1:
-                        OC3CONbits.OCM = 0b000;
-                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC3CONbits.OCM = 0b110;
-                        break;
-                    case 2:
-                        OC4CONbits.OCM = 0b000;
-                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC4CONbits.OCM = 0b110;
-                        break;
-                    case 3:
-                        OC5CONbits.OCM = 0b000;
-                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC5CONbits.OCM = 0b110;
-                        break;
-                }
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgSetPwmDuty2))
-            {
-                if(compareTypeTagAtIndex(0, 'f'))
-                {
-                    index = 1;
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    duty[index] = getIntArgumentAtIndex(0);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(duty[index] < 0)
-                {
-                    duty[index] = 0;
-                }
-                else if(duty[index] > 100)
-                {
-                    duty[index] = 100;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                switch(index)
-                {
-                    case 0:
-                        OC1CONbits.OCM = 0b000;
-                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC1CONbits.OCM = 0b110;
-                        break;
-                    case 1:
-                        OC3CONbits.OCM = 0b000;
-                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC3CONbits.OCM = 0b110;
-                        break;
-                    case 2:
-                        OC4CONbits.OCM = 0b000;
-                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC4CONbits.OCM = 0b110;
-                        break;
-                    case 3:
-                        OC5CONbits.OCM = 0b000;
-                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC5CONbits.OCM = 0b110;
-                        break;
-                }
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgSetPwmDuty3))
-            {
-                if(compareTypeTagAtIndex(0, 'f'))
-                {
-                    index = 2;
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    duty[index] = getIntArgumentAtIndex(0);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(duty[index] < 0)
-                {
-                    duty[index] = 0;
-                }
-                else if(duty[index] > 100)
-                {
-                    duty[index] = 100;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                switch(index)
-                {
-                    case 0:
-                        OC1CONbits.OCM = 0b000;
-                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC1CONbits.OCM = 0b110;
-                        break;
-                    case 1:
-                        OC3CONbits.OCM = 0b000;
-                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC3CONbits.OCM = 0b110;
-                        break;
-                    case 2:
-                        OC4CONbits.OCM = 0b000;
-                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC4CONbits.OCM = 0b110;
-                        break;
-                    case 3:
-                        OC5CONbits.OCM = 0b000;
-                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC5CONbits.OCM = 0b110;
-                        break;
-                }
-                T2CONbits.TON = 1;
-            }
-            else if(compareOSCAddress(msgSetPwmDuty4))
-            {
-                if(compareTypeTagAtIndex(0, 'f'))
-                {
-                    index = 3;
-                    if(index > PWM_NUM - 1)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-
-                    duty[index] = getIntArgumentAtIndex(0);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(duty[index] < 0)
-                {
-                    duty[index] = 0;
-                }
-                else if(duty[index] > 100)
-                {
-                    duty[index] = 100;
-                }
-                T2CONbits.TON = 0;
-                TMR2 = 0;
-                switch(index)
-                {
-                    case 0:
-                        OC1CONbits.OCM = 0b000;
-                        OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC1CONbits.OCM = 0b110;
-                        break;
-                    case 1:
-                        OC3CONbits.OCM = 0b000;
-                        OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC3CONbits.OCM = 0b110;
-                        break;
-                    case 2:
-                        OC4CONbits.OCM = 0b000;
-                        OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC4CONbits.OCM = 0b110;
-                        break;
-                    case 3:
-                        OC5CONbits.OCM = 0b000;
-                        OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
-                        OC5CONbits.OCM = 0b110;
-                        break;
-                }
-                T2CONbits.TON = 1;
-            }
-        }
-#endif // #if defined(USE_TOUCH_OSC)
-        // MIDI
-        else if(compareOSCPrefix(midiPrefix))
-        {
-            if(compareOSCAddress(msgSetNote)) // Note On/Off
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE num = getIntArgumentAtIndex(1);
-                BYTE vel = getIntArgumentAtIndex(2);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_NOTE_ON;
-                OSCTranslatedToUSB.DATA_0 = 0x90 + ch;
-                OSCTranslatedToUSB.DATA_1 = num;
-                OSCTranslatedToUSB.DATA_2 = vel;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-            else if(compareOSCAddress(msgSetCc)) // Control Change
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE num = getIntArgumentAtIndex(1);
-                BYTE val = getIntArgumentAtIndex(2);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
-                OSCTranslatedToUSB.DATA_0 = 0xB0 + ch;
-                OSCTranslatedToUSB.DATA_1 = num;
-                OSCTranslatedToUSB.DATA_2 = val;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-            else if(compareOSCAddress(msgSetKp)) // Polyphonic Key Pressure
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE num = getIntArgumentAtIndex(1);
-                BYTE prs = getIntArgumentAtIndex(2);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_POLY_KEY_PRESS;
-                OSCTranslatedToUSB.DATA_0 = 0xA0 + ch;
-                OSCTranslatedToUSB.DATA_1 = num;
-                OSCTranslatedToUSB.DATA_2 = prs;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-            else if(compareOSCAddress(msgSetPc)) // Program Change
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE pnum = getIntArgumentAtIndex(1);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PROGRAM_CHANGE;
-                OSCTranslatedToUSB.DATA_0 = 0xC0 + ch;
-                OSCTranslatedToUSB.DATA_1 = pnum;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-            else if(compareOSCAddress(msgSetCp)) // Channel Pressure
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE prs = getIntArgumentAtIndex(1);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CHANNEL_PREASURE;
-                OSCTranslatedToUSB.DATA_0 = 0xD0 + ch;
-                OSCTranslatedToUSB.DATA_1 = prs;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-            else if(compareOSCAddress(msgSetPb)) // Pitch Bend
-            {
-                BYTE currentEndpoint;
-
-                BYTE ch = getIntArgumentAtIndex(0);
-                BYTE msb = getIntArgumentAtIndex(1);
-                BYTE lsb = getIntArgumentAtIndex(2);
-
-                OSCTranslatedToUSB.Val = 0;
-                OSCTranslatedToUSB.CableNumber = 0;
-                OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PITCH_BEND_CHANGE;
-                OSCTranslatedToUSB.DATA_0 = 0xE0 + ch;
-                OSCTranslatedToUSB.DATA_1 = msb;
-                OSCTranslatedToUSB.DATA_2 = lsb;
-
-                for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-                {
-                    endpointBuffers[currentEndpoint].pBufWriteLocation->Val = OSCTranslatedToUSB.Val;
-                    endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                    if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                    {
-                        endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                    }
-                    break;
-                }
-            }
-        }
-        // CDC
-#if defined(USB_USE_CDC)
-        else if(compareOSCPrefix(cdcPrefix))
-        {
-            if(compareOSCAddress(msgSetData))
-            {
-                WORD data = 0;
-                cdcOutDataLength = getArgumentsLength();
-                if(cdcOutDataLength >= MAX_NO_OF_OUT_BYTES)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": too_many_arguments");
-                    return mrb_nil_value();
-                }
-
-                for(i = 0; i < cdcOutDataLength; i++)
-                {
-                    data = getIntArgumentAtIndex(i);
-                    if(data > 255)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": out_of_range_value");
-                        return mrb_nil_value();
-                    }
-                    USB_CDC_OUT_Data_Array[i] = (BYTE)data;
-                }
-
-                cdcSendFlag = TRUE;
-                APPL_CDC_State = READY_TO_TX_RX;
-
-                //_USBHostCDC_TerminateTransfer(USB_SUCCESS);
-            }
-        }
-#endif
-        else if(compareOSCPrefix(sysPrefix))
-        {
-            // System Setting
-            if(compareOSCAddress(msgSetRemoteIp))
-            {
-                char* rip;
-                WORD ip[4] = {0};
-
-                if(compareTypeTagAtIndex(0, 's'))
-                    rip = getStringArgumentAtIndex(0);
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                ip[0] = atoi(strtok(rip, "."));
-                if(rip == NULL)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                if(ip[0] > 255)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                ip[1] = atoi(strtok(NULL, "."));
-                if(rip == NULL)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                if(ip[1] > 255)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                ip[2] = atoi(strtok(NULL, "."));
-                if(rip == NULL)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                if(ip[2] > 255)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                ip[3] = atoi(strtok(NULL, "."));
-                if(ip[3] > 255)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
-                    return mrb_nil_value();
-                }
-                setRemoteIpAtIndex(0, (BYTE)ip[0]);
-                setRemoteIpAtIndex(1, (BYTE)ip[1]);
-                setRemoteIpAtIndex(2, (BYTE)ip[2]);
-                setRemoteIpAtIndex(3, (BYTE)ip[3]);
-                setInitSendFlag(FALSE);
-                setChCompletedFlag(TRUE);
-                closeOSCSendPort();
-            }
-            else if(compareOSCAddress(msgGetRemoteIp))
-            {
-                char rip[15];
-                sprintf(rip, "%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
-                sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
-            }
-            else if(compareOSCAddress(msgSetRemotePort))
-            {
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    if(getIntArgumentAtIndex(0) < 0)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    setRemotePort(getIntArgumentAtIndex(0));
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                closeOSCSendPort();
-                setInitSendFlag(FALSE);
-                setChCompletedFlag(TRUE);
-            }
-            else if(compareOSCAddress(msgGetRemotePort))
-            {
-                sendOSCMessage(sysPrefix, msgRemotePort, "i", getRemotePort());
-            }
-            else if(compareOSCAddress(msgSetHostName))
-            {
-                char* srcName = NULL;
-                char* np = NULL;
-                int len = 0;
-
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    srcName = getStringArgumentAtIndex(0);
-                    np = strstr(srcName, ".local");
-                    if(np != NULL)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": please_delete_.local");
-                        return mrb_nil_value();
-                    }
-
-                    //len = np - srcName;
-                    //if(len >= 32)
-                    if(strlen(srcName) >= 32)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": too_long_string");
-                        return mrb_nil_value();
-                    }
-
-                    mDNSServiceDeRegister();
-                    clearOSCHostName();
-                    setOSCHostName(srcName);
-
-                    //debug sendOSCMessage(sysPrefix, msgError, "ss", srcName, hostName);
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                mDNSServiceDeRegister();
-
-                mDNSInitialize(getOSCHostName());
-                mDNSServiceRegister((const char *)getOSCHostName(), // base name of the service
-                                    "_oscit._udp.local",    // type of the service
-                                    8080,                   // TCP or UDP port, at which this service is available
-                                    ((const BYTE *)""),     // TXT info
-                                    1,                      // auto rename the service when if needed
-                                    NULL,                   // no callback function
-                                    NULL                    // no application context
-                    );
-                mDNSMulticastFilterRegister();
-                dwLastIP = 0;
-                sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
-            }
-            else if(compareOSCAddress(msgGetHostName))
-            {
-                char fullHostName[32] = {0};
-                sprintf(fullHostName, "%s.local", getOSCHostName());
-                sendOSCMessage(sysPrefix, msgHostName, "s", fullHostName);
-            }
-            else if(compareOSCAddress(msgGetHostIp))
-            {
-                char hip[15] = {0};
-                BYTE hip0 = AppConfig.MyIPAddr.Val & 0xFF;
-                BYTE hip1 = (AppConfig.MyIPAddr.Val >> 8) & 0xFF;
-                BYTE hip2 = (AppConfig.MyIPAddr.Val >> 16) & 0xFF;
-                BYTE hip3 = (AppConfig.MyIPAddr.Val >> 24) & 0xFF;
-                sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
-                sendOSCMessage(sysPrefix, msgHostIp, "s", hip);
-            }
-            else if(compareOSCAddress(msgGetHostMac))
-            {
-                char macaddr[18] = {0};
-                sprintf(macaddr, "%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
-                sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
-            }
-            else if(compareOSCAddress(msgSetHostPort))
-            {
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
-                {
-                    if(getIntArgumentAtIndex(0) < 0)
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                    setLocalPort(getIntArgumentAtIndex(0));
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                closeOSCReceivePort();
-                setInitReceiveFlag(FALSE);
-                setChCompletedFlag(TRUE);
-            }
-            else if(compareOSCAddress(msgGetHostPort))
-            {
-                sendOSCMessage(sysPrefix, msgHostPort, "i", getLocalPort());
-            }
-            else if(compareOSCAddress(msgSetPrefix))
-            {
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    char* str = getStringArgumentAtIndex(0);
-                    if(str[0] != '/')
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": must_begin_slash");
-                        return mrb_nil_value();
-                    }
-                    clearOSCPrefix();
-                    setOSCPrefix(getStringArgumentAtIndex(0));
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-                sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
-            }
-            else if(compareOSCAddress(msgGetPrefix))
-            {
-                sendOSCMessage(sysPrefix, msgPrefix, "s", getOSCPrefix());
-            }
-            else if(compareOSCAddress(msgDiscoverDevices))
-            {
-                char hip[22], rip[24], macaddr[26], hport[14], rport[16];
-
-                LED_1_On();
-
-                mT5IntEnable(0);
-
-                closeOSCSendPort();
-
-                sprintf(hip, "HostIP=%d.%d.%d.%d", AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], AppConfig.MyIPAddr.v[2], AppConfig.MyIPAddr.v[3]);
-                sprintf(rip, "RemoteIP=%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
-                sprintf(macaddr, "HostMAC=%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
-                sprintf(hport, "HostPort=%d", getLocalPort());
-                sprintf(rport, "RemotePort=%d", getRemotePort());
-
-                while(!getInitDiscoverFlag())
-                    setInitDiscoverFlag(openDiscoverPort());
-
-                while(!isDiscoverPutReady());
-
-                sendOSCMessage(sysPrefix, msgDiscoveredDevice, "sssss", hip, macaddr, hport, rip, rport);
-
-                closeDiscoverPort();
-
-                mT5IntEnable(1);
-
-                LED_1_Off();
-            }
-            else if(compareOSCAddress(msgSwitchUsbMode))
-            {
-                char* dm;
-                if(compareTypeTagAtIndex(0, 's'))
-                    dm = getStringArgumentAtIndex(0);
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-
-                if(!strcmp(dm, "host"))
-                {
-                    if(device_mode == MODE_DEVICE)
-                        USBSoftDetach();
-
-                    device_mode = MODE_HOST;
-                }
-                else if(!strcmp(dm, "device"))
-                {
-                    device_mode = MODE_DEVICE;
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": out_of_value_range");
-                    return mrb_nil_value();
-                }
-                sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
-            }
-            else if(compareOSCAddress(msgGetUsbMode))
-            {
-                if(device_mode == MODE_DEVICE)
-                    sendOSCMessage(sysPrefix, msgUsbMode, "s", "device");
-                else if(device_mode == MODE_HOST)
-                    sendOSCMessage(sysPrefix, msgUsbMode, "s", "host");
-            }
-            else if(compareOSCAddress(msgWriteNvmData))
-            {
-                if(getArgumentsLength() < 2)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": too_few_arguments");
-                    return mrb_nil_value();
-                }
-                if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
-                {
-                    WORD address = getIntArgumentAtIndex(0);
-                    WORD data = getIntArgumentAtIndex(1);
-
-                    if(address >= 1 && address <=7)
-                    {
-                        if(!NVMWriteWord((void*)(NVM_DATA + 512 * address), data))
-                            sendOSCMessage(sysPrefix, msgNvmData, "s", "write:succeeded");
-                        else
-                            sendOSCMessage(sysPrefix, msgNvmData, "s", "write:failed");
-                    }
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": out_of_range_address");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-            }
-            else if(compareOSCAddress(msgReadNvmData))
-            {
-                if(getArgumentsLength() < 1)
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": too_few_arguments");
-                    return mrb_nil_value();
-                }
-                if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
-                {
-                    DWORD tmpData = 0;
-                    WORD address = getIntArgumentAtIndex(0);
-
-
-                    if(address >= 1 && address <=7)
-                    {
-                        tmpData = *(DWORD *)(NVM_DATA + 512 * address);
-                        sendOSCMessage(sysPrefix, msgNvmData, "ii", address, tmpData);
-                    }
-                    else
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": out_of_range_address");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-            }
-            else if(compareOSCAddress(msgClearNvmData))
-            {
-                BYTE index, checkstate = 0;
-                NVMErasePage((void *)NVM_DATA);
-                for(index = 1; index <= 7; index++)
-                {
-                    checkstate += NVMWriteWord((void*)(NVM_DATA + 512 * index), 0);
-                    DelayMs(1);
-                }
-                if(!checkstate)
-                    sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:succeeded");
-                else
-                    sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:failed");
-            }
-            else if(compareOSCAddress(msgSoftReset))
-            {
-                char* reset_mode;
-                if(compareTypeTagAtIndex(0, 's'))
-                {
-                    reset_mode = getStringArgumentAtIndex(0);
-                    if(strcmp(reset_mode, "normal") && strcmp(reset_mode, "bootloader"))
-                    {
-                        sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": out_of_value_range");
-                        return mrb_nil_value();
-                    }
-                }
-                else
-                {
-                    sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": wrong_argument_type");
-                    return mrb_nil_value();
-                }
-            
-                if(!strcmp(reset_mode, "bootloader"))
-                {
-                    NVMErasePage((void*)NVM_DATA);
-                    NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
-                }
-                SoftReset();
-            }
-            else if(compareOSCAddress(msgDebug))
-            {
-                //debug testNum++;
-
-                clearOSCBundle();
-                for(i = 0; i < getArgumentsLength(); i++)
-                {
-                    if(compareTypeTagAtIndex(i, 'i'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
-                    else if(compareTypeTagAtIndex(i, 'f'))
-                    {
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
-
-                        //debug appendOSCMessageToBundle(sysPrefix, msgDebug, "ifi", i, getFloatArgumentAtIndex(i), testNum - 1);
-                        //debug testNum = 0;
-                    }
-                    else if(compareTypeTagAtIndex(i, 's'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "is", i, getStringArgumentAtIndex(i));
-                    else if(compareTypeTagAtIndex(i, 'T'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iT", i);
-                    else if(compareTypeTagAtIndex(i, 'F'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iF", i);
-                    else if(compareTypeTagAtIndex(i, 'N'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iN", i);
-                    else if(compareTypeTagAtIndex(i, 'I'))
-                        appendOSCMessageToBundle(sysPrefix, msgDebug, "iI", i);
-                }
-                sendOSCBundle();
-            }
-            else if(compareOSCAddress(msgGetVersion))
-            {
-                sendOSCMessage(sysPrefix, msgVersion, "s", CURRENT_VERSION);
-            }
-        }
         //debug LED_2_Off();
     }
-    //mT4IntEnable(1);
-    //mT5IntEnable(1);
+    return mrb_nil_value();
+}
+
+mrb_value mrb_process_standard_messages(mrb_state* mrb, mrb_value self)
+{
+    BYTE i, index;
+    if(compareOSCAddress(msgOnboardLed))
+    {
+        if(!(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) || !compareTypeTagAtIndex(1, 's'))
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getIntArgumentAtIndex(0) == 0)
+        {
+            if(!strcmp(getStringArgumentAtIndex(1), "on"))
+            {
+                LED_1_On();
+            }
+            else if(!strcmp(getStringArgumentAtIndex(1), "off"))
+            {
+                LED_1_Off();
+            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
+        }
+        else if(getIntArgumentAtIndex(0) == 1)
+        {
+            if(!strcmp(getStringArgumentAtIndex(1), "on"))
+            {
+                LED_2_On();
+            }
+            else if(!strcmp(getStringArgumentAtIndex(1), "off"))
+            {
+                LED_2_Off();
+            }
+            else
+                sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_value");
+    }
+    // Port
+    else if(compareOSCAddress(msgSetPortIO))
+    {
+        char* port_name;
+        char* type;
+ 
+        if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+        {
+            port_name = getStringArgumentAtIndex(0);
+            if(!comparePortNameAtIndex(port_name))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrang_argument_string");
+                return mrb_nil_value();
+            }
+            type = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortIO, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(type, "in"))
+        {
+            setPortIOType(port_name, IO_IN);
+        }
+        else if(!strcmp(type, "out"))
+        {
+            setPortIOType(port_name, IO_OUT);
+            outputPort(port_name, LOW);
+        }
+    }
+    else if(compareOSCAddress(msgGetPortIO))
+    {
+        char* port_name;
+
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            port_name = getStringArgumentAtIndex(0);
+            if(!comparePortNameAtIndex(port_name))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrang_argument_string");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIO, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getPortIOType(port_name))
+            sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "in");
+        else
+            sendOSCMessage(getOSCPrefix(), msgPortIO, "ss", port_name, "out");
+    }
+    else if(compareOSCAddress(msgSetPortOut))
+    {
+        char* port_name;
+        char* state;
+
+        if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+        {
+            port_name = getStringArgumentAtIndex(0);
+            if(!comparePortNameAtIndex(port_name))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrang_argument_string");
+                return mrb_nil_value();
+            }
+            state = getStringArgumentAtIndex(1);
+            if(strcmp(state, "high") && strcmp(state, "low"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPortOut, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "high"))
+            outputPort(port_name, HIGH);
+        else if(!strcmp(state, "low"))
+            outputPort(port_name, LOW);
+    }
+    else if(compareOSCAddress(msgGetPortIn))
+    {
+        char* port_name;
+
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            port_name = getStringArgumentAtIndex(0);
+            if(!comparePortNameAtIndex(port_name))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrang_argument_string");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPortIn, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        BYTE state = inputPort(port_name);
+
+        if(state)
+            sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "high");
+        else
+            sendOSCMessage(getOSCPrefix(), msgPortIn, "ss", port_name, "low");
+    }
+    // A/D
+    else if(compareOSCAddress(msgSetAdcEnable))
+    {
+        AD1CON1bits.ON = 0;
+
+        BYTE id, anum;
+        char* state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            state = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "on"))
+        {
+            setAnalogEnable(id, TRUE);
+            setAnPortDioType(id, IO_IN);
+
+            AD1PCFG &= ~(0x0001 << id);
+            AD1CSSL |= (0x0001 << id);
+        }
+        else if(!strcmp(state, "off"))
+        {
+            setAnalogEnable(id, FALSE);
+            setAnPortDioType(id, IO_IN);
+
+            AD1PCFG |= (0x0001 << id);
+            AD1CSSL &= ~(0x0001 << id);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcEnable, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+
+        anum = 0;
+        for(i = 0; i < AN_NUM; i++)
+        {
+            if(getAnalogEnable(i))
+                anum++;
+        }
+
+        if(anum > 0)
+        {
+            AD1CON2 = 0x00000400;// 0000 0000 0000 0000 0000 0000 0100 0000
+            AD1CON2 |= ((anum - 1) << 2);
+            AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
+            AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+            AD1CON1 = 0x000080E6;// 0000 0000 0000 0000 1000 0000 1110 0110
+        }
+        else
+        {
+            AD1PCFG = 0x0000FFFF;// 0000 0000 0000 0000 1111 1111 1111 1111
+            AD1CSSL = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+
+            AD1CON2 = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+            AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0001 1111 0000 1000
+            AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+            AD1CON1 = 0x00000000;// 0000 0000 0000 0000 1000 0000 0000 0000
+        }
+    }
+    else if(compareOSCAddress(msgGetAdcEnable))
+    {
+        BYTE id;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcEnable, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getAnalogEnable(id))
+            sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "on");
+        else
+            sendOSCMessage(getOSCPrefix(), msgAdcEnable, "is", id, "off");
+    }
+    else if(compareOSCAddress(msgSetAdcType))
+    {
+        BYTE id;
+        char* type = NULL;
+
+        if(getArgumentsLength() != 2)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_2_arguments");
+            return mrb_nil_value();
+        }
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            type = getStringArgumentAtIndex(1);
+
+            if(!strcmp(type, "8bit"))
+            {
+                setAnalogType(id, BYTE_ORIGINAL);
+            }
+            else if(!strcmp(type, "10bit"))
+            {
+                setAnalogType(id, WORD_ORIGINAL);
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": must_be_8bit_or_10bit");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcType, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+    }
+    else if(compareOSCAddress(msgGetAdcType))
+    {
+        BYTE id;
+
+        if(getArgumentsLength() != 1)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": must_be_1_argument");
+            return mrb_nil_value();
+        }
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        switch(getAnalogType(id))
+        {
+        case BYTE_ORIGINAL:
+            sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "8bit");
+            break;
+        case WORD_ORIGINAL:
+            sendOSCMessage(getOSCPrefix(), msgAdcType, "is", id, "10bit");
+            break;
+        default:
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcType, ": may_be_other_setting");
+            break;
+        }
+    }
+    else if(compareOSCAddress(msgSetAdcDio))
+    {
+        BYTE id;
+        char* type;
+ 
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            type = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(type, "in"))
+        {
+            setAnPortDioType(id, IO_IN);
+        }
+        else if(!strcmp(type, "out"))
+        {
+            setAnPortDioType(id, IO_OUT);
+            outputAnPort(id, 0);
+        }
+    }
+    else if(compareOSCAddress(msgGetAdcDio))
+    {
+        BYTE id;
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getAnPortDioType(id))
+            sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "in");
+        else
+            sendOSCMessage(getOSCPrefix(), msgAdcDio, "is", id, "out");
+    }
+    else if(compareOSCAddress(msgSetAdcDo))
+    {
+        BYTE id;
+        char* state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            state = getStringArgumentAtIndex(1);
+            if(strcmp(state, "high") && strcmp(state, "low"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetAdcDo, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "high"))
+            outputAnPort(id, HIGH);
+        else if(!strcmp(state, "low"))
+            outputAnPort(id, LOW);
+    }
+    else if(compareOSCAddress(msgGetAdcDi))
+    {
+        BYTE id;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > AN_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetAdcDi, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        BYTE state = inputAnPort(id);
+
+        if(state)
+            sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "high");
+        else
+            sendOSCMessage(getOSCPrefix(), msgAdcDi, "is", id, "low");
+    }
+    // PWM
+    else if(compareOSCAddress(msgSetPwmEnable))
+    {
+        char* state;
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            index = getIntArgumentAtIndex(0);
+            if(index > 3)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            state = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(strcmp(state, "on") == 0)
+        {
+            LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
+            if(!onTimer2)
+            {
+                OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
+                ConfigIntTimer2(T2_INT_ON | T2_INT_PRIOR_2);//syama0
+                onTimer2 = TRUE;
+            }
+            switch(index)
+            {
+            case 0:
+                OpenOC1(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                break;
+            case 1:
+                OpenOC3(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                break;
+            case 2:
+                OpenOC4(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                break;
+            case 3:
+                OpenOC5(OC_ON | OC_TIMER_MODE16 | OC_TIMER2_SRC | OC_PWM_FAULT_PIN_DISABLE, width / 2, w);
+                break;
+            }
+            onSquare[index] = TRUE;
+        }
+        else if(strcmp(state, "off") == 0)
+        {
+            onSquare[index] = FALSE;
+            if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
+            {
+                CloseTimer2();
+                onTimer2 = FALSE;
+            }
+            switch(index)
+            {
+            case 0:
+                CloseOC1();
+                break;
+            case 1:
+                CloseOC3();
+                break;
+            case 2:
+                CloseOC4();
+                break;
+            case 3:
+                CloseOC5();
+                break;
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmEnable, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetPwmEnable))
+    {
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            index = getIntArgumentAtIndex(0);
+            if(index > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        sendOSCMessage(getOSCPrefix(), msgPwmEnable, "is", index, onSquare[index] ? "on" : "off");
+    }
+    else if(compareOSCAddress(msgSetPwmFreq))
+    {
+        WORD index;
+        WORD period;//syama0
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+            freq = getIntArgumentAtIndex(0);
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmEnable, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(freq < 20)
+        {
+            freq = 20;
+        }
+        else if(freq > 20000)
+        {
+            freq = 20000;
+        }
+        T2CONbits.TON = 0;
+        TMR2 = 0;
+        OC1CONbits.OCM = 0b000;
+        OC3CONbits.OCM = 0b000;
+        OC4CONbits.OCM = 0b000;
+        OC5CONbits.OCM = 0b000;
+
+        width = GetSystemClock() / freq;
+        PR2 = width;
+        OC1RS = width / 2;
+        OC3RS = width / 2;
+        OC4RS = width / 2;
+        OC5RS = width / 2;
+
+        OC1CONbits.OCM = 0b110;
+        OC3CONbits.OCM = 0b110;
+        OC4CONbits.OCM = 0b110;
+        OC5CONbits.OCM = 0b110;
+        T2CONbits.TON = 1;
+    }
+    else if(compareOSCAddress(msgGetPwmFreq))
+    {
+        sendOSCMessage(getOSCPrefix(), msgPwmFreq, "i", freq);
+    }
+    else if(compareOSCAddress(msgSetPwmDuty))
+    {
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+        {
+            index = getIntArgumentAtIndex(0);
+            if(index > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            duty[index] = getIntArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDuty, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(duty[index] < 0)
+        {
+            duty[index] = 0;
+        }
+        else if(duty[index] > 100)
+        {
+            duty[index] = 100;
+        }
+        T2CONbits.TON = 0;
+        TMR2 = 0;
+        switch(index)
+        {
+        case 0:
+            OC1CONbits.OCM = 0b000;
+            OC1RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+            OC1CONbits.OCM = 0b110;
+            break;
+        case 1:
+            OC3CONbits.OCM = 0b000;
+            OC3RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+            OC3CONbits.OCM = 0b110;
+            break;
+        case 2:
+            OC4CONbits.OCM = 0b000;
+            OC4RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+            OC4CONbits.OCM = 0b110;
+            break;
+        case 3:
+            OC5CONbits.OCM = 0b000;
+            OC5RS = (LONG)(((float)duty[index] / 100.0) * (float)width);
+            OC5CONbits.OCM = 0b110;
+            break;
+        }
+        T2CONbits.TON = 1;
+    }
+    else if(compareOSCAddress(msgGetPwmDuty))
+    {
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            index = getIntArgumentAtIndex(0);
+            if(index > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDuty, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        sendOSCMessage(getOSCPrefix(), msgPwmDuty, "ii", index, duty[index]);
+    }
+    else if(compareOSCAddress(msgSetPwmDio))
+    {
+        BYTE id;
+        char* type;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            type = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(type, "in"))
+            setPwmPortDioType(id, IO_IN);
+        else if(!strcmp(type, "out"))
+        {
+            setPwmPortDioType(id, IO_OUT);
+            outputPwmPort(id, LOW);
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDio, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetPwmDio))
+    {
+        BYTE id;
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getPwmPortDioType(id))
+            sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "in");
+        else
+            sendOSCMessage(getOSCPrefix(), msgPwmDio, "is", id, "out");
+    }
+    else if(compareOSCAddress(msgSetPwmDo))
+    {
+        BYTE id;
+        char* state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            state = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "high"))
+            outputPwmPort(id, HIGH);
+        else if(!strcmp(state, "low"))
+            outputPwmPort(id, LOW);
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPwmDo, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetPwmDi))
+    {
+        BYTE id;
+        BYTE state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > PWM_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            state = inputPwmPort(id);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetPwmDi, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(state)
+            sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "high");
+        else
+            sendOSCMessage(getOSCPrefix(), msgPwmDi, "is", id, "low");
+    }
+    // D/IO
+    else if(compareOSCAddress(msgSetDigitalDio))
+    {
+        BYTE id;
+        char* type;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > D_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            type = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(type, "in"))
+            setDigitalPortDioType(id, IO_IN);
+        else if(!strcmp(type, "out"))
+        {
+            setDigitalPortDioType(id, IO_OUT);
+            outputDigitalPort(id, LOW);
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDio, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetDigitalDio))
+    {
+        BYTE id;
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > D_NUM - 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getDigitalPortDioType(id))
+            sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "in");
+        else
+            sendOSCMessage(getOSCPrefix(), msgDigitalDio, "is", id, "out");
+    }
+    else if(compareOSCAddress(msgSetDigitalDo))
+    {
+        BYTE id;
+        char* state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id > D_NUM - 1)
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": out_of_value_range");
+
+            state = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "high"))
+            outputDigitalPort(id, HIGH);
+        else if(!strcmp(state, "low"))
+            outputDigitalPort(id, LOW);
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetDigitalDo, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetDigitalDi))
+    {
+        BYTE id;
+        BYTE state;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id >= D_NUM)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            state = inputDigitalPort(id);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetDigitalDi, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(state)
+            sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "high");
+        else
+            sendOSCMessage(getOSCPrefix(), msgDigitalDi, "is", id, "low");
+    }
+    // SPI
+    else if(compareOSCAddress(msgSetSpiConfig))
+    {
+        BYTE id;
+        DWORD bitrate0 = 0;
+        WORD bitrate = 0;
+        DWORD spiFlags = 0;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            bitrate0 = getIntArgumentAtIndex(1);
+            if(bitrate0 >= 2 && bitrate0 <= 1024)
+            {
+                if((bitrate0 % 2) == 0)
+                    bitrate = (WORD)bitrate0;
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:not_even_number");
+                    return mrb_nil_value();
+                }
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 1:out_of_value_range");
+                return mrb_nil_value();
+            }
+
+            if(getArgumentsLength() < 3)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": need_3_arguments_at_leaset");
+                return mrb_nil_value();
+            }
+
+            for(i = 2; i < getArgumentsLength(); i++)
+            {
+                char* flag;
+                if(compareTypeTagAtIndex(i, 's'))
+                    flag = getStringArgumentAtIndex(i);
+
+                if(!strcmp(flag, "msten"))
+                    spiFlags |= SPICON_MSTEN;
+                else if(!strcmp(flag, "ckp"))
+                    spiFlags |= SPICON_CKP;
+                else if(!strcmp(flag, "ssen"))
+                    spiFlags |= SPICON_SSEN;
+                else if(!strcmp(flag, "cke"))
+                    spiFlags |= SPICON_CKE;
+                else if(!strcmp(flag, "smp"))
+                    spiFlags |= SPICON_SMP;
+                else if(!strcmp(flag, "mode16"))
+                    spiFlags |= SPICON_MODE16;
+                else if(!strcmp(flag, "mode32"))
+                    spiFlags |= SPICON_MODE32;
+                else if(!strcmp(flag, "dissdo"))
+                    spiFlags |= SPICON_DISSDO;
+                else if(!strcmp(flag, "sidl"))
+                    spiFlags |= SPICON_SIDL;
+                else if(!strcmp(flag, "frz"))
+                    spiFlags |= SPICON_FRZ;
+                else if(!strcmp(flag, "on"))
+                    spiFlags |= SPICON_ON;
+                else if(!strcmp(flag, "spife"))
+                    spiFlags |= SPICON_SPIFE;
+                else if(!strcmp(flag, "frmpol"))
+                    spiFlags |= SPICON_FRMPOL;
+                else if(!strcmp(flag, "frmsync"))
+                    spiFlags |= SPICON_FRMSYNC;
+                else if(!strcmp(flag, "frmen"))
+                    spiFlags |= SPICON_FRMEN;
+            }
+
+            switch(id)
+            {
+            case 2:
+                SpiChnClose(2);
+                SpiChnOpen(SPI_CHANNEL2, spiFlags, bitrate);
+                break;
+            case 4:
+                SpiChnClose(4);
+                SpiChnOpen(SPI_CHANNEL4, spiFlags, bitrate);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": 0:out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiConfig, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgDisableSpi))
+    {
+        BYTE id;
+
+        if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+        {
+            id = getIntArgumentAtIndex(0);
+            switch(id)
+            {
+            case 2:
+                SpiChnClose(2);
+                break;
+            case 4:
+                SpiChnClose(4);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": out_of_range_value");
+                break;
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgDisableSpi, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetSpiData))
+    {
+        BYTE id = 0;
+        char* load_port;
+        char* active_state;
+        BYTE byte_num = 0;
+        WORD data[4] = {0};
+        //DWORD usec = 0;
+
+        if(getArgumentsLength() < 5)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, "need_4_arguments_at_leaset");
+            return mrb_nil_value();
+        }
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id != 2 && id != 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 0:wrong_argument_value");
+                return mrb_nil_value();
+            }
+
+            load_port = getStringArgumentAtIndex(1);
+            if(!comparePortNameAtIndex(load_port))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 1:wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            active_state = getStringArgumentAtIndex(2);
+            if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 2:wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            byte_num = getIntArgumentAtIndex(3);
+            if(byte_num != 1 && byte_num != 2 && byte_num != 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 3:wrong_argument_value");
+                return mrb_nil_value();
+            }
+
+            if(getArgumentsLength() < byte_num + 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": too_few_arguments");
+                return mrb_nil_value();
+            }
+
+            for(i = 0; i < byte_num; i++)
+            {
+                if(!(compareTypeTagAtIndex(i + 4, 'i') || compareTypeTagAtIndex(i + 4, 'f')))
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": 4:wrong_argument_type");
+                    return mrb_nil_value();
+                }
+
+                data[i] = getIntArgumentAtIndex(i + 4);
+            }
+
+            if(getPortIOType(load_port) == IO_IN)
+                setPortIOType(load_port, IO_OUT);
+
+            if(!strcmp(active_state, "HL"))
+                outputPort(load_port, HIGH);
+            else if(!strcmp(active_state, "LH"))
+                outputPort(load_port, LOW);
+            switch(byte_num)
+            {
+            case 1:
+                sendSpiOneWord(id, data[0], 1);
+                break;
+            case 2:
+                sendSpiTwoWord(id, data[0], data[1], 1);
+                break;
+            case 4:
+                sendSpiFourWord(id, data[0], data[1], data[2], data[3], 1);
+                break;
+            }
+            if(!strcmp(active_state, "HL"))
+                outputPort(load_port, LOW);
+            else if(!strcmp(active_state, "LH"))
+                outputPort(load_port, HIGH);
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiData, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgGetSpiData))
+    {
+        BYTE id = 0;
+        char* load_port;
+        char* active_state;
+        BYTE byte_num = 0;
+        WORD data[4] = {0};
+        //DWORD usec = 0;
+
+        if(getArgumentsLength() < 4)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, "need_4_arguments_at_leaset");
+            return mrb_nil_value();
+        }
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && compareTypeTagAtIndex(1, 's') && compareTypeTagAtIndex(2, 's') && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            if(id != 2 && id != 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 0:wrong_argument_value");
+                return mrb_nil_value();
+            }
+
+            load_port = getStringArgumentAtIndex(1);
+            if(!comparePortNameAtIndex(load_port))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 1:wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            active_state = getStringArgumentAtIndex(2);
+            if(strcmp(active_state, "HL") && strcmp(active_state, "LH"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 2:wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            byte_num = getIntArgumentAtIndex(3);
+            if(byte_num != 1 && byte_num != 2 && byte_num != 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 3:wrong_argument_value");
+                return mrb_nil_value();
+            }
+
+            if((compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
+            {
+                data[0] = getIntArgumentAtIndex(4);
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": 4:wrong_argument_type");
+                return mrb_nil_value();
+            }
+
+            if(!strcmp(active_state, "HL"))
+                outputPort(load_port, HIGH);
+            else if(!strcmp(active_state, "LH"))
+                outputPort(load_port, LOW);
+            switch(byte_num)
+            {
+            case 1:
+                sendSpiOneWord(id, data[0], 1);
+                data[0] = receiveSpiOneWord(id, 1);
+                sendOSCMessage(getOSCPrefix(), msgSpiData, "ii", id, data[0]);
+                break;
+            case 2:
+                //data = receiveSpiTwoWord(id, 8);
+                break;
+            case 4:
+                //data = receiveSpiFourWord(id, 8);
+                break;
+            }
+            if(!strcmp(active_state, "HL"))
+                outputPort(load_port, LOW);
+            else if(!strcmp(active_state, "LH"))
+                outputPort(load_port, HIGH);
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiData, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetSpiDio))
+    {
+        char* name;
+        char* type;
+
+        if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+        {
+            name = getStringArgumentAtIndex(0);
+            if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
+               strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+            type = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(type, "in"))
+            setSpiPortDioType(name, IO_IN);
+        else if(!strcmp(type, "out"))
+        {
+            setSpiPortDioType(name, IO_OUT);
+            outputSpiPort(name, LOW);
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDio, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetSpiDio))
+    {
+        char* name;
+
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            name = getStringArgumentAtIndex(0);
+            if(strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2") &&
+               strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDio, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(getSpiPortDioType(name))
+            sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "in");
+        else
+            sendOSCMessage(getOSCPrefix(), msgSpiDio, "ss", name, "out");
+    }
+    else if(compareOSCAddress(msgSetSpiDo))
+    {
+        char* name;
+        char* state;
+
+        if(compareTypeTagAtIndex(0, 's') && compareTypeTagAtIndex(1, 's'))
+        {
+            name = getStringArgumentAtIndex(0);
+            if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
+               strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            state = getStringArgumentAtIndex(1);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(!strcmp(state, "high"))
+            outputSpiPort(name, HIGH);
+        else if(!strcmp(state, "low"))
+            outputSpiPort(name, LOW);
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetSpiDo, ": wrong_argument_string");
+    }
+    else if(compareOSCAddress(msgGetSpiDi))
+    {
+        char* name;
+        BYTE state;
+
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            name = getStringArgumentAtIndex(0);
+            if(strcmp(name, "sck4") && strcmp(name, "sdi4") && strcmp(name, "sdo4") &&
+               strcmp(name, "sck2") && strcmp(name, "sdi2") && strcmp(name, "sdo2"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            state = inputSpiPort(name);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetSpiDi, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+
+        if(state)
+            sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "high");
+        else
+            sendOSCMessage(getOSCPrefix(), msgSpiDi, "ss", name, "low");
+    }
+    // I2C
+    else if(compareOSCAddress(msgEnableI2c))
+    {
+        BYTE id;
+        char* cFlag = NULL;
+        BOOL flag = FALSE;
+
+        if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f') && compareTypeTagAtIndex(1, 's'))
+        {
+            id = getIntArgumentAtIndex(0);
+            cFlag = getStringArgumentAtIndex(1);
+            if(!strcmp(cFlag, "true"))
+                flag = TRUE;
+            else if(!strcmp(cFlag, "false"))
+                flag = FALSE;
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_string");
+                return mrb_nil_value();
+            }
+
+            switch(id)
+            {
+            case 3:
+                setPortIOType("b2", IO_IN);
+                setPortIOType("b3", IO_IN);
+                I2CEnable(I2C3, flag);
+                break;
+            case 4:
+                setPortIOType("g7", IO_IN);
+                setPortIOType("g8", IO_IN);
+                I2CEnable(I2C4, flag);
+                break;
+            case 5:
+                setPortIOType("f4", IO_IN);
+                setPortIOType("f5", IO_IN);
+                I2CEnable(I2C5, flag);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": out_of_range_value");
+                break;
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgEnableI2c, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetI2cConfig))
+    {
+        BYTE id;
+        DWORD i2cFlags = 0;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+
+            if(getArgumentsLength() < 1)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_1_arguments_at_leaset");
+                return mrb_nil_value();
+            }
+
+            for(i = 1; i < getArgumentsLength(); i++)
+            {
+                char* flag;
+                if(compareTypeTagAtIndex(i, 's'))
+                    flag = getStringArgumentAtIndex(i);
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+                    return mrb_nil_value();
+                }
+
+                if(!strcmp(flag, "enable_slave_clock_stretching"))
+                    i2cFlags |= I2C_ENABLE_SLAVE_CLOCK_STRETCHING;
+                else if(!strcmp(flag, "enable_smb_support"))
+                    i2cFlags |= I2C_ENABLE_SMB_SUPPORT;
+                else if(!strcmp(flag, "enable_high_speed"))
+                    i2cFlags |= I2C_ENABLE_HIGH_SPEED;
+                else if(!strcmp(flag, "stop_in_idle"))
+                    i2cFlags |= I2C_STOP_IN_IDLE;
+            }
+
+            switch(id)
+            {
+            case 3:
+                I2CConfigure(I2C3, i2cFlags);
+                break;
+            case 4:
+                I2CConfigure(I2C4, i2cFlags);
+                break;
+            case 5:
+                I2CConfigure(I2C5, i2cFlags);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetI2cFreq))
+    {
+        BYTE id;
+        DWORD i2cFreq = 0;
+        DWORD actualFreq = 0;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            i2cFreq = getIntArgumentAtIndex(1);
+
+            if(getArgumentsLength() < 2)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": need_2_arguments_at_leaset");
+                return mrb_nil_value();
+            }
+
+            switch(id)
+            {
+            case 3:
+                actualFreq = I2CSetFrequency(I2C3, GetPeripheralClock(), i2cFreq);
+                break;
+            case 4:
+                actualFreq = I2CSetFrequency(I2C4, GetPeripheralClock(), i2cFreq);
+                break;
+            case 5:
+                actualFreq = I2CSetFrequency(I2C5, GetPeripheralClock(), i2cFreq);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": 0:out_of_value_range");
+                return mrb_nil_value();
+            }
+            if((actualFreq - i2cFreq) > i2cFreq / 10)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": bad_frequency");
+                return mrb_nil_value();
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cConfig, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetI2cSlaveAddress))
+    {
+        BYTE id;
+        WORD address;
+        WORD mask;
+        DWORD slvAdrsFlags = 0;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            address = getIntArgumentAtIndex(1);
+            mask = getIntArgumentAtIndex(2);
+
+            if(getArgumentsLength() < 4)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": need_4_arguments_at_leaset");
+                return mrb_nil_value();
+            }
+
+            for(i = 3; i < getArgumentsLength(); i++)
+            {
+                char* flag;
+                if(compareTypeTagAtIndex(i, 's'))
+                    flag = getStringArgumentAtIndex(i);
+                else
+                {
+                    sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
+                    return mrb_nil_value();
+                }
+
+                if(!strcmp(flag, "use_7bit_address"))
+                    slvAdrsFlags |= I2C_USE_7BIT_ADDRESS;
+                else if(!strcmp(flag, "use_10bit_address"))
+                    slvAdrsFlags |= I2C_USE_10BIT_ADDRESS;
+                else if(!strcmp(flag, "enable_general_call_address"))
+                    slvAdrsFlags |= I2C_ENABLE_GENERAL_CALL_ADDRESS;
+                else if(!strcmp(flag, "use_reserved_addresses"))
+                    slvAdrsFlags |= I2C_USE_RESERVED_ADDRESSES;
+            }
+
+            switch(id)
+            {
+            case 3:
+                I2CSetSlaveAddress(I2C3, address, mask, slvAdrsFlags);
+                break;
+            case 4:
+                I2CSetSlaveAddress(I2C4, address, mask, slvAdrsFlags);
+                break;
+            case 5:
+                I2CSetSlaveAddress(I2C5, address, mask, slvAdrsFlags);
+                break;
+            default:
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": 0:out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cSlaveAddress, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgSetI2cData))
+    {
+        BYTE id;
+        BYTE slave_address;
+        BYTE chip_address;
+        WORD address = 0;
+        DWORD data = 0;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) &&
+           (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')) &&
+           (compareTypeTagAtIndex(4, 'i') || compareTypeTagAtIndex(4, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            slave_address = getIntArgumentAtIndex(1);
+            chip_address = getIntArgumentAtIndex(2);
+            address = getIntArgumentAtIndex(3);
+            data = getIntArgumentAtIndex(4);
+
+            switch(id)
+            {
+            case 3:
+                if(!startI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_3);
+
+                setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_3);
+                setDataToI2C(I2C_3, address >> 8);
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_3);
+                setDataToI2C(I2C_3, address & 0x00FF);
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                idleI2C(I2C_3);
+                setDataToI2C(I2C_3, data);
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                stopI2C(I2C_3);
+                idleI2C(I2C_3);
+                DelayMs(5);
+                break;
+            case 4:
+                if(!startI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_4);
+
+                setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_4);
+                setDataToI2C(I2C_4, address >> 8);
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_4);
+                setDataToI2C(I2C_4, address & 0x00FF);
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                idleI2C(I2C_4);
+                setDataToI2C(I2C_4, data);
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                stopI2C(I2C_4);
+                idleI2C(I2C_4);
+                DelayMs(5);
+                break;
+            case 5:
+                if(!startI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_5);
+
+                setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_5);
+                setDataToI2C(I2C_5, address >> 8);
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_5);
+                setDataToI2C(I2C_5, address & 0x00FF);
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                idleI2C(I2C_5);
+                setDataToI2C(I2C_5, data);
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                stopI2C(I2C_5);
+                idleI2C(I2C_5);
+                DelayMs(5);
+                break;
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetI2cData, ": wrong_argument_type");
+    }
+    else if(compareOSCAddress(msgGetI2cData))
+    {
+        BYTE id;
+        BYTE slave_address = 0;
+        BYTE chip_address = 0;
+        WORD address = 0;
+        BYTE data;
+
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')) && (compareTypeTagAtIndex(2, 'i') || compareTypeTagAtIndex(2, 'f')) && (compareTypeTagAtIndex(3, 'i') || compareTypeTagAtIndex(3, 'f')))
+        {
+            id = getIntArgumentAtIndex(0);
+            slave_address = getIntArgumentAtIndex(1);
+            chip_address = getIntArgumentAtIndex(2);
+            address = getIntArgumentAtIndex(3);
+
+            switch(id)
+            {
+            case 3:
+                if(!startI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_3);
+
+                setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_3);
+                setDataToI2C(I2C_3, address >> 8);
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_3);
+                setDataToI2C(I2C_3, address & 0x00FF);
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                restartI2C(I2C_3);
+
+                setAddressToI2C(I2C_3, slave_address | (chip_address << 1), 'r');
+                idleI2C(I2C_3);
+
+                if(!checkAckI2C(I2C_3))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                data = getDataFromI2C(I2C_3);
+
+                //I2C3CONbits.ACKDT = 1;
+                //I2C3CONbits.ACKEN = 1;
+                //while(I2C3CONbits.ACKEN == 1);
+
+                stopI2C(I2C_3);
+                idleI2C(I2C_3);
+
+                sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
+                break;
+            case 4:
+                if(!startI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_4);
+
+                setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_4);
+                setDataToI2C(I2C_4, address >> 8);
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_4);
+                setDataToI2C(I2C_4, address & 0x00FF);
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                restartI2C(I2C_4);
+
+                setAddressToI2C(I2C_4, slave_address | (chip_address << 1), 'r');
+                idleI2C(I2C_4);
+
+                if(!checkAckI2C(I2C_4))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                data = getDataFromI2C(I2C_4);
+
+                //I2C4CONbits.ACKDT = 1;
+                //I2C4CONbits.ACKEN = 1;
+                //while(I2C4CONbits.ACKEN == 1);
+                            
+                stopI2C(I2C_4);
+                idleI2C(I2C_4);
+
+                sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
+                break;
+            case 5:
+                if(!startI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 0:");
+                idleI2C(I2C_5);
+
+                setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'w');
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 1:");
+
+                idleI2C(I2C_5);
+                setDataToI2C(I2C_5, address >> 8);
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 2:");
+
+                idleI2C(I2C_5);
+                setDataToI2C(I2C_5, address & 0x00FF);
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 3:");
+
+                restartI2C(I2C_5);
+
+                setAddressToI2C(I2C_5, slave_address | (chip_address << 1), 'r');
+                idleI2C(I2C_5);
+
+                if(!checkAckI2C(I2C_5))
+                    sendOSCMessage(sysPrefix, msgError, "s", "I2C Error 4:");
+
+                data = getDataFromI2C(I2C_5);
+
+                //I2C5CONbits.ACKDT = 1;
+                //I2C5CONbits.ACKEN = 1;
+                //while(I2C5CONbits.ACKEN == 1);
+
+                stopI2C(I2C_5);
+                idleI2C(I2C_5);
+
+                sendOSCMessage(getOSCPrefix(), msgI2cData, "iii", id, address, data);
+                break;
+            }
+        }
+        else
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetI2cData, ": wrong_argument_type");
+    }
+    return mrb_nil_value();
+}
+
+mrb_value mrb_process_midi_messages(mrb_state* mrb, mrb_value self)
+{
+    if(compareOSCAddress(msgSetNote)) // Note On/Off
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE num = getIntArgumentAtIndex(1);
+        BYTE vel = getIntArgumentAtIndex(2);
+
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_NOTE_ON;
+        OSCTranslatedToUSB.DATA_0 = 0x90 + ch;
+        OSCTranslatedToUSB.DATA_1 = num;
+        OSCTranslatedToUSB.DATA_2 = vel;
+        
+        putHostMIDIPacket(OSCTranslatedToUSB);
+    }
+    else if(compareOSCAddress(msgSetCc)) // Control Change
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE num = getIntArgumentAtIndex(1);
+        BYTE val = getIntArgumentAtIndex(2);
+        
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+        OSCTranslatedToUSB.DATA_0 = 0xB0 + ch;
+        OSCTranslatedToUSB.DATA_1 = num;
+        OSCTranslatedToUSB.DATA_2 = val;
+
+        putHostMIDIPacket(OSCTranslatedToUSB);
+    }
+    else if(compareOSCAddress(msgSetKp)) // Polyphonic Key Pressure
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE num = getIntArgumentAtIndex(1);
+        BYTE prs = getIntArgumentAtIndex(2);
+        
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_POLY_KEY_PRESS;
+        OSCTranslatedToUSB.DATA_0 = 0xA0 + ch;
+        OSCTranslatedToUSB.DATA_1 = num;
+        OSCTranslatedToUSB.DATA_2 = prs;
+
+        putHostMIDIPacket(OSCTranslatedToUSB);        
+    }
+    else if(compareOSCAddress(msgSetPc)) // Program Change
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE pnum = getIntArgumentAtIndex(1);
+        
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PROGRAM_CHANGE;
+        OSCTranslatedToUSB.DATA_0 = 0xC0 + ch;
+        OSCTranslatedToUSB.DATA_1 = pnum;
+        
+        putHostMIDIPacket(OSCTranslatedToUSB);
+    }
+    else if(compareOSCAddress(msgSetCp)) // Channel Pressure
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE prs = getIntArgumentAtIndex(1);
+        
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_CHANNEL_PREASURE;
+        OSCTranslatedToUSB.DATA_0 = 0xD0 + ch;
+        OSCTranslatedToUSB.DATA_1 = prs;
+     
+        putHostMIDIPacket(OSCTranslatedToUSB);   
+    }
+    else if(compareOSCAddress(msgSetPb)) // Pitch Bend
+    {
+        BYTE ch = getIntArgumentAtIndex(0);
+        BYTE msb = getIntArgumentAtIndex(1);
+        BYTE lsb = getIntArgumentAtIndex(2);
+        
+        OSCTranslatedToUSB.Val = 0;
+        OSCTranslatedToUSB.CableNumber = 0;
+        OSCTranslatedToUSB.CodeIndexNumber = MIDI_CIN_PITCH_BEND_CHANGE;
+        OSCTranslatedToUSB.DATA_0 = 0xE0 + ch;
+        OSCTranslatedToUSB.DATA_1 = msb;
+        OSCTranslatedToUSB.DATA_2 = lsb;
+        
+        putHostMIDIPacket(OSCTranslatedToUSB);
+    }
+    
+    return mrb_nil_value();
+}
+
+#if defined(USB_USE_CDC)
+mrb_value mrb_process_cdc_messages(mrb_state* mrb, mrb_value self)
+{
+    BYTE i;
+
+    if(compareOSCAddress(msgSetData))
+    {
+        WORD data = 0;
+        cdcOutDataLength = getArgumentsLength();
+        if(cdcOutDataLength >= MAX_NO_OF_OUT_BYTES)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": too_many_arguments");
+            return mrb_nil_value();
+        }
+        
+        for(i = 0; i < cdcOutDataLength; i++)
+        {
+            data = getIntArgumentAtIndex(i);
+            if(data > 255)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetData, ": out_of_range_value");
+                return mrb_nil_value();
+            }
+            USB_CDC_OUT_Data_Array[i] = (BYTE)data;
+        }
+        
+        cdcSendFlag = TRUE;
+        setApplCDCState(READY_TO_TX_RX);
+        
+        //_USBHostCDC_TerminateTransfer(USB_SUCCESS);
+    }
+
+    return mrb_nil_value();
+}
+#endif
+
+mrb_value mrb_process_system_messages(mrb_state* mrb, mrb_value self)
+{
+    int i;
+
+    // System Setting
+    if(compareOSCAddress(msgSetRemoteIp))
+    {
+        char* rip;
+        WORD ip[4] = {0};
+        
+        if(compareTypeTagAtIndex(0, 's'))
+            rip = getStringArgumentAtIndex(0);
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        ip[0] = atoi(strtok(rip, "."));
+        if(rip == NULL)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        if(ip[0] > 255)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        ip[1] = atoi(strtok(NULL, "."));
+        if(rip == NULL)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        if(ip[1] > 255)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        ip[2] = atoi(strtok(NULL, "."));
+        if(rip == NULL)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        if(ip[2] > 255)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        ip[3] = atoi(strtok(NULL, "."));
+        if(ip[3] > 255)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetRemoteIp, ": wrong_argument_string");
+            return mrb_nil_value();
+        }
+        setRemoteIpAtIndex(0, (BYTE)ip[0]);
+        setRemoteIpAtIndex(1, (BYTE)ip[1]);
+        setRemoteIpAtIndex(2, (BYTE)ip[2]);
+        setRemoteIpAtIndex(3, (BYTE)ip[3]);
+        setInitSendFlag(FALSE);
+        setChCompletedFlag(TRUE);
+        closeOSCSendPort();
+    }
+    else if(compareOSCAddress(msgGetRemoteIp))
+    {
+        char rip[15];
+        sprintf(rip, "%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
+        sendOSCMessage(sysPrefix, msgRemoteIp, "s", rip);
+    }
+    else if(compareOSCAddress(msgSetRemotePort))
+    {
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            if(getIntArgumentAtIndex(0) < 0)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            setRemotePort(getIntArgumentAtIndex(0));
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgGetRemoteIp, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        closeOSCSendPort();
+        setInitSendFlag(FALSE);
+        setChCompletedFlag(TRUE);
+    }
+    else if(compareOSCAddress(msgGetRemotePort))
+    {
+        sendOSCMessage(sysPrefix, msgRemotePort, "i", getRemotePort());
+    }
+    else if(compareOSCAddress(msgSetHostName))
+    {
+        char* srcName = NULL;
+        char* np = NULL;
+        int len = 0;
+        
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            srcName = getStringArgumentAtIndex(0);
+            np = strstr(srcName, ".local");
+            if(np != NULL)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": please_delete_.local");
+                return mrb_nil_value();
+            }
+            
+            //len = np - srcName;
+            //if(len >= 32)
+            if(strlen(srcName) >= 32)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": too_long_string");
+                return mrb_nil_value();
+            }
+            
+            mDNSServiceDeRegister();
+            clearOSCHostName();
+            setOSCHostName(srcName);
+            
+            //debug sendOSCMessage(sysPrefix, msgError, "ss", srcName, hostName);
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostName, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        mDNSServiceDeRegister();
+        
+        mDNSInitialize(getOSCHostName());
+        mDNSServiceRegister((const char *)getOSCHostName(), // base name of the service
+                            "_oscit._udp.local",    // type of the service
+                            8080,                   // TCP or UDP port, at which this service is available
+                            ((const BYTE *)""),     // TXT info
+                            1,                      // auto rename the service when if needed
+                            NULL,                   // no callback function
+                            NULL                    // no application context
+            );
+        mDNSMulticastFilterRegister();
+        dwLastIP = 0;
+        sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
+    }
+    else if(compareOSCAddress(msgGetHostName))
+    {
+        char fullHostName[32] = {0};
+        sprintf(fullHostName, "%s.local", getOSCHostName());
+        sendOSCMessage(sysPrefix, msgHostName, "s", fullHostName);
+    }
+    else if(compareOSCAddress(msgGetHostIp))
+    {
+        char hip[15] = {0};
+        BYTE hip0 = AppConfig.MyIPAddr.Val & 0xFF;
+        BYTE hip1 = (AppConfig.MyIPAddr.Val >> 8) & 0xFF;
+        BYTE hip2 = (AppConfig.MyIPAddr.Val >> 16) & 0xFF;
+        BYTE hip3 = (AppConfig.MyIPAddr.Val >> 24) & 0xFF;
+        sprintf(hip, "%d.%d.%d.%d", hip0, hip1, hip2, hip3);
+        sendOSCMessage(sysPrefix, msgHostIp, "s", hip);
+    }
+    else if(compareOSCAddress(msgGetHostMac))
+    {
+        char macaddr[18] = {0};
+        sprintf(macaddr, "%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
+        sendOSCMessage(sysPrefix, msgHostMac, "s", macaddr);
+    }
+    else if(compareOSCAddress(msgSetHostPort))
+    {
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')))
+        {
+            if(getIntArgumentAtIndex(0) < 0)
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+            setLocalPort(getIntArgumentAtIndex(0));
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetHostPort, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        closeOSCReceivePort();
+        setInitReceiveFlag(FALSE);
+        setChCompletedFlag(TRUE);
+    }
+    else if(compareOSCAddress(msgGetHostPort))
+    {
+        sendOSCMessage(sysPrefix, msgHostPort, "i", getLocalPort());
+    }
+    else if(compareOSCAddress(msgSetPrefix))
+    {
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            char* str = getStringArgumentAtIndex(0);
+            if(str[0] != '/')
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": must_begin_slash");
+                return mrb_nil_value();
+            }
+            clearOSCPrefix();
+            setOSCPrefix(getStringArgumentAtIndex(0));
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSetPrefix, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
+    }
+    else if(compareOSCAddress(msgGetPrefix))
+    {
+        sendOSCMessage(sysPrefix, msgPrefix, "s", getOSCPrefix());
+    }
+    else if(compareOSCAddress(msgDiscoverDevices))
+    {
+        char hip[22], rip[24], macaddr[26], hport[14], rport[16];
+        
+        LED_1_On();
+        
+        mT5IntEnable(0);
+        
+        closeOSCSendPort();
+        
+        sprintf(hip, "HostIP=%d.%d.%d.%d", AppConfig.MyIPAddr.v[0], AppConfig.MyIPAddr.v[1], AppConfig.MyIPAddr.v[2], AppConfig.MyIPAddr.v[3]);
+        sprintf(rip, "RemoteIP=%d.%d.%d.%d", getRemoteIpAtIndex(0), getRemoteIpAtIndex(1), getRemoteIpAtIndex(2), getRemoteIpAtIndex(3));
+        sprintf(macaddr, "HostMAC=%02X:%02X:%02X:%02X:%02X:%02X", AppConfig.MyMACAddr.v[0], AppConfig.MyMACAddr.v[1], AppConfig.MyMACAddr.v[2], AppConfig.MyMACAddr.v[3], AppConfig.MyMACAddr.v[4], AppConfig.MyMACAddr.v[5]);
+        sprintf(hport, "HostPort=%d", getLocalPort());
+        sprintf(rport, "RemotePort=%d", getRemotePort());
+        
+        while(!getInitDiscoverFlag())
+            setInitDiscoverFlag(openDiscoverPort());
+        
+        while(!isDiscoverPutReady());
+        
+        sendOSCMessage(sysPrefix, msgDiscoveredDevice, "sssss", hip, macaddr, hport, rip, rport);
+        
+        closeDiscoverPort();
+        
+        mT5IntEnable(1);
+        
+        LED_1_Off();
+    }
+    else if(compareOSCAddress(msgSwitchUsbMode))
+    {
+        char* dm;
+        if(compareTypeTagAtIndex(0, 's'))
+            dm = getStringArgumentAtIndex(0);
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        if(!strcmp(dm, "host"))
+        {
+            if(device_mode == MODE_DEVICE)
+                USBSoftDetach();
+            
+            device_mode = MODE_HOST;
+        }
+        else if(!strcmp(dm, "device"))
+        {
+            device_mode = MODE_DEVICE;
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSwitchUsbMode, ": out_of_value_range");
+            return mrb_nil_value();
+        }
+        sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
+    }
+    else if(compareOSCAddress(msgGetUsbMode))
+    {
+        if(device_mode == MODE_DEVICE)
+            sendOSCMessage(sysPrefix, msgUsbMode, "s", "device");
+        else if(device_mode == MODE_HOST)
+            sendOSCMessage(sysPrefix, msgUsbMode, "s", "host");
+    }
+    else if(compareOSCAddress(msgWriteNvmData))
+    {
+        if(getArgumentsLength() < 2)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": too_few_arguments");
+            return mrb_nil_value();
+        }
+        if((compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f')) && (compareTypeTagAtIndex(1, 'i') || compareTypeTagAtIndex(1, 'f')))
+        {
+            WORD address = getIntArgumentAtIndex(0);
+            WORD data = getIntArgumentAtIndex(1);
+            
+            if(address >= 1 && address <=7)
+            {
+                if(!NVMWriteWord((void*)(NVM_DATA + 512 * address), data))
+                    sendOSCMessage(sysPrefix, msgNvmData, "s", "write:succeeded");
+                else
+                    sendOSCMessage(sysPrefix, msgNvmData, "s", "write:failed");
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": out_of_range_address");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgWriteNvmData, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+    }
+    else if(compareOSCAddress(msgReadNvmData))
+    {
+        if(getArgumentsLength() < 1)
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": too_few_arguments");
+            return mrb_nil_value();
+        }
+        if(compareTypeTagAtIndex(0, 'i') || compareTypeTagAtIndex(0, 'f'))
+        {
+            DWORD tmpData = 0;
+            WORD address = getIntArgumentAtIndex(0);
+            
+            if(address >= 1 && address <=7)
+            {
+                tmpData = *(DWORD *)(NVM_DATA + 512 * address);
+                sendOSCMessage(sysPrefix, msgNvmData, "ii", address, tmpData);
+            }
+            else
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": out_of_range_address");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgReadNvmData, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+    }
+    else if(compareOSCAddress(msgClearNvmData))
+    {
+        BYTE index, checkstate = 0;
+        NVMErasePage((void *)NVM_DATA);
+        for(index = 1; index <= 7; index++)
+        {
+            checkstate += NVMWriteWord((void*)(NVM_DATA + 512 * index), 0);
+            DelayMs(1);
+        }
+        if(!checkstate)
+            sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:succeeded");
+        else
+            sendOSCMessage(sysPrefix, msgNvmData, "s", "clear:failed");
+    }
+    else if(compareOSCAddress(msgSoftReset))
+    {
+        char* reset_mode;
+        if(compareTypeTagAtIndex(0, 's'))
+        {
+            reset_mode = getStringArgumentAtIndex(0);
+            if(strcmp(reset_mode, "normal") && strcmp(reset_mode, "bootloader"))
+            {
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": out_of_value_range");
+                return mrb_nil_value();
+            }
+        }
+        else
+        {
+            sendOSCMessage(sysPrefix, msgError, "ss", msgSoftReset, ": wrong_argument_type");
+            return mrb_nil_value();
+        }
+        
+        if(!strcmp(reset_mode, "bootloader"))
+        {
+            NVMErasePage((void*)NVM_DATA);
+            NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
+        }
+        SoftReset();
+    }
+    else if(compareOSCAddress(msgDebug))
+    {
+        //debug testNum++;
+        
+        clearOSCBundle();
+        for(i = 0; i < getArgumentsLength(); i++)
+        {
+            if(compareTypeTagAtIndex(i, 'i'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "ii", i, getIntArgumentAtIndex(i));
+            else if(compareTypeTagAtIndex(i, 'f'))
+            {
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "if", i, getFloatArgumentAtIndex(i));
+                
+                //debug appendOSCMessageToBundle(sysPrefix, msgDebug, "ifi", i, getFloatArgumentAtIndex(i), testNum - 1);
+                //debug testNum = 0;
+            }
+            else if(compareTypeTagAtIndex(i, 's'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "is", i, getStringArgumentAtIndex(i));
+            else if(compareTypeTagAtIndex(i, 'T'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "iT", i);
+            else if(compareTypeTagAtIndex(i, 'F'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "iF", i);
+            else if(compareTypeTagAtIndex(i, 'N'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "iN", i);
+            else if(compareTypeTagAtIndex(i, 'I'))
+                appendOSCMessageToBundle(sysPrefix, msgDebug, "iI", i);
+        }
+        sendOSCBundle();
+    }
+    else if(compareOSCAddress(msgGetVersion))
+    {
+        sendOSCMessage(sysPrefix, msgVersion, "s", CURRENT_VERSION);
+    }
 
     return mrb_nil_value();
 }
@@ -4903,11 +4509,17 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 {
                     if(swState1)
                     {
+                        //mT5IntEnable(0);
                         LED_1_Toggle();
+                        //int ai = mrb_gc_arena_save(mrb);
+                        //mrb_funcall(mrb, mrb_top_self(mrb), "send_osc_task", 0);
+                        //mrb_gc_arena_restore(mrb, ai);
+                        //mT5IntEnable(1);
                     }
                     else
                     {
                         LED_2_Toggle();
+                        //mrb_funcall(mrb, mrb_top_self(mrb), "sendOSCTask", 0);
                     }
                     count = 0;
                 }
@@ -4998,28 +4610,29 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
     BYTE u8Data[128] = {0};
 
     // User Application USB tasks
-    if(USBDeviceState < CONFIGURED_STATE || USBSuspendControl == 1)
+    //if(USBDeviceState < CONFIGURED_STATE || USBSuspendControl == 1)
+    if(!checkUSBState())
         return mrb_nil_value();
 
-    if(!USBHandleBusy(HIDRxHandle))
+    if(!hidHandleBusy())
     {
-        HIDRxHandle = USBRxOnePacket(HID_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
-        MIDIRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
-        if(ReceivedHidDataBuffer[0] == 0x80)
+        hidRxOnePacket();//USBRxOnePacket(HID_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
+        //midiRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
+        if(getRcvHidDataBuffer(0) == 0x80)
         {
             //LED_1_Toggle();
         }
-        switch(ReceivedHidDataBuffer[0])
+        switch(getRcvHidDataBuffer(0))
         {
             case 0x80:// ADC Enable
-                if(ReceivedHidDataBuffer[1])
+                if(getRcvHidDataBuffer(1))
                 {
                     AD1CON1bits.ON = 0;
 
                     int i;
                     WORD anum = 0;
-                    WORD id = ReceivedHidDataBuffer[2];
-                    BYTE state = ReceivedHidDataBuffer[3];
+                    WORD id = getRcvHidDataBuffer(2);
+                    BYTE state = getRcvHidDataBuffer(3);
 
                     if(id > 13 || state > 1)
                         return mrb_nil_value();
@@ -5068,82 +4681,76 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                 }
                 else
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
 
                     if(id > 13)
                         return mrb_nil_value();
 
-                    ToSendHidDataBuffer[0] = 0x80;
-                    ToSendHidDataBuffer[1] = 3;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = getAnalogEnable(ReceivedHidDataBuffer[2]);
-                    ToSendHidDataBuffer[4] = getAnalogByte(ReceivedHidDataBuffer[2], BYTE_ORIGINAL);
-                    ToSendHidDataBuffer[5] = 0x00;
+                    setSndHidDataBuffer(0, 0x80);
+                    setSndHidDataBuffer(1,3);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, getAnalogEnable(getRcvHidDataBuffer(2)));
+                    setSndHidDataBuffer(4, getAnalogByte(getRcvHidDataBuffer(2), BYTE_ORIGINAL));
+                    setSndHidDataBuffer(5, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x81:
-                if(ReceivedHidDataBuffer[1])
+                if(getRcvHidDataBuffer(1))
                 {
-                    if(ReceivedHidDataBuffer[3] == 0)
+                    if(getRcvHidDataBuffer(3) == 0)
                     {
-                        setAnPortDioType(ReceivedHidDataBuffer[2], IO_IN);
+                        setAnPortDioType(getRcvHidDataBuffer(2), IO_IN);
                     }
-                    else if(ReceivedHidDataBuffer[3] == 1)
+                    else if(getRcvHidDataBuffer(3) == 1)
                     {
-                        setAnPortDioType(ReceivedHidDataBuffer[2], IO_OUT);
+                        setAnPortDioType(getRcvHidDataBuffer(2), IO_OUT);
                     }
                 }
                 else
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
 
                     if(id > 13)
                         return mrb_nil_value();
 
-                    ToSendHidDataBuffer[0] = 0x81;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = ioAnPort[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[5] = 0x00;
+                    setSndHidDataBuffer(0, 0x81);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, ioAnPort[getRcvHidDataBuffer(2)]);
+                    setSndHidDataBuffer(5, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x82:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    outputAnPort(ReceivedHidDataBuffer[2], ReceivedHidDataBuffer[3]);
+                    outputAnPort(getRcvHidDataBuffer(2), getRcvHidDataBuffer(3));
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    ToSendHidDataBuffer[0] = 0x82;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = inputAnPort(ReceivedHidDataBuffer[2]);
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x82);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, inputAnPort(getRcvHidDataBuffer(2)));
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x83:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE index = ReceivedHidDataBuffer[2];
+                    BYTE index = getRcvHidDataBuffer(2);
                     if(index > 4)
                         return mrb_nil_value();
 
-                    if(ReceivedHidDataBuffer[3] == 1)
+                    if(getRcvHidDataBuffer(3) == 1)
                     {
                         LONG w = (LONG)(((float)duty[index] / 100.0) * (float)width);
                         if(!onTimer2)
@@ -5168,7 +4775,7 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                         }
                         onSquare[index] = TRUE;
                     }
-                    else if(ReceivedHidDataBuffer[3] == 0)
+                    else if(getRcvHidDataBuffer(3) == 0)
                     {
                         onSquare[index] = FALSE;
                         if(onTimer2 && (!onSquare[0] && !onSquare[1] && !onSquare[2] && !onSquare[3]))
@@ -5193,26 +4800,24 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                         }
                     }
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    BYTE index = ReceivedHidDataBuffer[2];
+                    BYTE index = getRcvHidDataBuffer(2);
 
-                    ToSendHidDataBuffer[0] = 0x83;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = index;
-                    ToSendHidDataBuffer[3] = onSquare[index];
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x83);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, index);
+                    setSndHidDataBuffer(3, onSquare[index]);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x84:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    freq = (ReceivedHidDataBuffer[2] << 8) | ReceivedHidDataBuffer[3];
+                    freq = (getRcvHidDataBuffer(2) << 8) | getRcvHidDataBuffer(3);
                     if(freq < 20)
                     {
                         freq = 20;
@@ -5230,25 +4835,23 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                     OC1CONbits.OCM = 0b110;
                     T2CONbits.TON = 1;
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    ToSendHidDataBuffer[0] = 0x84;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = (BYTE)(freq >> 8);
-                    ToSendHidDataBuffer[3] = (BYTE)freq;
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x84);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, (BYTE)(freq >> 8));
+                    setSndHidDataBuffer(3, (BYTE)freq);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x85:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE index = ReceivedHidDataBuffer[2];
-                    duty[index] = ReceivedHidDataBuffer[3];
+                    BYTE index = getRcvHidDataBuffer(2);
+                    duty[index] = getRcvHidDataBuffer(3);
                     if(duty[index] < 0)
                     {
                         duty[index] = 0;
@@ -5284,27 +4887,25 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                     }
                     T2CONbits.TON = 1;
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    BYTE index = ReceivedHidDataBuffer[2];
+                    BYTE index = getRcvHidDataBuffer(2);
 
-                    ToSendHidDataBuffer[0] = 0x85;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = index;
-                    ToSendHidDataBuffer[3] = duty[index];
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x85);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, index);
+                    setSndHidDataBuffer(3, duty[index]);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x86:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE type = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE type = getRcvHidDataBuffer(3);
 
                     if(type == 0)
                     {
@@ -5317,52 +4918,48 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                 }
                 else
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
 
                     if(id > 3)
                         return mrb_nil_value();
 
-                    ToSendHidDataBuffer[0] = 0x86;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = ioPwmPort[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[5] = 0x00;
+                    setSndHidDataBuffer(0, 0x86);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, ioPwmPort[getRcvHidDataBuffer(2)]);
+                    setSndHidDataBuffer(5, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x87:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE state = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE state = getRcvHidDataBuffer(3);
                     outputPwmPort(id, state);
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
                     BYTE state = inputPwmPort(id);
 
-                    ToSendHidDataBuffer[0] = 0x87;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = id;
-                    ToSendHidDataBuffer[3] = state;
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x87);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, id);
+                    setSndHidDataBuffer(3, state);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x88:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE type = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE type = getRcvHidDataBuffer(3);
 
                     if(type == 0)
                     {
@@ -5375,52 +4972,48 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                 }
                 else
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
 
                     if(id > 3)
                         return mrb_nil_value();
 
-                    ToSendHidDataBuffer[0] = 0x88;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = ioDPort[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[5] = 0x00;
+                    setSndHidDataBuffer(0, 0x88);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, ioDPort[getRcvHidDataBuffer(2)]);
+                    setSndHidDataBuffer(5, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x89:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE state = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE state = getRcvHidDataBuffer(3);
                     outputDigitalPort(id, state);
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
                     BYTE state = inputDigitalPort(id);
 
-                    ToSendHidDataBuffer[0] = 0x89;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = id;
-                    ToSendHidDataBuffer[3] = state;
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x89);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, id);
+                    setSndHidDataBuffer(3, state);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x8A:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE type = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE type = getRcvHidDataBuffer(3);
 
                     switch(id)
                     {
@@ -5464,28 +5057,26 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                 }
                 else
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
 
                     if(id > 5)
                         return mrb_nil_value();
 
-                    ToSendHidDataBuffer[0] = 0x8A;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = ReceivedHidDataBuffer[2];
-                    ToSendHidDataBuffer[3] = ioSpiPort[ReceivedHidDataBuffer[2]];
-                    ToSendHidDataBuffer[5] = 0x00;
+                    setSndHidDataBuffer(0, 0x8A);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, getRcvHidDataBuffer(2));
+                    setSndHidDataBuffer(3, ioSpiPort[getRcvHidDataBuffer(2)]);
+                    setSndHidDataBuffer(5, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0x8B:
-                if(ReceivedHidDataBuffer[1] == 1)
+                if(getRcvHidDataBuffer(1) == 1)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
-                    BYTE state = ReceivedHidDataBuffer[3];
+                    BYTE id = getRcvHidDataBuffer(2);
+                    BYTE state = getRcvHidDataBuffer(3);
                     switch(id)
                     {
                         case 0:
@@ -5508,9 +5099,9 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                             break;
                     }
                 }
-                else if(ReceivedHidDataBuffer[1] == 0)
+                else if(getRcvHidDataBuffer(1) == 0)
                 {
-                    BYTE id = ReceivedHidDataBuffer[2];
+                    BYTE id = getRcvHidDataBuffer(2);
                     BYTE state = 0;
                     switch(id)
                     {
@@ -5534,124 +5125,112 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                             break;
                     }
 
-                    ToSendHidDataBuffer[0] = 0x8B;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = id;
-                    ToSendHidDataBuffer[3] = state;
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0x8B);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, id);
+                    setSndHidDataBuffer(3, state);
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0xF0:// Host IP
-                if(!ReceivedHidDataBuffer[1])
+                if(!getRcvHidDataBuffer(1))
                 {
-                    ToSendHidDataBuffer[0] = 0xF0;
-                    ToSendHidDataBuffer[1] = 4;
-                    ToSendHidDataBuffer[2] = (BYTE)((AppConfig.MyIPAddr.Val >> 0) & 0x000000FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((AppConfig.MyIPAddr.Val >> 8) & 0x000000FF);
-                    ToSendHidDataBuffer[4] = (BYTE)((AppConfig.MyIPAddr.Val >> 16) & 0x000000FF);
-                    ToSendHidDataBuffer[5] = (BYTE)((AppConfig.MyIPAddr.Val >> 24) & 0x000000FF);
-                    ToSendHidDataBuffer[6] = 0x00;
+                    setSndHidDataBuffer(0, 0xF0);
+                    setSndHidDataBuffer(1, 4);
+                    setSndHidDataBuffer(2, (BYTE)((AppConfig.MyIPAddr.Val >> 0) & 0x000000FF));
+                    setSndHidDataBuffer(3, (BYTE)((AppConfig.MyIPAddr.Val >> 8) & 0x000000FF));
+                    setSndHidDataBuffer(4, (BYTE)((AppConfig.MyIPAddr.Val >> 16) & 0x000000FF));
+                    setSndHidDataBuffer(5, (BYTE)((AppConfig.MyIPAddr.Val >> 24) & 0x000000FF));
+                    setSndHidDataBuffer(6, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0xF1:// Remote IP
-                if(!ReceivedHidDataBuffer[1])
+                if(!getRcvHidDataBuffer(1))
                 {
-                    ToSendHidDataBuffer[0] = 0xF1;
-                    ToSendHidDataBuffer[1] = 4;
-                    ToSendHidDataBuffer[2] = getRemoteIpAtIndex(0);
-                    ToSendHidDataBuffer[3] = getRemoteIpAtIndex(1);
-                    ToSendHidDataBuffer[4] = getRemoteIpAtIndex(2);
-                    ToSendHidDataBuffer[5] = getRemoteIpAtIndex(3);
-                    ToSendHidDataBuffer[6] = 0x00;
+                    setSndHidDataBuffer(0, 0xF1);
+                    setSndHidDataBuffer(1, 4);
+                    setSndHidDataBuffer(2, getRemoteIpAtIndex(0));
+                    setSndHidDataBuffer(3, getRemoteIpAtIndex(1));
+                    setSndHidDataBuffer(4, getRemoteIpAtIndex(2));
+                    setSndHidDataBuffer(5, getRemoteIpAtIndex(3));
+                    setSndHidDataBuffer(6, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 else
                 {
-                    setRemoteIpAtIndex(0, ReceivedHidDataBuffer[2]);
-                    setRemoteIpAtIndex(1, ReceivedHidDataBuffer[3]);
-                    setRemoteIpAtIndex(2, ReceivedHidDataBuffer[4]);
-                    setRemoteIpAtIndex(3, ReceivedHidDataBuffer[5]);
+                    setRemoteIpAtIndex(0, getRcvHidDataBuffer(2));
+                    setRemoteIpAtIndex(1, getRcvHidDataBuffer(3));
+                    setRemoteIpAtIndex(2, getRcvHidDataBuffer(4));
+                    setRemoteIpAtIndex(3, getRcvHidDataBuffer(5));
                     setInitSendFlag(FALSE);
                     closeOSCSendPort();
                 }
                 break;
             case 0xF2:// Local Port
-                if(!ReceivedHidDataBuffer[1])
+                if(!getRcvHidDataBuffer(1))
                 {
-                    ToSendHidDataBuffer[0] = 0xF2;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = (BYTE)((getLocalPort() >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((getLocalPort() >> 8) & 0x00FF);
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0xF2);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, (BYTE)((getLocalPort() >> 0) & 0x00FF));
+                    setSndHidDataBuffer(3, (BYTE)((getLocalPort() >> 8) & 0x00FF));
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 else
                 {
-                    setLocalPort(ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8));
+                    setLocalPort(getRcvHidDataBuffer(2) | (getRcvHidDataBuffer(3) << 8));
                     setInitReceiveFlag(FALSE);
                     closeOSCReceivePort();
                 }
                 break;
             case 0xF3:// Remote Port
-                if(!ReceivedHidDataBuffer[1])
+                if(!getRcvHidDataBuffer(1))
                 {
-                    ToSendHidDataBuffer[0] = 0xF3;
-                    ToSendHidDataBuffer[1] = 2;
-                    ToSendHidDataBuffer[2] = (BYTE)((getRemotePort() >> 0) & 0x00FF);
-                    ToSendHidDataBuffer[3] = (BYTE)((getRemotePort() >> 8) & 0x00FF);
-                    ToSendHidDataBuffer[4] = 0x00;
+                    setSndHidDataBuffer(0, 0xF3);
+                    setSndHidDataBuffer(1, 2);
+                    setSndHidDataBuffer(2, (BYTE)((getRemotePort() >> 0) & 0x00FF));
+                    setSndHidDataBuffer(3, (BYTE)((getRemotePort() >> 8) & 0x00FF));
+                    setSndHidDataBuffer(4, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 else
                 {
-                    setRemotePort(ReceivedHidDataBuffer[2] | (ReceivedHidDataBuffer[3] << 8));
+                    setRemotePort(getRcvHidDataBuffer(2) | (getRcvHidDataBuffer(3) << 8));
                     setInitSendFlag(FALSE);
                     closeOSCSendPort();
                 }
                 break;
             case 0xF4:// Mac Address
-                if(!ReceivedHidDataBuffer[1])
+                if(!getRcvHidDataBuffer(1))
                 {
-                    ToSendHidDataBuffer[0] = 0xF4;
-                    ToSendHidDataBuffer[1] = 6;
-                    ToSendHidDataBuffer[2] = AppConfig.MyMACAddr.v[0];
-                    ToSendHidDataBuffer[3] = AppConfig.MyMACAddr.v[1];
-                    ToSendHidDataBuffer[4] = AppConfig.MyMACAddr.v[2];
-                    ToSendHidDataBuffer[5] = AppConfig.MyMACAddr.v[3];
-                    ToSendHidDataBuffer[6] = AppConfig.MyMACAddr.v[4];
-                    ToSendHidDataBuffer[7] = AppConfig.MyMACAddr.v[5];
-                    ToSendHidDataBuffer[8] = 0x00;
+                    setSndHidDataBuffer(0, 0xF4);
+                    setSndHidDataBuffer(1, 6);
+                    setSndHidDataBuffer(2, AppConfig.MyMACAddr.v[0]);
+                    setSndHidDataBuffer(3, AppConfig.MyMACAddr.v[1]);
+                    setSndHidDataBuffer(4, AppConfig.MyMACAddr.v[2]);
+                    setSndHidDataBuffer(5, AppConfig.MyMACAddr.v[3]);
+                    setSndHidDataBuffer(6, AppConfig.MyMACAddr.v[4]);
+                    setSndHidDataBuffer(7, AppConfig.MyMACAddr.v[5]);
+                    setSndHidDataBuffer(8, 0x00);
 
-                    if(!USBHandleBusy(HIDTxHandle))
-                    {
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
-                    }
+                    if(!hidHandleBusy())
+                        hidTxOnePacket();
                 }
                 break;
             case 0xF5:// Soft Reset
-                if(ReceivedHidDataBuffer[1])
+                if(getRcvHidDataBuffer(1))
                 {
                     NVMErasePage((void*)NVM_DATA);
                     NVMWriteWord((void*)(NVM_DATA), (unsigned int)0x01);
@@ -5660,7 +5239,7 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                 break;
 #if 0//test
             case 0xF6:// Save Current Settings
-                if(ReceivedHidDataBuffer[1])
+                if(getRcvHidDataBuffer(1])
                 {
                     u8Data[0] = getRemoteIpAtIndex(0);
                     u8Data[1] = getRemoteIpAtIndex(1);
@@ -5684,7 +5263,7 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                     setLocalPort((WORD)u8Data[4] | ((WORD)u8Data[5] << 8));
                     setRemotePort((WORD)u8Data[6] | ((WORD)u8Data[7] << 8));
 
-                    if(!USBHandleBusy(HIDTxHandle))
+                    if(!hidHandleBusy())
                     {
                         ToSendHidDataBuffer[0] = 0xF6;
                         ToSendHidDataBuffer[1] = getRemoteIpAtIndex(0);
@@ -5697,7 +5276,7 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
                         ToSendHidDataBuffer[8] = (BYTE)((getRemotePort() >> 8) & 0x00FF);
                         ToSendHidDataBuffer[9] = 0x00;
 
-                        HIDTxHandle = USBTxOnePacket(HID_EP, (BYTE*)ToSendHidDataBuffer, 64);
+                        hidTxOnePacket();
                     }
                 }
                 break;
@@ -5723,8 +5302,8 @@ mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
     midiData.DATA_1 = num;
     midiData.DATA_2 = vel;
 
-    if(!USBHandleBusy(MIDITxHandle))
-        MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
+    if(!midiHandleBusy())
+        midiTxOnePacket();
     //delayUs(2);
 
     return mrb_nil_value();
@@ -5744,8 +5323,8 @@ mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
     midiData.DATA_1 = num;
     midiData.DATA_2 = val;
 
-    if(!USBHandleBusy(MIDITxHandle))
-        MIDITxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)&midiData, 4);
+    if(!midiHandleBusy())
+        midiTxOnePacket();
     //delayUs(20);
 
     return mrb_nil_value();
@@ -5756,35 +5335,35 @@ mrb_value mrb_receive_midi_datas(mrb_state* mrb, mrb_value self)
     int i;
     BYTE ch, num, val;
 
-    if((USBDeviceState < CONFIGURED_STATE) || (USBSuspendControl == 1))
+    if(checkUSBState())
         return mrb_nil_value();
 
-    if(!USBHandleBusy(MIDIRxHandle))
+    if(!midiHandleBusy())
     {
-        MIDIRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&ReceivedMidiDataBuffer, 64);
+        midiRxOnePacket();
 
         //MIDI Note
         i = 1;
-        while((ReceivedMidiDataBuffer[i] & 0xF0) == 0x90)
+        while((getRcvMidiDataBuffer(i) & 0xF0) == 0x90)
         {
-            ch = ReceivedMidiDataBuffer[i] & 0x0F;
-            num = ReceivedMidiDataBuffer[i + 1];
-            val = ReceivedMidiDataBuffer[i + 2];
+            ch = getRcvMidiDataBuffer(i) & 0x0F;
+            num = getRcvMidiDataBuffer(i + 1);
+            val = getRcvMidiDataBuffer(i + 2);
 
-            ReceivedMidiDataBuffer[i] &= 0x00;
+            setRcvMidiDataBuffer(i, getRcvMidiDataBuffer(i) & 0x00);
             i += 4;
             continue;
         }
 
         //MIDI CC
         i = 1;
-        while((ReceivedMidiDataBuffer[i] & 0xF0) == 0xB0)
+        while((getRcvMidiDataBuffer(i) & 0xF0) == 0xB0)
         {
-            ch = ReceivedMidiDataBuffer[i] & 0x0F;
-            num = ReceivedMidiDataBuffer[i + 1];
-            val = ReceivedMidiDataBuffer[i + 2];
+            ch = getRcvMidiDataBuffer(i) & 0x0F;
+            num = getRcvMidiDataBuffer(i + 1);
+            val = getRcvMidiDataBuffer(i + 2);
 
-            ReceivedMidiDataBuffer[i] &= 0x00;
+            setRcvMidiDataBuffer(i, getRcvMidiDataBuffer(i) & 0x00);
             i += 4;
             continue;
         }
@@ -5811,104 +5390,37 @@ mrb_value mrb_usb_host_tasks(mrb_state* mrb, mrb_value self)
 
 mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
 {
-    BYTE currentEndpoint;
+    HOST_MIDI_PACKET hostMidiPacket;
 
-    switch(ProcState)
+    hostMidiPacket = getHostMIDIPacket();
+
+    if(getInitSendFlag() && hostMidiPacket.rcvFlag)
     {
-        case STATE_INITIALIZE:
-            ProcState = STATE_IDLE;
+        switch(hostMidiPacket.type)
+        {
+        case 0x80:// Note off
+        case 0x90:// Note on
+            sendOSCMessage(midiPrefix, msgNote, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
             break;
-        case STATE_IDLE:
+        case 0xA0:// Key Pressure
+            sendOSCMessage(midiPrefix, msgKp, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
             break;
-        case STATE_READY:
-            for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
-            {
-                switch(endpointBuffers[currentEndpoint].TransferState)
-                {
-                    case RX_DATA:
-                        if(USBHostMIDIRead(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufWriteLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET)) == USB_SUCCESS)
-                        {
-                            endpointBuffers[currentEndpoint].TransferState = RX_DATA_WAIT;
-                        }
-                        break;
-                    case RX_DATA_WAIT:
-                        if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
-                        {
-                            midiType = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0xF0;
-                            midiCh = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0x0F;
-                            midiNum = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_1;
-                            midiVal = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_2;
-
-                            if(getInitSendFlag())
-                            {
-                                switch(midiType)
-                                {
-                                    case 0x80:// Note off
-                                    case 0x90:// Note on
-                                        sendOSCMessage(midiPrefix, msgNote, "iii", midiCh, midiNum, midiVal);
-                                        break;
-                                    case 0xA0:// Key Pressure
-                                        sendOSCMessage(midiPrefix, msgKp, "iii", midiCh, midiNum, midiVal);
-                                        break;
-                                    case 0xB0:// Control Change
-                                        sendOSCMessage(midiPrefix, msgCc, "iii", midiCh, midiNum, midiVal);
-                                        break;
-                                    case 0xC0:// Program Change
-                                        sendOSCMessage(midiPrefix, msgPc, "i", midiNum);
-                                        break;
-                                    case 0xD0:// Channel Pressure
-                                        sendOSCMessage(midiPrefix, msgCp, "ii", midiCh, midiNum);
-                                        break;
-                                    case 0xE0:// Pitch Bend
-                                        sendOSCMessage(midiPrefix, msgPb, "iii", midiCh, midiNum, midiVal);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                //naze StackTask();
-                            }
-
-                            endpointBuffers[currentEndpoint].TransferState = RX_DATA;
-                            endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-                            if(endpointBuffers[currentEndpoint].pBufWriteLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                            {
-                                endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-                            }
-                        }
-                        break;
-                    case TX_DATA:
-                        if(endpointBuffers[currentEndpoint].pBufReadLocation != endpointBuffers[currentEndpoint].pBufWriteLocation)
-                        {
-                            if(USBHostMIDIWrite(deviceHandle, currentEndpoint, endpointBuffers[currentEndpoint].pBufReadLocation, endpointBuffers[currentEndpoint].numOfMIDIPackets * sizeof(USB_AUDIO_MIDI_PACKET)) == USB_SUCCESS)
-                            {
-                                endpointBuffers[currentEndpoint].TransferState = TX_DATA_WAIT;
-                            }
-                        }
-                        break;
-                    case TX_DATA_WAIT:
-                        if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
-                        {
-                            endpointBuffers[currentEndpoint].TransferState = TX_DATA;
-                            endpointBuffers[currentEndpoint].pBufReadLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
-
-                            if(endpointBuffers[currentEndpoint].pBufReadLocation - endpointBuffers[currentEndpoint].bufferStart >= endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE)
-                            {
-                                endpointBuffers[currentEndpoint].pBufReadLocation = endpointBuffers[currentEndpoint].bufferStart;
-                            }
-                        }
-                        break;
-                }
-                //delayUs(2);
-            }
+        case 0xB0:// Control Change
+            sendOSCMessage(midiPrefix, msgCc, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
             break;
-        case STATE_ERROR:
-            LED_2_On();
+        case 0xC0:// Program Change
+            sendOSCMessage(midiPrefix, msgPc, "i", hostMidiPacket.num);
+            break;
+        case 0xD0:// Channel Pressure
+            sendOSCMessage(midiPrefix, msgCp, "ii", hostMidiPacket.ch, hostMidiPacket.num);
+            break;
+        case 0xE0:// Pitch Bend
+            sendOSCMessage(midiPrefix, msgPb, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
             break;
         default:
-            ProcState = STATE_INITIALIZE;
             break;
+        }
     }
-
     return mrb_nil_value();
 }
 
@@ -5927,29 +5439,29 @@ mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
 
     if(!USBHostCDC_ApiDeviceDetect()) /* TRUE if device is enumerated without error */
     {
-       APPL_CDC_State = DEVICE_NOT_CONNECTED;
+        setApplCDCState(DEVICE_NOT_CONNECTED);
     }
 
-    switch(APPL_CDC_State)
+    switch(getApplCDCState())
     {
         case DEVICE_NOT_CONNECTED:
             USBTasks();
             if(USBHostCDC_ApiDeviceDetect()) /* TRUE if device is enumerated without error */
             {
-                APPL_CDC_State = DEVICE_CONNECTED;
+                setApplCDCState(DEVICE_CONNECTED);
             }
             break;
         case DEVICE_CONNECTED:
-            APPL_CDC_State = READY_TO_TX_RX;
+            setApplCDCState(READY_TO_TX_RX);
             break;
         case GET_IN_DATA:
             if(USBHostCDC_Api_Get_IN_Data(MAX_NO_OF_IN_BYTES, USB_CDC_IN_Data_Array))
             {
-                APPL_CDC_State = GET_IN_DATA_WAIT;
+                setApplCDCState(GET_IN_DATA_WAIT);
             }
             else
             {
-                APPL_CDC_State = READY_TO_TX_RX;
+                setApplCDCState(READY_TO_TX_RX);
             }
             break;
         case GET_IN_DATA_WAIT:
@@ -5964,29 +5476,29 @@ mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
                             sendOSCMessage(cdcPrefix, msgData, "iii", i, NumOfBytesRcvd, USB_CDC_IN_Data_Array[i]);
                         }
                     }
-                    APPL_CDC_State = READY_TO_TX_RX;
+                    setApplCDCState(READY_TO_TX_RX);
                 }
                 else
                 {
-                    APPL_CDC_State = READY_TO_TX_RX;
+                    setApplCDCState(READY_TO_TX_RX);
                 }
             }
             break;
         case SEND_OUT_DATA:
             if(USBHostCDC_Api_Send_OUT_Data(cdcOutDataLength, USB_CDC_OUT_Data_Array))
             {
-                APPL_CDC_State = SEND_OUT_DATA_WAIT;
+                setApplCDCState(SEND_OUT_DATA_WAIT);
             }
             else
             {
-                APPL_CDC_State = READY_TO_TX_RX;
+                setApplCDCState(READY_TO_TX_RX);
             }
             break;
         case SEND_OUT_DATA_WAIT:
             if(USBHostCDC_ApiTransferIsComplete(&ErrorDriver, &NumOfBytesRcvd))
             {
                 USBHostCDC_Clear_Out_DATA_Array();
-                APPL_CDC_State = READY_TO_TX_RX;
+                setApplCDCState(READY_TO_TX_RX);
 
                 cdcSendFlag = FALSE;
             }
@@ -5995,12 +5507,12 @@ mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
 
             if(cdcSendFlag)
             {
-                APPL_CDC_State = SEND_OUT_DATA;
+                setApplCDCState(SEND_OUT_DATA);
                 //cdcSendFlag = FALSE;
             }
             else
             {
-                APPL_CDC_State = READY_TO_TX_RX;
+                setApplCDCState(READY_TO_TX_RX);
             }
             break;
         default :
@@ -6011,648 +5523,11 @@ mrb_value mrb_usb_cdc_rxtx_handler(mrb_state* mrb, mrb_value self)
         cdcReceiveInterval++;
     else if(cdcReceiveInterval == 16384)
     {
-        if(APPL_CDC_State == READY_TO_TX_RX)
-            APPL_CDC_State = GET_IN_DATA;
+        if(getApplCDCState() == READY_TO_TX_RX)
+            setApplCDCState(GET_IN_DATA);
         cdcReceiveInterval = 0;
     }
 
     return mrb_nil_value();
 }
 #endif
-
-
-// ******************************************************************************************************
-// ************** USB Callback Functions ****************************************************************
-// ******************************************************************************************************
-// The USB firmware stack will call the callback functions USBCBxxx() in response to certain USB related
-// events.  For example, if the host PC is powering down, it will stop sending out Start of Frame (SOF)
-// packets to your device.  In response to this, all USB devices are supposed to decrease their power
-// consumption from the USB Vbus to <2.5mA each.  The USB module detects this condition (which according
-// to the USB specifications is 3+ms of no bus activity/SOF packets) and then calls the USBCBSuspend()
-// function.  You should modify these callback functions to take appropriate actions for each of these
-// conditions.  For example, in the USBCBSuspend(), you may wish to add code that will decrease power
-// consumption from Vbus to <2.5mA (such as by clock switching, turning off LEDs, putting the
-// microcontroller to sleep, etc.).  Then, in the USBCBWakeFromSuspend() function, you may then wish to
-// add code that undoes the power saving things done in the USBCBSuspend() function.
-
-// The USBCBSendResume() function is special, in that the USB stack will not automatically call this
-// function.  This function is meant to be called from the application firmware instead.  See the
-// additional comments near the function.
-
-/******************************************************************************
- * Function:        void USBCBSuspend(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        Call back that is invoked when a USB suspend is detected
- *
- * Note:            None
- *****************************************************************************/
-void USBCBSuspend(void)
-{
-	//Example power saving code.  Insert appropriate code here for the desired
-	//application behavior.  If the microcontroller will be put to sleep, a
-	//process similar to that shown below may be used:
-
-	//ConfigureIOPinsForLowPower();
-	//SaveStateOfAllInterruptEnableBits();
-	//DisableAllInterruptEnableBits();
-	//EnableOnlyTheInterruptsWhichWillBeUsedToWakeTheMicro();	//should enable at least USBActivityIF as a wake source
-	//Sleep();
-	//RestoreStateOfAllPreviouslySavedInterruptEnableBits();	//Preferrably, this should be done in the USBCBWakeFromSuspend() function instead.
-	//RestoreIOPinsToNormal();									//Preferrably, this should be done in the USBCBWakeFromSuspend() function instead.
-
-	//IMPORTANT NOTE: Do not clear the USBActivityIF (ACTVIF) bit here.  This bit is
-	//cleared inside the usb_device.c file.  Clearing USBActivityIF here will cause
-	//things to not work as intended.
-
-
-    #if defined(__C30__)
-    #if 0
-        U1EIR = 0xFFFF;
-        U1IR = 0xFFFF;
-        U1OTGIR = 0xFFFF;
-        IFS5bits.USB1IF = 0;
-        IEC5bits.USB1IE = 1;
-        U1OTGIEbits.ACTVIE = 1;
-        U1OTGIRbits.ACTVIF = 1;
-        Sleep();
-    #endif
-    #endif
-}
-
-
-/******************************************************************************
- * Function:        void _USB1Interrupt(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This function is called when the USB interrupt bit is set
- *                  In this example the interrupt is only used when the device
- *                  goes to sleep when it receives a USB suspend command
- *
- * Note:            None
- *****************************************************************************/
-#if 0
-void __attribute__ ((interrupt)) _USB1Interrupt(void)
-{
-    #if !defined(self_powered)
-        if(U1OTGIRbits.ACTVIF)
-        {
-            IEC5bits.USB1IE = 0;
-            U1OTGIEbits.ACTVIE = 0;
-            IFS5bits.USB1IF = 0;
-
-            //USBClearInterruptFlag(USBActivityIFReg,USBActivityIFBitNum);
-            USBClearInterruptFlag(USBIdleIFReg,USBIdleIFBitNum);
-            //USBSuspendControl = 0;
-        }
-    #endif
-}
-#endif
-
-/******************************************************************************
- * Function:        void USBCBWakeFromSuspend(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The host may put USB peripheral devices in low power
- *                  suspend mode (by "sending" 3+ms of idle).  Once in suspend
- *                  mode, the host may wake the device back up by sending non-
- *                  idle state signalling.
- *
- *                  This call back is invoked when a wakeup from USB suspend
- *                  is detected.
- *
- * Note:            None
- *****************************************************************************/
-void USBCBWakeFromSuspend(void)
-{
-    // If clock switching or other power savings measures were taken when
-    // executing the USBCBSuspend() function, now would be a good time to
-    // switch back to normal full power run mode conditions.  The host allows
-    // a few milliseconds of wakeup time, after which the device must be
-    // fully back to normal, and capable of receiving and processing USB
-    // packets.  In order to do this, the USB module must receive proper
-    // clocking (IE: 48MHz clock must be available to SIE for full speed USB
-    // operation).
-}
-
-/********************************************************************
- * Function:        void USBCB_SOF_Handler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The USB host sends out a SOF packet to full-speed
- *                  devices every 1 ms. This interrupt may be useful
- *                  for isochronous pipes. End designers should
- *                  implement callback routine as necessary.
- *
- * Note:            None
- *******************************************************************/
-void USBCB_SOF_Handler(void)
-{
-    // No need to clear UIRbits.SOFIF to 0 here.
-    // Callback caller is already doing that.
-
-    if(msCounter != 0)
-    {
-        msCounter--;
-    }
-}
-
-/*******************************************************************
- * Function:        void USBCBErrorHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The purpose of this callback is mainly for
- *                  debugging during development. Check UEIR to see
- *                  which error causes the interrupt.
- *
- * Note:            None
- *******************************************************************/
-void USBCBErrorHandler(void)
-{
-    // No need to clear UEIR to 0 here.
-    // Callback caller is already doing that.
-
-    // Typically, user firmware does not need to do anything special
-    // if a USB error occurs.  For example, if the host sends an OUT
-    // packet to your device, but the packet gets corrupted (ex:
-    // because of a bad connection, or the user unplugs the
-    // USB cable during the transmission) this will typically set
-    // one or more USB error interrupt flags.  Nothing specific
-    // needs to be done however, since the SIE will automatically
-    // send a "NAK" packet to the host.  In response to this, the
-    // host will normally retry to send the packet again, and no
-    // data loss occurs.  The system will typically recover
-    // automatically, without the need for application firmware
-    // intervention.
-    
-    // Nevertheless, this callback function is provided, such as
-    // for debugging purposes.
-}
-
-
-/*******************************************************************
- * Function:        void USBCBCheckOtherReq(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        When SETUP packets arrive from the host, some
- *                  firmware must process the request and respond
- *                  appropriately to fulfill the request.  Some of
- *                  the SETUP packets will be for standard
- *                  USB "chapter 9" (as in, fulfilling chapter 9 of
- *                  the official USB specifications) requests, while
- *                  hers may be specific to the USB device class
- *                  that is being implemented.  For example, a HID
- *                  class device needs to be able to respond to
- *                  "GET REPORT" type of requests.  This
- *                  is not a standard USB chapter 9 request, and
- *                  therefore not handled by usb_device.c.  Instead
- *                  this request should be handled by class specific
- *                  irmware, such as that contained in usb_function_hid.c.
- *
- * Note:            None
- *******************************************************************/
-void USBCBCheckOtherReq(void)
-{
-	USBCheckHIDRequest();
-}//end
-
-
-/*******************************************************************
- * Function:        void USBCBStdSetDscHandler(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The USBCBStdSetDscHandler() callback function is
- *                  called when a SETUP, bRequest: SET_DESCRIPTOR request
- *                  arrives.  Typically SET_DESCRIPTOR requests are
- *                  not used in most applications, and it is
- *                  optional to support this type of request.
- *
- * Note:            None
- *******************************************************************/
-void USBCBStdSetDscHandler(void)
-{
-    // Must claim session ownership if supporting this request
-}//end
-
-
-/*******************************************************************
- * Function:        void USBCBInitEP(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This function is called when the device becomes
- *                  initialized, which occurs after the host sends a
- *                  SET_CONFIGURATION (wValue not = 0) request.  This
- *                  callback function should initialize the endpoints
- *                  for the device's usage according to the current
- *                  configuration.
- *
- * Note:            None
- *******************************************************************/
-void USBCBInitEP(void)
-{
-	//enable the HID endpoint
-    USBEnableEndpoint(HID_EP, USB_IN_ENABLED | USB_OUT_ENABLED | USB_HANDSHAKE_ENABLED | USB_DISALLOW_SETUP);
-    //Re-arm the OUT endpoint for the next packet
-    //USBOutHandle = HIDRxPacket(HID_EP | MIDI_EP,(BYTE*)&ReceivedHidDataBuffer,64);
-    HIDRxHandle = USBRxOnePacket(HID_EP, (BYTE*)&ReceivedHidDataBuffer, 64);
-
-    //enable the HID endpoint
-    USBEnableEndpoint(MIDI_EP, USB_OUT_ENABLED | USB_IN_ENABLED | USB_HANDSHAKE_ENABLED | USB_DISALLOW_SETUP);
-    //Re-arm the OUT endpoint for the next packet
-    MIDIRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&ReceivedMidiDataBuffer, 64);
-}
-
-/********************************************************************
- * Function:        void USBCBSendResume(void)
- *
- * PreCondition:    None
- *
- * Input:           None
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        The USB specifications allow some types of USB
- *                  peripheral devices to wake up a host PC (such
- *                  as if it is in a low power suspend to RAM state).
- *                  This can be a very useful feature in some
- *                  USB applications, such as an Infrared remote
- *                  control	receiver.  If a user presses the "power"
- *                  button on a remote control, it is nice that the
- *                  IR receiver can detect this signalling, and then
- *                  send a USB "command" to the PC to wake up.
- *
- *                  USBCBSendResume() "callback" function is used
- *                  to send this special USB signalling which wakes
- *                  up the PC.  This function may be called by
- *                  application firmware to wake up the PC.  This
- *                  function will only be able to wake up the host if
- *                  all of the below are true:
- *
- *                  1.  The USB driver used on the host PC supports
- *                      the remote wakeup capability.
- *                  2.  The USB configuration descriptor indicates
- *                      the device is remote wakeup capable in the
- *                      bmAttributes field.
- *                  3.  The USB host PC is currently sleeping,
- *                      and has previously sent your device a SET
- *                      FEATURE setup packet which "armed" the
- *                      remote wakeup capability.
- *
- *                  If the host has not armed the device to perform remote wakeup,
- *                  then this function will return without actually performing a
- *                  remote wakeup sequence.  This is the required behavior,
- *                  as a USB device that has not been armed to perform remote
- *                  wakeup must not drive remote wakeup signalling onto the bus;
- *                  doing so will cause USB compliance testing failure.
- *
- *                  This callback should send a RESUME signal that
- *                  has the period of 1-15ms.
- *
- * Note:            This function does nothing and returns quickly, if the USB
- *                  bus and host are not in a suspended condition, or are
- *                  otherwise not in a remote wakeup ready state.  Therefore, it
- *                  is safe to optionally call this function regularly, ex:
- *                  anytime application stimulus occurs, as the function will
- *                  have no effect, until the bus really is in a state ready
- *                  to accept remote wakeup.
- *
- *                  When this function executes, it may perform clock switching,
- *                  depending upon the application specific code in
- *                  USBCBWakeFromSuspend().  This is needed, since the USB
- *                  bus will no longer be suspended by the time this function
- *                  returns.  Therefore, the USB module will need to be ready
- *                  to receive traffic from the host.
- *
- *                  The modifiable section in this routine may be changed
- *                  to meet the application needs. Current implementation
- *                  temporary blocks other functions from executing for a
- *                  period of ~3-15 ms depending on the core frequency.
- *
- *                  According to USB 2.0 specification section 7.1.7.7,
- *                  "The remote wakeup device must hold the resume signaling
- *                  for at least 1 ms but for no more than 15 ms."
- *                  The idea here is to use a delay counter loop, using a
- *                  common value that would work over a wide range of core
- *                  frequencies.
- *                  That value selected is 1800. See table below:
- *                  ==========================================================
- *                  Core Freq(MHz)      MIP         RESUME Signal Period (ms)
- *                  ==========================================================
- *                      48              12          1.05
- *                       4              1           12.6
- *                  ==========================================================
- *                  * These timing could be incorrect when using code
- *                    optimization or extended instruction mode,
- *                    or when having other interrupts enabled.
- *                    Make sure to verify using the MPLAB SIM's Stopwatch
- *                    and verify the actual signal on an oscilloscope.
- *******************************************************************/
-void USBCBSendResume(void)
-{
-    static WORD delay_count;
-
-    //First verify that the host has armed us to perform remote wakeup.
-    //It does this by sending a SET_FEATURE request to enable remote wakeup,
-    //usually just before the host goes to standby mode (note: it will only
-    //send this SET_FEATURE request if the configuration descriptor declares
-    //the device as remote wakeup capable, AND, if the feature is enabled
-    //on the host (ex: on Windows based hosts, in the device manager
-    //properties page for the USB device, power management tab, the
-    //"Allow this device to bring the computer out of standby." checkbox
-    //should be checked).
-    if(USBGetRemoteWakeupStatus() == TRUE)
-    {
-        //Verify that the USB bus is in fact suspended, before we send
-        //remote wakeup signalling.
-        if(USBIsBusSuspended() == TRUE)
-        {
-            USBMaskInterrupts();
-
-            //Clock switch to settings consistent with normal USB operation.
-            USBCBWakeFromSuspend();
-            USBSuspendControl = 0;
-            USBBusIsSuspended = FALSE;  //So we don't execute this code again,
-                                        //until a new suspend condition is detected.
-
-            //Section 7.1.7.7 of the USB 2.0 specifications indicates a USB
-            //device must continuously see 5ms+ of idle on the bus, before it sends
-            //remote wakeup signalling.  One way to be certain that this parameter
-            //gets met, is to add a 2ms+ blocking delay here (2ms plus at
-            //least 3ms from bus idle to USBIsBusSuspended() == TRUE, yeilds
-            //5ms+ total delay since start of idle).
-            delay_count = 3600U;
-            do
-            {
-                delay_count--;
-            }while(delay_count);
-
-            //Now drive the resume K-state signalling onto the USB bus.
-            USBResumeControl = 1;       // Start RESUME signaling
-            delay_count = 1800U;        // Set RESUME line for 1-13 ms
-            do
-            {
-                delay_count--;
-            }while(delay_count);
-            USBResumeControl = 0;       //Finished driving resume signalling
-
-            USBUnmaskInterrupts();
-        }
-    }
-}
-
-
-/*******************************************************************
- * Function:        BOOL USER_USB_CALLBACK_EVENT_HANDLER(
- *                        USB_EVENT event, void *pdata, WORD size)
- *
- * PreCondition:    None
- *
- * Input:           USB_EVENT event - the type of event
- *                  void *pdata - pointer to the event data
- *                  WORD size - size of the event data
- *
- * Output:          None
- *
- * Side Effects:    None
- *
- * Overview:        This function is called from the USB stack to
- *                  notify a user application that a USB event
- *                  occured.  This callback is in interrupt context
- *                  when the USB_INTERRUPT option is selected.
- *
- * Note:            None
- *******************************************************************/
-BOOL USER_USB_CALLBACK_EVENT_HANDLER(USB_EVENT event, void *pdata, WORD size)
-{
-    switch( (INT)event )
-    {
-        case EVENT_TRANSFER:
-            //Add application specific callback task or callback function here if desired.
-            break;
-        case EVENT_SOF:
-            USBCB_SOF_Handler();
-            break;
-        case EVENT_SUSPEND:
-            USBCBSuspend();
-            break;
-        case EVENT_RESUME:
-            USBCBWakeFromSuspend();
-            break;
-        case EVENT_CONFIGURED:
-            USBCBInitEP();
-            break;
-        case EVENT_SET_DESCRIPTOR:
-            USBCBStdSetDscHandler();
-            break;
-        case EVENT_EP0_REQUEST:
-            USBCBCheckOtherReq();
-            break;
-        case EVENT_BUS_ERROR:
-            USBCBErrorHandler();
-            break;
-        case EVENT_TRANSFER_TERMINATED:
-            //Add application specific callback task or callback function here if desired.
-            //The EVENT_TRANSFER_TERMINATED event occurs when the host performs a CLEAR
-            //FEATURE (endpoint halt) request on an application endpoint which was
-            //previously armed (UOWN was = 1).  Here would be a good place to:
-            //1.  Determine which endpoint the transaction that just got terminated was
-            //      on, by checking the handle value in the *pdata.
-            //2.  Re-arm the endpoint if desired (typically would be the case for OUT
-            //      endpoints).
-            break;
-        default:
-            break;
-    }
-    return TRUE;
-}
-
-/*************************************************************************
- * Function:        USB_ApplicationEventHandler
- *
- * Preconditions:   The USB must be initialized.
- *
- * Input:           event       Identifies the bus event that occured
- *
- *                  data        Pointer to event-specific data
- *
- *                  size        Size of the event-specific data
- *
- * Output:          deviceHandle (global)
- *                  Updates device handle pointer.
- *
- *                  endpointBuffers (global)
- *                  Allocates or Deallocates endpoint buffers.
- *
- *                  DemoState (global)
- *                  Updates the demo state as appropriate when events occur.
- *
- * Returns:         TRUE if the event was handled, FALSE if not
- *
- * Side Effects:    Event-specific actions have been taken.
- *
- * Overview:        This routine is called by the Host layer or client
- *                  driver to notify the application of events that occur.
- *                  If the event is recognized, it is handled and the
- *                  routine returns TRUE.  Otherwise, it is ignored (or
- *                  just "sniffed" and the routine returns FALSE.
- *************************************************************************/
-
-BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DWORD size )
-{
-    BYTE currentEndpoint;
-    ENDPOINT_DIRECTION direction;
-
-    // Handle specific events.
-    switch ((INT)event)
-    {
-        case EVENT_VBUS_REQUEST_POWER:
-        case EVENT_VBUS_RELEASE_POWER:
-        case EVENT_HUB_ATTACH:
-        case EVENT_UNSUPPORTED_DEVICE:
-        case EVENT_CANNOT_ENUMERATE:
-        case EVENT_CLIENT_INIT_ERROR:
-        case EVENT_OUT_OF_MEMORY:
-        case EVENT_UNSPECIFIED_ERROR:   // This should never be generated.
-        case EVENT_SUSPEND:
-        case EVENT_DETACH:
-        case EVENT_RESUME:
-        case EVENT_BUS_ERROR:
-            return TRUE;
-            break;
-#if defined(USB_USE_CDC)
-        case EVENT_CDC_NONE:
-        case EVENT_CDC_ATTACH:
-        case EVENT_CDC_COMM_READ_DONE:
-        case EVENT_CDC_COMM_WRITE_DONE:
-        case EVENT_CDC_DATA_READ_DONE:
-        case EVENT_CDC_DATA_WRITE_DONE:
-        case EVENT_CDC_RESET:
-            return TRUE;
-            break;
-        case EVENT_CDC_NAK_TIMEOUT:
-                APPL_CDC_State = READY_TO_TX_RX;
-                return TRUE;
-            break;
-#endif
-        case EVENT_MIDI_ATTACH:
-            deviceHandle = data;
-            ProcState = STATE_READY;
-
-            endpointBuffers = malloc(sizeof(ENDPOINT_BUFFER) * USBHostMIDINumberOfEndpoints(deviceHandle));
-
-            for( currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++ )
-            {
-                direction = USBHostMIDIEndpointDirection(deviceHandle, currentEndpoint);
-                // For OUT endpoints
-                if(direction == OUT)
-                {
-                    // We only want to send NUM_MIDI_PKTS_IN_USB_PKT MIDI packet per USB packet
-                    endpointBuffers[currentEndpoint].numOfMIDIPackets = NUM_MIDI_PKTS_IN_USB_PKT;
-
-                    // And we want to start it off transmitting data
-                    endpointBuffers[currentEndpoint].TransferState = TX_DATA;
-                }
-                // For IN endpoints
-                else if (direction == IN)
-                {
-                    // We will accept however many will fit inside the maximum USB packet size
-                    endpointBuffers[currentEndpoint].numOfMIDIPackets = USBHostMIDISizeOfEndpoint(deviceHandle, currentEndpoint) / sizeof(USB_AUDIO_MIDI_PACKET);
-
-                    // And we want to start it off trying to read data
-                    endpointBuffers[currentEndpoint].TransferState = RX_DATA;
-                }
-                else
-                {
-                    continue;
-                }
-
-                // Allocate the 2D buffer, and keep track of the write and read locations
-                endpointBuffers[currentEndpoint].bufferStart = malloc( sizeof(USB_AUDIO_MIDI_PACKET) * endpointBuffers[currentEndpoint].numOfMIDIPackets * MIDI_USB_BUFFER_SIZE );
-                endpointBuffers[currentEndpoint].pBufReadLocation = endpointBuffers[currentEndpoint].bufferStart;
-                endpointBuffers[currentEndpoint].pBufWriteLocation = endpointBuffers[currentEndpoint].bufferStart;
-            }
-
-            return TRUE;
-            break;
-        case EVENT_MIDI_DETACH:
-            for( currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++ )
-            {
-                free(endpointBuffers[currentEndpoint].bufferStart);
-                endpointBuffers[currentEndpoint].bufferStart = NULL;
-                endpointBuffers[currentEndpoint].pBufReadLocation = NULL;
-                endpointBuffers[currentEndpoint].pBufWriteLocation = NULL;
-            }
-
-            free(endpointBuffers);
-            endpointBuffers = NULL;
-
-            deviceHandle = NULL;
-            ProcState = STATE_INITIALIZE;
-            return TRUE;
-            break;
-        case EVENT_MIDI_TRANSFER_DONE:  // The main state machine will poll the driver.
-            return TRUE;
-            break;
-        default:
-            break;
-    }
-    return FALSE;
-} // USB_ApplicationEventHandler
