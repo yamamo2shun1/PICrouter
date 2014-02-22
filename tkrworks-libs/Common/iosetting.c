@@ -1786,9 +1786,18 @@ BYTE getDataFromI2C(BYTE i2c_id)
             break;
         case I2C_5:
             I2C5CONbits.RCEN = 1;
-            idleI2C(I2C_5);
-            I2C5STATbits.I2COV = 0;
+
+            //idleI2C(I2C_5);
+            //I2C5STATbits.I2COV = 0;
             while(!I2C5STATbits.RBF);
+
+#if 1
+            I2C5CONbits.ACKDT = 1;
+            //idleI2C(I2C_5);
+            I2C5CONbits.ACKEN = 1;
+            //idleI2C(I2C_5);
+            while(I2C5CONbits.ACKEN == 1);
+#endif
             data = I2C5RCV;
             break;
     }
