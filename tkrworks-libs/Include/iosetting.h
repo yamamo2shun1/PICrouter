@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.7.7 2013/07/10
+ * iosetting.h,v.0.7.8 2014/02/22
  */
 
 #ifndef IOSETTING_H
@@ -48,7 +48,7 @@
 #define SPI_NUM 6
 
 #define TIMER4_COUNT 500
-#define TIMER5_COUNT 1000 // 2000
+#define TIMER5_COUNT 2000
 
 extern BYTE ioAnPort[14];
 extern BYTE ioPwmPort[4];
