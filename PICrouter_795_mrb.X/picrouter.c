@@ -4610,14 +4610,12 @@ mrb_value mrb_hid_ctrl_task(mrb_state* mrb, mrb_value self)
     BYTE u8Data[128] = {0};
 
     // User Application USB tasks
-    //if(USBDeviceState < CONFIGURED_STATE || USBSuspendControl == 1)
     if(!checkUSBState())
         return mrb_nil_value();
 
     if(!hidHandleBusy())
     {
-        hidRxOnePacket();//USBRxOnePacket(HID_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
-        //midiRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&ReceivedHidDataBuffer[0], 64);
+        hidRxOnePacket();
         if(getRcvHidDataBuffer(0) == 0x80)
         {
             //LED_1_Toggle();
