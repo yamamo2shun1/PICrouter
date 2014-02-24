@@ -33,6 +33,12 @@ extern "C" {
 #include "USB/usb_function_midi.h"
 #include "USB/usb_host_midi.h"
 #include "USB/usb_function_hid.h"
+#if 0
+#if defined(USB_USE_HID) // hid host
+    #include "USB/usb_host_hid_parser.h"
+    #include "USB/usb_host_hid.h"
+#endif
+#endif
 #if defined(USB_USE_CDC) // cdc host
     #include "USB/usb_host_cdc.h"
     #include "USB/usb_host_cdc_interface.h"
