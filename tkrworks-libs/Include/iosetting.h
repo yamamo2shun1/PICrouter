@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.7.8 2014/02/22
+ * iosetting.h,v.0.8.0 2014/02/25
  */
 
 #ifndef IOSETTING_H
-#define	IOSETTING_H
+#define IOSETTING_H
 
 #include <plib.h>
 #include <GenericTypeDefs.h>
@@ -29,6 +29,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include "HardwareProfile.h"
+
+// Digital Out Port State
+#define HIGH 1
+#define LOW  0
+
+// Port Input and Output
+#define IO_OUT 0
+#define IO_IN  1
+
+// OnBoard Switch
+#define initSW()      TRISDbits.TRISD10 = 1;
+#define getSW1State() PORTDbits.RD10
+
+// OnBoard LED Settings
+#define initLEDs()    TRISDbits.TRISD8 = 0;\
+                      TRISDbits.TRISD9 = 0;\
+      	               LATDbits.LATD8 = 0;\
+                      LATDbits.LATD9 = 0;
+#define LED_1         LATDbits.LATD8
+#define LED_2         LATDbits.LATD9
+#define turnOnLED1()  LED_1 = 1;
+#define turnOnLED2()  LED_2 = 1;
+#define turnOffLED1() LED_1 = 0;
+#define turnOffLED2() LED_2 = 0;
+#define toggleLED1()  LED_1 = !LED_1;
+#define toggleLED2()  LED_2 = !LED_2;
 
 // SPI
 #define SPI_2 2
@@ -48,7 +74,7 @@
 #define SPI_NUM 6
 
 #define TIMER4_COUNT 500
-#define TIMER5_COUNT 2000
+#define TIMER5_COUNT 8000// 2000
 
 extern BYTE ioAnPort[14];
 extern BYTE ioPwmPort[4];
