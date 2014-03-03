@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.12.0 2014/02/24
+ * picrouter.h,v.1.12.1 2014/02/28
  */
 
-#define CURRENT_VERSION "1.11.0"
+#define CURRENT_VERSION "1.12.1"
 
 #include <plib.h>
 #include <stdio.h>
@@ -87,14 +87,6 @@
 //for USB_MIDI
 USB_AUDIO_MIDI_EVENT_PACKET midiData;
 
-// Host
-typedef enum
-{
-    MODE_DEVICE,
-    MODE_HOST,
-    MODE_UNKNOWN
-} DEVICE_MODE;
-
 //static DEVICE_MODE device_mode = MODE_DEVICE;
 static DEVICE_MODE device_mode = MODE_HOST;
 
@@ -136,8 +128,6 @@ void USBControlTask(void);
 void HIDControlTask(void);
 void convertMidiToOsc(void);
 void convertHidToOsc(void);
-void sendNote(void);
-void sendControlChange(void);
 void receiveMIDIDatas(void);
 
 #if defined(USB_USE_HID)

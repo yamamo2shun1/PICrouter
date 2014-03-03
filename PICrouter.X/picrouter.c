@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.12.0 2014/02/24
+ * picrouter.c,v.1.12.1 2014/02/28
  */
 
 #include "picrouter.h"
@@ -68,8 +68,8 @@ int main(int argc, char** argv) {
     prevState = 1;
     currentState = 1;
 
-    LED_1_On();
-    LED_2_On();
+    turnOnLED1();
+    turnOnLED2();
     DelayMs(200);
 
     // PWM
@@ -113,13 +113,13 @@ int main(int argc, char** argv) {
     // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
 
-    LED_1_Off();
-    LED_2_Off();
+    turnOffLED1();
+    turnOffLED2();
     DelayMs(200);
     
     while(1)
     {
-        currentState = SW_State();
+        currentState = getSW1State();
 
         if(prevState != currentState)
         {
@@ -132,9 +132,9 @@ int main(int argc, char** argv) {
             case MODE_DEVICE:
                 for(i = 0; i < 3; i++)
                 {
-                    LED_1_On();
+                    turnOnLED1();
                     DelayMs(200);
-                    LED_1_Off();
+                    turnOffLED1();
                     DelayMs(200);
                 }
 
@@ -187,9 +187,9 @@ int main(int argc, char** argv) {
             case MODE_HOST:
                 for(i = 0; i < 3; i++)
                 {
-                    LED_2_On();
+                    turnOnLED2();
                     DelayMs(200);
-                    LED_2_Off();
+                    turnOffLED2();
                     DelayMs(200);
                 }
 
@@ -368,11 +368,11 @@ void receiveOSCTask(void)
                 {
                     if(!strcmp(getStringArgumentAtIndex(1), "on"))
                     {
-                        LED_1_On();
+                        turnOnLED1();
                     }
                     else if(!strcmp(getStringArgumentAtIndex(1), "off"))
                     {
-                        LED_1_Off();
+                        turnOffLED1();
                     }
                     else
                         sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
@@ -381,11 +381,11 @@ void receiveOSCTask(void)
                 {
                     if(!strcmp(getStringArgumentAtIndex(1), "on"))
                     {
-                        LED_2_On();
+                        turnOnLED2();
                     }
                     else if(!strcmp(getStringArgumentAtIndex(1), "off"))
                     {
-                        LED_2_Off();
+                        turnOffLED2();
                     }
                     else
                         sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
@@ -820,7 +820,6 @@ void receiveOSCTask(void)
                     if(!onTimer2)
                     {
                         OpenTimer2(T2_ON | T2_SOURCE_INT | T2_PS_1_1, width);
-                        ConfigIntTimer2(T2_INT_ON | T2_INT_PRIOR_2);//syama0
                         onTimer2 = TRUE;
                     }
                     switch(index)
@@ -3617,10 +3616,10 @@ void receiveOSCTask(void)
                 switch(getIntArgumentAtIndex(0))
                 {
                     case 0:
-                        LED_1_Off();
+                        turnOffLED1();
                         break;
                     case 1:
-                        LED_1_On();
+                        turnOnLED1();
                         break;
                 }
             }
@@ -3629,10 +3628,10 @@ void receiveOSCTask(void)
                 switch(getIntArgumentAtIndex(0))
                 {
                     case 0:
-                        LED_2_Off();
+                        turnOffLED2();
                         break;
                     case 1:
-                        LED_2_On();
+                        turnOnLED2();
                         break;
                 }
             }
@@ -4694,7 +4693,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
         switch(sendOSCTaskIndex)
         {
             case 0:
-                swState1 = SW_State();
+                swState1 = getSW1State();
                 if(swState1 != swState0)
                 {
                     if(swState1)
@@ -5482,111 +5481,6 @@ void HIDControlTask(void)
 #endif//test
             case 0xF7:
                 break;
-        }
-    }
-}
-
-/*******************************************************************************
-  Function:
-    void sendNote(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
-#if 0
-void sendNote(void)
-{
-    int i, j;
-    for(i = 0; i < MAX_BTN_ROW; i++)
-        btnLast[i] = btnCurrent[i];
-
-    for(i = 0; i < MAX_BTN_ROW; i++)
-    {
-        for(j = 0; j < MAX_BTN_COL; j++)
-        {
-            if(buttonCheck(i, j))
-            {
-                midiData.Val = 0;
-                midiData.CableNumber = 0;
-                midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
-                midiData.DATA_0 = 0x90;
-                midiData.DATA_1 = i * MAX_BTN_COL + j;
-                midiData.DATA_2 = btnCurrent[i] >> j & 0x01;
-
-                if(!midiHandleBusy())
-                    midiTxOnePacket();
-            }
-        }
-    }
-    //delayUs(2);
-}
-#endif
-
-/*******************************************************************************
-  Function:
-    void sendControlChange(void)
-
-  Precondition:
-
-
-  Summary:
-
-
-  Description:
-
-
-  Parameters:
-    None
-
-  Return Values:
-    None
-
-  Remarks:
-    None
-*******************************************************************************/
-void sendControlChange(void)
-{
-    int i;
-    BYTE value;
-
-    for(i = 0; i < AN_NUM; i++)
-    {
-        if(getAnalogEnable(i))
-        {
-            analogInHandle(i, (LONG)ReadADC10(i));
-
-            if(getAnalogFlag(i))
-            {
-                midiData.Val = 0;
-                midiData.CableNumber = 0;
-                midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
-                midiData.DATA_0 = 0xB0;
-
-                value = getAnalogByte(i, BYTE_ORIGINAL);
-                
-                midiData.DATA_1 = i;
-                midiData.DATA_2 = value;
-
-                if(!midiHandleBusy())
-                    midiTxOnePacket();
-           
-                //delayUs(20);
-            }
         }
     }
 }
