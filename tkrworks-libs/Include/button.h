@@ -25,7 +25,7 @@
 #include <plib.h>
 #include <GenericTypeDefs.h>
 #include "TimeDelay.h"
-#include "HardwareProfile.h"
+#include "iosetting.h"
 #include "osc.h"
 
 #define MAX_PAD_NUM 5
