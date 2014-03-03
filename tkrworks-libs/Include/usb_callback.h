@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_callback.h,v.0.2.0 2014/02/22
+ * usb_callback.h,v.0.3.0 2014/02/26
  */
 
 #ifndef USB_CALLBACK_H
@@ -43,6 +43,14 @@ extern "C" {
     #include "USB/usb_host_cdc.h"
     #include "USB/usb_host_cdc_interface.h"
 #endif
+
+// USB DualRoll Selection
+typedef enum
+{
+    MODE_DEVICE,
+    MODE_HOST,
+    MODE_UNKNOWN
+} DEVICE_MODE;
 
 #if defined(USB_USE_CDC)
     typedef enum _APPL_STATE
@@ -117,7 +125,6 @@ ENDPOINT_BUFFER* endpointBuffers;
 
 unsigned char getRcvMidiDataBuffer(BYTE index);
 void setRcvMidiDataBuffer(BYTE index, unsigned char value);
-void setSndMidiDataBuffer(BYTE index, unsigned char value);
 
 unsigned char getRcvHidDataBuffer(BYTE index);
 void setSndHidDataBuffer(BYTE index, unsigned char value);
@@ -126,9 +133,16 @@ APPL_STATE getApplCDCState(void);
 void setApplCDCState(APPL_STATE state);
 
 BOOL checkUSBState(void);
-BOOL midiHadleBusy(void);
+BOOL midiRxHandleBusy(void);
+BOOL midiTxHandleBusy(void);
 void midiRxOnePacket(void);
-void midiTxOnePacket(void);
+void midiTxOnePacket(BYTE *packet, BYTE len);
+void sendNote(BYTE ch, BYTE num, BYTE vel);
+void appendNote(BYTE ch, BYTE num, BYTE vel, BYTE pos);
+void sendControlChange(BYTE ch, BYTE num, BYTE val);
+void appendControlChange(BYTE ch, BYTE num, BYTE val, BYTE pos);
+void sendMIDI(BYTE len);
+
 BOOL hidHadleBusy(void);
 void hidRxOnePacket(void);
 void hidTxOnePacket(void);

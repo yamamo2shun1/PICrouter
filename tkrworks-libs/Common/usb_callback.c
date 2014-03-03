@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_callback.c,v.0.2.0 2014/02/22
+ * usb_callback.c,v.0.3.0 2014/02/26
  */
 
 #include "usb_callback.h"
@@ -55,12 +55,6 @@ void setRcvMidiDataBuffer(BYTE index, unsigned char value)
         return;
     rcvMidiDataBuffer[index] = value;
 }
-void setSndMidiDataBuffer(BYTE index, unsigned char value)
-{
-    if(index > 63)
-        return;
-    sndMidiDataBuffer[index] = value;
-}
 
 unsigned char getRcvHidDataBuffer(BYTE index)
 {
@@ -94,9 +88,13 @@ BOOL checkUSBState(void)
     return flag;
 }
 
-BOOL midiHandleBusy(void)
+BOOL midiRxHandleBusy(void)
 {
     return USBHandleBusy(midiRxHandle);
+}
+BOOL midiTxHandleBusy(void)
+{
+    return USBHandleBusy(midiTxHandle);
 }
 
 void midiRxOnePacket(void)
@@ -104,9 +102,87 @@ void midiRxOnePacket(void)
     midiRxHandle = USBRxOnePacket(MIDI_EP, (BYTE*)&rcvMidiDataBuffer[0], 64);
 }
 
-void midiTxOnePacket(void)
+void midiTxOnePacket(BYTE *packet, BYTE len)
 {
-    midiTxHandle = USBTxOnePacket(MIDI_EP, (BYTE*)sndMidiDataBuffer, 64);
+    midiTxHandle = USBTxOnePacket(MIDI_EP, packet, len);
+}
+
+void sendNote(BYTE ch, BYTE num, BYTE vel)
+{
+    USB_AUDIO_MIDI_EVENT_PACKET midiData;
+
+    midiData.Val = 0;
+    midiData.CableNumber = 0;
+    midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
+//    if(vel > 0)
+        midiData.DATA_0 = 0x90 + ch;
+//    else
+//        midiData.DATA_0 = 0x80 + ch;
+    midiData.DATA_1 = num;
+    midiData.DATA_2 = vel;
+    
+    if(!midiTxHandleBusy())
+        midiTxOnePacket((BYTE *)&midiData, 4);
+    
+    //Delay10us(1);
+    //delayUs(2);
+}
+
+void appendNote(BYTE ch, BYTE num, BYTE vel, BYTE pos)
+{
+    //USB_AUDIO_MIDI_EVENT_PACKET midiData;
+
+    sndMidiDataBuffer[pos + 0] = 0;// midiData.Val = 0;
+    sndMidiDataBuffer[pos + 0] = 0;// midiData.CableNumber = 0;
+    sndMidiDataBuffer[pos + 0] = MIDI_CIN_NOTE_ON;// midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
+
+    sndMidiDataBuffer[pos + 1] = 0x90 + ch;// midiData.DATA_0 = 0x90 + ch;
+    sndMidiDataBuffer[pos + 2] = num;// midiData.DATA_1 = num;
+    sndMidiDataBuffer[pos + 3] = vel;// midiData.DATA_2 = vel;
+    
+    //Delay10us(1);
+    //delayUs(2);
+}
+
+void sendControlChange(BYTE ch, BYTE num, BYTE val)
+{
+    USB_AUDIO_MIDI_EVENT_PACKET midiData;
+
+    midiData.Val = 0;
+    midiData.CableNumber = 0;
+    midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+    midiData.DATA_0 = 0xB0 + ch;
+
+    midiData.DATA_1 = num;
+    midiData.DATA_2 = val;
+
+    if(!midiTxHandleBusy())
+        midiTxOnePacket((BYTE *)&midiData, 4);
+    
+    //Delay10us(1);
+    //delayUs(20);
+}
+
+void appendControlChange(BYTE ch, BYTE num, BYTE val, BYTE pos)
+{
+    //USB_AUDIO_MIDI_EVENT_PACKET midiData;
+
+    sndMidiDataBuffer[pos + 0] = 0;//midiData.Val = 0;
+    sndMidiDataBuffer[pos + 0] = 0;//midiData.CableNumber = 0;
+    sndMidiDataBuffer[pos + 0] = MIDI_CIN_CONTROL_CHANGE;//midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
+    sndMidiDataBuffer[pos + 1] = 0xB0 + ch;//midiData.DATA_0 = 0xB0 + ch;
+
+    sndMidiDataBuffer[pos + 2] = num;//midiData.DATA_1 = num;
+    sndMidiDataBuffer[pos + 3] = val;//midiData.DATA_2 = val;
+
+    //Delay10us(1);
+    //delayUs(20);
+}
+
+void sendMIDI(BYTE len)
+{
+    if(!midiTxHandleBusy())
+        midiTxOnePacket((BYTE *)&sndMidiDataBuffer, len);
 }
 
 BOOL hidHandleBusy(void)
