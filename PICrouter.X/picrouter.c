@@ -5924,6 +5924,8 @@ void convertMidiToOsc(void)
                 }
             }
         }
+        free(hostMidiPacket);
+        hostMidiPacket = NULL;
     }
 }
 #endif
