@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.c,v.0.8.1 2013/10/28
+ * button.c,v.0.9.0 2014/04/15
  */
 
 #include "button.h"
@@ -1107,6 +1107,59 @@ BOOL buttonCheck(BYTE index0, BYTE row, BYTE index)
   }
   return flag;
 }
+
+/*******************************************************************************
+  Function:
+    void sendPad4(void)
+
+  Precondition:
+
+
+  Summary:
+
+
+  Description:
+
+
+  Parameters:
+    None
+
+  Return Values:
+    None
+
+  Remarks:
+    None
+*******************************************************************************/
+// for LED_PAD_4
+#if defined(USE_PITCH)
+void sendPad4(void)
+{
+    int i, j, k, l, m;
+
+    if(getInitSendFlag())
+    {
+        for(m = 0; m < 1; m++)
+        {
+            for(i = 0; i < 2; i++)
+                btnLast[m][i] = btnCurrent[m][i];
+
+            btnCurrent[m][0] = inputPort("f5") | (inputPort("g7") << 1);
+            btnCurrent[m][1] = inputPort("f0") | (inputPort("b14") << 1);
+
+            for(i = 0; i < 2; i++)
+            {
+                for(j = 0; j < 2; j++)
+                {
+                    if(buttonCheck(m, i, j))
+                    {
+                        sendOSCMessage(getOSCPrefix(), "/pad", "iiii", m, i, j, (btnCurrent[m][i] & (1 << j)) ? 1 : 0);
+                    }
+                }
+            }
+        }
+    }
+}
+#endif
 
 /*******************************************************************************
   Function:

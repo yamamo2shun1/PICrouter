@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.8.1 2013/10/28
+ * button.h,v.0.9.0 2014/04/15
  */
 
 #ifndef BUTTON_H
@@ -31,6 +31,7 @@
 #define MAX_PAD_NUM 5
 
 #define MAX_RGB_LAYER 3
+// Please modify the following numbers in response to a board which you want to use.
 #define MAX_BTN_ROW 4//1 // 2
 #define MAX_BTN_COL 4//16 // 2
 #define MAX_BTN_NUM 16
@@ -75,6 +76,9 @@ BOOL getLatticeRgbOn(BYTE index, BYTE layer);
 
 void buttonInit(void);
 BOOL buttonCheck(BYTE index0, BYTE row, BYTE index);
+#if defined(USE_PITCH)
+void sendPad4(void);
+#endif
 void sendPad16(void);
 void latticeLedHandle(void);
 void latticeRgbHandle(void);
