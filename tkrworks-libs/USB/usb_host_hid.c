@@ -389,13 +389,13 @@ BOOL USBHostHIDDeviceDetect( BYTE deviceAddress )
     {
         return FALSE;
     }
-    
+
     if ((USBHostHIDDeviceStatus(deviceAddress) == USB_HID_NORMAL_RUNNING) &&
         (deviceAddress != 0))
     {
         return TRUE;
     }
-    
+
     return FALSE;
 }
 
@@ -463,6 +463,8 @@ BYTE    USBHostHIDDeviceStatus( BYTE deviceAddress )
                    return USB_HID_NORMAL_RUNNING;
                    break;
                case STATE_HOLDING:
+                   //hidtest LATDbits.LATD9 = !LATDbits.LATD9;
+                   //hidtest DelayMs(50);
                    return USB_HID_DEVICE_HOLDING;
                    break;
                case STATE_HID_RESET_RECOVERY:
