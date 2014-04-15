@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_callback.h,v.0.3.0 2014/02/26
+ * usb_callback.h,v.0.4.0 2014/04/15
  */
 
 #ifndef USB_CALLBACK_H
@@ -28,18 +28,20 @@ extern "C" {
 
 #include <GenericTypeDefs.h>
 
+#include "iosetting.h"
 #include "usb_config.h"
 #include "USB/usb.h"
 #include "USB/usb_function_midi.h"
-#include "USB/usb_host_midi.h"
 #include "USB/usb_function_hid.h"
-#if 0
+
+#if defined(USB_USE_MIDI)
+    #include "USB/usb_host_midi.h"
+#endif
+
 #if defined(USB_USE_HID) // hid host
     #include "USB/usb_host_hid_parser.h"
     #include "USB/usb_host_hid.h"
-#endif
-#endif
-#if defined(USB_USE_CDC) // cdc host
+#elif defined(USB_USE_CDC) // cdc host
     #include "USB/usb_host_cdc.h"
     #include "USB/usb_host_cdc_interface.h"
 #endif
@@ -52,7 +54,28 @@ typedef enum
     MODE_UNKNOWN
 } DEVICE_MODE;
 
-#if defined(USB_USE_CDC)
+#if defined(USB_USE_HID)
+    #define MAX_ERROR_COUNTER 10
+
+    typedef enum _APP_STATE
+    {
+        DEVICE_NOT_CONNECTED,
+        DEVICE_CONNECTED, /* Device Enumerated  - Report Descriptor Parsed */
+        READY_TO_TX_RX_REPORT,
+        GET_INPUT_REPORT, /* perform operation on received report */
+        INPUT_REPORT_PENDING,
+        ERROR_REPORTED 
+    } APP_STATE;
+
+    typedef struct _HID_REPORT_BUFFER
+    {
+        WORD  Report_ID;
+        WORD  ReportSize;
+        //  BYTE* ReportData;
+        BYTE  ReportData[4];
+        WORD  ReportPollRate;
+    }   HID_REPORT_BUFFER;
+#elif defined(USB_USE_CDC)
     typedef enum _APPL_STATE
     {
         DEVICE_NOT_CONNECTED,
@@ -90,6 +113,7 @@ typedef enum
     TX_REAL_TIME_DATA_WAIT
 } TX_RX_STATE;
 
+#if defined(USB_USE_MIDI)
 typedef struct
 {
     TX_RX_STATE            TransferState;     // The transfer state of the endpoint
@@ -112,7 +136,8 @@ typedef struct
 
 typedef struct
 {
-    BYTE rcvFlag;
+    //BYTE rcvFlag;
+    BOOL rcvFlag;
     BYTE type;
     BYTE ch;
     BYTE num;
@@ -125,12 +150,15 @@ ENDPOINT_BUFFER* endpointBuffers;
 
 unsigned char getRcvMidiDataBuffer(BYTE index);
 void setRcvMidiDataBuffer(BYTE index, unsigned char value);
+#endif
 
 unsigned char getRcvHidDataBuffer(BYTE index);
 void setSndHidDataBuffer(BYTE index, unsigned char value);
 
+#if defined(USB_USE_CDC)
 APPL_STATE getApplCDCState(void);
 void setApplCDCState(APPL_STATE state);
+#endif
 
 BOOL checkUSBState(void);
 BOOL midiRxHandleBusy(void);
@@ -146,8 +174,13 @@ void sendMIDI(BYTE len);
 BOOL hidHadleBusy(void);
 void hidRxOnePacket(void);
 void hidTxOnePacket(void);
+
+#if defined(USB_USE_MIDI)
+BYTE getProcState(void);
+BYTE getUSBHostMIDINumberOfEndpoints(void);
 void putHostMIDIPacket(USB_AUDIO_MIDI_PACKET packet);
-HOST_MIDI_PACKET getHostMIDIPacket(void);
+HOST_MIDI_PACKET* getHostMIDIPacket(void);
+#endif
 
 void USBCBSuspend(void);
 #if 0

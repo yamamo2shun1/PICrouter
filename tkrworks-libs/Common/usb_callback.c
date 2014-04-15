@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * usb_callback.c,v.0.3.0 2014/02/26
+ * usb_callback.c,v.0.4.0 2014/04/15
  */
 
 #include "usb_callback.h"
@@ -30,7 +30,9 @@ USB_HANDLE midiRxHandle  = NULL;
 unsigned char rcvMidiDataBuffer[64];
 unsigned char sndMidiDataBuffer[64];
 
-HOST_MIDI_PACKET rcvMidiPacket;
+#if defined(USB_USE_MIDI)
+HOST_MIDI_PACKET *rcvMidiPacket;
+#endif
 
 // for USB_HID
 USB_HANDLE hidRxHandle = NULL;
@@ -69,6 +71,7 @@ void setSndHidDataBuffer(BYTE index, unsigned char value)
     sndHidDataBuffer[index] = value;
 }
 
+#if defined(USB_USE_CDC)
 APPL_STATE getApplCDCState(void)
 {
     return APPL_CDC_State;
@@ -77,6 +80,7 @@ void setApplCDCState(APPL_STATE state)
 {
     APPL_CDC_State = state;
 }
+#endif
 
 BOOL checkUSBState(void)
 {
@@ -200,6 +204,17 @@ void hidTxOnePacket(void)
     hidTxHandle = USBTxOnePacket(HID_EP, (BYTE*)sndHidDataBuffer, 64);
 }
 
+#if defined(USB_USE_MIDI)
+BYTE getProcState(void)
+{
+    return ProcState;
+}
+
+BYTE getUSBHostMIDINumberOfEndpoints(void)
+{
+    return USBHostMIDINumberOfEndpoints(deviceHandle);
+}
+
 void putHostMIDIPacket(USB_AUDIO_MIDI_PACKET packet)
 {
     BYTE currentEndpoint;
@@ -216,7 +231,7 @@ void putHostMIDIPacket(USB_AUDIO_MIDI_PACKET packet)
     }
 }
 
-HOST_MIDI_PACKET getHostMIDIPacket(void)
+HOST_MIDI_PACKET* getHostMIDIPacket(void)
 {
     BYTE currentEndpoint;
 
@@ -224,10 +239,12 @@ HOST_MIDI_PACKET getHostMIDIPacket(void)
     {
     case STATE_INITIALIZE:
         ProcState = STATE_IDLE;
-        rcvMidiPacket.rcvFlag = FALSE;
+        for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
         break;
     case STATE_IDLE:
-        rcvMidiPacket.rcvFlag = FALSE;
+        for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
         break;
     case STATE_READY:
         for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
@@ -239,16 +256,16 @@ HOST_MIDI_PACKET getHostMIDIPacket(void)
                 {
                     endpointBuffers[currentEndpoint].TransferState = RX_DATA_WAIT;
                 }
-                rcvMidiPacket.rcvFlag = FALSE;
+                rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
                 break;
             case RX_DATA_WAIT:
                 if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
                 {
-                    rcvMidiPacket.rcvFlag = TRUE;
-                    rcvMidiPacket.type = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0xF0;
-                    rcvMidiPacket.ch = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0x0F;
-                    rcvMidiPacket.num = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_1;
-                    rcvMidiPacket.val = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_2;
+                    rcvMidiPacket[currentEndpoint].rcvFlag = TRUE;
+                    rcvMidiPacket[currentEndpoint].type = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0xF0;
+                    rcvMidiPacket[currentEndpoint].ch = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_0 & 0x0F;
+                    rcvMidiPacket[currentEndpoint].num = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_1;
+                    rcvMidiPacket[currentEndpoint].val = endpointBuffers[currentEndpoint].pBufWriteLocation->DATA_2;
 
                     endpointBuffers[currentEndpoint].TransferState = RX_DATA;
                     endpointBuffers[currentEndpoint].pBufWriteLocation += endpointBuffers[currentEndpoint].numOfMIDIPackets;
@@ -266,7 +283,7 @@ HOST_MIDI_PACKET getHostMIDIPacket(void)
                         endpointBuffers[currentEndpoint].TransferState = TX_DATA_WAIT;
                     }
                 }
-                rcvMidiPacket.rcvFlag = FALSE;
+                rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
                 break;
             case TX_DATA_WAIT:
                 if(!USBHostMIDITransferIsBusy(deviceHandle, currentEndpoint))
@@ -279,23 +296,26 @@ HOST_MIDI_PACKET getHostMIDIPacket(void)
                         endpointBuffers[currentEndpoint].pBufReadLocation = endpointBuffers[currentEndpoint].bufferStart;
                     }
                 }
-                rcvMidiPacket.rcvFlag = FALSE;
+                rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
                 break;
             }
             //delayUs(2);
         }
         break;
     case STATE_ERROR:
-        rcvMidiPacket.rcvFlag = FALSE;
-        //LED_2_On();
+        for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
         break;
     default:
         ProcState = STATE_INITIALIZE;
-        rcvMidiPacket.rcvFlag = FALSE;
+        for(currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++)
+            rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
         break;
     }
+
     return rcvMidiPacket;
 }
+#endif
 
 // ******************************************************************************************************
 // ************** USB Callback Functions ****************************************************************
@@ -831,16 +851,24 @@ BOOL USER_USB_CALLBACK_EVENT_HANDLER(USB_EVENT event, void *pdata, WORD size)
  *                  just "sniffed" and the routine returns FALSE.
  *************************************************************************/
 
-BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DWORD size )
+BOOL USB_ApplicationEventHandler( BYTE address, USB_EVENT event, void *data, DWORD size)
 {
     BYTE currentEndpoint;
+
+#if defined(USB_USE_MIDI)
     ENDPOINT_DIRECTION direction;
+#endif
 
     // Handle specific events.
     switch ((INT)event)
     {
         case EVENT_VBUS_REQUEST_POWER:
-        case EVENT_VBUS_RELEASE_POWER:
+            if (((USB_VBUS_POWER_EVENT_DATA*)data)->current <= (MAX_ALLOWED_CURRENT / 2))
+            {
+                return TRUE;
+            }
+            break;
+    case EVENT_VBUS_RELEASE_POWER:
         case EVENT_HUB_ATTACH:
         case EVENT_UNSUPPORTED_DEVICE:
         case EVENT_CANNOT_ENUMERATE:
@@ -853,6 +881,15 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
         case EVENT_BUS_ERROR:
             return TRUE;
             break;
+#if defined(USB_USE_HID)
+        case EVENT_HID_RPT_DESC_PARSED:
+#ifdef APPL_COLLECT_PARSED_DATA
+            return(APPL_COLLECT_PARSED_DATA());
+#else
+            return TRUE;
+#endif
+            break;
+#endif
 #if defined(USB_USE_CDC)
         case EVENT_CDC_NONE:
         case EVENT_CDC_ATTACH:
@@ -868,14 +905,18 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
                 return TRUE;
             break;
 #endif
+#if defined(USB_USE_MIDI)
         case EVENT_MIDI_ATTACH:
             deviceHandle = data;
             ProcState = STATE_READY;
 
+            rcvMidiPacket = malloc(sizeof(HOST_MIDI_PACKET) * USBHostMIDINumberOfEndpoints(deviceHandle));
             endpointBuffers = malloc(sizeof(ENDPOINT_BUFFER) * USBHostMIDINumberOfEndpoints(deviceHandle));
 
             for( currentEndpoint = 0; currentEndpoint < USBHostMIDINumberOfEndpoints(deviceHandle); currentEndpoint++ )
             {
+                rcvMidiPacket[currentEndpoint].rcvFlag = FALSE;
+
                 direction = USBHostMIDIEndpointDirection(deviceHandle, currentEndpoint);
                 // For OUT endpoints
                 if(direction == OUT)
@@ -917,6 +958,9 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
                 endpointBuffers[currentEndpoint].pBufWriteLocation = NULL;
             }
 
+            free(rcvMidiPacket);
+            rcvMidiPacket = NULL;
+
             free(endpointBuffers);
             endpointBuffers = NULL;
 
@@ -927,6 +971,7 @@ BOOL USB_ApplicationEventHandler ( BYTE address, USB_EVENT event, void *data, DW
         case EVENT_MIDI_TRANSFER_DONE:  // The main state machine will poll the driver.
             return TRUE;
             break;
+#endif
         default:
             break;
     }
