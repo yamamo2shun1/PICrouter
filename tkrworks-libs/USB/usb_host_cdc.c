@@ -933,7 +933,7 @@ void USBHostCDCTasks( void )
   Remarks:
     None
 *******************************************************************************/
-
+#if defined(USB_USE_CDC)
 BYTE USBHostCDCTransfer( BYTE deviceAddress,BYTE request , BYTE direction, BYTE interfaceNum, WORD size, BYTE *data , BYTE endpointDATA)
 {
     BYTE    i;
@@ -1035,6 +1035,7 @@ BYTE USBHostCDCTransfer( BYTE deviceAddress,BYTE request , BYTE direction, BYTE 
     #endif
     return USB_SUCCESS;
 }
+#endif
 /*******************************************************************************
   Function:
     BOOL USBHostCDCTransferIsComplete( BYTE deviceAddress,
