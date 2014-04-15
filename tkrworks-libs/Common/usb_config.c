@@ -22,7 +22,9 @@
 #include "GenericTypeDefs.h"
 #include "HardwareProfile.h"
 #include "USB/usb.h"
-#include "USB/usb_host_midi.h"
+#if defined(USB_USE_MIDI)
+    #include "USB/usb_host_midi.h"
+#endif
 #if defined(USB_USE_HID)
     #include "USB/usb_host_hid.h"
 #elif defined(USB_USE_CDC)
@@ -35,12 +37,14 @@
 
 CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 {
+#if defined(USB_USE_MIDI)
     {
         USBHostMIDIInit,
         USBHostMIDIEventHandler,
         0
     }
     ,
+#endif
 #if defined(USB_USE_HID)
     {
         USBHostHIDInitialize,
@@ -69,14 +73,16 @@ CLIENT_DRIVER_TABLE usbClientDrvTable[] =
 
 USB_TPL usbTPL[] =
 {
+#if defined(USB_USE_MIDI)
     { INIT_CL_SC_P( 0x01ul, 0x03ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }, // MIDI Audio Subclass
+#endif
 #if defined(USB_USE_HID)
     { INIT_CL_SC_P( 0x03ul, 0x01ul, 0x02ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
-    { INIT_CL_SC_P( 0x03ul, 0x01ul, 0x01ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
-    { INIT_CL_SC_P( 0x03ul, 0x00ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
+    //{ INIT_CL_SC_P( 0x03ul, 0x01ul, 0x01ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
+    //{ INIT_CL_SC_P( 0x03ul, 0x00ul, 0x00ul ), 0, 0, {TPL_CLASS_DRV} }, // HID Class
 #elif defined(USB_USE_CDC)
     { INIT_CL_SC_P( 0x02ul, 0x02ul, 0x01ul ), 0, 1, {TPL_CLASS_DRV} }, // Communication Interface
-	 // Communication Device/Interface Class , Abstract Control Mode , Common AT Commands
+    // Communication Device/Interface Class , Abstract Control Mode , Common AT Commands
     { INIT_CL_SC_P( 0x0Aul, 0x00ul, 0x00ul ), 0, 1, {TPL_CLASS_DRV} }  // Data Interface
 #endif
 };

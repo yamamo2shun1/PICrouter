@@ -27,15 +27,15 @@
 #define USBCFG_H
 
 /** DEFINITIONS ****************************************************/
-#define USB_EP0_BUFF_SIZE		8	// Valid Options: 8, 16, 32, or 64 bytes.
-								// Using larger options take more SRAM, but
-								// does not provide much advantage in most types
-								// of applications.  Exceptions to this, are applications
-								// that use EP0 IN or OUT for sending large amounts of
-								// application related data.
+#define USB_EP0_BUFF_SIZE 8 // Valid Options: 8, 16, 32, or 64 bytes.
+                            // Using larger options take more SRAM, but
+                            // does not provide much advantage in most types
+                            // of applications.  Exceptions to this, are applications
+                            // that use EP0 IN or OUT for sending large amounts of
+                            // application related data.
 									
-#define USB_MAX_NUM_INT     	3   // For tracking Alternate Setting
-#define USB_MAX_EP_NUMBER	    4
+#define USB_MAX_NUM_INT   3 // For tracking Alternate Setting
+#define USB_MAX_EP_NUMBER 4
 
 //Device descriptor - if these two definitions are not defined then
 //  a ROM USB_DEVICE_DESCRIPTOR variable by the exact name of device_dsc
@@ -109,9 +109,9 @@
 //USB_ENABLE_STATUS_STAGE_TIMEOUTS feature is not enabled, then the USB_STATUS_STAGE_TIMEOUT
 //parameter is not relevant.
 
-#define USB_STATUS_STAGE_TIMEOUT     (BYTE)45   //Approximate timeout in milliseconds, except when
-                                                //USB_POLLING mode is used, and USBDeviceTasks() is called at < 1kHz
-                                                //In this special case, the timeout becomes approximately:
+#define USB_STATUS_STAGE_TIMEOUT (BYTE)45 //Approximate timeout in milliseconds, except when
+                                          //USB_POLLING mode is used, and USBDeviceTasks() is called at < 1kHz
+                                          //In this special case, the timeout becomes approximately:
 //Timeout(in milliseconds) = ((1000 * (USB_STATUS_STAGE_TIMEOUT - 1)) / (USBDeviceTasks() polling frequency in Hz))
 //------------------------------------------------------------------------------------------------------------------
 
@@ -120,10 +120,15 @@
 
 #define USB_NUM_STRING_DESCRIPTORS 3
 
+#define MAX_ALLOWED_CURRENT             (500)         // Maximum power we can supply in mA
+
 /** DEVICE CLASS USAGE *********************************************/
-//hid #define USB_USE_HID//hid
-#define USB_USE_CDC // cdc
-#define USB_USE_AUDIO_MIDI
+#if 0
+    #define USB_USE_HID//hid
+#else
+    #define USB_USE_CDC // cdc
+#endif
+#define USB_USE_MIDI
 
 /** ENDPOINTS ALLOCATION *******************************************/
 #define MIDI_EP             1
@@ -141,16 +146,18 @@
 /** DEFINITIONS ****************************************************/
 
 /* Host Configuration */
-#define USB_ENABLE_TRANSFER_EVENT
+#if defined(USB_USE_MIDI)
+    #define USB_ENABLE_TRANSFER_EVENT
+#endif
 #if defined(USB_USE_HID)
-  #define NUM_TPL_ENTRIES 4
+    #define NUM_TPL_ENTRIES 1//test0 2
 #elif defined(USB_USE_CDC)
-  #define NUM_TPL_ENTRIES 3
+    #define NUM_TPL_ENTRIES 3
 #else
-  #define NUM_TPL_ENTRIES 1
+    #define NUM_TPL_ENTRIES 1
 #endif
 #define USB_NUM_CONTROL_NAKS 200
-//test #define USB_NUM_CONTROL_NAKS 20
+//for hid? #define USB_NUM_CONTROL_NAKS 20
 #define USB_SUPPORT_INTERRUPT_TRANSFERS
 #define USB_SUPPORT_BULK_TRANSFERS
 #define USB_NUM_BULK_NAKS 10
@@ -161,7 +168,10 @@
 #define USB_HOST_APP_EVENT_HANDLER USB_ApplicationEventHandler
 
 // Host MIDI Configuration
-#define USB_MAX_MIDI_DEVICES 1
+#if defined(USB_USE_MIDI)
+    #define USB_MAX_MIDI_DEVICES 1
+#endif
+
 #define USB_MAX_CDC_DEVICES  1
 
 // Host HID Client Driver Configuration
@@ -177,27 +187,27 @@
 #endif
 
 #if defined(USB_USE_HID)
-    #define USBTasks()               \
-    {                                \
-        USBHostTasks();              \
-        USBHostHIDTasks();           \
+    #define USBTasks()    \
+    {                     \
+        USBHostTasks();   \
+        USBHostHIDTasks();\
     }
 #elif defined(USB_USE_CDC)
-    #define USBTasks()               \
-    {                                \
-        USBHostTasks();              \
-        USBHostCDCTasks();           \
+    #define USBTasks()    \
+    {                     \
+        USBHostTasks();   \
+        USBHostCDCTasks();\
     }
 #else
-    #define USBTasks()               \
-    {                                \
-        USBHostTasks();              \
+    #define USBTasks() \
+    {                  \
+        USBHostTasks();\
     }
 #endif
 
-#define USBInitialize(x)        \
-{                               \
-    USBHostInit(x);             \
+#define USBInitialize(x)\
+{                       \
+    USBHostInit(x);     \
 }
 
 #endif //USBCFG_H
