@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.12.1 2014/02/28
+ * picrouter.h,v.1.12.2 2014/04/15
  */
 
-#define CURRENT_VERSION "1.12.1"
+#define CURRENT_VERSION "1.12.2"
 
 #include <plib.h>
 #include <stdio.h>
@@ -44,6 +44,17 @@
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
+
+//#define USE_RN131
+#if defined(USE_RN131)
+  #define config1 UART_EN | UART_RX_TX | UART_DIS_LOOPBACK | UART_DIS_ABAUD | \
+                  UART_MODE_SIMPLEX | UART_NO_PAR_8BIT | UART_NORMAL_RX | UART_BRGH_FOUR
+  #define config2 UART_INT_TX | UART_TX_ENABLE | UART_RX_ENABLE
+  #define baud 172//80000000 / (4 * 115200) - 1 115.2kbps@20MHz
+  #define configint UART_ERR_INT_DIS | UART_RX_INT_EN | UART_INT_PR4 | UART_TX_INT_DIS
+#endif
+
+//#define USE_PITCH
 
 //#define USE_LCD
 
@@ -90,6 +101,26 @@ USB_AUDIO_MIDI_EVENT_PACKET midiData;
 //static DEVICE_MODE device_mode = MODE_DEVICE;
 static DEVICE_MODE device_mode = MODE_HOST;
 
+#if defined(USB_USE_HID)
+#define MINIMUM_POLL_INTERVAL           (0x0A)        // Minimum Polling rate for HID reports is 10ms
+
+#define USAGE_PAGE_BUTTONS              (0x09)
+#define USAGE_PAGE_GEN_DESKTOP          (0x01)
+
+APP_STATE App_State_Mouse = DEVICE_NOT_CONNECTED;
+
+HID_DATA_DETAILS Appl_Mouse_Buttons_Details;
+HID_DATA_DETAILS Appl_XY_Axis_Details;
+
+HID_REPORT_BUFFER  Appl_raw_report_buffer;
+
+HID_USER_DATA_SIZE Appl_Button_report_buffer[3];
+HID_USER_DATA_SIZE Appl_XY_report_buffer[3];
+
+BYTE ErrorCounter;
+BOOL ReportBufferUpdated;
+#endif
+
 // CDC(Host)
 #if defined(USB_USE_CDC)
 BYTE USB_CDC_IN_Data_Array[MAX_NO_OF_IN_BYTES];
@@ -98,14 +129,17 @@ BYTE USB_CDC_OUT_Data_Array[MAX_NO_OF_OUT_BYTES];
 BOOL cdcSendFlag = FALSE;
 WORD cdcReceiveInterval = 0;
 BYTE cdcOutDataLength;
+#endif
+
 BYTE ErrorDriver;
 BYTE NumOfBytesRcvd;
-#endif
 
 BOOL bUsbHostInitialized = FALSE;
 
 // MIDI packet used to translate OSC to USB_MIDI(Host), with flag
+#if defined(USB_USE_MIDI)
 USB_AUDIO_MIDI_PACKET OSCTranslatedToUSB;
+#endif
 
 //PWM
 BOOL onTimer2 = FALSE;

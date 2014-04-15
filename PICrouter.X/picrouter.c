@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.12.1 2014/02/28
+ * picrouter.c,v.1.12.2 2014/04/15
  */
 
 #include "picrouter.h"
@@ -31,14 +31,23 @@ void _general_exception_handler(unsigned cause, unsigned status)
     Nop();
 }
 
+#if defined(USE_RN131)
+void sendCommandToRN134(unsigned char *cmd)
+{
+    while(*cmd != 0)
+        putcUART2(*cmd++);
+    DelayMs(1000);
+}
+#endif
+
 int main(int argc, char** argv) {
     int i;
     BYTE eth_state = 0;
-
+    
     // Enable optimal performance
     SYSTEMConfigPerformance(GetSystemClock());
     mOSCSetPBDIV(OSC_PB_DIV_1); // Use 1:1 CPU Core:Peripheral clocks
-
+    
     // Enable the cache for the best performance
     CheKseg0CacheOn();
 
@@ -87,14 +96,39 @@ int main(int argc, char** argv) {
     setOSCHostName("picrouter");
 
     // USB Initialization
-    #if defined(USE_USB_BUS_SENSE_IO)
-        tris_usb_bus_sense = 1;
-    #endif
+#if defined(USE_USB_BUS_SENSE_IO)
+    tris_usb_bus_sense = 1;
+#endif
 
-    #if defined(USE_SELF_POWER_SENSE_IO)
-        tris_self_power = 1;
-    #endif
+#if defined(USE_SELF_POWER_SENSE_IO)
+    tris_self_power = 1;
+#endif
 
+#if defined(USE_RN131)
+    setPortIOType("F5", IO_IN);
+#if 0
+    OpenUART2(config1, config2, baud);
+#endif
+    U2MODE = 0x00008808;
+    U2STA = 0x00000400;
+    U2BRG = baud;
+    ConfigIntUART2(configint);
+#endif
+
+#if defined(USE_PITCH)
+    AD1PCFG = 0x0000FFFC;// 0000 0000 0000 0000 1111 1111 1111 1100
+    AD1CON2 = 0x0000041C;// 0000 0000 0000 0000 0000 0100 0001 1100
+    AD1CSSL = 0x00000003;// 0000 0000 0000 0000 0000 0000 0000 0011
+
+    AD1CON1 = 0x000010E6;// 0000 0000 0000 0000 1000 0000 0110 0110
+    AD1CHS  = 0x00000000;// 0000 0000 0000 0000 0000 0000 0000 0000
+    AD1CON3 = 0x00001F08;// 0000 0000 0000 0000 0000 1111 0000 1000
+    AD1CON1bits.ON = 1;
+
+    setAnalogEnable(0, TRUE);
+    setAnalogEnable(1, TRUE);
+#endif
+    
     TickInit();
     InitAppConfig();
     StackInit();
@@ -117,6 +151,39 @@ int main(int argc, char** argv) {
     turnOffLED2();
     DelayMs(200);
     
+#if defined(USE_RN131)
+    putsUART2("$$$");
+    DelayMs(1000);
+    sendCommandToRN134("factory R\r\n");
+    sendCommandToRN134("set uart baud 115200\r\n");
+    sendCommandToRN134("set wlan join 2\r\n");
+    sendCommandToRN134("set wlan auth 4\r\n");
+    //sendCommandToRN134("set wlan ssid tkrworks$HOME$Network");
+    //sendCommandToRN134("set wlan passphrase t@ke32z@6r@i");
+    sendCommandToRN134("set wlan ssid PINGPONG\r\n");
+    sendCommandToRN134("set wlan pass m@tsumotot@iyo\r\n");
+    sendCommandToRN134("set wlan phrase m@tsumotot@iyo\r\n");
+    sendCommandToRN134("set wlan passphrase m@tsumotot@iyo\r\n");
+    sendCommandToRN134("set ip proto 1\r\n");
+    sendCommandToRN134("set ip host 172.16.1.11\r\n");
+    //sendCommandToRN134("set ip host 192.168.1.11");
+    sendCommandToRN134("set ip remote 8000\r\n");
+    sendCommandToRN134("set ip local 8080\r\n");
+    sendCommandToRN134("set b i 0\r\n");
+    sendCommandToRN134("set comm remote 0\r\n");
+    sendCommandToRN134("set comm open 0\r\n");
+    sendCommandToRN134("save\r\n");
+    sendCommandToRN134("reboot\r\n");
+    sendCommandToRN134("close\r\n");
+    U2MODE = 0x00008808;
+    U2STA = 0x00000400;
+    U2BRG = baud;
+    //OpenUART2(config1, config2, baud);
+    DelayMs(2000);
+    putcUART2("");
+    DelayMs(1000);
+#endif
+    
     while(1)
     {
         currentState = getSW1State();
@@ -129,131 +196,138 @@ int main(int argc, char** argv) {
 
         switch(device_mode)
         {
-            case MODE_DEVICE:
-                for(i = 0; i < 3; i++)
+        case MODE_DEVICE:
+            for(i = 0; i < 3; i++)
+            {
+                turnOnLED1();
+                DelayMs(200);
+                turnOffLED1();
+                DelayMs(200);
+            }
+            
+            USBDeviceInit();
+            
+            while(device_mode == MODE_DEVICE)
+            {
+                // Ethernet Tasks
+                StackTask();
+                switch(eth_state)
                 {
-                    turnOnLED1();
-                    DelayMs(200);
-                    turnOffLED1();
-                    DelayMs(200);
-                }
-
-                USBDeviceInit();
-
-                while(device_mode == MODE_DEVICE)
-                {
-                    // Ethernet Tasks
-                    StackTask();
-                    switch(eth_state)
-                    {
-                        case 0:
+                case 0:
 #if 0
-                            NBNSTask();
-                            eth_state = 1;
-                            break;
-                        case 1:
-                            ZeroconfLLProcess();
-                            eth_state = 1;// 2;
-                            break;
-                        case 1:// 2:
+                    NBNSTask();
+                    eth_state = 1;
+                    break;
+                case 1:
+                    ZeroconfLLProcess();
+                    eth_state = 1;// 2;
+                    break;
+                case 1:// 2:
 #endif
-                            mDNSProcess();
-                            eth_state = 1;// 3;
-                            break;
-                        case 1:// 3:
-                            DHCPServerTask();
-                            eth_state = 0;
-                            break;
-                    }
-                    if(dwLastIP != AppConfig.MyIPAddr.Val)
-                    {
-                        dwLastIP = AppConfig.MyIPAddr.Val;
-                        mDNSFillHostRecord();
-                    }
-                    
-                    receiveOSCTask();
-
-                    // USB Tasks
-                    USBDeviceTasks();
-                    USBControlTask();
-
-                    if(U1OTGSTATbits.SESVD == 0)
-                    {
-                        USBSoftDetach();
-                        //test device_mode = MODE_UNKNOWN;
-                    }
+                    mDNSProcess();
+                    eth_state = 1;// 3;
+                    break;
+                case 1:// 3:
+                    DHCPServerTask();
+                    eth_state = 0;
+                    break;
                 }
-                break;
-            case MODE_HOST:
-                for(i = 0; i < 3; i++)
+                if(dwLastIP != AppConfig.MyIPAddr.Val)
                 {
-                    turnOnLED2();
-                    DelayMs(200);
-                    turnOffLED2();
-                    DelayMs(200);
+                    dwLastIP = AppConfig.MyIPAddr.Val;
+                    mDNSFillHostRecord();
                 }
-
-                while(device_mode == MODE_HOST)
+                
+                receiveOSCTask();
+                
+                // USB Tasks
+                USBDeviceTasks();
+                USBControlTask();
+                
+                if(U1OTGSTATbits.SESVD == 0)
                 {
-                    StackTask();
-                    switch(eth_state)
-                    {
-                        case 0:
+                    USBSoftDetach();
+                    //test device_mode = MODE_UNKNOWN;
+                }
+            }
+            break;
+        case MODE_HOST:
+            for(i = 0; i < 3; i++)
+            {
+                turnOnLED2();
+                DelayMs(200);
+                turnOffLED2();
+                DelayMs(200);
+            }
+            
+            while(device_mode == MODE_HOST)
+            {
+#if defined(USE_RN131)
+                putsUART2("test");
+                DelayMs(100);
+#endif
+
+                StackTask();
+                switch(eth_state)
+                {
+                case 0:
 #if 0
-                            NBNSTask();
-                            eth_state = 1;
-                            break;
-                        case 1:
-                            ZeroconfLLProcess();
-                            eth_state = 1;// 2;
-                            break;
-                        case 1:// 2:
+                    NBNSTask();
+                    eth_state = 1;
+                    break;
+                case 1:
+                    ZeroconfLLProcess();
+                    eth_state = 1;// 2;
+                    break;
+                case 1:// 2:
 #endif
-                            mDNSProcess();
-                            eth_state = 1;// 3;
-                            break;
-                        case 1:// 3:
-                            DHCPServerTask();
-                            eth_state = 0;
-                            break;
-                    }
-                    if(dwLastIP != AppConfig.MyIPAddr.Val)
-                    {
-                        dwLastIP = AppConfig.MyIPAddr.Val;
-                        mDNSFillHostRecord();
-                    }
+                    mDNSProcess();
+                    eth_state = 1;// 3;
+                    break;
+                case 1:// 3:
+                    DHCPServerTask();
+                    eth_state = 0;
+                    break;
+                }
+                if(dwLastIP != AppConfig.MyIPAddr.Val)
+                {
+                    dwLastIP = AppConfig.MyIPAddr.Val;
+                    mDNSFillHostRecord();
+                }
+                
+                receiveOSCTask();
+                
+                if(bUsbHostInitialized)
+                {
+                    USBTasks();
 
-                    receiveOSCTask();
-
-                    if(bUsbHostInitialized)
-                    {
-                        USBTasks();
-
-                        convertMidiToOsc();
+#if defined(USB_USE_MIDI)
+                    convertMidiToOsc();
+#endif
 
 #if defined(USB_USE_HID)
-                        convertHidToOsc();
+                    convertHidToOsc();
 #elif defined(USB_USE_CDC)
-                        USB_CDC_RxTxHandler();
-
-                        if(cdcReceiveInterval < 16384)
-                            cdcReceiveInterval++;
-                        else if(cdcReceiveInterval == 16384)
-                        {
-                            if(getApplCDCState() == READY_TO_TX_RX)
-                                setApplCDCState(GET_IN_DATA);
-                            cdcReceiveInterval = 0;
-                        }
-#endif
-                    }
-                    else
+                    USB_CDC_RxTxHandler();
+                    
+                    if(cdcReceiveInterval < 16384)
+                        cdcReceiveInterval++;
+                    else if(cdcReceiveInterval == 16384)
                     {
-                        bUsbHostInitialized = USBHostInit(0);
+                        if(getApplCDCState() == READY_TO_TX_RX)
+                            setApplCDCState(GET_IN_DATA);
+                        cdcReceiveInterval = 0;
                     }
+#endif
                 }
-                break;
-            default:
-                break;
+                else
+                {
+                    bUsbHostInitialized = USBHostInit(0);
+                }
+            }
+            break;
+        default:
+            break;
         }        
     }
     return (EXIT_SUCCESS);
@@ -291,6 +365,26 @@ void initIOPorts(void)
     for(i = 0; i < 14; i++)
         setAnPortDioType(i, IO_IN);
 
+#if defined(USE_PITCH)
+    //for pitch
+    setAnPortDioType(0, IO_IN);
+    setAnPortDioType(1, IO_IN);
+    for(i = 2; i < 14; i++)
+        setAnPortDioType(i, IO_OUT);
+
+    outputPort("b2", LOW);
+    outputPort("b3", LOW);
+    outputPort("b4", LOW);
+    outputPort("b5", LOW);
+    outputPort("b6", LOW);
+    outputPort("b7", LOW);
+    outputPort("b8", LOW);
+    outputPort("b9", LOW);
+    outputPort("b10", LOW);
+    outputPort("b11", LOW);
+    outputPort("b12", LOW);
+#endif
+
     for(i = 0; i < 4; i++)
     {
         setPwmPortDioType(i, IO_OUT);
@@ -302,6 +396,26 @@ void initIOPorts(void)
         setDigitalPortDioType(i, IO_OUT);
         outputDigitalPort(i, LOW);
     }
+
+#if defined(USE_PITCH)
+    setDigitalPortDioType(0, IO_OUT);
+    outputDigitalPort(0, LOW);
+    setDigitalPortDioType(0, IO_OUT);
+    outputDigitalPort(0, LOW);
+
+    setPortIOType("f0", IO_IN);
+    setPortIOType("f1", IO_OUT);
+    outputPort("f1", LOW);
+    setPortIOType("b14", IO_IN);
+    setPortIOType("f4", IO_OUT);
+    outputPort("f4", LOW);
+    setPortIOType("f5", IO_IN);
+    setPortIOType("g6", IO_OUT);
+    outputPort("g6", LOW);
+    setPortIOType("g7", IO_IN);
+    setPortIOType("g8", IO_OUT);
+    outputPort("g8", LOW);
+#endif
 
     setSpiPortDioType("sck2", IO_OUT);
     setSpiPortDioType("sdi2", IO_OUT);
@@ -2107,6 +2221,189 @@ void receiveOSCTask(void)
                 else
                     sendOSCMessage(sysPrefix, msgError, "ss", msgGetI2cData, ": wrong_argument_type");
             }
+#if defined(USE_PITCH)
+            else if(compareOSCAddress("/volume/led/len/set"))
+            {
+                BYTE val = getIntArgumentAtIndex(0);
+                //if(type == 1)
+                {
+                    switch(val)
+                    {
+                    case 0:
+                        outputPort("b2", LOW);
+                        outputPort("b3", LOW);
+                        outputPort("b4", LOW);
+                        outputPort("b5", LOW);
+                        outputPort("b6", LOW);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 1:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", LOW);
+                        outputPort("b4", LOW);
+                        outputPort("b5", LOW);
+                        outputPort("b6", LOW);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 2:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", LOW);
+                        outputPort("b5", LOW);
+                        outputPort("b6", LOW);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 3:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", LOW);
+                        outputPort("b6", LOW);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 4:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", LOW);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 5:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", LOW);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 6:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", LOW);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 7:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", HIGH);
+                        outputPort("b9", LOW);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 8:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", HIGH);
+                        outputPort("b9", HIGH);
+                        outputPort("b10", LOW);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 9:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", HIGH);
+                        outputPort("b9", HIGH);
+                        outputPort("b10", HIGH);
+                        outputPort("b11", LOW);
+                        outputPort("b12", LOW);
+                        break;
+                    case 10:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", HIGH);
+                        outputPort("b9", HIGH);
+                        outputPort("b10", HIGH);
+                        outputPort("b11", HIGH);
+                        outputPort("b12", LOW);
+                        break;
+                    case 11:
+                        outputPort("b2", HIGH);
+                        outputPort("b3", HIGH);
+                        outputPort("b4", HIGH);
+                        outputPort("b5", HIGH);
+                        outputPort("b6", HIGH);
+                        outputPort("b7", HIGH);
+                        outputPort("b8", HIGH);
+                        outputPort("b9", HIGH);
+                        outputPort("b10", HIGH);
+                        outputPort("b11", HIGH);
+                        outputPort("b12", HIGH);
+                        break;
+                    }
+                }
+            }
+            else if(compareOSCAddress("/pad/led/set"))
+            {
+                BYTE x = getIntArgumentAtIndex(0);
+                BYTE y = getIntArgumentAtIndex(1);
+                BYTE state = getIntArgumentAtIndex(2);
+
+                if(x == 0 && y == 0)
+                    outputPort("g6", (state > 0)?1:0);
+                else if(x == 1 && y == 0)
+                    outputPort("f1", (state > 0)?1:0);
+                else if(x == 0 && y == 1)
+                    outputPort("g8", (state > 0)?1:0);
+                else if(x == 1 && y == 1)
+                    outputPort("f4", (state > 0)?1:0);
+            }
+#endif
 #if defined(USE_LCD)
             else if(compareOSCAddress(msgSetLcdConfig))
             {
@@ -3985,6 +4282,7 @@ void receiveOSCTask(void)
             }
         }
         // MIDI
+#if defined(USB_USE_MIDI)
         else if(compareOSCPrefix(midiPrefix))
         {
             if(compareOSCAddress(msgSetNote)) // Note On/Off
@@ -4146,6 +4444,7 @@ void receiveOSCTask(void)
                 }
             }
         }
+#endif
         // CDC
 #if defined(USB_USE_CDC)
         else if(compareOSCPrefix(cdcPrefix))
@@ -4623,32 +4922,32 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
     
     switch(led_state)
     {
-        case 0:
+    case 0:
 #if defined(USE_INC_ENC) || defined(USE_ABS_ENC)
-            if(getInitLedDrvFlag())
-                annularLedHandle();
+        if(getInitLedDrvFlag())
+            annularLedHandle();
 #endif
-            led_state = 1;
-            break;
-        case 1:
+        led_state = 1;
+        break;
+    case 1:
 #if defined(USE_LED_PAD)
-            if(getInitLatticeLedDrvFlag())
-                latticeLedHandle();
+        if(getInitLatticeLedDrvFlag())
+            latticeLedHandle();
 #endif
-            led_state = 2;
-            break;
-        case 2:
+        led_state = 2;
+        break;
+    case 2:
 #if defined(USE_RGB_PAD)
-            if(getInitLatticeRgbDrvFlag())
-                latticeRgbHandle();
+        if(getInitLatticeRgbDrvFlag())
+            latticeRgbHandle();
 #endif
-            led_state = 0;
-            break;
-        default:
-            led_state = 0;
-            break;
+        led_state = 0;
+        break;
+    default:
+        led_state = 0;
+        break;
     }
-
+    
     mT4ClearIntFlag();
 }
 
@@ -4677,7 +4976,7 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
-
+    
     if(!getInitSendFlag())
     {
         setInitSendFlag(openOSCSendPort(getRemoteIp(), getRemotePort()));
@@ -4692,66 +4991,82 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
     {
         switch(sendOSCTaskIndex)
         {
-            case 0:
-                swState1 = getSW1State();
-                if(swState1 != swState0)
+        case 0:
+            swState1 = getSW1State();
+            if(swState1 != swState0)
+            {
+                if(swState1)
+                    sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
+                else
+                    sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+            }
+            swState0 = swState1;
+            
+            sendOSCTaskIndex = 1;
+            break;
+        case 1:
+            j = 0;
+            for(i = 0; i < AN_NUM; i++)
+            {
+                if(getAnalogEnable(i))
                 {
-                    if(swState1)
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
-                    else
-                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+                    analogInHandle(i, (LONG)ReadADC10(j));
+                    j++;
                 }
-                swState0 = swState1;
-
-                sendOSCTaskIndex = 1;
-                break;
-            case 1:
-                j = 0;
-                for(i = 0; i < AN_NUM; i++)
-                {
-                    if(getAnalogEnable(i))
-                    {
-                        analogInHandle(i, (LONG)ReadADC10(j));
-                        j++;
-                    }
-                }
-                sendAdc();
-
-                sendOSCTaskIndex = 2;
-                break;
-            case 2:
-#if defined(USE_LED_PAD) || defined(USE_RGB_PAD)
-                sendPad16();
+            }
+            sendAdc();
+            
+            sendOSCTaskIndex = 2;
+            break;
+        case 2:
+#if defined(USE_PITCH)
+            sendPad4();
 #endif
-                sendOSCTaskIndex = 3;
-                break;
-            case 3:
+#if defined(USE_LED_PAD) || defined(USE_RGB_PAD)
+            sendPad16();
+#endif
+            sendOSCTaskIndex = 3;
+            break;
+        case 3:
 #if defined(USE_INC_ENC)
-                for(i = 0; i < getNumConnectedAbsEnc(); i++)
-                {
-                    incEncoderHandle(i);
-                    sendEncInc32(i);
-                }
+            for(i = 0; i < getNumConnectedAbsEnc(); i++)
+            {
+                incEncoderHandle(i);
+                sendEncInc32(i);
+            }
 #endif                
-                sendOSCTaskIndex = 4;
-                break;
-            case 4:
+            sendOSCTaskIndex = 4;
+            break;
+        case 4:
 #if defined(USE_ABS_ENC)
-                absEncoderHandle();
-                for(i = 0; i < getNumConnectedAbsEnc(); i++)
-                {
-                    sendEncAbs32(i);
-                }
+            absEncoderHandle();
+            for(i = 0; i < getNumConnectedAbsEnc(); i++)
+            {
+                sendEncAbs32(i);
+            }
 #endif                
-                sendOSCTaskIndex = 0;
-                break;
-            default:
-                sendOSCTaskIndex = 0;
-                break;
+            sendOSCTaskIndex = 0;
+            break;
+        default:
+            sendOSCTaskIndex = 0;
+            break;
         }
     }
     mT5ClearIntFlag();
 }
+
+#if defined(USE_RN131)
+void __ISR(32, ipl4) U2RXHandre(void)
+{
+    char rcvData;
+
+    mU2RXClearIntFlag();
+
+    rcvData = getcUART2();
+
+    toggleLED2();
+}
+#endif
 
 /*******************************************************************************
   Function:
@@ -5569,41 +5884,122 @@ void receiveMIDIDatas(void)
   Remarks:
     None
 *******************************************************************************/
+#if defined(USB_USE_MIDI)
 void convertMidiToOsc(void)
 {
-    HOST_MIDI_PACKET hostMidiPacket;
+    BYTE ce;
+    HOST_MIDI_PACKET* hostMidiPacket;
 
-    hostMidiPacket = getHostMIDIPacket();
-    if(getInitSendFlag() && hostMidiPacket.rcvFlag)
+    if(getProcState() == STATE_READY)
     {
-        switch(hostMidiPacket.type)
+        hostMidiPacket = getHostMIDIPacket();
+
+        for(ce = 0; ce < getUSBHostMIDINumberOfEndpoints(); ce++)
         {
-        case 0x80:// Note off
-        case 0x90:// Note on
-            sendOSCMessage(midiPrefix, msgNote, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
-            break;
-        case 0xA0:// Key Pressure
-            sendOSCMessage(midiPrefix, msgKp, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
-            break;
-        case 0xB0:// Control Change
-            sendOSCMessage(midiPrefix, msgCc, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
-            break;
-        case 0xC0:// Program Change
-            sendOSCMessage(midiPrefix, msgPc, "i", hostMidiPacket.num);
-            break;
-        case 0xD0:// Channel Pressure
-            sendOSCMessage(midiPrefix, msgCp, "ii", hostMidiPacket.ch, hostMidiPacket.num);
-            break;
-        case 0xE0:// Pitch Bend
-            sendOSCMessage(midiPrefix, msgPb, "iii", hostMidiPacket.ch, hostMidiPacket.num, hostMidiPacket.val);
-            break;
-        default:
-            break;
+            if(getInitSendFlag() && hostMidiPacket[ce].rcvFlag)
+            {
+                switch(hostMidiPacket[ce].type)
+                {
+                case 0x80:// Note off
+                case 0x90:// Note on
+                    sendOSCMessage(midiPrefix, msgNote, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xA0:// Key Pressure
+                    sendOSCMessage(midiPrefix, msgKp, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xB0:// Control Change
+                    sendOSCMessage(midiPrefix, msgCc, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xC0:// Program Change
+                    sendOSCMessage(midiPrefix, msgPc, "i", hostMidiPacket[ce].num);
+                    break;
+                case 0xD0:// Channel Pressure
+                    sendOSCMessage(midiPrefix, msgCp, "ii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num);
+                    break;
+                case 0xE0:// Pitch Bend
+                    sendOSCMessage(midiPrefix, msgPb, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                default:
+                    break;
+                }
+            }
         }
     }
 }
+#endif
 
 #if defined(USB_USE_HID) // hid
+void App_Detect_Device(void)
+{
+  if(!USBHostHID_ApiDeviceDetect())
+  {
+      App_State_Mouse = DEVICE_NOT_CONNECTED;
+  }
+}
+void App_ProcessInputReport(void)
+{
+    BYTE  data;
+   /* process input report received from device */
+    USBHostHID_ApiImportData(Appl_raw_report_buffer.ReportData, Appl_raw_report_buffer.ReportSize
+                          ,Appl_Button_report_buffer, &Appl_Mouse_Buttons_Details);
+    USBHostHID_ApiImportData(Appl_raw_report_buffer.ReportData, Appl_raw_report_buffer.ReportSize
+                          ,Appl_XY_report_buffer, &Appl_XY_Axis_Details);
+
+ // X-axis
+    data = (Appl_XY_report_buffer[0] & 0xF0) >> 4;
+    //LCD_DATA_LINE_ONE[5] = App_DATA2ASCII(data);
+    data = (Appl_XY_report_buffer[0] & 0x0F);
+    //LCD_DATA_LINE_ONE[6] = App_DATA2ASCII(data);
+
+ // Y-axis
+    data = (Appl_XY_report_buffer[1] & 0xF0) >> 4;
+    //LCD_DATA_LINE_ONE[13] = App_DATA2ASCII(data);
+    data = (Appl_XY_report_buffer[1] & 0x0F);
+    //LCD_DATA_LINE_ONE[14] = App_DATA2ASCII(data);
+    
+    if(Appl_Button_report_buffer[0] == 1)
+    {
+#if 0
+        if(LCD_DATA_LINE_TWO[5] == '0')
+            LCD_DATA_LINE_TWO[5] =  '1';
+        else
+            LCD_DATA_LINE_TWO[5] =  '0';
+#endif
+    }
+    if(Appl_Button_report_buffer[1] == 1)
+    {
+#if 0
+        if(LCD_DATA_LINE_TWO[13] == '0')
+            LCD_DATA_LINE_TWO[13] =  '1';
+        else
+            LCD_DATA_LINE_TWO[13] =  '0';
+#endif
+    }
+
+    //LCDDisplayString((BYTE*)LCD_DATA_LINE_ONE, LCD_LINE_ONE);
+    //LCDDisplayString((BYTE*)LCD_DATA_LINE_TWO, LCD_LINE_TWO);
+#if 0
+    #ifdef DEBUG_MODE
+    {
+        unsigned int i;
+
+        UART2PrintString( "\n\rHID: Raw Report  " );
+        for(i=0;i<(Appl_raw_report_buffer.ReportSize);i++)
+        {
+            UART2PutHex( Appl_raw_report_buffer.ReportData[i]);
+            UART2PrintString( "-" );
+        }
+        UART2PrintString( "\n\r  Left Bt :  " ); UART2PutHex( Appl_Button_report_buffer[0]);
+        UART2PrintString( "\n\r  Right Bt :  " ); UART2PutHex( Appl_Button_report_buffer[1]);
+    
+        UART2PrintString( "\n\r  X-Axis :  " ); UART2PutHex( Appl_XY_report_buffer[0]);
+        UART2PrintString( "\n\r  Y-Axis :  " ); UART2PutHex( Appl_XY_report_buffer[1]);
+
+    }
+    #endif
+#endif
+}
+
 /*******************************************************************************
   Function:
     void convertHidToOsc(void)
@@ -5628,13 +6024,12 @@ void convertMidiToOsc(void)
 *******************************************************************************/
 void convertHidToOsc(void)
 {
-    //App_Detect_Device();
+    App_Detect_Device();
     switch(App_State_Mouse)
     {
         case DEVICE_NOT_CONNECTED:
             USBTasks();
-            //if(USBHostHID_ApiDeviceDetect()) /* True if report descriptor is parsed with no error */
-            if(USBHostHIDDeviceDetect(1))
+            if(USBHostHID_ApiDeviceDetect()) /* True if report descriptor is parsed with no error */
             {
                 App_State_Mouse = DEVICE_CONNECTED;
             }
@@ -5699,6 +6094,108 @@ void convertHidToOsc(void)
         default:
             break;       
     }
+}
+
+/****************************************************************************
+  Function:
+    BOOL USB_HID_DataCollectionHandler(void)
+  Description:
+    This function is invoked by HID client , purpose is to collect the
+    details extracted from the report descriptor. HID client will store
+    information extracted from the report descriptor in data structures.
+    Application needs to create object for each report type it needs to
+    extract.
+    For ex: HID_DATA_DETAILS Appl_ModifierKeysDetails;
+    HID_DATA_DETAILS is defined in file usb_host_hid_appl_interface.h
+    Each member of the structure must be initialized inside this function.
+    Application interface layer provides functions :
+    USBHostHID_ApiFindBit()
+    USBHostHID_ApiFindValue()
+    These functions can be used to fill in the details as shown in the demo
+    code.
+
+  Precondition:
+    None
+
+  Parameters:
+    None
+
+  Return Values:
+    TRUE    - If the report details are collected successfully.
+    FALSE   - If the application does not find the the supported format.
+
+  Remarks:
+    This Function name should be entered in the USB configuration tool
+    in the field "Parsed Data Collection handler".
+    If the application does not define this function , then HID cient
+    assumes that Application is aware of report format of the attached
+    device.
+***************************************************************************/
+BOOL USB_HID_DataCollectionHandler(void)
+{
+  BYTE NumOfReportItem = 0;
+  BYTE i;
+  USB_HID_ITEM_LIST* pitemListPtrs;
+  USB_HID_DEVICE_RPT_INFO* pDeviceRptinfo;
+  HID_REPORTITEM *reportItem;
+  HID_USAGEITEM *hidUsageItem;
+  BYTE usageIndex;
+  BYTE reportIndex;
+
+  pDeviceRptinfo = USBHostHID_GetCurrentReportInfo(); // Get current Report Info pointer
+  pitemListPtrs = USBHostHID_GetItemListPointers();   // Get pointer to list of item pointers
+
+  BOOL status = FALSE;
+   /* Find Report Item Index for Modifier Keys */
+   /* Once report Item is located , extract information from data structures provided by the parser */
+   NumOfReportItem = pDeviceRptinfo->reportItems;
+   for(i=0;i<NumOfReportItem;i++)
+    {
+       reportItem = &pitemListPtrs->reportItemList[i];
+       if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == (HIDData_Variable|HIDData_Relative))&&
+           (reportItem->globals.usagePage==USAGE_PAGE_GEN_DESKTOP))
+        {
+           /* We now know report item points to modifier keys */
+           /* Now make sure usage Min & Max are as per application */
+            usageIndex = reportItem->firstUsageItem;
+            hidUsageItem = &pitemListPtrs->usageItemList[usageIndex];
+
+            reportIndex = reportItem->globals.reportIndex;
+            Appl_XY_Axis_Details.reportLength = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+            Appl_XY_Axis_Details.reportID = (BYTE)reportItem->globals.reportID;
+            Appl_XY_Axis_Details.bitOffset = (BYTE)reportItem->startBit;
+            Appl_XY_Axis_Details.bitLength = (BYTE)reportItem->globals.reportsize;
+            Appl_XY_Axis_Details.count=(BYTE)reportItem->globals.reportCount;
+            Appl_XY_Axis_Details.interfaceNum= USBHostHID_ApiGetCurrentInterfaceNum();
+        }
+        else if((reportItem->reportType==hidReportInput) && (reportItem->dataModes == HIDData_Variable)&&
+           (reportItem->globals.usagePage==USAGE_PAGE_BUTTONS))
+        {
+           /* We now know report item points to modifier keys */
+           /* Now make sure usage Min & Max are as per application */
+            usageIndex = reportItem->firstUsageItem;
+            hidUsageItem = &pitemListPtrs->usageItemList[usageIndex];
+
+            reportIndex = reportItem->globals.reportIndex;
+            Appl_Mouse_Buttons_Details.reportLength = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+            Appl_Mouse_Buttons_Details.reportID = (BYTE)reportItem->globals.reportID;
+            Appl_Mouse_Buttons_Details.bitOffset = (BYTE)reportItem->startBit;
+            Appl_Mouse_Buttons_Details.bitLength = (BYTE)reportItem->globals.reportsize;
+            Appl_Mouse_Buttons_Details.count=(BYTE)reportItem->globals.reportCount;
+            Appl_Mouse_Buttons_Details.interfaceNum= USBHostHID_ApiGetCurrentInterfaceNum();
+        }
+    }
+
+   if(pDeviceRptinfo->reports == 1)
+    {
+        Appl_raw_report_buffer.Report_ID = 0;
+        Appl_raw_report_buffer.ReportSize = (pitemListPtrs->reportList[reportIndex].inputBits + 7)/8;
+//        Appl_raw_report_buffer.ReportData = (BYTE*)malloc(Appl_raw_report_buffer.ReportSize);
+        Appl_raw_report_buffer.ReportPollRate = pDeviceRptinfo->reportPollingRate;
+        status = TRUE;
+    }
+
+    return(status);
 }
 #endif
 
