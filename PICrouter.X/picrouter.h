@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.12.2 2014/04/15
+ * picrouter.h,v.1.13.0 2014/04/24
  */
 
-#define CURRENT_VERSION "1.12.2"
+#define CURRENT_VERSION "1.13.0"
 
 #include <plib.h>
 #include <stdio.h>
@@ -50,8 +50,25 @@
   #define config1 UART_EN | UART_RX_TX | UART_DIS_LOOPBACK | UART_DIS_ABAUD | \
                   UART_MODE_SIMPLEX | UART_NO_PAR_8BIT | UART_NORMAL_RX | UART_BRGH_FOUR
   #define config2 UART_INT_TX | UART_TX_ENABLE | UART_RX_ENABLE
-  #define baud 172//80000000 / (4 * 115200) - 1 115.2kbps@20MHz
-  #define configint UART_ERR_INT_DIS | UART_RX_INT_EN | UART_INT_PR4 | UART_TX_INT_DIS
+#if 1//BRGH=1
+  #define baud230400 86   //80000000 / (4 * 230400) - 1 = 230.4kbps@80MHz
+  #define baud115200 173  //80000000 / (4 * 115200) - 1 = 115.2kbps@80MHz
+  #define baud57600  346  //80000000 / (4 * 57600) - 1 = 57.6kbps@80MHz
+  #define baud38400  519  //80000000 / (4 * 38400) - 1 = 38.4kbps@80MHz
+  #define baud19200  1041 //80000000 / (4 * 19200) - 1 = 19.2kbps@80MHz
+  #define baud9600   2082 //80000000 / (4 * 9600) - 1 = 9.6kbps@80MHz
+  #define baud4800   4166 //80000000 / (4 * 4800) - 1 = 4.8kbps@80MHz
+#else//BRGH=0
+  #define baud230400 21   //80000000 / (16 * 230400) - 1 = 230.4kbps@80MHz
+  #define baud115200 42   //80000000 / (16 * 115200) - 1 = 115.2kbps@80MHz
+  #define baud57600  86   //80000000 / (16 * 57600) - 1 = 57.6kbps@80MHz
+  #define baud38400  129  //80000000 / (16 * 38400) - 1 = 38.4kbps@80MHz
+  #define baud19200  259  //80000000 / (16 * 19200) - 1 = 19.2kbps@80MHz
+  #define baud9600   520  //80000000 / (16 * 9600) - 1 = 9.6kbps@80MHz
+  #define baud4800   1040 //80000000 / (16 * 4800) - 1 = 4.8kbps@80MHz
+#endif
+  //#define configint UART_ERR_INT_DIS | UART_RX_INT_DIS | UART_TX_INT_DIS
+  #define configint UART_ERR_INT_EN | UART_RX_INT_EN | UART_INT_PR6 | UART_INT_SUB_PR3 | UART_TX_INT_DIS
 #endif
 
 //#define USE_PITCH

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.12.2 2014/04/15
+ * picrouter.c,v.1.13.0 2014/04/24
  */
 
 #include "picrouter.h"
@@ -30,15 +30,6 @@ void _general_exception_handler(unsigned cause, unsigned status)
     Nop();
     Nop();
 }
-
-#if defined(USE_RN131)
-void sendCommandToRN134(unsigned char *cmd)
-{
-    while(*cmd != 0)
-        putcUART2(*cmd++);
-    DelayMs(1000);
-}
-#endif
 
 int main(int argc, char** argv) {
     int i;
@@ -55,10 +46,10 @@ int main(int argc, char** argv) {
     mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
 
     OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER4_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_6);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_5);
 
     OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
-    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
+    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_4);
 
     // Port Initialization
     initIOPorts();
@@ -92,6 +83,58 @@ int main(int argc, char** argv) {
         duty[i] = 50;
 #endif
 
+#if defined(USE_RN131)
+    turnOnLED1();
+    turnOnLED2();
+    DelayMs(3000);
+    turnOffLED1();
+    turnOffLED2();
+
+    // the C13 pin is connected to RESET pin of the WiFly RN-131C.
+    outputPort("c13", LOW);
+    DelayMs(100);
+    outputPort("c13", HIGH);
+    DelayMs(500);
+
+    // if the SW1 is pushed, the following configuration commands are sent.
+    if(!getSW1State())
+    {
+        U2MODE = 0x00008208;
+        U2STA = 0x00000400;
+        U2BRG = baud9600;// baud115200;
+
+        DelayMs(500);
+        sendCommandToRN134("$$$");
+        sendCommandToRN134("factory RESET\r");
+        sendCommandToRN134("set uart baud 230400\r\n");
+        //sendCommandToRN134("set uart baud 115200\r\n");
+        //sendCommandToRN134("set uart baud 57600\r\n");
+        //sendCommandToRN134("set uart baud 38400\r");
+        //sendCommandToRN134("set uart baud 19200\r");
+        //sendCommandToRN134("set uart baud 9600\r");
+        //sendCommandToRN134("set uart baud 4800\r\n");
+        sendCommandToRN134("set uart flow 0x01");
+        sendCommandToRN134("set wlan join 1\r");
+        sendCommandToRN134("set wlan auth 3\r");
+        sendCommandToRN134("set wlan ssid YOUR_SSID\r");
+        sendCommandToRN134("set wlan pass YOUR_PASSWORD\r");
+        sendCommandToRN134("set ip host YOUR_IP\r");
+        sendCommandToRN134("set ip protocol 1\r");
+        sendCommandToRN134("set ip remote 10001\r");
+        sendCommandToRN134("set ip localport 10100\r");
+        sendCommandToRN134("set broadcast interval 0\r");
+        sendCommandToRN134("set comm remote 0\r");
+        sendCommandToRN134("set comm open 0\r");
+        sendCommandToRN134("save\r");
+        sendCommandToRN134("reboot\r");
+    }
+
+    U2MODE = 0x00008208;
+    U2STA = 0x00001400;
+    U2BRG = baud230400;
+    ConfigIntUART2(configint);
+#endif
+
     setOSCPrefix("/std");
     setOSCHostName("picrouter");
 
@@ -102,17 +145,6 @@ int main(int argc, char** argv) {
 
 #if defined(USE_SELF_POWER_SENSE_IO)
     tris_self_power = 1;
-#endif
-
-#if defined(USE_RN131)
-    setPortIOType("F5", IO_IN);
-#if 0
-    OpenUART2(config1, config2, baud);
-#endif
-    U2MODE = 0x00008808;
-    U2STA = 0x00000400;
-    U2BRG = baud;
-    ConfigIntUART2(configint);
 #endif
 
 #if defined(USE_PITCH)
@@ -150,39 +182,6 @@ int main(int argc, char** argv) {
     turnOffLED1();
     turnOffLED2();
     DelayMs(200);
-    
-#if defined(USE_RN131)
-    putsUART2("$$$");
-    DelayMs(1000);
-    sendCommandToRN134("factory R\r\n");
-    sendCommandToRN134("set uart baud 115200\r\n");
-    sendCommandToRN134("set wlan join 2\r\n");
-    sendCommandToRN134("set wlan auth 4\r\n");
-    //sendCommandToRN134("set wlan ssid tkrworks$HOME$Network");
-    //sendCommandToRN134("set wlan passphrase t@ke32z@6r@i");
-    sendCommandToRN134("set wlan ssid PINGPONG\r\n");
-    sendCommandToRN134("set wlan pass m@tsumotot@iyo\r\n");
-    sendCommandToRN134("set wlan phrase m@tsumotot@iyo\r\n");
-    sendCommandToRN134("set wlan passphrase m@tsumotot@iyo\r\n");
-    sendCommandToRN134("set ip proto 1\r\n");
-    sendCommandToRN134("set ip host 172.16.1.11\r\n");
-    //sendCommandToRN134("set ip host 192.168.1.11");
-    sendCommandToRN134("set ip remote 8000\r\n");
-    sendCommandToRN134("set ip local 8080\r\n");
-    sendCommandToRN134("set b i 0\r\n");
-    sendCommandToRN134("set comm remote 0\r\n");
-    sendCommandToRN134("set comm open 0\r\n");
-    sendCommandToRN134("save\r\n");
-    sendCommandToRN134("reboot\r\n");
-    sendCommandToRN134("close\r\n");
-    U2MODE = 0x00008808;
-    U2STA = 0x00000400;
-    U2BRG = baud;
-    //OpenUART2(config1, config2, baud);
-    DelayMs(2000);
-    putcUART2("");
-    DelayMs(1000);
-#endif
     
     while(1)
     {
@@ -262,11 +261,6 @@ int main(int argc, char** argv) {
             
             while(device_mode == MODE_HOST)
             {
-#if defined(USE_RN131)
-                putsUART2("test");
-                DelayMs(100);
-#endif
-
                 StackTask();
                 switch(eth_state)
                 {
@@ -4896,7 +4890,7 @@ void receiveOSCTask(void)
 
 /*******************************************************************************
   Function:
-    void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
+    void __ISR(_TIMER_4_VECTOR, IPL5) ledHandle(void)
 
   Precondition:
 
@@ -4916,7 +4910,7 @@ void receiveOSCTask(void)
   Remarks:
     None
 *******************************************************************************/
-void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
+void __ISR(_TIMER_4_VECTOR, IPL5) ledHandle(void)
 {
     static BYTE led_state = 0;
     
@@ -4953,7 +4947,7 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
 
 /*******************************************************************************
   Function:
-    void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
+    void __ISR(_TIMER_5_VECTOR, IPL4) sendOSCTask(void)
 
   Precondition:
 
@@ -4973,7 +4967,7 @@ void __ISR(_TIMER_4_VECTOR, ipl6) ledHandle(void)
   Remarks:
     None
 *******************************************************************************/
-void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
+void __ISR(_TIMER_5_VECTOR, IPL4) sendOSCTask(void)
 {
     int i, j;
     
@@ -5055,17 +5049,49 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
     mT5ClearIntFlag();
 }
 
+#if 1
 #if defined(USE_RN131)
-void __ISR(32, ipl4) U2RXHandre(void)
+void __ISR(_UART_2_VECTOR, IPL6) receiveOSCFromRN134(void)
 {
-    char rcvData;
+    BYTE count = 0;
+    BYTE dammy = 0;
 
-    mU2RXClearIntFlag();
+    IFS1bits.U2RXIF = 0;
 
-    rcvData = getcUART2();
+    if(U2STAbits.OERR || U2STAbits.FERR || U2STAbits.PERR)
+    {
+        dammy = U2RXREG;
+        U2STA &= 0xFFF0;
+        //U2STAbits.OERR = 0;
+        //U2STAbits.FERR = 0;
+        //U2STAbits.PERR = 0;
+        U2MODE = 0;
+        Delay10us(50);
+        U2MODE = 0x8200;
+    }
+    else
+    {
+        while(U2STAbits.URXDA && count < 192)
+        {
+            setOSCPacketFromRN134(count++, U2RXREG);
+            Delay10us(10);
+        }
 
-    toggleLED2();
+        incRingBufIndex();
+        
+        if(U2STAbits.OERR || U2STAbits.FERR || U2STAbits.PERR)
+        {
+            U2STA &= 0xFFF0;
+            //U2STAbits.OERR = 0;
+            //U2STAbits.FERR = 0;
+            //U2STAbits.PERR = 0;
+            U2MODE = 0;
+            Delay10us(50);
+            U2MODE = 0x8200;
+        }
+    }
 }
+#endif
 #endif
 
 /*******************************************************************************
