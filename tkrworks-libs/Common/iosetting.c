@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.8.0 2014/02/25
+  * iosetting.c,v.0.9.0 2014/04/24
  */
 
 #include "iosetting.h"
@@ -1780,4 +1780,23 @@ BYTE getDataFromI2C(BYTE i2c_id)
             break;
     }
     return data;
+}
+
+void sendCommandToRN134(unsigned char* cmd)
+{
+    while(*cmd != 0)
+    {
+        //putcUART2(*cmd++);
+        while(!U2STAbits.TRMT);
+        U2TXREG = *cmd++;
+    }
+    //putsUART2(cmd);
+    DelayMs(1000);
+}
+
+void sendMessageToRN134(unsigned char* msg, INT32 len)
+{
+    INT32 i;
+    for(i = 0; i < len; i++)
+        putcUART2(*msg++);
 }

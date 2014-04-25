@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.8.0 2014/02/25
+ * iosetting.h,v.0.9.0 2014/04/24
  */
 
 #ifndef IOSETTING_H
@@ -126,6 +126,9 @@ BOOL checkAckI2C(BYTE i2c_id);
 void restartI2C(BYTE i2c_id);
 void stopI2C(BYTE i2c_id);
 BYTE getDataFromI2C(BYTE i2c_id);
+
+void sendCommandToRN134(unsigned char* cmd);
+void sendMessageToRN134(unsigned char* msg, INT32 len);
 
 #endif	/* IOSETTING_H */
 

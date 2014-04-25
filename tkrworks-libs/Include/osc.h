@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.6.0 2014/02/15
+ * osc.h,v.1.7.0 2014/04/24
  */
 
 #ifndef OSC_H
@@ -33,6 +33,8 @@
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
+
+#define USE_RN131
 
 #define MAX_HOST_NAME_LEN 16
 #if defined(USE_SPI_SRAM)
@@ -294,6 +296,8 @@ BOOL isOSCGetReady(void);
 BOOL isOSCPutReady(void);
 BOOL isDiscoverPutReady(void);
 
+void setOSCPacketFromRN134(BYTE index, BYTE value);
+void incRingBufIndex(void);
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);

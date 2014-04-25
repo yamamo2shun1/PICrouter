@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.6.0 2014/02/15
+ * osc.c,v.1.7.0 2014/04/24
  */
 
 #include "osc.h"
@@ -553,6 +553,17 @@ BOOL isDiscoverPutReady(void)
     return TRUE;
 }
 
+void setOSCPacketFromRN134(BYTE index, BYTE value)
+{
+    udpPacket[ringBufIndex][index] = value;
+}
+
+void incRingBufIndex(void)
+{
+    ringBufIndex++;
+    ringBufIndex &= (MAX_BUF_SIZE - 1);
+}
+
 void getOSCPacket(void)
 {
     if(!initReceiveFlag)
@@ -853,6 +864,10 @@ void sendOSCMessage(const char* prefix, const char* command, const char* type, .
 
         UDPPutArray((BYTE *)str, totalSize);
         UDPFlush();
+
+#if defined(USE_RN131)
+        sendMessageToRN134((BYTE *)str, totalSize);
+#endif
 
         //debug LED_1_Off();
     }
