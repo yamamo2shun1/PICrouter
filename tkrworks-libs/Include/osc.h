@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.7.0 2014/04/24
+ * osc.h,v.1.7.1 2014/04/26
  */
 
 #ifndef OSC_H
@@ -41,7 +41,7 @@
 #define MAX_BUF_SIZE    64
 #define MAX_PACKET_SIZE 320// 1024
 #else
-#define MAX_BUF_SIZE    48
+#define MAX_BUF_SIZE    64
 #define MAX_PACKET_SIZE 192// 1024
 #endif
 #define MAX_MESSAGE_LEN 160

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.7.0 2014/04/24
+ * osc.c,v.1.7.1 2014/04/26
  */
 
 #include "osc.h"
@@ -258,7 +258,6 @@ const char msgSetPwmDuty3[]   = "/pwm/duty/set/3";
 const char msgSetPwmDuty4[]   = "/pwm/duty/set/4";
 
 // Variables
-static BYTE state_index = 0;
 static BYTE indexA = 0;
 static BYTE indexB = 0;
 static BYTE ringBufIndex = 0;
@@ -587,6 +586,7 @@ void getOSCPacket(void)
 
 BOOL processOSCPacket(void)
 {
+    static BYTE state_index = 0;
     switch(state_index)
     {
         case 0:
@@ -598,17 +598,26 @@ BOOL processOSCPacket(void)
             break;
         case 1:
             if(!extractAddressFromOSCPacket())
+            {
+                state_index = 0;
                 return FALSE;
+            }
             state_index = 2;
             break;
         case 2:
             if(!extractTypeTagFromOSCPacket())
+            {
+                state_index = 0;
                 return FALSE;
+            }
             state_index = 3;
             break;
         case 3:
             if(!extractArgumentsFromOSCPacket())
+            {
+                state_index = 0;
                 return FALSE;
+            }
             state_index = 4;
             break;
         case 4:
