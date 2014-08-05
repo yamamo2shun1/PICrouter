@@ -16,10 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.1.13.0 2014/04/24
+ * picrouter.h,v.1.15.1 2014/06/26
  */
 
-#define CURRENT_VERSION "1.13.0"
+#define CURRENT_VERSION "1.15.1"
+
+#define _SUPPRESS_PLIB_WARNING 1
 
 #include <plib.h>
 #include <stdio.h>
@@ -40,17 +42,18 @@
 #include "encoder.h"
 #include "osc.h"
 
+#if defined(USE_CC3000)
+#include "cc3000.h"
+#endif
+
 //#define USE_SPI_SRAM
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
 
-//#define USE_RN131
-#if defined(USE_RN131)
-  #define config1 UART_EN | UART_RX_TX | UART_DIS_LOOPBACK | UART_DIS_ABAUD | \
-                  UART_MODE_SIMPLEX | UART_NO_PAR_8BIT | UART_NORMAL_RX | UART_BRGH_FOUR
-  #define config2 UART_INT_TX | UART_TX_ENABLE | UART_RX_ENABLE
+#if defined(USE_RN131) || defined(USE_LSD_BLE112)
 #if 1//BRGH=1
+  #define baud460800 42   //80000000 / (4 * 460800) - 1 = 460.8kbps@80MHz
   #define baud230400 86   //80000000 / (4 * 230400) - 1 = 230.4kbps@80MHz
   #define baud115200 173  //80000000 / (4 * 115200) - 1 = 115.2kbps@80MHz
   #define baud57600  346  //80000000 / (4 * 57600) - 1 = 57.6kbps@80MHz
@@ -59,6 +62,7 @@
   #define baud9600   2082 //80000000 / (4 * 9600) - 1 = 9.6kbps@80MHz
   #define baud4800   4166 //80000000 / (4 * 4800) - 1 = 4.8kbps@80MHz
 #else//BRGH=0
+  #define baud460800 10   //80000000 / (16 * 460800) - 1 = 460.8kbps@80MHz
   #define baud230400 21   //80000000 / (16 * 230400) - 1 = 230.4kbps@80MHz
   #define baud115200 42   //80000000 / (16 * 115200) - 1 = 115.2kbps@80MHz
   #define baud57600  86   //80000000 / (16 * 57600) - 1 = 57.6kbps@80MHz
@@ -70,22 +74,6 @@
   //#define configint UART_ERR_INT_DIS | UART_RX_INT_DIS | UART_TX_INT_DIS
   #define configint UART_ERR_INT_EN | UART_RX_INT_EN | UART_INT_PR6 | UART_INT_SUB_PR3 | UART_TX_INT_DIS
 #endif
-
-//#define USE_PITCH
-
-//#define USE_LCD
-
-// LED_PAD_8 or LED_PAD_16
-//#define USE_LED_PAD
-
-// RGB_PAD_8 or RGB_PAD_16
-//#define USE_RGB_PAD
-
-// LED_ENC(incremental type)
-//#define USE_INC_ENC
-
-// LED_ENC(absolute type)
-//#define USE_ABS_ENC
 
 /** CONFIGURATION **************************************************/
 /*

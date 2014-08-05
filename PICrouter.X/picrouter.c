@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.1.13.0 2014/04/24
+ * picrouter.c,v.1.15.0 2014/06/17
  */
 
 #include "picrouter.h"
@@ -44,12 +44,6 @@ int main(int argc, char** argv) {
 
     DelayMs(100);
     mJTAGPortEnable(DEBUG_JTAGPORT_OFF);
-
-    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER4_COUNT);
-    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_5);
-
-    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
-    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_4);
 
     // Port Initialization
     initIOPorts();
@@ -99,13 +93,16 @@ int main(int argc, char** argv) {
     // if the SW1 is pushed, the following configuration commands are sent.
     if(!getSW1State())
     {
-        U2MODE = 0x00008208;
-        U2STA = 0x00000400;
-        U2BRG = baud9600;// baud115200;
+        U2MODE = 0x8208;
+        U2STA = 0x0400;
+        //U2BRG = baud115200;
+        U2BRG = baud230400;
+        //U2BRG = baud9600;
 
         DelayMs(500);
         sendCommandToRN134("$$$");
         sendCommandToRN134("factory RESET\r");
+        //sendCommandToRN134("set uart baud 460800\r\n");
         sendCommandToRN134("set uart baud 230400\r\n");
         //sendCommandToRN134("set uart baud 115200\r\n");
         //sendCommandToRN134("set uart baud 57600\r\n");
@@ -116,9 +113,20 @@ int main(int argc, char** argv) {
         sendCommandToRN134("set uart flow 0x01");
         sendCommandToRN134("set wlan join 1\r");
         sendCommandToRN134("set wlan auth 3\r");
+#if 0
+        sendCommandToRN134("set wlan ssid tkrworks$HOME$Network\r");
+        sendCommandToRN134("set wlan pass t@ke32z@6r@i\r");
+        sendCommandToRN134("set ip host 192.168.1.2\r");
+#else
+        sendCommandToRN134("set wlan ssid PINGPONG\r");
+        sendCommandToRN134("set wlan pass m@tsumotot@iyo\r");
+        sendCommandToRN134("set ip host 172.16.1.11\r");
+#endif
+#if 0
         sendCommandToRN134("set wlan ssid YOUR_SSID\r");
         sendCommandToRN134("set wlan pass YOUR_PASSWORD\r");
         sendCommandToRN134("set ip host YOUR_IP\r");
+#endif
         sendCommandToRN134("set ip protocol 1\r");
         sendCommandToRN134("set ip remote 10001\r");
         sendCommandToRN134("set ip localport 10100\r");
@@ -129,10 +137,22 @@ int main(int argc, char** argv) {
         sendCommandToRN134("reboot\r");
     }
 
-    U2MODE = 0x00008208;
-    U2STA = 0x00001400;
+    U2MODE = 0x8208;
+    U2STA = 0x1400;
     U2BRG = baud230400;
+    //U2BRG = baud115200;
     ConfigIntUART2(configint);
+#endif
+
+#if defined(USE_LSD_BLE112)
+    U2MODE = 0x8208;
+    U2STA = 0x1400;
+    U2BRG = baud115200;
+    ConfigIntUART2(configint);
+#endif
+
+#if defined(USE_CC3000)
+    init0("d0", "d2", "d3");
 #endif
 
     setOSCPrefix("/std");
@@ -160,7 +180,89 @@ int main(int argc, char** argv) {
     setAnalogEnable(0, TRUE);
     setAnalogEnable(1, TRUE);
 #endif
+
+#if defined(USE_RGB_PAD_8L)
+    // Set Connected Board Number
+    setNumConnectedLatticeRgb(2);
+    // LED Driver Initialization
+    setLatticePadPortLoadName("d4");
+    setPortIOType(getLatticePadPortLoadName(), IO_OUT);
+    outputPort(getLatticePadPortLoadName(), LOW);
+    setLatticeRgbDriverSpiNumber(2);
+    //SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 4);
+    SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKE | SPICON_ON, 5);
+    setInitLatticeRgbDrvFlag(TRUE);
+
+    // Button Pad Initialization
+    setLatticePadPortClkName(0, "f0");
+    setPortIOType(getLatticePadPortClkName(0), IO_OUT);
+    setLatticePadPortShLdName(0, "c14");
+    setPortIOType(getLatticePadPortShLdName(0), IO_OUT);
+    setLatticePadPortQhName(0, "c13");
+    setPortIOType(getLatticePadPortQhName(0), IO_IN);
+    setInitPadFlag(TRUE);
+#endif
+
+setPortIOType("b10", IO_OUT);
+setPortIOType("b11", IO_OUT);
+setPortIOType("b12", IO_OUT);
+setPortIOType("b13", IO_OUT);
+outputPort("b10", LOW);
+outputPort("b11", LOW);
+outputPort("b12", LOW);
+outputPort("b13", LOW);
+
+#if defined(USE_DAC_PLUS_ADC)
+    // for AD5328
+    outputPort("d0", HIGH);// SYNC1
+    outputPort("d2", HIGH);// SYNC2
+    outputPort("d3", HIGH);// SYNC3
+    outputPort("d4", LOW);// LDAC
+
+    // for AD7490
+    setPortIOType("g7", IO_IN);
+    outputPort("c13", HIGH);// CS
+
+    // for ADG1414
+    outputPort("c14", HIGH);// SYNC
+    outputPort("f0", HIGH);// RESET
+    Nop();
+    outputPort("f0", LOW);// RESET
+    Nop();
+    outputPort("f0", HIGH);// RESET
+
+    //SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKP | SPICON_CKE | SPICON_ON, 7);
+    SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_MODE16 | SPICON_ON, 39); // SPI Clock = 1MHz
+    //SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_MODE16 | SPICON_CKP | SPICON_ON, 23);
+    //SpiChnOpen(SPI_CHANNEL2, SPICON_MSTEN | SPICON_SMP | SPICON_CKP | SPICON_CKE | SPICON_ON, 23);
+
+#if defined(USE_AD7490)
+    DelayMs(1);
+    receiveDataFromAD7490(0xFFFF);
+    receiveDataFromAD7490(0xFFFF);
+    receiveDataFromAD7490(0x8310);
+#endif
+
+#if defined(USE_AD5328)
+    sendDataToAD5328(0, 0x800F);// 1 00 0000000 00 00 11 -> 1000 0000 0000 1111
+    sendDataToAD5328(0, 0xA000);// 1 01 00000000000 00   -> 1010 0000 0000 0000
+    sendDataToAD5328(0, 0xC000);// 1 10 00000 00000000   -> 1100 0000 0000 0000
+
+    sendDataToAD5328(1, 0x800F);// 1 00 0000000 00 00 11 -> 1000 0000 0000 1111
+    sendDataToAD5328(1, 0xA000);// 1 01 00000000000 00   -> 1010 0000 0000 0000
+    sendDataToAD5328(1, 0xC000);// 1 10 00000 00000000   -> 1100 0000 0000 0000
     
+    sendDataToAD5328(2, 0x800F);// 1 00 0000000 00 00 11 -> 1000 0000 0000 1111
+    sendDataToAD5328(2, 0xA000);// 1 01 00000000000 00   -> 1010 0000 0000 0000
+    sendDataToAD5328(2, 0xC000);// 1 10 00000 00000000   -> 1100 0000 0000 0000
+#endif
+
+#endif
+
+#if defined(USE_ADG1414)
+    sendDataToADG1414(0x0000);
+#endif
+
     TickInit();
     InitAppConfig();
     StackInit();
@@ -176,8 +278,553 @@ int main(int argc, char** argv) {
                         );
     mDNSMulticastFilterRegister();
 
+    OpenTimer4(T4_ON | T4_SOURCE_INT | T4_PS_1_8, TIMER4_COUNT);
+    ConfigIntTimer4(T4_INT_ON | T4_INT_PRIOR_5);
+
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, TIMER5_COUNT);
+    ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_4);
+
     // Enable multi-vectored interrupts
     INTEnableSystemMultiVectoredInt();
+
+#if defined(USE_CC3000)
+    if(!init())
+    {
+        while(TRUE)
+        {
+            toggleLED2();
+            DelayMs(100);
+        }
+    }
+    if(!connectCC3000("PINGPONG", WLAN_SEC_WPA2, "m@tsumotot@iyo", 30000))
+    {
+        while(TRUE)
+        {
+            toggleLED1();
+            DelayMs(100);
+        }
+    }
+
+#endif
+
+#if defined(USE_RGB_PAD_8L)
+    // Initial LED Sequence
+
+    // step 0
+    // RED
+    setLatticeRgbOn(0, 0, TRUE);
+    setLatticeRgb(0, 0, ((1 <<  0) << (0 * 4)));
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 1);
+    DelayMs(10);
+
+    // step 1
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbOn(0, 1, TRUE);
+    setLatticeRgb(0, 1, ((1 <<  0) << (0 * 4)));
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 1);
+    DelayMs(10);
+
+    // step 2
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 10);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 1);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbOn(0, 2, TRUE);
+    setLatticeRgb(0, 2, ((1 <<  0) << (0 * 4)));
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 1);
+    DelayMs(10);
+
+    // step 3
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 10);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 1);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 5);
+    DelayMs(10);
+
+    // step 4
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 10);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 1);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 10);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 1);
+    DelayMs(10);
+
+    // step 5
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 10);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 1);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 5);
+    DelayMs(10);
+
+    // step 6
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 1);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 10);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 1);
+    DelayMs(10);
+
+    // step 7
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 1);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 5);
+    DelayMs(10);
+
+    // step 8
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 10);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 1);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 1);
+    DelayMs(10);
+
+    // step 9
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 10);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 1);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 5);
+    DelayMs(10);
+
+    // step 10
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 10);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 10);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 1);
+    DelayMs(10);
+
+    // step 11
+    // RED
+    setLatticeRgbIntensity(0, 0, 0 + (0 * 4), 0);
+    setLatticeRgb(0, 0, ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 1);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 25);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 100);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 25);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 10);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 5);
+    DelayMs(10);
+
+    // step 12
+    // RED
+    setLatticeRgbIntensity(0, 0, 1 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 0, 0 + (1 * 4), 0);
+    setLatticeRgb(0, 0, ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 50);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 50);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 0 + (0 * 4), 0);
+    setLatticeRgb(0, 1, ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 1);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 25);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 100);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 25);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 10);
+    DelayMs(10);
+
+    // step 13
+    // RED
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 100);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 1 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 1, 0 + (1 * 4), 0);
+    setLatticeRgb(0, 1, ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 50);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 50);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 0 + (0 * 4), 0);
+    setLatticeRgb(0, 2, ((1 <<  1) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  0) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 1);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 25);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 100);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 100);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 25);
+    DelayMs(10);
+
+    // step 14
+    // RED
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 50);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 100);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 1 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 2, 0 + (1 * 4), 0);
+    setLatticeRgb(0, 2, ((1 <<  2) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  1) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 10);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 50);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 50);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 50);
+    DelayMs(10);
+
+    // step 15
+    // RED
+    setLatticeRgbIntensity(0, 0, 2 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 0, 1 + (1 * 4), 0);
+    setLatticeRgb(0, 0, ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 5);
+    setLatticeRgb(0, 0, getLatticeRgb(0, 0) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 25);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 50);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 25);
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 100);
+    DelayMs(10);
+
+    // step 16
+    // RED
+    setLatticeRgbIntensity(0, 0, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 2 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 10);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 2 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 1, 1 + (1 * 4), 0);
+    setLatticeRgb(0, 1, ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 5);
+    setLatticeRgb(0, 1, getLatticeRgb(0, 1) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 25);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 10);
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 50);
+    DelayMs(10);
+
+    // step 17
+    // RED
+    setLatticeRgb(0, 0, ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 5);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 2 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 10);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 2 + (0 * 4), 0);
+    setLatticeRgbIntensity(0, 2, 1 + (1 * 4), 0);
+    setLatticeRgb(0, 2, ((1 <<  3) << (0 * 4)));
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  2) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 5);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 5);
+    setLatticeRgb(0, 2, getLatticeRgb(0, 2) | ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 25);
+    DelayMs(10);
+
+    // step 18
+    // RED
+    setLatticeRgbIntensity(0, 0, 3 + (1 * 4), 1);
+    DelayMs(10);
+    // GREEN
+    setLatticeRgb(0, 1, ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 5);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 3 + (0 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 2 + (1 * 4), 1);
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 10);
+    DelayMs(10);
+
+    // step 19
+    // RED
+    setLatticeRgb(0, 0, 0);
+    setLatticeRgbOn(0, 0, FALSE);
+    // GREEN
+    setLatticeRgbIntensity(0, 1, 3 + (1 * 4), 1);
+    DelayMs(10);
+    // BLUE
+    setLatticeRgb(0, 2, ((1 <<  3) << (1 * 4)));
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 5);
+    DelayMs(10);
+
+    // step 20
+    // GREEN
+    setLatticeRgb(0, 1, 0);
+    setLatticeRgbOn(0, 1, FALSE);
+    // BLUE
+    setLatticeRgbIntensity(0, 2, 3 + (1 * 4), 1);
+    DelayMs(10);
+
+    // step 21
+    // BLUE
+    setLatticeRgb(0, 2, 0);
+    setLatticeRgbOn(0, 2, FALSE);
+#endif
 
     turnOffLED1();
     turnOffLED2();
@@ -457,6 +1104,20 @@ void receiveOSCTask(void)
     //mT5IntEnable(0);
 
     getOSCPacket();
+
+#if 0
+    BYTE count = 0;
+    BOOL flag = FALSE;
+    while(U2STAbits.URXDA)
+    {
+        setOSCPacketFromRN134(count++, U2RXREG);
+        flag = TRUE;
+        Delay10us(50);
+    }
+    if(flag)
+        incRingBufIndex();
+    setUartInterruptFlag(FALSE);
+#endif
 
     if(processOSCPacket())
     {
@@ -2993,7 +3654,7 @@ void receiveOSCTask(void)
                 }
             }
 #endif
-#if defined(USE_RGB_PAD)
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_8L) || defined(USE_RGB_PAD_16)
             else if(compareOSCAddress(msgLatticeRgbDrvPinSelect))
             {
                 if(getArgumentsLength() < 2)
@@ -3140,17 +3801,31 @@ void receiveOSCTask(void)
                     BYTE y = getIntArgumentAtIndex(3);
                     BYTE state = getIntArgumentAtIndex(4);
                     BYTE intensity;
-                    WORD pos = (1 << y) << (x * 4);
+                    WORD pos;
 
 
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
+                    pos = (1 << y) << (x * 4);
                     if(x > 3 || y > 3 || state > 1)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": out_of_range_value");
                         return;
                     }
+#elif defined(USE_RGB_PAD_8L)
+                    pos = (1 << x);
+                    if(x > 7 || y > 0 || state > 1)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgb, ": out_of_range_value");
+                        return;
+                    }
+#endif
 
                     if(getArgumentsLength() == 5)
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                         setLatticeRgbIntensity(index, layer, y + (x * 4), 100);
+#elif defined(USE_RGB_PAD_8L)
+                        setLatticeRgbIntensity(index, layer, x, 100);
+#endif
                     else if(getArgumentsLength() == 6)
                     {
                         if(compareTypeTagAtIndex(5, 'i') || compareTypeTagAtIndex(5, 'f'))
@@ -3158,8 +3833,11 @@ void receiveOSCTask(void)
                             intensity = getIntArgumentAtIndex(5);
                             if(intensity > 100)
                                 intensity = 100;
-
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                             setLatticeRgbIntensity(index, layer, y + (x * 4), intensity);
+#elif defined(USE_RGB_PAD_8L)
+                        setLatticeRgbIntensity(index, layer, x, intensity);
+#endif
                         }
                         else
                         {
@@ -3199,8 +3877,9 @@ void receiveOSCTask(void)
                     BYTE index = getIntArgumentAtIndex(0);
                     BYTE layer = getIntArgumentAtIndex(1);
                     BYTE column = getIntArgumentAtIndex(2);
-                    BYTE data = getIntArgumentAtIndex(3);
+                    WORD data = getIntArgumentAtIndex(3);
 
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                     if(column > 3 || data > 15)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": out_of_range_value");
@@ -3225,7 +3904,31 @@ void receiveOSCTask(void)
                         sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": too_few_intensity_value");
                         return;
                     }
+#elif defined(USE_RGB_PAD_8L)
+                    if(column != 0 || data > 255)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": out_of_range_value");
+                        return;
+                    }
 
+                    setLatticeRgb(index, layer, data << column);
+
+                    if(getArgumentsLength() == 4)
+                    {
+                        for(i = 0; i < 8; i++)
+                            setLatticeRgbIntensity(index, layer, i + column, 100);
+                    }
+                    else if(getArgumentsLength() == 12)
+                    {
+                        for(i = 0; i < 8; i++)
+                            setLatticeRgbIntensity(index, layer, i + column, getIntArgumentAtIndex(4 + i));
+                    }
+                    else
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbColumn, ": too_few_intensity_value");
+                        return;
+                    }
+#endif
                     if(getLatticeRgb(index, layer) != 0)
                         setLatticeRgbOn(index, layer, TRUE);
                     else
@@ -3239,6 +3942,7 @@ void receiveOSCTask(void)
             }
             else if(compareOSCAddress(msgSetLatticeRgbRow))
             {
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                 if(getArgumentsLength() < 4)
                 {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": too_few_arguments");
@@ -3252,7 +3956,7 @@ void receiveOSCTask(void)
                     BYTE index = getIntArgumentAtIndex(0);
                     BYTE layer = getIntArgumentAtIndex(1);
                     BYTE row = getIntArgumentAtIndex(2);
-                    BYTE data = getIntArgumentAtIndex(3);
+                    WORD data = getIntArgumentAtIndex(3);
                     WORD data1 = 0;
 
                     if(row > 3 || data > 15)
@@ -3295,9 +3999,14 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbRow, ": wrong_argument_type");
                     return;
                 }
+#elif defined(USE_RGB_PAD_8L)
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": please_use_/lattice/rgb/set");
+                return;
+#endif
             }
             else if(compareOSCAddress(msgSetLatticeRgbAll))
             {
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                 if(getArgumentsLength() < 6)
                 {
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": too_few_arguments");
@@ -3362,6 +4071,10 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": wrong_argument_type");
                     return;
                 }
+#elif defined(USE_RGB_PAD_8L)
+                sendOSCMessage(sysPrefix, msgError, "ss", msgSetLatticeRgbAll, ": please_use_/lattice/rgb/col/set");
+                return;
+#endif
             }
             else if(compareOSCAddress(msgLatticeRgbClear))
             {
@@ -3403,11 +4116,25 @@ void receiveOSCTask(void)
                     BYTE x = getIntArgumentAtIndex(2);
                     BYTE y = getIntArgumentAtIndex(3);
 
+#if defined(USE_RGB_PAD_8)
+                    if(x > 1 || y > 3)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": out_of_range_value");
+                        return;
+                    }
+#elif defined(USE_RGB_PAD_16)
                     if(x > 3 || y > 3)
                     {
                         sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": out_of_range_value");
                         return;
                     }
+#elif defined(USE_RGB_PAD_8L)
+                    if(x != 0 || y > 7)
+                    {
+                        sendOSCMessage(sysPrefix, msgError, "ss", msgGetLatticeRgbIntensity, ": out_of_range_value");
+                        return;
+                    }
+#endif
 
                     sendOSCMessage(getOSCPrefix(), msgLatticeRgbIntensity, "iiii", index, x, y, getLatticeRgbIntensity(index, layer, y + (x * 4)));
                 }
@@ -3896,6 +4623,142 @@ void receiveOSCTask(void)
                     sendOSCMessage(sysPrefix, msgError, "ss", msgSetRotaryLedIntensityAll, ": wrong_argument_type");
                     return;
                 }
+            }
+#endif
+#if defined(USE_AD5328)
+            else if(compareOSCAddress(msgSetExternalDac))
+            {
+                BYTE deviceId;
+                BYTE portId;
+                WORD value;
+                WORD data = 0x0000;
+
+                deviceId = getIntArgumentAtIndex(0);
+                portId = getIntArgumentAtIndex(1);
+                data += (WORD)((portId & 0x000F) << 12);
+
+                value = getIntArgumentAtIndex(2);
+                data += value;
+
+                sendDataToAD5328(deviceId, data);
+            }
+#endif
+#if defined(USE_AD7490)
+            else if(compareOSCAddress(msgInitExternalAdc))
+            {
+                BYTE i = 0;
+                WORD portId;
+                WORD value = 0;
+                WORD data = 0x0831;// 0000 1000 0011 0001
+                //WORD data = 0x0BF1;// 0000 1011 1111 0001
+
+                portId = getIntArgumentAtIndex(0);
+
+#if 0
+                for(i = 0; i < 3; i++)
+                {
+                    data |= (portId << 6);
+
+#if 0
+                    if(SPI2STATbits.SPIRBF)
+                    //while(SPI2STATbits.SPIRBF)
+                    {
+                        //outputPort("c13", LOW);
+                        //dummy = ReadSPI2();
+                        //outputPort("c13", HIGH);
+                        sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Full");
+                    }
+#endif
+
+                    //sendDataToAD7490(0xBF10);
+                    value = receiveDataFromAD7490(data << 4);
+                }
+#else
+                value = receiveDataFromAD7490(0xFFFF);
+                value = receiveDataFromAD7490(0xFFFF);
+                value = receiveDataFromAD7490(data << 4);
+#endif
+
+                if(SPI2STATbits.SPIROV)
+                {
+                    SPI2STATbits.SPIROV = 0;
+                    sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Overflow");
+                }
+
+                sendOSCMessage(getOSCPrefix(), msgExternalAdc, "iiiii", portId, data, (value >> 12) & 0x000F, value & 0x0FFF, value);
+            }
+            else if(compareOSCAddress(msgConvertExternalAdc))
+            {
+                WORD portId;
+                WORD value = 0;
+                WORD data = 0x0831;// 0000 1000 0011 0001
+                //WORD data = 0x0BF1;// 0000 1011 1111 0001
+
+                portId = getIntArgumentAtIndex(0);
+                data |= (portId << 6);
+
+#if 0
+                if(SPI2STATbits.SPIRBF)
+                //while(SPI2STATbits.SPIRBF)
+                {
+                    //outputPort("c13", LOW);
+                    //dummy = ReadSPI2();
+                    //outputPort("c13", HIGH);
+                    sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Full");
+                }
+#endif
+
+                //sendDataToAD7490(0xBF10);
+                value = receiveDataFromAD7490(data << 4);
+
+                if(SPI2STATbits.SPIROV)
+                {
+                    SPI2STATbits.SPIROV = 0;
+                    sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Overflow");
+                }
+
+                sendOSCMessage(getOSCPrefix(), msgExternalAdc, "iiiii", portId, data, (value >> 12) & 0x000F, value & 0x0FFF, value);
+            }
+            else if(compareOSCAddress(msgReadExternalAdc))
+            {
+                WORD portId;
+                WORD value = 0;
+                WORD data = 0x0000;// 0000 1000 0011 0001
+                //WORD data = 0x0BF1;// 0000 1011 1111 0001
+
+                portId = getIntArgumentAtIndex(0);
+                data |= (portId << 6);
+
+#if 0
+                if(SPI2STATbits.SPIRBF)
+                //while(SPI2STATbits.SPIRBF)
+                {
+                    //outputPort("c13", LOW);
+                    //dummy = ReadSPI2();
+                    //outputPort("c13", HIGH);
+                    sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Full");
+                }
+#endif
+
+                //sendDataToAD7490(0xBF10);
+                value = receiveDataFromAD7490(data << 4);
+
+                if(SPI2STATbits.SPIROV)
+                {
+                    SPI2STATbits.SPIROV = 0;
+                    sendOSCMessage(sysPrefix, msgError, "s", "Receive_Buffer_Overflow");
+                }
+
+                sendOSCMessage(getOSCPrefix(), msgExternalAdc, "iiiii", portId, data, (value >> 12) & 0x000F, value & 0x0FFF, value);
+            }
+#endif
+#if defined(USE_ADG1414)
+            else if(compareOSCAddress(msgSetADG1414))
+            {
+                WORD data = 0x0000;
+
+                data = getIntArgumentAtIndex(0);
+                sendDataToADG1414(data);
             }
 #endif
         }
@@ -4931,7 +5794,7 @@ void __ISR(_TIMER_4_VECTOR, IPL5) ledHandle(void)
         led_state = 2;
         break;
     case 2:
-#if defined(USE_RGB_PAD)
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_8L) || defined(USE_RGB_PAD_16)
         if(getInitLatticeRgbDrvFlag())
             latticeRgbHandle();
 #endif
@@ -4993,6 +5856,13 @@ void __ISR(_TIMER_5_VECTOR, IPL4) sendOSCTask(void)
                     sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
                 else
                     sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+
+#if defined(USE_LSD_BLE112)
+                if(swState1)
+                    putcUART2('n');
+                else
+                    putcUART2('f');
+#endif
             }
             swState0 = swState1;
             
@@ -5016,8 +5886,8 @@ void __ISR(_TIMER_5_VECTOR, IPL4) sendOSCTask(void)
 #if defined(USE_PITCH)
             sendPad4();
 #endif
-#if defined(USE_LED_PAD) || defined(USE_RGB_PAD)
-            sendPad16();
+#if defined(USE_LED_PAD_8) || defined(USE_RGB_PAD_16) || defined(USE_RGB_PAD_8L)
+            sendPad();
 #endif
             sendOSCTaskIndex = 3;
             break;
@@ -5049,49 +5919,162 @@ void __ISR(_TIMER_5_VECTOR, IPL4) sendOSCTask(void)
     mT5ClearIntFlag();
 }
 
-#if 1
 #if defined(USE_RN131)
 void __ISR(_UART_2_VECTOR, IPL6) receiveOSCFromRN134(void)
 {
-    BYTE count = 0;
-    BYTE dammy = 0;
+    static BYTE count = 0;
+    static BOOL flag = FALSE;
+    CHAR dammy = 0;
+    static CHAR str[64] = {0};
 
     IFS1bits.U2RXIF = 0;
+    setUartInterruptFlag(TRUE);
 
     if(U2STAbits.OERR || U2STAbits.FERR || U2STAbits.PERR)
     {
         dammy = U2RXREG;
         U2STA &= 0xFFF0;
-        //U2STAbits.OERR = 0;
-        //U2STAbits.FERR = 0;
-        //U2STAbits.PERR = 0;
         U2MODE = 0;
-        Delay10us(50);
-        U2MODE = 0x8200;
+        U2MODE = 0x8208;
+        count = 0;
+        flag = FALSE;
     }
     else
     {
-        while(U2STAbits.URXDA && count < 192)
+#if 1
+        if(count == 0)
+            flag = checkEmptyUdpPacket();
+
+        dammy = U2RXREG;
+        str[count] = dammy;
+
+        if(flag)
+            setOSCPacketFromRN134(count++, dammy);
+
+#if 1
+        Delay10us(5);
+
+        //if(!U2STAbits.URXDA && count >= 4)
+        if(count >= 32)
+        {
+            if(str[0]  == '/' && str[1]  == 's' && str[2]  == 't' && str[3]  == 'd' && 
+               str[4]  == '/' && str[5]  == 'o' && str[6]  == 'n' && str[7]  == 'b' && 
+               str[8]  == 'o' && str[9]  == 'a' && str[10] == 'r' && str[11] == 'd' && 
+               str[12] == '/' && str[13] == 'l' && str[14] == 'e' && str[15] == 'd' &&
+               str[16] == 0   && str[17] == 0   && str[18] == 0   && str[19] == 0   &&
+               str[20] == ',' && str[21] == 'i' && str[22] == 's' && str[23] == 0   &&
+               str[24] == 0   && str[25] == 0   && str[26] == 0   && str[27] == 1   &&
+               str[28] == 'o' && str[29] == 'n' && str[30] == 0   && str[31] == 0)
+            {
+                turnOnLED1();
+            }
+            else if(str[0]  == '/' && str[1]  == 's' && str[2]  == 't' && str[3]  == 'd' && 
+                    str[4]  == '/' && str[5]  == 'o' && str[6]  == 'n' && str[7]  == 'b' && 
+                    str[8]  == 'o' && str[9]  == 'a' && str[10] == 'r' && str[11] == 'd' && 
+                    str[12] == '/' && str[13] == 'l' && str[14] == 'e' && str[15] == 'd' &&
+                    str[16] == 0   && str[17] == 0   && str[18] == 0   && str[19] == 0   &&
+                    str[20] == ',' && str[21] == 'i' && str[22] == 's' && str[23] == 0   &&
+                    str[24] == 0   && str[25] == 0   && str[26] == 0   && str[27] == 1   &&
+                    str[28] == 'o' && str[29] == 'f' && str[30] == 'f' && str[31] == 0)
+            {
+                turnOffLED1();
+            }
+            if(flag)
+                incRingBufIndex();
+            count = 0;
+            flag = FALSE;
+            setUartInterruptFlag(FALSE);
+
+            //Delay10us(50);
+        }
+        else if(!U2STAbits.URXDA && count < 4)
+        {
+            count = 0;
+            flag = FALSE;
+            setUartInterruptFlag(FALSE);
+        }
+#endif
+
+#else
+        count = 0;
+        flag = FALSE;
+        do//while(U2STAbits.URXDA)
         {
             setOSCPacketFromRN134(count++, U2RXREG);
-            Delay10us(10);
-        }
+            flag = TRUE;
+            Delay10us(5);
+        } while(U2STAbits.URXDA);
 
-        incRingBufIndex();
-        
-        if(U2STAbits.OERR || U2STAbits.FERR || U2STAbits.PERR)
+        if(flag && count > 3)
         {
-            U2STA &= 0xFFF0;
-            //U2STAbits.OERR = 0;
-            //U2STAbits.FERR = 0;
-            //U2STAbits.PERR = 0;
-            U2MODE = 0;
-            Delay10us(50);
-            U2MODE = 0x8200;
+            incRingBufIndex();
+            toggleLED1();
         }
+        setUartInterruptFlag(FALSE);
+#endif
     }
 }
 #endif
+
+#if defined(USE_LSD_BLE112)
+void __ISR(_UART_2_VECTOR, IPL6) receiveOSCFromBLE112(void)
+{
+    //static BYTE count = 0;
+    //static BOOL flag = FALSE;
+    BYTE dammy = 0;
+
+    IFS1bits.U2RXIF = 0;
+    //setUartInterruptFlag(TRUE);
+
+    if(U2STAbits.OERR || U2STAbits.FERR || U2STAbits.PERR)
+    {
+        dammy = U2RXREG;
+        U2STA &= 0xFFF0;
+        U2MODE = 0;
+        U2MODE = 0x8208;
+        //count = 0;
+        //flag = FALSE;
+    }
+    else
+    {
+        //if(count == 0)
+        //    flag = checkEmptyUdpPacket();
+
+        //if(flag)
+        //    setOSCPacketFromRN134(count++, U2RXREG);
+        //else
+            dammy = U2RXREG;
+
+            if(dammy == 'a')
+            {
+                toggleLED1();
+            }
+            else if(dammy == 'b')
+            {
+                toggleLED2();
+            }
+
+        Delay10us(10);
+
+        //if(!U2STAbits.URXDA)
+        //{
+        //    if(flag)
+        //        incRingBufIndex();
+        //    count = 0;
+        //    flag = FALSE;
+        //    setUartInterruptFlag(FALSE);
+        //}
+    }
+}
+#endif
+
+#if defined(USE_CC3000)
+void __ISR(_EXTERNAL_0_VECTOR, IPL2) receiveOSCFromCC3000(void)
+{
+    toggleLED2();
+    cc3000_ISR();
+    mINT0ClearIntFlag();
+}
 #endif
 
 /*******************************************************************************
