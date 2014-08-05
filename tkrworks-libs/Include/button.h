@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * button.h,v.0.9.0 2014/04/15
+ * button.h,v.0.9.1 2014/06/11
  */
 
 #ifndef BUTTON_H
@@ -32,9 +32,23 @@
 
 #define MAX_RGB_LAYER 3
 // Please modify the following numbers in response to a board which you want to use.
-#define MAX_BTN_ROW 4//1 // 2
-#define MAX_BTN_COL 4//16 // 2
-#define MAX_BTN_NUM 16
+#if defined(USE_RGB_PAD_8)
+    #define MAX_BTN_ROW 2
+    #define MAX_BTN_COL 4
+    #define MAX_BTN_NUM 8
+#elif defined(USE_RGB_PAD_8L)
+    #define MAX_BTN_ROW 1
+    #define MAX_BTN_COL 8
+    #define MAX_BTN_NUM 8
+#elif defined(USE_RGB_PAD_16)
+    #define MAX_BTN_ROW 4
+    #define MAX_BTN_COL 4
+    #define MAX_BTN_NUM 16
+#else
+    #define MAX_BTN_ROW 1
+    #define MAX_BTN_COL 1
+    #define MAX_BTN_NUM 1
+#endif
 
 void setInitPadFlag(BOOL flag);
 void setNumConnectedLatticePad(BYTE num);
@@ -79,7 +93,9 @@ BOOL buttonCheck(BYTE index0, BYTE row, BYTE index);
 #if defined(USE_PITCH)
 void sendPad4(void);
 #endif
-void sendPad16(void);
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_8L) || defined(USE_RGB_PAD_16)
+void sendPad(void);
+#endif
 void latticeLedHandle(void);
 void latticeRgbHandle(void);
 

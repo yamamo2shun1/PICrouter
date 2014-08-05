@@ -43,7 +43,13 @@ static BYTE latticeLedIntensityIndex[MAX_PAD_NUM] = {0};
 static BOOL initLatticeRgbDrvFlag = FALSE;
 static BYTE numConnectedLatticeRgb = 1;
 static BYTE latticeRgbDrvSpiNum = 2;
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_8L)
+static BYTE latticeRgbLedNum[MAX_PAD_NUM] = {8, 8, 8, 8, 8};
+#elif defined(USE_RGB_PAD_16)
 static BYTE latticeRgbLedNum[MAX_PAD_NUM] = {16, 16, 16, 16, 16};
+#else
+static BYTE latticeRgbLedNum[MAX_PAD_NUM] = {MAX_BTN_NUM, MAX_BTN_NUM, MAX_BTN_NUM, MAX_BTN_NUM, MAX_BTN_NUM};
+#endif
 static WORD latticeRgb[MAX_PAD_NUM][MAX_RGB_LAYER] = {0};
 static BYTE latticeRgbIntensity[MAX_PAD_NUM][MAX_RGB_LAYER][MAX_BTN_NUM] = {0};
 static BOOL latticeRgbOn[MAX_PAD_NUM][MAX_RGB_LAYER] = {FALSE};
@@ -54,6 +60,10 @@ static const WORD matrixLedData[MAX_BTN_ROW][MAX_BTN_COL] = {{0x01, 0x03, 0x10, 
                                                              {0x00, 0x02, 0x11, 0x13},
                                                              {0x33, 0x31, 0x22, 0x21},
                                                              {0x32, 0x30, 0x23, 0x20}};
+#endif
+
+#if defined(USE_LSD_BLE112)
+static BYTE bleBtnState = 0x00;
 #endif
 
 /*******************************************************************************
@@ -1163,7 +1173,7 @@ void sendPad4(void)
 
 /*******************************************************************************
   Function:
-    void sendPad16(void)
+    void sendPad(void)
 
   Precondition:
 
@@ -1184,17 +1194,16 @@ void sendPad4(void)
     None
 *******************************************************************************/
 // for LED_PAD_16
-void sendPad16(void)
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_8L) || defined(USE_RGB_PAD_16)
+void sendPad(void)
 {
     int i, j, k, l, m;
 
     if(getInitSendFlag())
     {
         outputPort(pin_shld[0], LOW);
-        //SR_SL(0);
         Delay10us(1);
         outputPort(pin_shld[0], HIGH);
-        //SR_SL(1);
 
         for(m = 0; m < MAX_PAD_NUM; m++)
         {
@@ -1203,6 +1212,7 @@ void sendPad16(void)
 
             for(i = 0; i < MAX_BTN_ROW; i++)
             {
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                 switch(i)
                 {
                     case 0:
@@ -1218,11 +1228,17 @@ void sendPad16(void)
                         l = 2;
                         break;
                 }
+#elif defined(USE_RGB_PAD_8L)
+                l = 0;
+#endif
                 for(j = 0; j < MAX_BTN_COL; j++)
                 {
+#if defined(USE_RGB_PAD_8) || defined(USE_RGB_PAD_16)
                     k = 3 - j;
+#elif defined(USE_RGB_PAD_8L)
+                    k = 7 - j;
+#endif
 
-                    //if(SR_QH())
                     if(inputPort(pin_qh[0]))
                     {
                         btnCurrent[m][l] &= ~(1 << k);
@@ -1231,20 +1247,29 @@ void sendPad16(void)
                     {
                         btnCurrent[m][l] |= (1 << k);
                     }
-                    //SR_CLK(1);
                     outputPort(pin_clk[0], HIGH);
-                    //SR_CLK(0);
                     outputPort(pin_clk[0], LOW);
 
                     if(buttonCheck(m, l, k))
                     {
                         sendOSCMessage(getOSCPrefix(), msgLatticePad, "iiii", m, l, k, (btnCurrent[m][l] & (1 << k)) ? 1 : 0);
+#if defined(USE_LSD_BLE112)
+                        if(btnCurrent[m][l] & (1 << k))
+                            bleBtnState |= (1 << ((l * 4) + k));
+                        else
+                            bleBtnState &= ~(1 << ((l * 4) + k));
+                        putcUART2(bleBtnState);
+                        //putcUART2(l + 0x30);
+                        //putcUART2(k + 0x30);
+                        //putcUART2((btnCurrent[m][l] & (1 << k)) ? 't' : 'f');
+#endif
                     }
                 }
             }
         }
     }
 }
+#endif
 
 /*******************************************************************************
   Function:
@@ -1333,7 +1358,7 @@ void latticeRgbHandle(void)
     int i, j, k, l;
     BOOL sendSpiFlag = FALSE;
 #else
-    static int i = -100;
+    static int i = 0;//-100;
     int j, k, l;
     static BOOL sendSpiFlag = FALSE;
 #endif
