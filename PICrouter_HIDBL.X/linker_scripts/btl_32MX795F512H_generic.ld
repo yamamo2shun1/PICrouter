@@ -57,7 +57,7 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 MEMORY
 {
   kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x2994 /* All C Files will be located here */
-  kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0x0 /* This memory region is dummy */ 
+  kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0x0 /* This memory region is dummy */
   exception_mem              : ORIGIN = 0x9FC01000, LENGTH = 0x1000 /* Interrupt vector table */
   kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x490 /* C Startup code */
   debug_exec_mem             : ORIGIN = 0xBFC02000, LENGTH = 0xFF0
