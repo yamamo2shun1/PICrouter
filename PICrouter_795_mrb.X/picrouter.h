@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.h,v.0.2.3 2014/02/22
+ * picrouter.h,v.0.2.5 2014/08/05
  */
 
 #ifndef PICROUTER_H
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define CURRENT_VERSION "0.2.3"
+#define CURRENT_VERSION "0.2.5"
 
 #include <plib.h>
 #include <stdlib.h>
@@ -66,23 +66,20 @@ extern "C" {
 #pragma config FETHIO    = ON
 */
 
-/** DEFINITIONS ****************************************************/
-//#define NVM_PROGRAM_PAGE 0xbd006000
-#define NVM_DATA 0x9D07F000
-#define NVM_PAGE_SIZE 4096
-
 /** VARIABLES ******************************************************/
 
 // for mruby
 mrb_state* mrb;
 
 // Host
+#if 0
 typedef enum
 {
     MODE_DEVICE,
     MODE_HOST,
     MODE_UNKNOWN
 } DEVICE_MODE;
+#endif
 
 static DEVICE_MODE device_mode = MODE_DEVICE;
 //static DEVICE_MODE device_mode = MODE_HOST;
@@ -143,6 +140,7 @@ mrb_value mrb_process_standard_messages(mrb_state* mrb, mrb_value self);
 mrb_value mrb_process_midi_messages(mrb_state* mrb, mrb_value self);
 mrb_value mrb_process_cdc_messages(mrb_state* mrb, mrb_value self);
 mrb_value mrb_process_system_messages(mrb_state* mrb, mrb_value self);
+mrb_value mrb_send_osc_task(mrb_state* mrb, mrb_value self);
 mrb_value mrb_set_osc_address(mrb_state* mrb, mrb_value self);
 mrb_value mrb_set_osc_typetag(mrb_state* mrb, mrb_value self);
 mrb_value mrb_add_osc_int_arg(mrb_state* mrb, mrb_value self);

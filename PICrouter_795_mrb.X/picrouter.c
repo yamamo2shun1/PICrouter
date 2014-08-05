@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * picrouter.c,v.0.2.3 2014/02/22
+ * picrouter.c,v.0.2.5 2014/08/05
  */
 
 #include "picrouter.h"
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
         mrb_close(mrb);
         max_usage_size = (unsigned long)max_reached - (unsigned long)heap_bottom;
         
-        LED_1_On();
+        turnOnLED1();
     #else
         mrb = mrb_open();
         mrb_init_define_methods();
@@ -166,6 +166,7 @@ void mrb_init_define_methods(void)
     mrb_define_method(mrb, mrb->object_class, "process_midi_messages", mrb_process_midi_messages, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "process_cdc_messages", mrb_process_cdc_messages, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "process_system_messages", mrb_process_system_messages, ARGS_NONE());
+    mrb_define_method(mrb, mrb->object_class, "send_osc_task", mrb_send_osc_task, ARGS_NONE());
     mrb_define_method(mrb, mrb->object_class, "set_osc_address", mrb_set_osc_address, ARGS_REQ(2));
     mrb_define_method(mrb, mrb->object_class, "set_osc_typetag", mrb_set_osc_typetag, ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "add_osc_int_arg", mrb_add_osc_int_arg, ARGS_REQ(1));
@@ -234,7 +235,7 @@ mrb_value mrb_config_timer5(mrb_state* mrb, mrb_value self)
     mrb_int timer_interval;
     mrb_get_args(mrb, "i", &timer_interval);
 
-    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, timer_interval);
+    OpenTimer5(T5_ON | T5_SOURCE_INT | T5_PS_1_8, (WORD)timer_interval);
     ConfigIntTimer5(T5_INT_ON | T5_INT_PRIOR_5);
 
     return mrb_nil_value();
@@ -252,29 +253,29 @@ mrb_value mrb_onboard_led(mrb_state* mrb, mrb_value self)
     case 1:
         if(!strcmp(RSTRING_PTR(state), "on"))
         {
-            LED_1_On();
+            turnOnLED1();
         }
         else if(!strcmp(RSTRING_PTR(state), "off"))
         {
-            LED_1_Off();
+            turnOffLED1();
         }
         else if(!strcmp(RSTRING_PTR(state), "toggle"))
         {
-            LED_1_Toggle();
+            toggleLED1();
         }
         break;
     case 2:
         if(!strcmp(RSTRING_PTR(state), "on"))
         {
-            LED_2_On();
+            turnOnLED2();
         }
         else if(!strcmp(RSTRING_PTR(state), "off"))
         {
-            LED_2_Off();
+            turnOffLED2();
         }
         else if(!strcmp(RSTRING_PTR(state), "toggle"))
         {
-            LED_2_Toggle();
+            toggleLED2();
         }
         break;
     }
@@ -439,20 +440,20 @@ mrb_value mrb_network_tasks(mrb_state* mrb, mrb_value self)
             eth_state = 1;
             break;
         case 1:
-#endif
             ZeroconfLLProcess();
             eth_state = 1;// 2;
             break;
         case 1:
+#endif
             mDNSProcess();
-            eth_state = 2;// 3;
+            eth_state = 1;// 3;
             break;
-        case 2:
+        case 1:
             DHCPServerTask();
             eth_state = 0;
             break;
         default:
-            ZeroconfLLProcess();
+            //ZeroconfLLProcess();
             mDNSProcess();
             eth_state = 0;
             break;
@@ -2021,11 +2022,11 @@ mrb_value mrb_process_standard_messages(mrb_state* mrb, mrb_value self)
         {
             if(!strcmp(getStringArgumentAtIndex(1), "on"))
             {
-                LED_1_On();
+                turnOnLED1();
             }
             else if(!strcmp(getStringArgumentAtIndex(1), "off"))
             {
-                LED_1_Off();
+                turnOffLED1();
             }
             else
                 sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
@@ -2034,11 +2035,11 @@ mrb_value mrb_process_standard_messages(mrb_state* mrb, mrb_value self)
         {
             if(!strcmp(getStringArgumentAtIndex(1), "on"))
             {
-                LED_2_On();
+                turnOnLED2();
             }
             else if(!strcmp(getStringArgumentAtIndex(1), "off"))
             {
-                LED_2_Off();
+                turnOffLED2();
             }
             else
                 sendOSCMessage(sysPrefix, msgError, "ss", msgOnboardLed, ": wrong_argument_string");
@@ -4114,7 +4115,7 @@ mrb_value mrb_process_system_messages(mrb_state* mrb, mrb_value self)
     {
         char hip[22], rip[24], macaddr[26], hport[14], rport[16];
         
-        LED_1_On();
+        turnOnLED1();
         
         mT5IntEnable(0);
         
@@ -4137,7 +4138,7 @@ mrb_value mrb_process_system_messages(mrb_state* mrb, mrb_value self)
         
         mT5IntEnable(1);
         
-        LED_1_Off();
+        turnOffLED1();
     }
     else if(compareOSCAddress(msgSwitchUsbMode))
     {
@@ -4311,6 +4312,63 @@ mrb_value mrb_process_system_messages(mrb_state* mrb, mrb_value self)
     return mrb_nil_value();
 }
 
+mrb_value mrb_send_osc_task(mrb_state* mrb, mrb_value self)
+{
+    int i, j;
+
+    if(!getInitSendFlag())
+    {
+        setInitSendFlag(openOSCSendPort(getRemoteIp(), getRemotePort()));
+        if(getChCompletedFlag())
+        {
+            sendOSCMessage(sysPrefix, msgConfiguration, "s", "succeeded");
+            setChCompletedFlag(FALSE);
+        }
+    }
+
+    if(getInitSendFlag())
+    {
+        switch(sendOSCTaskIndex)
+        {
+            case 0:
+                swState1 = getSW1State();
+                if(swState1 != swState0)
+                {
+                    if(swState1)
+                    {
+                        turnOffLED2();
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
+                    }
+                    else
+                    {
+                        turnOnLED2();
+                        sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+                    }
+                }
+                swState0 = swState1;
+
+                sendOSCTaskIndex = 1;
+                break;
+            case 1:
+                j = 0;
+                for(i = 0; i < AN_NUM; i++)
+                {
+                    if(getAnalogEnable(i))
+                    {
+                        analogInHandle(i, (LONG)ReadADC10(j));
+                        j++;
+                    }
+                }
+                sendAdc();
+                sendOSCTaskIndex = 0;
+                break;
+            default:
+                sendOSCTaskIndex = 0;
+                break;
+        }
+    }
+}
+
 mrb_value mrb_set_osc_address(mrb_state* mrb, mrb_value self)
 {
     mrb_value prefix;
@@ -4481,6 +4539,7 @@ mrb_value mrb_get_string_arg_at_index(mrb_state* mrb, mrb_value self)
     return mrb_str_new_cstr(mrb, str);
 }
 
+#if 0
 void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
 {
     int i, j;
@@ -4502,7 +4561,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
         switch(sendOSCTaskIndex)
         {
             case 0:
-                swState1 = SW_State();
+                swState1 = getSW1State();
 
 #if 0//debug
                 if(count == 100)
@@ -4529,9 +4588,15 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
                 if(swState1 != swState0)
                 {
                     if(swState1)
+                    {
+                        turnOffLED2();
                         sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "off");
+                    }
                     else
+                    {
+                        turnOnLED2();
                         sendOSCMessage(getOSCPrefix(), msgOnboardSw1, "s", "on");
+                    }
                 }
                 swState0 = swState1;
 
@@ -4590,6 +4655,7 @@ void __ISR(_TIMER_5_VECTOR, IPL5) sendOSCTask(void)
     }
     mT5ClearIntFlag();
 }
+#endif
 
 mrb_value mrb_usb_device_init(mrb_state* mrb, mrb_value self)
 {
@@ -5293,6 +5359,8 @@ mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
 
     mrb_get_args(mrb, "iii", &num, &vel, &ch);
 
+    sendNote(ch, num, vel);
+#if 0
     midiData.Val = 0;
     midiData.CableNumber = 0;
     midiData.CodeIndexNumber = MIDI_CIN_NOTE_ON;
@@ -5303,6 +5371,7 @@ mrb_value mrb_send_note(mrb_state* mrb, mrb_value self)
     if(!midiHandleBusy())
         midiTxOnePacket();
     //delayUs(2);
+#endif
 
     return mrb_nil_value();
 }
@@ -5313,6 +5382,8 @@ mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
 
     mrb_get_args(mrb, "iii", &num, &val, &ch);
 
+    sendControlChange(ch, num ,val);
+#if 0
     midiData.Val = 0;
     midiData.CableNumber = 0;
     midiData.CodeIndexNumber = MIDI_CIN_CONTROL_CHANGE;
@@ -5324,7 +5395,7 @@ mrb_value mrb_send_cc(mrb_state* mrb, mrb_value self)
     if(!midiHandleBusy())
         midiTxOnePacket();
     //delayUs(20);
-
+#endif
     return mrb_nil_value();
 }
 
@@ -5336,7 +5407,8 @@ mrb_value mrb_receive_midi_datas(mrb_state* mrb, mrb_value self)
     if(checkUSBState())
         return mrb_nil_value();
 
-    if(!midiHandleBusy())
+    //if(!midiHandleBusy())
+    if(!midiRxHandleBusy())
     {
         midiRxOnePacket();
 
@@ -5388,6 +5460,7 @@ mrb_value mrb_usb_host_tasks(mrb_state* mrb, mrb_value self)
 
 mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
 {
+#if 0
     HOST_MIDI_PACKET hostMidiPacket;
 
     hostMidiPacket = getHostMIDIPacket();
@@ -5419,6 +5492,48 @@ mrb_value mrb_convert_midi_to_osc(mrb_state* mrb, mrb_value self)
             break;
         }
     }
+#else
+    BYTE ce;
+    HOST_MIDI_PACKET* hostMidiPacket;
+
+    if(getProcState() == STATE_READY)
+    {
+        hostMidiPacket = getHostMIDIPacket();
+
+        for(ce = 0; ce < getUSBHostMIDINumberOfEndpoints(); ce++)
+        {
+            if(getInitSendFlag() && hostMidiPacket[ce].rcvFlag)
+            {
+                switch(hostMidiPacket[ce].type)
+                {
+                case 0x80:// Note off
+                case 0x90:// Note on
+                    sendOSCMessage(midiPrefix, msgNote, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xA0:// Key Pressure
+                    sendOSCMessage(midiPrefix, msgKp, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xB0:// Control Change
+                    sendOSCMessage(midiPrefix, msgCc, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                case 0xC0:// Program Change
+                    sendOSCMessage(midiPrefix, msgPc, "i", hostMidiPacket[ce].num);
+                    break;
+                case 0xD0:// Channel Pressure
+                    sendOSCMessage(midiPrefix, msgCp, "ii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num);
+                    break;
+                case 0xE0:// Pitch Bend
+                    sendOSCMessage(midiPrefix, msgPb, "iii", hostMidiPacket[ce].ch, hostMidiPacket[ce].num, hostMidiPacket[ce].val);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        free(hostMidiPacket);
+        hostMidiPacket = NULL;
+    }
+#endif
     return mrb_nil_value();
 }
 
