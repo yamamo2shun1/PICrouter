@@ -16,12 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
 #
-# mrb_picrouter.rb,v.0.2.3 2014/02/22
+# mrb_picrouter.rb,v.0.2.4 2014/08/05
 #
 
-def send_osc_task
-  onboard_led(1, 'toggle')
-end
+#def send_osc_task
+#  onboard_led(1, 'toggle')
+#end
 
 current_usb_mode = 'HOST'
 
@@ -33,7 +33,7 @@ host_initialized = 0
 init_io_ports
 
 # Timer5 Initialization
-config_timer5(8000)
+#config_timer5(2000)
 
 case current_usb_mode
 when 'DEVICE'
@@ -63,11 +63,12 @@ loop do
       process_standard_messages
     elsif compare_osc_prefix('/midi')
       process_midi_messages
-    elsif compare_osc_prefix('/cdc')
-      process_cdc_messages
+#    elsif compare_osc_prefix('/cdc')
+#      process_cdc_messages
     elsif compare_osc_prefix('/sys')
       process_system_messages
 =begin
+    elsif compare_osc_prefix('/custom')
       if compare_osc_address('/onboard/led')
         index = get_int_arg_at_index(0)
         state = get_string_arg_at_index(1)
@@ -85,9 +86,12 @@ loop do
 
         flush_osc_message
       end
+    end
 =end
     end
   end
+
+  send_osc_task
 
   case current_usb_mode
   when 'DEVICE'
@@ -99,7 +103,8 @@ loop do
     else
       usb_host_tasks
       convert_midi_to_osc
-      usb_cdc_rxtx_handler
+#      usb_cdc_rxtx_handler
     end
   end
+
 end
