@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * iosetting.h,v.0.9.0 2014/04/24
+ * iosetting.h,v.1.0.0 2014/06/17
  */
 
 #ifndef IOSETTING_H
@@ -39,7 +39,7 @@
 #define IO_IN  1
 
 // OnBoard Switch
-#define initSW()      TRISDbits.TRISD10 = 1;
+#define initSW()      TRISDbits.TRISD10 = IO_IN;
 #define getSW1State() PORTDbits.RD10
 
 // OnBoard LED Settings
@@ -73,7 +73,7 @@
 #define D_NUM   4
 #define SPI_NUM 6
 
-#define TIMER4_COUNT 500
+#define TIMER4_COUNT 500//500
 #define TIMER5_COUNT 2000
 
 extern BYTE ioAnPort[14];
@@ -127,8 +127,20 @@ void restartI2C(BYTE i2c_id);
 void stopI2C(BYTE i2c_id);
 BYTE getDataFromI2C(BYTE i2c_id);
 
+#if defined(USE_RN131)
 void sendCommandToRN134(unsigned char* cmd);
 void sendMessageToRN134(unsigned char* msg, INT32 len);
+#endif
+
+#if defined(USE_DAC_PLUS_ADC)
+void sendDataToAD5328(BYTE id, WORD msb);
+void sendDataToAD7490(WORD msb);
+WORD receiveDataFromAD7490(WORD msb);
+#endif
+
+#if defined(USE_ADG1414)
+void sendDataToADG1414(WORD msb);
+#endif
 
 #endif	/* IOSETTING_H */
 

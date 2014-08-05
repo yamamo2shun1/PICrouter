@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.c,v.1.7.1 2014/04/26
+ * osc.c,v.1.9.0 2014/06/17
  */
 
 #include "osc.h"
@@ -68,7 +68,7 @@ const char msgGetLatticeLedIntensity[]    = "/lattice/led/intensity/get";
 const char msgLatticeLedIntensityAll[]    = "/lattice/led/intensity/all";
 const char msgGetLatticeLedIntensityAll[] = "/lattice/led/intensity/all/get";
 
-// for RGB_PAD_16/RGB_PAD_8
+// for RGB_PAD_16/RGB_PAD_8/RGB_PAD_8L
 const char msgLatticeRgbDrvPinSelect[]    = "/lattice/rgb/driver/pin/select";
 const char msgLatticeRgbConnectedNum[]    = "/lattice/rgb/num";
 const char msgSetLatticeRgbConnectedNum[] = "/lattice/rgb/num/set";
@@ -104,6 +104,20 @@ const char msgRotaryAbsEncConnectedNum[]    = "/rotary/abs/enc/num";
 const char msgSetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/set";
 const char msgGetRotaryAbsEncConnectedNum[] = "/rotary/abs/enc/num/get";
 const char msgRotaryAbsEnc[]                = "/rotary/abs/enc";
+
+// for DAC+ADC_SHIELD
+const char msgSetExternalDac[] = "/external/dac/set";
+const char msgInitExternalAdc[] = "/external/adc/init";
+const char msgConvertExternalAdc[] = "/external/adc/convert";
+const char msgReadExternalAdc[] = "/external/adc/read";
+const char msgExternalAdc[] = "/external/adc";
+
+// for ADG1414
+const char msgSetADG1414[] = "/adg1414/set";
+
+// for Gyro
+const char msgSetGyroEnable[] = "/gyro/enable/set";
+const char msgSetGyroParameters[] = "/gyro/parameters/set";
 
 //Standard OSC Messages
 // for Onboard (2)
@@ -259,7 +273,7 @@ const char msgSetPwmDuty4[]   = "/pwm/duty/set/4";
 
 // Variables
 static BYTE indexA = 0;
-static BYTE indexB = 0;
+static BYTE indexA0 = 0;
 static BYTE ringBufIndex = 0;
 static BYTE ringProcessIndex = 0;
 #ifdef USE_SPI_SRAM
@@ -278,6 +292,10 @@ static UINT16 rcvArgumentsStartIndex[MAX_ARGS_LEN] = {0};
 static UINT16 rcvArgumentsIndexLength[MAX_ARGS_LEN] = {0};
 static BYTE bundleData[512] = {0};
 static UINT16 bundleAppendIndex = 0;
+
+#if defined(USE_RN131)
+static volatile BOOL uartInterruptFlag = FALSE;
+#endif
 
 // Static Functions
 static BOOL copyOSCPacketFromUDPPacket();
@@ -552,6 +570,7 @@ BOOL isDiscoverPutReady(void)
     return TRUE;
 }
 
+#if defined(USE_RN131)
 void setOSCPacketFromRN134(BYTE index, BYTE value)
 {
     udpPacket[ringBufIndex][index] = value;
@@ -563,6 +582,29 @@ void incRingBufIndex(void)
     ringBufIndex &= (MAX_BUF_SIZE - 1);
 }
 
+BYTE getRingBufIndex(void)
+{
+    return ringBufIndex;
+}
+BYTE getRingProcessIndex(void)
+{
+    return ringProcessIndex;
+}
+
+BOOL checkEmptyUdpPacket(void)
+{
+    if(!udpPacket[ringBufIndex][0] && ringProcessIndex != ringBufIndex)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+void setUartInterruptFlag(BOOL flag)
+{
+    uartInterruptFlag = flag;
+}
+#endif
+
 void getOSCPacket(void)
 {
     if(!initReceiveFlag)
@@ -573,13 +615,16 @@ void getOSCPacket(void)
 #ifdef USE_SPI_SRAM
         memset(udpOnePacket, 0, MAX_PACKET_SIZE);
         UDPGetArray(udpOnePacket, MAX_PACKET_SIZE);
-        setUdpPackets(ringBufIndex, udpOnePacket);
-        ringBufIndex++;
+        if(!udpPacket[ringBufIndex][0])
+        {
+            setUdpPackets(ringBufIndex, udpOnePacket);
+            ringBufIndex++;
+        }
 #else
-        UDPGetArray(udpPacket[ringBufIndex++], MAX_PACKET_SIZE);
+        if(!udpPacket[ringBufIndex][0])
+            UDPGetArray(udpPacket[ringBufIndex++], MAX_PACKET_SIZE);
 #endif
         ringBufIndex &= (MAX_BUF_SIZE - 1);
-
         UDPDiscard();
     }
 }
@@ -590,8 +635,6 @@ BOOL processOSCPacket(void)
     switch(state_index)
     {
         case 0:
-            indexA = 0;
-            indexB = 0;
             if(!copyOSCPacketFromUDPPacket())
                 return FALSE;
             state_index = 1;
@@ -636,6 +679,11 @@ static BOOL copyOSCPacketFromUDPPacket()
     int i, j;
     DWORD len = 0;
 
+#if 0//defined(USE_RN131)
+    if(uartInterruptFlag)
+        return FALSE;
+#endif
+
 #ifdef USE_SPI_SRAM
     if(!strcmp(getUdpPackets(ringProcessIndex), "#bundle"))
 #else
@@ -679,9 +727,7 @@ static BOOL copyOSCPacketFromUDPPacket()
 #else
         memset(udpPacket[ringProcessIndex++], 0, MAX_PACKET_SIZE);
 #endif
-
         ringProcessIndex &= (MAX_BUF_SIZE - 1);
-
     }
 
 #ifdef USE_SPI_SRAM
@@ -690,9 +736,12 @@ static BOOL copyOSCPacketFromUDPPacket()
     if(udpPacket[ringProcessIndex][0] != '/')
 #endif
     {
-        if(ringProcessIndex++ != ringBufIndex)
-            ringProcessIndex &= (MAX_BUF_SIZE - 1);
-
+        if(udpPacket[ringProcessIndex][0] != NULL)
+            memset(udpPacket[ringProcessIndex], 0, MAX_PACKET_SIZE);
+        
+        ringProcessIndex++;
+        ringProcessIndex &= (MAX_BUF_SIZE - 1);
+        
         return FALSE;
     }
 
@@ -714,12 +763,19 @@ static BOOL extractAddressFromOSCPacket()
 {
     memset(rcvAddressStrings, 0, sizeof(rcvAddressStrings));
 
+    indexA = 3;
     while(oscPacket[indexA])
     {
-        indexA++;
+        indexA += 4;
         if(indexA >= MAX_PACKET_SIZE)
             return FALSE;
     }
+    indexA0 = indexA;
+    indexA--;
+    while(!oscPacket[indexA])
+        indexA--;
+    indexA++;
+
     memcpy(rcvAddressStrings, oscPacket, indexA);
 
     rcvAddressLength = indexA;
@@ -729,23 +785,16 @@ static BOOL extractAddressFromOSCPacket()
 
 static BOOL extractTypeTagFromOSCPacket()
 {
-    while(oscPacket[indexA] != ',')
-    {
-        indexA++;
-        if(indexA >= MAX_PACKET_SIZE)
-            return FALSE;
-    }
-    rcvTypesStartIndex = indexA;
-    indexA++;
+    rcvTypesStartIndex = indexA0 + 1;
+    indexA = indexA0 + 2;
 
     while(oscPacket[indexA])
     {
-        indexB++;
         indexA++;
         if(indexA >= MAX_PACKET_SIZE)
             return FALSE;
     }
-    memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, indexB);
+    memcpy(rcvArgsTypeArray, oscPacket + rcvTypesStartIndex + 1, indexA - rcvTypesStartIndex);
 
     return TRUE;
 }

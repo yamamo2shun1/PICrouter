@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
-  * iosetting.c,v.0.9.0 2014/04/24
+  * iosetting.c,v.1.0.0 2014/06/17
  */
 
 #include "iosetting.h"
@@ -1782,6 +1782,7 @@ BYTE getDataFromI2C(BYTE i2c_id)
     return data;
 }
 
+#if defined(USE_RN131)
 void sendCommandToRN134(unsigned char* cmd)
 {
     while(*cmd != 0)
@@ -1800,3 +1801,103 @@ void sendMessageToRN134(unsigned char* msg, INT32 len)
     for(i = 0; i < len; i++)
         putcUART2(*msg++);
 }
+#endif
+
+#if defined(USE_DAC_PLUS_ADC)
+void sendDataToAD5328(BYTE id, WORD msb)
+{
+    //WORD dummy = 0;
+    SpiChnEnable(SPI_CHANNEL2, 0);
+    //SpiChnConfigure(SPI_CHANNEL2, SPI_CONFIG_MSTEN | SPI_CONFIG_MODE16 | SPI_CONFIG_CKP_HIGH);
+    SpiChnSetBitRate(SPI_CHANNEL2, 80000000, 4000000);
+    SpiChnEnable(SPI_CHANNEL2, 1);
+
+    switch(id)
+    {
+        case 0:
+            outputPort("d0", LOW);
+            break;
+        case 1:
+            outputPort("d2", LOW);
+            break;
+        case 2:
+            outputPort("d3", LOW);
+            break;
+    }
+
+    putcSPI2(msb);
+    //dummy = getcSPI2();
+    //Delay10us(1);
+
+    switch(id)
+    {
+        case 0:
+            outputPort("d0", HIGH);
+            break;
+        case 1:
+            outputPort("d2", HIGH);
+            break;
+        case 2:
+            outputPort("d3", HIGH);
+            break;
+    }
+
+    SpiChnEnable(SPI_CHANNEL2, 0);
+    SpiChnSetBitRate(SPI_CHANNEL2, 80000000, 1000000);
+    SpiChnEnable(SPI_CHANNEL2, 1);
+}
+
+void sendDataToAD7490(WORD msb)
+{
+    outputPort("c13", LOW);
+
+    putcSPI2(msb);
+
+    if(SPI2STATbits.SPIROV)
+        SPI2STATbits.SPIROV = 0;
+
+    outputPort("c13", HIGH);
+}
+
+WORD receiveDataFromAD7490(WORD msb)
+{
+    WORD rdata = 0;
+
+    outputPort("c13", LOW);
+    putcSPI2(msb);
+    rdata = getcSPI2();
+    outputPort("c13", HIGH);
+
+    return rdata;
+}
+#endif
+
+#if defined(USE_ADG1414)
+void sendDataToADG1414(WORD msb)
+{
+    WORD dummy = 0;
+    //BYTE data0 = 0x00;
+    //BYTE data1 = 0x00;
+
+    SpiChnEnable(SPI_CHANNEL2, 0);
+    SpiChnConfigure(SPI_CHANNEL2, SPI_CONFIG_MSTEN | SPI_CONFIG_MODE16 | SPI_CONFIG_CKP_HIGH);
+    SpiChnSetBitRate(SPI_CHANNEL2, 80000000, 4000000);
+    SpiChnEnable(SPI_CHANNEL2, 1);
+
+    //data0 = (BYTE)(msb & 0x00FF);
+    //data1 = (BYTE)((msb & 0xFF00) >> 8);
+
+    outputPort("c14", LOW);
+
+    //putcSPI2(data0);
+    //putcSPI2(data1);
+    putcSPI2(msb);
+
+    outputPort("c14", HIGH);
+
+    SpiChnEnable(SPI_CHANNEL2, 0);
+    SpiChnConfigure(SPI_CHANNEL2, SPI_CONFIG_MSTEN | SPI_CONFIG_MODE16);
+    SpiChnSetBitRate(SPI_CHANNEL2, 80000000, 1000000);
+    SpiChnEnable(SPI_CHANNEL2, 1);
+}
+#endif

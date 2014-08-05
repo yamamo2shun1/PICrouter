@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PICrouter. if not, see <http:/www.gnu.org/licenses/>.
  *
- * osc.h,v.1.7.1 2014/04/26
+ * osc.h,v.1.9.0 2014/06/17
  */
 
 #ifndef OSC_H
@@ -33,8 +33,6 @@
 #ifdef USE_SPI_SRAM
 #include "sram.h"
 #endif
-
-#define USE_RN131
 
 #define MAX_HOST_NAME_LEN 16
 #if defined(USE_SPI_SRAM)
@@ -104,6 +102,20 @@ extern const char msgRotaryAbsEncConnectedNum[];
 extern const char msgSetRotaryAbsEncConnectedNum[];
 extern const char msgGetRotaryAbsEncConnectedNum[];
 extern const char msgRotaryAbsEnc[];
+
+// for DAC+ADC_SHIELD
+extern const char msgSetExternalDac[];
+extern const char msgInitExternalAdc[];
+extern const char msgConvertExternalAdc[];
+extern const char msgReadExternalAdc[];
+extern const char msgExternalAdc[];
+
+// for ADG1414
+extern const char msgSetADG1414[];
+
+// for Gyro
+extern const char msgSetGyroEnable[];
+extern const char msgSetGyroParameters[];
 
 // Standard OSC Messages
 // for Onboard
@@ -296,8 +308,14 @@ BOOL isOSCGetReady(void);
 BOOL isOSCPutReady(void);
 BOOL isDiscoverPutReady(void);
 
+#if defined(USE_RN131)
 void setOSCPacketFromRN134(BYTE index, BYTE value);
 void incRingBufIndex(void);
+BYTE getRingBufIndex(void);
+BYTE getProcessProcessIndex(void);
+BOOL checkEmptyUdpPacket(void);
+void setUartInterruptFlag(BOOL flag);
+#endif
 void getOSCPacket(void);
 BOOL processOSCPacket(void);
 void sendOSCMessage(const char* prefix, const char* command, const char* type, ...);
