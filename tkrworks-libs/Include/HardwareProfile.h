@@ -66,4 +66,47 @@
 #define NVM_DATA 0x9D07F000
 #define NVM_PAGE_SIZE 4096
 
+//#define USE_PITCH
+
+//#define USE_LCD
+
+// LED_PAD_8
+//#define USE_LED_PAD_8
+
+// RGB_PAD_16
+//#define USE_RGB_PAD_16
+
+// RGB_PAD_8L
+//#define USE_RGB_PAD_8L
+
+// LED_ENC(incremental type)
+//#define USE_INC_ENC
+
+// LED_ENC(absolute type)
+//#define USE_ABS_ENC
+
+// Microchip(Roving Networks) Wi-Fi module
+//#define USE_RN131
+
+// LSD-BLE112 Bluetooth Low Energy module
+//#define USE_LSD_BLE112
+
+// TI CC3000 Wi-Fi module
+//#define USE_CC3000
+
+// DAC+ADC_SHIELD
+#define USE_DAC_PLUS_ADC
+
+// Analog Devices AD7490(ADC)
+#define USE_AD7490
+
+// Analog Devices AD5328(DAC)
+#define USE_AD5328
+
+// Analog Devices ADG1414
+#define USE_ADG1414
+
+// Analog Devices ADG1433
+#define USE_ADG1433
+
 #endif  //HARDWARE_PROFILE_H
